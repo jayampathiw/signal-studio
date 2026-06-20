@@ -1,0 +1,4 @@
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_headline TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS seed_comment TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS story_category TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS hashtags TEXT[];

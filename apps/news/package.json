@@ -8,17 +8,20 @@
     "fetch": "node src/pipeline.js",
     "generate-caption": "node src/scripts/generate-caption.js",
     "generate-image": "node src/scripts/generate-image.js",
+    "preview-images": "node src/scripts/preview-images.js",
     "publish-slot": "node src/scripts/publish-slot.js",
     "recompute-scores": "node src/scripts/recompute-scores.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
     "@content-platform/ai": "*",
     "@content-platform/config": "*",
     "@content-platform/database": "*",
     "@content-platform/publishers": "*",
     "@content-platform/types": "*",
+    "axios": "^1.7.0",
+    "form-data": "^4.0.0",
     "rss-parser": "^3.13.0",
-    "fast-xml-parser": "^4.0.0",
-    "node-fetch": "^3.0.0"
+    "sharp": "^0.33.0"
   }
 }

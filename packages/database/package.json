@@ -5,7 +5,8 @@
   "exports": {
     ".": "./supabase.js",
     "./articles": "./articles.js",
-    "./content-items": "./content-items.js"
+    "./content-items": "./content-items.js",
+    "./reels-log": "./reels-log.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",

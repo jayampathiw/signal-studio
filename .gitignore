@@ -11,6 +11,7 @@ dist/
 build/
 .next/
 apps/dashboard/dist/
+apps/dashboard/.angular/
 
 # Render caches & outputs
 output/

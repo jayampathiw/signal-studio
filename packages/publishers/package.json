@@ -11,6 +11,8 @@
     "./tiktok": "./tiktok.js"
   },
   "dependencies": {
-    "@content-platform/config": "*"
+    "@content-platform/config": "*",
+    "axios": "^1.7.0",
+    "form-data": "^4.0.0"
   }
 }
