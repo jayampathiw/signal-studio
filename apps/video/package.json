@@ -1,0 +1,22 @@
+{
+  "name": "@content-platform/video",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/pipeline.js",
+  "scripts": {
+    "start": "node src/pipeline.js",
+    "generate-reel": "node src/scripts/generate-reel.js",
+    "generate-documentary": "node src/scripts/generate-documentary.js",
+    "preview-reel": "node src/scripts/preview-reel.js"
+  },
+  "dependencies": {
+    "@content-platform/ai": "*",
+    "@content-platform/config": "*",
+    "@content-platform/database": "*",
+    "@content-platform/media": "*",
+    "@content-platform/publishers": "*",
+    "@content-platform/render-core": "*",
+    "@content-platform/render-ffmpeg": "*",
+    "@content-platform/types": "*"
+  }
+}

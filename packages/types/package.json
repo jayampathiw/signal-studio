@@ -1,0 +1,10 @@
+{
+  "name": "@content-platform/types",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./article": "./article.js",
+    "./content-item": "./content-item.js",
+    "./timeline": "./timeline.js"
+  }
+}

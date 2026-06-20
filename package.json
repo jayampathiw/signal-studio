@@ -1,0 +1,29 @@
+{
+  "name": "content-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/news",
+    "apps/video",
+    "apps/dashboard",
+    "packages/ai",
+    "packages/render/core",
+    "packages/render/ffmpeg",
+    "packages/render/remotion",
+    "packages/media",
+    "packages/database",
+    "packages/publishers",
+    "packages/config",
+    "packages/types"
+  ],
+  "scripts": {
+    "news": "node apps/news/src/pipeline.js",
+    "video": "node apps/video/src/pipeline.js",
+    "evals": "node evals/run.js",
+    "bootstrap": "node scripts/bootstrap.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,44 @@
+/**
+ * Declares every env var the platform uses.
+ * env.js validates required keys at startup and throws clearly if any are missing.
+ */
+export const schema = {
+  required: [
+    'SUPABASE_URL',
+    'SUPABASE_KEY',
+    'ANTHROPIC_KEY',
+    'FAL_KEY',
+  ],
+  optional: [
+    // Claude routing
+    'ANTHROPIC_BASE_URL',
+    'ANTHROPIC_MODEL',
+    // Supabase
+    'SUPABASE_SERVICE_ROLE_KEY',
+    // Image fallbacks
+    'CF_ACCOUNT_ID', 'CF_API_TOKEN',
+    'GOOGLE_AI_KEY',
+    'IMAGE_PROVIDER',
+    'POLLINATIONS_TOKEN',
+    // R2 video storage
+    'R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY',
+    'R2_BUCKET_RENDERED', 'R2_BUCKET_INBOX', 'R2_PUBLIC_BASE_URL',
+    // Stock footage
+    'PEXELS_API_KEY', 'PIXABAY_API_KEY', 'NEWSAPI_KEY',
+    // Facebook — news
+    'FB_PAGE_ID_FR', 'FB_ACCESS_TOKEN_FR',
+    'FB_PAGE_ID_IT', 'FB_ACCESS_TOKEN_IT',
+    // Facebook — video
+    'FB_PAGE_ID_NATURE_PULSE', 'FB_ACCESS_TOKEN_NATURE_PULSE',
+    'FB_PAGE_ID_NATURE_FRAME', 'FB_ACCESS_TOKEN_NATURE_FRAME',
+    // Instagram
+    'IG_ACCESS_TOKEN_NATURE_PULSE', 'IG_USER_ID_NATURE_PULSE',
+    'IG_ACCESS_TOKEN_NATURE_FRAME', 'IG_USER_ID_NATURE_FRAME',
+    // YouTube
+    'YT_CLIENT_ID_NATURE_PULSE', 'YT_CLIENT_SECRET_NATURE_PULSE', 'YT_REFRESH_TOKEN_NATURE_PULSE',
+    'YT_CLIENT_ID_NATURE_FRAME', 'YT_CLIENT_SECRET_NATURE_FRAME', 'YT_REFRESH_TOKEN_NATURE_FRAME',
+    // TikTok
+    'TT_CLIENT_KEY_NATURE_PULSE', 'TT_CLIENT_SECRET_NATURE_PULSE', 'TT_ACCESS_TOKEN_NATURE_PULSE',
+    'TT_CLIENT_KEY_NATURE_FRAME', 'TT_CLIENT_SECRET_NATURE_FRAME', 'TT_ACCESS_TOKEN_NATURE_FRAME',
+  ],
+};

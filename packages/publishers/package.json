@@ -1,0 +1,16 @@
+{
+  "name": "@content-platform/publishers",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./facebook": "./facebook.js",
+    "./instagram": "./instagram.js",
+    "./youtube": "./youtube.js",
+    "./tiktok": "./tiktok.js"
+  },
+  "dependencies": {
+    "@content-platform/config": "*"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@content-platform/render-core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./engine": "./engine.js",
+    "./timeline": "./timeline.js"
+  },
+  "dependencies": {
+    "@content-platform/types": "*"
+  }
+}

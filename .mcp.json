@@ -1,0 +1,59 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase",
+        "--access-token",
+        "${SUPABASE_MCP_TOKEN}"
+      ],
+      "env": {}
+    },
+    "github": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm", "--network=host",
+        "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "-e", "GITHUB_TOOLSETS=repos,issues,pull_requests,actions,code_security,context",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp", "--api-key", "${CONTEXT7_API_KEY}"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {
+        "DISABLE_THOUGHT_LOGGING": "false"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/jayam/projects/personal/content-platform"
+      ],
+      "env": {}
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {}
+    }
+  },
+  "_notes": {
+    "higgsfield": "Higgsfield is a claude.ai-hosted OAuth MCP — available automatically in all claude.ai/code sessions. No local config required.",
+    "notion": "Notion MCP is in the user-level global config (~/.config/claude-code/mcp.json) and inherits into all projects.",
+    "playwright": "Playwright MCP is in the user-level global config and inherits automatically."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@content-platform/ai",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "claude.js",
+  "exports": {
+    ".": "./claude.js",
+    "./prompts": "./prompts.js",
+    "./image-gen": "./image-gen/index.js",
+    "./image-gen/fal": "./image-gen/fal.js",
+    "./image-gen/cloudflare": "./image-gen/cloudflare.js",
+    "./image-gen/google": "./image-gen/google.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@content-platform/config": "*"
+  }
+}

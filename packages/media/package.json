@@ -1,0 +1,14 @@
+{
+  "name": "@content-platform/media",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./tts": "./tts.js",
+    "./subtitles": "./subtitles.js",
+    "./composite": "./composite.js",
+    "./storage": "./storage.js"
+  },
+  "dependencies": {
+    "@content-platform/config": "*"
+  }
+}

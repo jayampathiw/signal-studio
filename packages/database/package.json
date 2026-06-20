@@ -1,0 +1,14 @@
+{
+  "name": "@content-platform/database",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./supabase.js",
+    "./articles": "./articles.js",
+    "./content-items": "./content-items.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "@content-platform/config": "*"
+  }
+}

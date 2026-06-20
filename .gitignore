@@ -1,0 +1,42 @@
+# Environment
+.env
+.env.local
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+apps/dashboard/dist/
+
+# Render caches & outputs
+output/
+/tmp/documentary/
+/tmp/reels/
+**/.remotion/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# Eval traces (generated, not committed)
+evals/traces/
+evals/scorecards/
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,24 @@
+{
+  "name": "@content-platform/news",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/pipeline.js",
+  "scripts": {
+    "start": "node src/pipeline.js",
+    "fetch": "node src/pipeline.js",
+    "generate-caption": "node src/scripts/generate-caption.js",
+    "generate-image": "node src/scripts/generate-image.js",
+    "publish-slot": "node src/scripts/publish-slot.js",
+    "recompute-scores": "node src/scripts/recompute-scores.js"
+  },
+  "dependencies": {
+    "@content-platform/ai": "*",
+    "@content-platform/config": "*",
+    "@content-platform/database": "*",
+    "@content-platform/publishers": "*",
+    "@content-platform/types": "*",
+    "rss-parser": "^3.13.0",
+    "fast-xml-parser": "^4.0.0",
+    "node-fetch": "^3.0.0"
+  }
+}

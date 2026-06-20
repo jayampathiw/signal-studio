@@ -1,0 +1,10 @@
+{
+  "name": "@content-platform/config",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "env.js",
+  "exports": {
+    ".": "./env.js",
+    "./schema": "./schema.js"
+  }
+}
