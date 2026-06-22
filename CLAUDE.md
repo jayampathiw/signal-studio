@@ -1,4 +1,4 @@
-# content-platform — Claude Code Guide
+# signal-studio — Claude Code Guide
 
 ## What this is
 
@@ -16,15 +16,15 @@ Monorepo for a multi-channel AI content publishing platform. Consolidated from `
 
 | Package | Import | Does |
 |---|---|---|
-| `@content-platform/ai` | `packages/ai/` | Claude client + image-gen provider chain |
-| `@content-platform/render-core` | `packages/render/core/` | Engine interface + `render()` |
-| `@content-platform/render-ffmpeg` | `packages/render/ffmpeg/` | FFmpeg + Ken Burns + concat |
-| `@content-platform/render-remotion` | `packages/render/remotion/` | Remotion (React/TS) compositions |
-| `@content-platform/media` | `packages/media/` | Kokoro TTS, Whisper subtitles, R2 storage |
-| `@content-platform/database` | `packages/database/` | Supabase client + CRUD |
-| `@content-platform/publishers` | `packages/publishers/` | Facebook / IG / YT / TT |
-| `@content-platform/config` | `packages/config/` | Root .env loader + validation |
-| `@content-platform/types` | `packages/types/` | Shared JSDoc typedefs |
+| `@signal-studio/ai` | `packages/ai/` | Claude client + image-gen provider chain |
+| `@signal-studio/render-core` | `packages/render/core/` | Engine interface + `render()` |
+| `@signal-studio/render-ffmpeg` | `packages/render/ffmpeg/` | FFmpeg + Ken Burns + concat |
+| `@signal-studio/render-remotion` | `packages/render/remotion/` | Remotion (React/TS) compositions |
+| `@signal-studio/media` | `packages/media/` | Kokoro TTS, Whisper subtitles, R2 storage |
+| `@signal-studio/database` | `packages/database/` | Supabase client + CRUD |
+| `@signal-studio/publishers` | `packages/publishers/` | Facebook / IG / YT / TT |
+| `@signal-studio/config` | `packages/config/` | Root .env loader + validation |
+| `@signal-studio/types` | `packages/types/` | Shared JSDoc typedefs |
 
 ## AI / Claude integration
 

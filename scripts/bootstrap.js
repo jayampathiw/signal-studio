@@ -22,14 +22,14 @@ const packages = ['ai', 'render/core', 'render/ffmpeg', 'media', 'database', 'pu
 for (const pkg of packages) {
   check(
     `packages/${pkg} linked`,
-    existsSync(resolve('node_modules/@content-platform', pkg.replace('/', '-').replace('render-', 'render-'))),
+    existsSync(resolve('node_modules/@signal-studio', pkg.replace('/', '-').replace('render-', 'render-'))),
     `Run: npm install (workspace linking)`
   );
 }
 
 const allPass = checks.every((c) => c.pass);
 
-console.log('\n━━━ content-platform bootstrap check ━━━\n');
+console.log('\n━━━ signal-studio bootstrap check ━━━\n');
 for (const { label, pass, hint } of checks) {
   const icon = pass ? '✅' : '❌';
   console.log(`  ${icon}  ${label}`);

@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/ai",
+  "name": "@signal-studio/ai",
   "version": "0.1.0",
   "type": "module",
   "main": "claude.js",
@@ -13,6 +13,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "@content-platform/config": "*"
+    "@signal-studio/config": "*"
   }
 }

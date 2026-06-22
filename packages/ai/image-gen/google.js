@@ -1,4 +1,4 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 /**
  * Generate an image using Google AI Studio (last-resort fallback).

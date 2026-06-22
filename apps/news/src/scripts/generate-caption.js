@@ -1,4 +1,4 @@
-import { getArticleById, updateArticle, getRecentSeedComments, getPillarWeeklyCounts } from '@content-platform/database/articles';
+import { getArticleById, updateArticle, getRecentSeedComments, getPillarWeeklyCounts } from '@signal-studio/database/articles';
 import { generateCaption, generateImagePrompt, formatImagePrompt, generateSEOContent } from '../services/ai.js';
 import { SOURCES } from '../config/sources.js';
 import { computePublishScore } from '../enrich/publishScore.js';

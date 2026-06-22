@@ -12,7 +12,7 @@
 
 import { existsSync } from 'fs';
 import { resolve } from 'path';
-import { getContentItem } from '@content-platform/database/content-items';
+import { getContentItem } from '@signal-studio/database/content-items';
 import { getChannel } from '../config/channels.js';
 
 const SEP  = '═'.repeat(64);

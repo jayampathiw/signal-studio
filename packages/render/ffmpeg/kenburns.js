@@ -7,7 +7,7 @@ const execFileAsync = promisify(execFile);
  * Render one scene to an MP4 clip.
  * Static images get a Ken Burns (zoompan) animation; video clips pass through.
  *
- * @param {import('@content-platform/types/timeline').TimelineScene} scene
+ * @param {import('@signal-studio/types/timeline').TimelineScene} scene
  * @param {string} outputPath
  * @returns {Promise<string>}
  */

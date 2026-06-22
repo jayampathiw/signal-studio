@@ -1,8 +1,8 @@
 // News-specific AI functions — caption, SEO, image prompt, On This Day.
-// Uses the shared @content-platform/ai client and model; adds news-domain prompting on top.
+// Uses the shared @signal-studio/ai client and model; adds news-domain prompting on top.
 import Anthropic from '@anthropic-ai/sdk';
-import { env } from '@content-platform/config';
-import { MODEL, parseResponse } from '@content-platform/ai';
+import { env } from '@signal-studio/config';
+import { MODEL, parseResponse } from '@signal-studio/ai';
 
 let _client = null;
 function getClient() {

@@ -1,4 +1,4 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 const CF_MODEL = '@cf/black-forest-labs/flux-1-schnell';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/news",
+  "name": "@signal-studio/news",
   "version": "0.1.0",
   "type": "module",
   "main": "src/pipeline.js",
@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
-    "@content-platform/ai": "*",
-    "@content-platform/config": "*",
-    "@content-platform/database": "*",
-    "@content-platform/publishers": "*",
-    "@content-platform/types": "*",
+    "@signal-studio/ai": "*",
+    "@signal-studio/config": "*",
+    "@signal-studio/database": "*",
+    "@signal-studio/publishers": "*",
+    "@signal-studio/types": "*",
     "axios": "^1.7.0",
     "form-data": "^4.0.0",
     "rss-parser": "^3.13.0",

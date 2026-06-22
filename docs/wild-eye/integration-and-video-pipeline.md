@@ -1,6 +1,6 @@
 # Wild Capture (Wild Eye) — Integration & Higgsfield Video Pipeline
 
-> **Wild Capture** Facebook page (creative brand **Wild Eye**, `@WildEyePOV`) integrated into the `content-platform` monorepo with a Higgsfield video-generation pipeline.
+> **Wild Capture** Facebook page (creative brand **Wild Eye**, `@WildEyePOV`) integrated into the `signal-studio` monorepo with a Higgsfield video-generation pipeline.
 >
 > **Status: fully implemented and deployed.** Migration applied to Supabase project `nnxtvbolhuvihlpwppbj` on 2026-06-21.
 > Page: `facebook.com/profile.php?id=61589970296554`
@@ -232,7 +232,7 @@ Best for: new concepts, ideation, quality-sensitive reels, clearing blocked thre
 
 **Why not Higgsfield HTTP MCP:** the `mcp.higgsfield.ai/mcp` endpoint requires an interactive browser OAuth round-trip on first auth — it is not headless-capable. The Higgsfield CLI (`@higgsfield/cli`) is the documented automation path; it authenticates once via OAuth, stores a long-lived token, and runs entirely headlessly. No separate payment — the Max plan covers CLI generation from the same credit pool.
 
-**Platform:** GitHub Actions on `reel-pipeline` (public repo) — free unlimited runner minutes. `content-platform` (private) is checked out at runtime via a read-only SSH deploy key. All communication is cloud-to-cloud; the local machine is completely uninvolved after one-time setup.
+**Platform:** GitHub Actions on `reel-pipeline` (public repo) — free unlimited runner minutes. `signal-studio` (private) is checked out at runtime via a read-only SSH deploy key. All communication is cloud-to-cloud; the local machine is completely uninvolved after one-time setup.
 
 **Higgsfield skills:** official `higgsfield-ai/skills` package replaces the custom `higgsfield-storyboard`, `higgsfield-scene-video`, and `virality-gate` skills. The official `higgsfield:generate` skill handles model selection, job polling (`--wait`), auto-upload, and virality prediction. Wild Eye domain skills (`wild-eye-reel`, `higgsfield-credit-guard`, `continuity-checker`, `seo-writer`) remain and wrap around it.
 
@@ -261,7 +261,7 @@ See `docs/cloud-automation-workflow.md §2` for the full tier definitions. Wild 
 |---|------|------|----------|---------|
 | 0 | `higgsfield:generate` | Official skill | MUST | both — replaces #2, #3, #14 below |
 
-#### Tier 2 — Platform (Signal Studio) skills + Tier 3 — Wild Eye channel skills (in `.claude/` — content-platform)
+#### Tier 2 — Platform (Signal Studio) skills + Tier 3 — Wild Eye channel skills (in `.claude/` — signal-studio)
 | # | Tier | Name | Type | File path | Priority | Used by | Status |
 |---|------|------|------|-----------|----------|---------|--------|
 | 1 | T3 | `wild-eye-reel` | Skill | `.claude/skills/wild-eye-reel/SKILL.md` | MUST | both | UPDATE — rewire to call `higgsfield:generate` |

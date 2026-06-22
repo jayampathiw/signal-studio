@@ -1,8 +1,8 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 import { SOURCES } from './config/sources.js';
 import { fetchRSSFeeds } from './ingestion/rss.js';
 import { fetchNewsAPI } from './ingestion/newsapi.js';
-import { saveArticles, getRecentArticleTitles, getRecentArticlesForClustering } from '@content-platform/database/articles';
+import { saveArticles, getRecentArticleTitles, getRecentArticlesForClustering } from '@signal-studio/database/articles';
 import { deduplicate, similarity, detectAndAnnotateClusters } from './enrich/dedup.js';
 import { validateArticle } from './validators/contentValidator.js';
 

@@ -1,4 +1,4 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 // TODO: implement Instagram Graph API publish (deferred — pages not yet created)
 // Reference: reels-pipeline/src/services/publishers/instagram.js

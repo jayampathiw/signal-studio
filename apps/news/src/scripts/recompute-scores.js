@@ -1,6 +1,6 @@
-import { env } from '@content-platform/config';
-import { getClient } from '@content-platform/database';
-import { getPillarWeeklyCounts, updateArticle } from '@content-platform/database/articles';
+import { env } from '@signal-studio/config';
+import { getClient } from '@signal-studio/database';
+import { getPillarWeeklyCounts, updateArticle } from '@signal-studio/database/articles';
 import { computePublishScore, computeEditorialScore } from '../enrich/publishScore.js';
 import { SLOTS } from '../config/slots.js';
 import { tagArticle } from '../enrich/tagArticle.js';

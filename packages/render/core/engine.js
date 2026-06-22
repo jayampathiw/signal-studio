@@ -10,7 +10,7 @@
 
 /**
  * @callback RenderFn
- * @param {import('@content-platform/types/timeline').Timeline} timeline
+ * @param {import('@signal-studio/types/timeline').Timeline} timeline
  * @param {{ outputDir: string }} opts
  * @returns {Promise<string>} absolute path to the rendered MP4
  */

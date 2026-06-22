@@ -1,10 +1,10 @@
 {
-  "name": "@content-platform/render-ffmpeg",
+  "name": "@signal-studio/render-ffmpeg",
   "version": "0.1.0",
   "type": "module",
   "main": "index.js",
   "dependencies": {
-    "@content-platform/render-core": "*",
-    "@content-platform/types": "*"
+    "@signal-studio/render-core": "*",
+    "@signal-studio/types": "*"
   }
 }

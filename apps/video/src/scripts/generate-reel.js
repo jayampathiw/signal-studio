@@ -8,12 +8,12 @@
 //
 // Usage: node apps/video/src/scripts/generate-reel.js <id> [<id> ...]
 
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 import { basename } from 'path';
 import { getChannel } from '../config/channels.js';
-import { getContentItem, updateContentItem } from '@content-platform/database/content-items';
+import { getContentItem, updateContentItem } from '@signal-studio/database/content-items';
 import { generateReelContent } from '../services/ai.js';
-import { uploadToR2 } from '@content-platform/media/storage';
+import { uploadToR2 } from '@signal-studio/media/storage';
 import { renderReel } from '../renderers/reel.js';
 
 async function processOne(id) {

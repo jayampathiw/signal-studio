@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises';
 import axios from 'axios';
 import FormData from 'form-data';
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 const FB_BASE = 'https://graph.facebook.com/v22.0';
 

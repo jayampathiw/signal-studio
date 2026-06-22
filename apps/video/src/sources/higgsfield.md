@@ -54,7 +54,7 @@ When `job_status` returns `blocked` or a rights-verification warning:
 1. Call `mcp__claude_ai_higgsfield__reveal_generation` with the job ID
 2. Wait ~5 seconds
 3. Re-poll `job_status`
-4. If still blocked after 2 retries: mark `scene_status = 'blocked'`, set `open_thread`, STOP.
+4. If still blocked after 2 retries: mark `scene_status = 'blocked'`, set `status_note`, STOP.
 
 In interactive mode: the blocked generation may also appear under "rights verification required" at `higgsfield.ai` → video generation tab. The user can confirm rights there and the result will then show in Claude.
 

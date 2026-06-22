@@ -1,4 +1,4 @@
-# @content-platform/dashboard
+# @signal-studio/dashboard
 
 Angular 17 review dashboard — deployed on Vercel at https://dashboard-alpha-one-47.vercel.app
 

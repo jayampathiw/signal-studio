@@ -1,4 +1,4 @@
-# @content-platform/news
+# @signal-studio/news
 
 News article pipeline. Fetches from RSS feeds + NewsAPI, generates Claude captions + SEO + image prompts via fal.ai, stores in Supabase, posts to Facebook (FR, IT — expandable).
 

@@ -39,7 +39,7 @@ These skills know nothing about your content strategy, house rules, or channels.
 ### Tier 2 — Content-Platform (Signal Studio) Skills
 | Property | Detail |
 |---|---|
-| Source | `content-platform` repo → `.claude/skills/` and `.claude/agents/` |
+| Source | `signal-studio` repo → `.claude/skills/` and `.claude/agents/` |
 | Scope | Platform-wide rules applicable to **all channels** |
 | Maintained by | Signal Studio team |
 
@@ -54,7 +54,7 @@ These skills know nothing about your content strategy, house rules, or channels.
 ### Tier 3 — Channel / Page Skills
 | Property | Detail |
 |---|---|
-| Source | `content-platform` repo → `.claude/skills/` (prefix: `<channel>-`) |
+| Source | `signal-studio` repo → `.claude/skills/` (prefix: `<channel>-`) |
 | Scope | Rules and orchestration for **one specific channel** |
 | Maintained by | Signal Studio team (per channel) |
 
@@ -108,7 +108,7 @@ reel-pipeline (public — GitHub Actions host)
   └── scripts/
         └── runner.sh             ← thin shell wrapper
 
-content-platform (private — checked out at runtime via deploy key)
+signal-studio (private — checked out at runtime via deploy key)
   ├── .claude/skills/             ← Tier 2 + Tier 3 skills
   ├── .claude/agents/             ← Tier 2 agents
   ├── apps/video/knowledge/       ← per-channel knowledge files
@@ -129,14 +129,14 @@ GitHub Actions trigger
 ubuntu-latest runner (GitHub cloud — zero local involvement)
   │
   ├── checkout reel-pipeline
-  ├── checkout content-platform → /workspace/content  (deploy key)
+  ├── checkout signal-studio → /workspace/content  (deploy key)
   ├── npm install -g @anthropic-ai/claude-code @higgsfield/cli
   ├── npx skills add higgsfield-ai/skills              (Tier 1)
   └── restore HIGGSFIELD_AUTH_TOKEN → ~/.higgsfield/credentials
   │
   ▼
 claude --print "run <channel>-reel skill for oldest status=brief row in channel <channel-key>"
-  (Claude Code CLI loads .claude/skills/ from content-platform checkout)
+  (Claude Code CLI loads .claude/skills/ from signal-studio checkout)
   │
   ▼
 <channel>-reel skill (Tier 3) orchestrates:
@@ -204,7 +204,7 @@ Two secrets are created once, stored in GitHub Actions, and never touched again:
 | Higgsfield CLI token | `npm install -g @higgsfield/cli` → `higgsfield auth login` (browser OAuth once) → copy token from `~/.higgsfield/credentials` | `HIGGSFIELD_AUTH_TOKEN` |
 | Anthropic API key | console.anthropic.com → API Keys | `ANTHROPIC_API_KEY` |
 | Supabase management token | supabase.com → Account Settings → Access Tokens → Generate | `SUPABASE_MCP_TOKEN` |
-| content-platform deploy key | `ssh-keygen` → public key added to content-platform repo → Deploy Keys | `CONTENT_PLATFORM_DEPLOY_KEY` |
+| signal-studio deploy key | `ssh-keygen` → public key added to signal-studio repo → Deploy Keys | `SIGNAL_STUDIO_DEPLOY_KEY` |
 
 After this one-time setup, **every generation run is fully automated with zero local involvement.**
 

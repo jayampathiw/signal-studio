@@ -3,7 +3,7 @@
 // Usage: node apps/video/src/scripts/publish.js <id> [<id> ...]
 
 import { getChannel } from '../config/channels.js';
-import { getContentItem, updateContentItem } from '@content-platform/database/content-items';
+import { getContentItem, updateContentItem } from '@signal-studio/database/content-items';
 import { publishToAll } from '../publishers/index.js';
 import { platformStatusCols } from '../utils/content-item.js';
 

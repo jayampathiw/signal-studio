@@ -43,7 +43,7 @@ Always return a JSON object:
 
 - `severity: 'none'` → `approvedToProceed: true`, no conflicts
 - `severity: 'soft'` → `approvedToProceed: true` if the suggested fix is applied to the prompt before video gen; flag for human review in interactive mode
-- `severity: 'hard'` → `approvedToProceed: false`; the orchestrator must set `open_thread` and stop until resolved
+- `severity: 'hard'` → `approvedToProceed: false`; the orchestrator must set `status_note` and stop until resolved
 
 ## Golden rule
 **If a predator "shouldn't notice" the prey but the generated frame shows it clearly looking at the prey — that is a hard conflict.** Do not silently proceed. This exact scenario (C-09: fox-spots-cavy) is the reference case this checker exists to catch.

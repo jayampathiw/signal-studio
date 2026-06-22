@@ -1,7 +1,7 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { readFileSync } from 'fs';
 import { basename } from 'path';
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 let _r2 = null;
 

@@ -5,7 +5,7 @@
 //   node apps/video/src/scripts/ingest.js wildlife/factual/EN
 
 import { getChannel } from '../config/channels.js';
-import { insertContentItem } from '@content-platform/database/content-items';
+import { insertContentItem } from '@signal-studio/database/content-items';
 import { newContentItem } from '../utils/content-item.js';
 import { pickTopic, TOPIC_FIRST_MODES } from '../services/ai.js';
 import * as pexels from '../fetchers/pexels.js';

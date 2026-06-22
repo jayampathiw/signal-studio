@@ -1,4 +1,4 @@
-import { getArticleById, updateArticle } from '@content-platform/database/articles';
+import { getArticleById, updateArticle } from '@signal-studio/database/articles';
 import { generateImagePrompt, formatImagePrompt } from '../services/ai.js';
 import { SOURCES } from '../config/sources.js';
 

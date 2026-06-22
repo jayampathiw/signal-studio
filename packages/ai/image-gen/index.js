@@ -1,4 +1,4 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 import { generateWithFal } from './fal.js';
 import { generateWithCloudflare } from './cloudflare.js';
 import { generateWithGoogle } from './google.js';

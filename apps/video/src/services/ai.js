@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { env } from '@content-platform/config';
-import { MODEL as DEFAULT_MODEL, parseResponse, extractJson } from '@content-platform/ai';
+import { env } from '@signal-studio/config';
+import { MODEL as DEFAULT_MODEL, parseResponse, extractJson } from '@signal-studio/ai';
 
 let _client = null;
 function getClient() {

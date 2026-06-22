@@ -3,11 +3,11 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Anthropic from '@anthropic-ai/sdk';
-import { env } from '@content-platform/config';
-import { getServiceClient } from '@content-platform/database';
-import { extractJson } from '@content-platform/ai';
+import { env } from '@signal-studio/config';
+import { getServiceClient } from '@signal-studio/database';
+import { extractJson } from '@signal-studio/ai';
 import { getChannel } from '../src/config/channels.js';
-import { createBrief, listRecentBriefs } from '@content-platform/database/briefs';
+import { createBrief, listRecentBriefs } from '@signal-studio/database/briefs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 export async function fetchNewsAPI(query, language, country) {
   if (!env.NEWSAPI_KEY) {

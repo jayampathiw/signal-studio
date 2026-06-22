@@ -21,4 +21,4 @@ The skill first calls `wild-eye-brief` to create the `content_items` row, then i
 3. Final reel summary before `status='rendered'` is written
 
 **On conflicts/blocks:**
-If continuity-checker flags a conflict, generation stops and you see the `open_thread` description. Resolve it in this session or run `/new-wild-reel [id]` again after the DB is updated.
+If continuity-checker flags a conflict, generation stops and you see the `status_note` description. Resolve it in this session or run `/new-wild-reel [id]` again after the DB is updated.

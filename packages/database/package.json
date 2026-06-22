@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/database",
+  "name": "@signal-studio/database",
   "version": "0.1.0",
   "type": "module",
   "exports": {
@@ -11,6 +11,6 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
-    "@content-platform/config": "*"
+    "@signal-studio/config": "*"
   }
 }

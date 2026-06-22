@@ -1,4 +1,4 @@
-import { registerEngine } from '@content-platform/render-core/engine';
+import { registerEngine } from '@signal-studio/render-core/engine';
 import { buildSceneClip } from './kenburns.js';
 import { concatClips } from './concat.js';
 import { join } from 'path';
@@ -8,7 +8,7 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
-/** @type {import('@content-platform/render-core/engine').RenderEngine} */
+/** @type {import('@signal-studio/render-core/engine').RenderEngine} */
 const ffmpegEngine = {
   name: 'ffmpeg',
 

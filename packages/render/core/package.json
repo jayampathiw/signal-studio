@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/render-core",
+  "name": "@signal-studio/render-core",
   "version": "0.1.0",
   "type": "module",
   "main": "index.js",
@@ -9,6 +9,6 @@
     "./timeline": "./timeline.js"
   },
   "dependencies": {
-    "@content-platform/types": "*"
+    "@signal-studio/types": "*"
   }
 }

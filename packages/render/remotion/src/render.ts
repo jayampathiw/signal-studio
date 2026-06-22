@@ -1,7 +1,7 @@
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
-import { registerEngine } from '@content-platform/render-core/engine';
-import type { Timeline } from '@content-platform/types/timeline';
+import { registerEngine } from '@signal-studio/render-core/engine';
+import type { Timeline } from '@signal-studio/types/timeline';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
 

@@ -4,7 +4,7 @@ export { registerEngine, getEngine } from './engine.js';
  * Render a Timeline to an MP4 using the specified engine.
  * The engine must have been registered (imported) before calling this.
  *
- * @param {import('@content-platform/types/timeline').Timeline} timeline
+ * @param {import('@signal-studio/types/timeline').Timeline} timeline
  * @param {{ engine: string, outputDir: string }} opts
  * @returns {Promise<string>} path to rendered MP4
  */

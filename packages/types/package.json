@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/types",
+  "name": "@signal-studio/types",
   "version": "0.1.0",
   "type": "module",
   "exports": {

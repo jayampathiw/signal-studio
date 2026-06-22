@@ -76,7 +76,7 @@ Generate the storyboard image:
 - **Interactive:** `mcp__claude_ai_higgsfield__generate_image`
 
 **Interactive mode:** show storyboard inline, wait for human approval. Allow edits → revise Step 2 prompts → regenerate (one image, not N videos).
-**Cloud mode:** invoke `continuity-checker` agent on the storyboard layout. Any `hard` conflict or missing cavy → `status = 'blocked'`, `open_thread = 'storyboard: <conflict>'`, STOP.
+**Cloud mode:** invoke `continuity-checker` agent on the storyboard layout. Any `hard` conflict or missing cavy → `status = 'blocked'`, `status_note = 'storyboard: <conflict>'`, STOP.
 
 Write storyboard URL to scene 1 and update status:
 ```sql
@@ -101,7 +101,7 @@ For each scene in order (n=1, 2, 3):
 - Reference: `prevFinalFrameUrl` (the previous scene's `final_frame_url`) — this IS the continuity mechanism
 - **Cloud:** `higgsfield:generate --type image --reference <prevFinalFrameUrl> --resolution 2K --wait`
 - **Interactive:** `mcp__claude_ai_higgsfield__generate_image` with reference image set to `prevFinalFrameUrl`
-- Blocked/rights: call `reveal_generation` or `higgsfield generate reveal`, wait 5s, retry once. After 2 failures → write `scene_status = 'blocked'` to scenes jsonb, set `status = 'blocked'`, `open_thread = 'scene N image blocked: <reason>'`, STOP.
+- Blocked/rights: call `reveal_generation` or `higgsfield generate reveal`, wait 5s, retry once. After 2 failures → write `scene_status = 'blocked'` to scenes jsonb, set `status = 'blocked'`, `status_note = 'scene N image blocked: <reason>'`, STOP.
 - **Write to DB immediately after success** (do not wait for video):
   ```sql
   UPDATE content_items
@@ -117,14 +117,14 @@ For each scene in order (n=1, 2, 3):
 - `startFrame`: `scene.start_frame_url`
 - `scenePrompt`: `scene.video_prompt`
 - `prevFinalFrame`: `prevFinalFrameUrl` (omit for scene n=1)
-- `none` → proceed | `soft` → log in open_thread but proceed (cloud) | `hard` → `status = 'blocked'`, `open_thread = 'scene N continuity: <reason>'`, STOP
+- `none` → proceed | `soft` → log in status_note but proceed (cloud) | `hard` → `status = 'blocked'`, `status_note = 'scene N continuity: <reason>'`, STOP
 
 **e. Video generation (SKIP for portrait format — terminal state is `image_done`):**
 - Build prompt string from `video_prompt` fields in order: composition, style, cameraMotion, subjects, action, location, audioCues, lighting, durationSec
 - Start image: `scene.start_frame_url`; model: Seedance 2.0; natural audio ON, NO music score
 - **Cloud:** `higgsfield:generate --type video --start-image <startFrameUrl> --model seedance-2 --duration <durationSec> --resolution 720p --wait`
 - **Interactive:** `mcp__claude_ai_higgsfield__generate_video` with start image and structured prompt at 1080p
-- Blocked handling: same as step (c) — reveal → retry → `scene_status = 'blocked'` + `status = 'blocked'` + `open_thread`.
+- Blocked handling: same as step (c) — reveal → retry → `scene_status = 'blocked'` + `status = 'blocked'` + `status_note`.
 - **Write to DB immediately after success:**
   ```sql
   UPDATE content_items

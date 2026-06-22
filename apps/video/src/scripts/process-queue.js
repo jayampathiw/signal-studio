@@ -7,7 +7,7 @@
 import { spawn } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getClient } from '@content-platform/database';
+import { getClient } from '@signal-studio/database';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const INGEST    = resolve(__dirname, 'ingest.js');

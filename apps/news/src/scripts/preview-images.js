@@ -1,10 +1,10 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 import { mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 import axios from 'axios';
-import { getClient } from '@content-platform/database';
+import { getClient } from '@signal-studio/database';
 import { compositeImage } from '../enrich/imageComposite.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

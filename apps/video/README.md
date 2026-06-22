@@ -1,4 +1,4 @@
-# @content-platform/video
+# @signal-studio/video
 
 Unified video pipeline — produces 9:16 short-form reels and documentaries using either the FFmpeg engine (stock footage + Kokoro TTS + Whisper) or the Remotion engine (React/TS compositions, AI-image mode).
 

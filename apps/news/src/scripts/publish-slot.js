@@ -1,12 +1,12 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 import FormData from 'form-data';
 import axios from 'axios';
 import { getSlotsForDate, logBoostEligibleWindowStart } from '../config/slots.js';
-import { postVideoToFacebook } from '@content-platform/publishers/facebook';
-import { getPendingArticlesSortedByScore, getFirstBoostIneligiblePostedIT, updateArticle } from '@content-platform/database/articles';
+import { postVideoToFacebook } from '@signal-studio/publishers/facebook';
+import { getPendingArticlesSortedByScore, getFirstBoostIneligiblePostedIT, updateArticle } from '@signal-studio/database/articles';
 import { nearestSlot } from '../enrich/publishScore.js';
 import { compositeImage } from '../enrich/imageComposite.js';
 

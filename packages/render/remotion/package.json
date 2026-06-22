@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/render-remotion",
+  "name": "@signal-studio/render-remotion",
   "version": "0.1.0",
   "type": "module",
   "main": "src/render.ts",
@@ -13,8 +13,8 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@content-platform/render-core": "*",
-    "@content-platform/types": "*"
+    "@signal-studio/render-core": "*",
+    "@signal-studio/types": "*"
   },
   "scripts": {
     "studio": "npx remotion studio src/Root.tsx"

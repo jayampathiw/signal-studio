@@ -1,4 +1,4 @@
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 const FAL_API = 'https://queue.fal.run';
 const DEFAULT_MODEL = 'fal-ai/recraft-v3';

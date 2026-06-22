@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/publishers",
+  "name": "@signal-studio/publishers",
   "version": "0.1.0",
   "type": "module",
   "main": "index.js",
@@ -11,7 +11,7 @@
     "./tiktok": "./tiktok.js"
   },
   "dependencies": {
-    "@content-platform/config": "*",
+    "@signal-studio/config": "*",
     "axios": "^1.7.0",
     "form-data": "^4.0.0"
   }

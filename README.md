@@ -1,4 +1,4 @@
-# content-platform
+# signal-studio
 
 Multi-channel AI content publishing platform. Produces news articles (text + editorial image), short-form video reels (stock footage + AI-image modes), and documentaries across Facebook, Instagram, YouTube, and TikTok.
 

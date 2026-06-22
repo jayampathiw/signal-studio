@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from '@content-platform/config';
+import { env } from '@signal-studio/config';
 
 const PEXELS_BASE = 'https://api.pexels.com/videos';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@content-platform/media",
+  "name": "@signal-studio/media",
   "version": "0.1.0",
   "type": "module",
   "exports": {
@@ -9,6 +9,6 @@
     "./storage": "./storage.js"
   },
   "dependencies": {
-    "@content-platform/config": "*"
+    "@signal-studio/config": "*"
   }
 }
