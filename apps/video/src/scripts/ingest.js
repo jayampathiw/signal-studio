@@ -20,6 +20,9 @@ async function main() {
   }
 
   const channel = getChannel(channelKey);
+  if (!channel.fetchers) {
+    throw new Error(`Channel "${channelKey}" uses source="${channel.source}" and is not supported by ingest.js. Use the channel skill instead.`);
+  }
   console.log(`[ingest] channel: ${channelKey} (${channel.style} mode)`);
 
   // Topic-first: pick a specific animal + angle before fetching clips.

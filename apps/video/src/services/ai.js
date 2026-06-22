@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '@content-platform/config';
-import { MODEL as DEFAULT_MODEL, parseResponse } from '@content-platform/ai';
+import { MODEL as DEFAULT_MODEL, parseResponse, extractJson } from '@content-platform/ai';
 
 let _client = null;
 function getClient() {
@@ -15,16 +15,6 @@ function getClient() {
 
 // Allow per-run model override via env var; otherwise use the shared canonical model.
 const MODEL = env.ANTHROPIC_MODEL || DEFAULT_MODEL;
-
-function extractJson(text) {
-  if (!text) return null;
-  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const candidate = fence ? fence[1] : text;
-  const start = candidate.indexOf('{');
-  const end   = candidate.lastIndexOf('}');
-  if (start < 0 || end < 0 || end <= start) return null;
-  return candidate.slice(start, end + 1).trim();
-}
 
 export const TOPIC_FIRST_MODES = new Set(['factual', 'listicle']);
 

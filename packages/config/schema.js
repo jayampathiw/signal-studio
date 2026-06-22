@@ -6,6 +6,7 @@ export const schema = {
   required: [
     'SUPABASE_URL',
     'SUPABASE_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
     'ANTHROPIC_KEY',
     'FAL_KEY',
   ],
@@ -13,8 +14,6 @@ export const schema = {
     // Claude routing
     'ANTHROPIC_BASE_URL',
     'ANTHROPIC_MODEL',
-    // Supabase
-    'SUPABASE_SERVICE_ROLE_KEY',
     // Image fallbacks
     'CF_ACCOUNT_ID', 'CF_API_TOKEN',
     'GOOGLE_AI_KEY',
@@ -31,6 +30,7 @@ export const schema = {
     // Facebook — video
     'FB_PAGE_ID_NATURE_PULSE', 'FB_ACCESS_TOKEN_NATURE_PULSE',
     'FB_PAGE_ID_NATURE_FRAME', 'FB_ACCESS_TOKEN_NATURE_FRAME',
+    'FB_PAGE_ID_WILD_CAPTURE', 'FB_ACCESS_TOKEN_WILD_CAPTURE',
     // Instagram
     'IG_ACCESS_TOKEN_NATURE_PULSE', 'IG_USER_ID_NATURE_PULSE',
     'IG_ACCESS_TOKEN_NATURE_FRAME', 'IG_USER_ID_NATURE_FRAME',

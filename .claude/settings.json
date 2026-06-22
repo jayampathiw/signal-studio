@@ -25,6 +25,26 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node apps/video/scripts/safe-language-lint.mjs"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node apps/video/scripts/safe-language-lint.mjs"
+          }
+        ]
+      }
     ]
   }
 }

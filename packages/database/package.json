@@ -6,7 +6,8 @@
     ".": "./supabase.js",
     "./articles": "./articles.js",
     "./content-items": "./content-items.js",
-    "./reels-log": "./reels-log.js"
+    "./reels-log": "./reels-log.js",
+    "./briefs": "./briefs.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",

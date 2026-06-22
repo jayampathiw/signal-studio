@@ -113,6 +113,57 @@ export const CHANNELS = {
     pageName: 'NatureFrame',
   },
 
+  // ── Wild Capture — Wild Eye (Higgsfield MCP, AI-generated documentary) ────
+  //
+  // Source and renderer are both 'higgsfield'. This channel is NOT driven by
+  // the Pexels ingest path. A Claude agent (interactive or cloud-deployed)
+  // calls Higgsfield MCP tools to generate every frame via a storyboard-first
+  // workflow. The `formats` map replaces rendererConfig — each key is a
+  // house-style formula selectable per content item via the `format` column.
+
+  'wildlife/intimacy/EN': {
+    niche: 'wildlife',
+    style: 'intimacy',
+    language: 'EN',
+    contentLanguage: 'English',
+    source: 'higgsfield',
+    renderer: 'higgsfield',
+    formats: {
+      '11s': {
+        type: 'reel',
+        generationStrategy: 'start_frame_chain',
+        durationSec: 11,
+        scenes: 1,
+        register: 'hidden-intimacy',
+        slot: 'Fri 23:00 BST',
+        description: 'Formula A — single intimate scene. Drives reach.',
+      },
+      '21s': {
+        type: 'reel',
+        generationStrategy: 'start_frame_chain',
+        durationSec: 21,
+        scenes: 3,
+        register: 'tension-survival',
+        slot: 'Sat 07:30 BST',
+        description: 'Formula B — 3-scene tension/survival arc. Drives follows.',
+      },
+      'portrait': {
+        type: 'image',
+        generationStrategy: 'image_only',
+        durationSec: null,
+        scenes: 1,
+        register: 'portrait',
+        slot: 'Sun/Thu 10:00 BST',
+        description: 'Single photorealistic image portrait. Drives engagement/comments.',
+      },
+    },
+    platforms: {
+      facebook: { enabled: true, envKey: 'WILD_CAPTURE' },
+    },
+    watermarkFile: null,
+    pageName: 'Wild Capture',
+  },
+
   // ── France Aujourd'hui — French culture ───────────────────────────────────
 
   'culture/silent/FR': {

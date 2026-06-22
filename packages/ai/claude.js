@@ -20,6 +20,16 @@ export function parseResponse(res) {
   return typeof res === 'string' ? JSON.parse(res) : res;
 }
 
+export function extractJson(text) {
+  if (!text) return null;
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const candidate = fence ? fence[1] : text;
+  const start = candidate.indexOf('{');
+  const end   = candidate.lastIndexOf('}');
+  if (start < 0 || end < 0 || end <= start) return null;
+  return candidate.slice(start, end + 1).trim();
+}
+
 /**
  * Low-level wrapper: sends messages to Claude with optional prompt caching.
  * Apps and other packages should use this rather than importing the SDK directly.
