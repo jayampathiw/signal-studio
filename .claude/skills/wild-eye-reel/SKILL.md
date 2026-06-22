@@ -61,6 +61,21 @@ Substitutions: `exposed roots → tangled root structures` · `predawn → cool 
 
 **Narration (21s Formula B only):** first-person animal POV, whispered register, 1-2 lines max, present tense. Reference proven lines in house-style.md.
 
+**c. Scenario + transition** — set on every scene; this is the single value that drives how Step 4 generates the scene:
+
+| Scenario | Use when | `transition` | Step 4 behaviour |
+|---|---|---|---|
+| `1` storyboard-direct | quick draft / budget-first / model handles reference images well | `panel` | storyboard panel → video reference; NO dedicated start frame, NO start-frame vision gate |
+| `2` start-frame-only (cut) | camera angle or environment changes between this scene and the previous | `fresh` | fresh start frame per scene; previous `final_frame_url` used as CHARACTER reference only; the cut happens in assembly |
+| `3` start+end chain | same camera angle, seamless flow required | `fresh` (scene 1) / `chain` (later scenes) | start frame + end frame; the end frame of clip N is exactly the start frame of clip N+1 |
+
+Assignment rules:
+- Scene 1 is always scenario `2` or `3` — never `1` alone.
+- For each adjacent pair N → N+1: angle/environment changes → scene N+1 is scenario `2` (`transition: 'fresh'`); same angle with continuous action → scenario `3` (`transition: 'chain'`).
+- Defaults by format: `11s` → 1 scene, scenario `3`, `transition: 'fresh'`. `21s` → 3 scenes, scenario `3` throughout unless the concept demands an angle cut (that scene becomes scenario `2`). `portrait` → `image_only`, no `scenario` field.
+
+Write `scenario` and `transition` onto each scene object.
+
 Write scene prompts into `scenes` jsonb. Update DB: `status = 'storyboard'`.
 
 ### Step 3 — Storyboard
@@ -75,7 +90,11 @@ Generate the storyboard image:
 - **Cloud:** `higgsfield:generate --type image --wait` with the composed prompt
 - **Interactive:** `mcp__claude_ai_higgsfield__generate_image`
 
-**Interactive mode:** show storyboard inline, wait for human approval. Allow edits → revise Step 2 prompts → regenerate (one image, not N videos).
+**Vision quality gate — storyboard (Tier 2, ADVISORY).** Invoke the `image-quality-gate` agent:
+- `imageUrl`: storyboard URL · `imagePrompt`: combined panel/scene descriptions · `checkType`: `'storyboard'` · `channelRules`: house-style.md content · `sceneN`: 0 · `attempt`: 1
+- The result is **advisory — it NEVER blocks** (the storyboard is the human review point). If `issues` are returned, surface them: set `status_note = 'storyboard advisory: <issues>'` (non-blocking). Generation continues regardless. (This is the only advisory gate; the start-frame gate in Step 4 is hard.)
+
+**Interactive mode:** show storyboard inline alongside any vision-gate issues, wait for human approval. Allow edits → revise Step 2 prompts → regenerate (one image, not N videos).
 **Cloud mode:** invoke `continuity-checker` agent on the storyboard layout. Any `hard` conflict or missing cavy → `status = 'blocked'`, `status_note = 'storyboard: <conflict>'`, STOP.
 
 Write storyboard URL to scene 1 and update status:
@@ -86,22 +105,26 @@ SET scenes = jsonb_set(scenes, '{0,storyboard_url}', '"<storyboard_url>"'),
 WHERE id = $id;
 ```
 
-### Step 4 — Per-scene video generation
+### Step 4 — Per-scene generation
 
 Claim the row: `UPDATE content_items SET status = 'generating' WHERE id = $id` — prevents collision with another session.
 
-For each scene in order (n=1, 2, 3):
+**Generation order depends on the scenarios assigned in Step 2:**
+- **Any scene is scenario `3` (chain):** run **two-phase** — Phase A generates ALL start frames first, then Phase B generates all videos (each video's end frame = the next scene's start frame). The chain only works if every start frame exists before any video is generated.
+- **All scenes are scenario `1` or `2` (and every single-scene `11s` / `portrait`):** run a **single per-scene loop** — start frame → video, scene by scene.
 
-**a. Skip if done:** if `scene.scene_status === 'video_done'`, skip — idempotent resume on crash.
+The lettered sub-steps below are the building blocks; the two execution orders at the end of this step say which sub-steps run in which sequence.
 
-**b. Credit re-check (cloud mode):** invoke `higgsfield-credit-guard` balance check before each scene. If < 50 credits, STOP without updating DB.
+**(skip) Skip if done:** if `scene.scene_status === 'video_done'` (reel) or `'image_done'` (portrait), skip — idempotent resume on crash. A scene whose `vision_check.status === 'pass'` is not re-gated.
 
-**c. Start-frame image:**
+**(credit) Credit re-check (cloud mode):** invoke `higgsfield-credit-guard` balance check. If < 50 credits, STOP without updating DB (row stays `generating`).
+
+**(start-frame) Start-frame image — SKIP for scenario `1` (uses the storyboard panel instead):**
 - Prompt: `scene.image_prompt`
-- Reference: `prevFinalFrameUrl` (the previous scene's `final_frame_url`) — this IS the continuity mechanism
-- **Cloud:** `higgsfield:generate --type image --reference <prevFinalFrameUrl> --resolution 2K --wait`
-- **Interactive:** `mcp__claude_ai_higgsfield__generate_image` with reference image set to `prevFinalFrameUrl`
-- Blocked/rights: call `reveal_generation` or `higgsfield generate reveal`, wait 5s, retry once. After 2 failures → write `scene_status = 'blocked'` to scenes jsonb, set `status = 'blocked'`, `status_note = 'scene N image blocked: <reason>'`, STOP.
+- Reference image: scenario `2` → previous scene's `final_frame_url` as CHARACTER reference; scenario `3` → previous scene's `start_frame_url` as CHARACTER reference; absent for scene 1
+- **Cloud:** `higgsfield:generate --type image --reference <referenceUrl> --resolution 2K --wait`
+- **Interactive:** `mcp__claude_ai_higgsfield__generate_image` with the reference image
+- Blocked/rights: call `reveal_generation` or `higgsfield generate reveal`, wait 5s, retry once. After 2 failures → write `scene_status = 'blocked'`, set `status = 'blocked'`, `status_note = 'scene N image blocked: <reason>'`, STOP.
 - **Write to DB immediately after success** (do not wait for video):
   ```sql
   UPDATE content_items
@@ -113,26 +136,48 @@ For each scene in order (n=1, 2, 3):
   ```
   (N = zero-based scene index)
 
-**d. Continuity check (Tier 2):** invoke `continuity-checker` agent with:
-- `startFrame`: `scene.start_frame_url`
-- `scenePrompt`: `scene.video_prompt`
-- `prevFinalFrame`: `prevFinalFrameUrl` (omit for scene n=1)
-- `none` → proceed | `soft` → log in status_note but proceed (cloud) | `hard` → `status = 'blocked'`, `status_note = 'scene N continuity: <reason>'`, STOP
+**(vision-gate) Vision quality gate — start / end frame (Tier 2, HARD gate) — SKIP for scenario `1`:**
+Invoke the `image-quality-gate` agent:
+- `imageUrl`: the frame just generated · `imagePrompt`: `scene.image_prompt` · `checkType`: `'start_frame'` (or `'end_frame'` for a separately-generated scenario-3 end frame) · `channelRules`: house-style.md content · `sceneN`: scene number · `attempt`: current attempt count (starts at 1)
 
-**e. Video generation (SKIP for portrait format — terminal state is `image_done`):**
+| `recommendation` | Action |
+|---|---|
+| `pass` (score ≥ 7) | write `scene.vision_check = { status:'pass', score, attempts, issues:[] }` → proceed to continuity |
+| `retry` (score < 7, attempt < 2) | regenerate the SAME frame (same prompt + same reference) → re-invoke gate with `attempt + 1` |
+| `blocked` (score < 7, attempt ≥ 2) | write `scene.vision_check = { status:'blocked', score, attempts, issues }`, `scene_status = 'blocked'`, `status = 'blocked'`, `status_note = 'scene N vision gate: <top issue>'` → STOP |
+
+This is a **HARD gate**: NO video credits are spent until the start frame passes. (The Step 3 storyboard gate is advisory; this one blocks.) Write `vision_check` to the DB immediately on `pass`:
+```sql
+UPDATE content_items
+SET scenes = jsonb_set(scenes, '{N,vision_check}',
+  '{"status":"pass","score":8,"attempts":1,"issues":[]}')
+WHERE id = $id;
+```
+
+**(continuity) Continuity check (Tier 2):** invoke `continuity-checker` with:
+- `startFrame`: `scene.start_frame_url` · `scenePrompt`: `scene.video_prompt` · `prevFinalFrame`: previous scene's `final_frame_url` (omit for scene 1)
+- `none` → proceed | `soft` → log in `status_note` but proceed (cloud) | `hard` → `status = 'blocked'`, `status_note = 'scene N continuity: <reason>'`, STOP
+
+**(video) Video generation — SKIP for portrait (terminal state is `image_done`):**
 - Build prompt string from `video_prompt` fields in order: composition, style, cameraMotion, subjects, action, location, audioCues, lighting, durationSec
-- Start image: `scene.start_frame_url`; model: Seedance 2.0; natural audio ON, NO music score
-- **Cloud:** `higgsfield:generate --type video --start-image <startFrameUrl> --model seedance-2 --duration <durationSec> --resolution 720p --wait`
-- **Interactive:** `mcp__claude_ai_higgsfield__generate_video` with start image and structured prompt at 1080p
-- Blocked handling: same as step (c) — reveal → retry → `scene_status = 'blocked'` + `status = 'blocked'` + `status_note`.
-- **Write to DB immediately after success:**
-  ```sql
-  UPDATE content_items
-  SET scenes = <updated scenes with higgsfield_video_job, clip_url, final_frame_url, scene_status='video_done'>
-  WHERE id = $id;
-  ```
+- Start image: `scene.start_frame_url` (scenario `2` / `3`) or the storyboard panel (scenario `1`)
+- End image: scenario `3` non-final scene only → the next scene's `start_frame_url` (`--end-image`); scenario `1` / `2` and the last scene → none
+- Model: Seedance 2.0; natural audio ON, NO music score
+- **Cloud:** `higgsfield:generate --type video --start-image <startUrl> [--end-image <nextStartUrl>] --model seedance-2 --duration <durationSec> --resolution 720p --wait`
+- **Interactive:** `mcp__claude_ai_higgsfield__generate_video` with start (and end, for scenario `3`) images at 1080p
+- Blocked handling: same as start-frame — reveal → retry → `scene_status = 'blocked'` + `status = 'blocked'` + `status_note`.
+- **Write to DB immediately after success:** `higgsfield_video_job`, `clip_url`, `scene_status = 'video_done'`, plus — **scenario `2` only** — `final_frame_url` (extracted from the clip). Scenario `3` needs no `final_frame_url`: the clip's end point was the predetermined end frame.
 
-**f. Chain:** set `prevFinalFrameUrl = scene.final_frame_url` — passed as continuity reference into next scene's step (c).
+**(chain) Chain reference:** scenario `2` → set the next scene's reference to `scene.final_frame_url`. Scenario `3` → the next scene's start frame already exists from Phase A; its end frame was wired into the video call above. Scenario `1` → no chain.
+
+---
+
+**Execution order — two-phase (any scenario `3` present):**
+1. **Phase A** — for every scene in order n=1,2,3: `(skip)` → `(credit)` → `(start-frame)` → `(vision-gate)` → `(continuity)`. Collect every `start_frame_url`. STOP immediately on any block.
+2. **Phase B** — for every non-portrait scene in order: `(skip)` → `(credit)` → `(video)`, passing `--end-image = scenes[n+1].start_frame_url` for all scenes except the last.
+
+**Execution order — single loop (all scenario `1`/`2`, or single-scene `11s`/`portrait`):**
+For each scene n=1,2,3 in order: `(skip)` → `(credit)` → `(start-frame, unless scenario 1)` → `(vision-gate, unless scenario 1)` → `(continuity)` → `(video)` → `(chain)`.
 
 ### Step 5 — SEO (ONLY after all scenes reach terminal status)
 
@@ -185,4 +230,4 @@ Next: upload, then run publish.js when ready.
 - No graphic predator kills, no human presence in frame, no captive animals
 
 ## Recovery / resume
-Re-run with the same `id`. Step 4(a) skips scenes already `video_done`. Step 3 is skipped if `status` is already past `'storyboard'`. Fully idempotent — no credits re-spent on completed work.
+Re-run with the same `id`. Step 4's `(skip)` sub-step skips scenes already `video_done` (or `image_done` for portrait), and a scene whose `vision_check.status === 'pass'` is not re-gated — so no image or video credits are re-spent on completed work. Step 3 is skipped if `status` is already past `'storyboard'`. For a two-phase scenario-`3` run, Phase A start frames already written with `vision_check.pass` are reused; Phase B resumes at the first scene without a `clip_url`. Fully idempotent.

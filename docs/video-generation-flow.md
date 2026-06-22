@@ -109,7 +109,7 @@ Inputs (CLI args):
   --scheduled-for  optional  ISO datetime
 
 Environment variables required:
-  ANTHROPIC_API_KEY    for AI steps (Claude API)
+  ANTHROPIC_KEY        for AI steps (Claude API) — see packages/config/schema.js
   SUPABASE_URL         for DB steps
   SUPABASE_SERVICE_ROLE_KEY  for DB steps
 

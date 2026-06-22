@@ -37,9 +37,10 @@
 |---|---|---|---|
 | 11s reel | Fri 23:00 BST | `0 22 * * 5` | `wild-eye` |
 | 21s reel | Sat 07:30 BST | `30 6 * * 6` | `wild-eye` |
-| Portrait | Sun/Thu 10:00 BST | `0 9 * * 0` | `wild-eye` |
+| Portrait | Sun 10:00 BST | `0 9 * * 0` | `wild-eye` |
+| Portrait | Thu 10:00 BST | `0 9 * * 4` | `wild-eye` |
 
-No Tue / Wed / Thu slots — house rule enforced in `wild-eye-brief` and respected here.
+The no-Tue/Wed/Thu house rule (enforced in `wild-eye-brief`) governs **reels** — reels never post Tue/Wed/Thu. The **Thu 10:00 portrait** slot is the one deliberate exception: portraits drive engagement rather than reach, so a mid-week still is allowed. No format posts on Tue or Wed.
 
 ---
 

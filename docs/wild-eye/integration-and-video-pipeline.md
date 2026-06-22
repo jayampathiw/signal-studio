@@ -81,10 +81,10 @@ Migrated verbatim from `temp/Wild Eye/` into versioned prompt knowledge:
 - `apps/video/knowledge/wild-eye/script-library.md` (512 lines) — proven scripts with performance data; C-03 collision resolved to C-09/C-10
 - `apps/video/knowledge/wild-eye/seo-examples.md` (248 lines) — performance-rated SEO packages
 
-Loaded by `loadWildEyeContext()` in `apps/video/src/services/ai.js` (new helper), and by the `wild-eye-reel` skill at session start.
+Loaded by `loadKnowledge()` in `apps/video/scripts/create-brief.mjs` (the single brief-creation path), and by the `wild-eye-reel` skill at session start.
 
-### 1.5 `apps/video/src/services/ai.js` ✅
-Added `loadWildEyeContext()` — reads all three knowledge files and returns them as a concatenated system context string for use by the Wild Eye generation skill. Gracefully skips missing files.
+### 1.5 `apps/video/scripts/create-brief.mjs` — knowledge loader ✅
+`loadKnowledge(channelKey)` reads all three knowledge files (house-style, script-library, seo-examples) and returns them concatenated as system context for the brief validator. Gracefully skips missing files. (An earlier `loadWildEyeContext()` helper in `apps/video/src/services/ai.js` was removed as a dead export during code review — the loader now lives only in `create-brief.mjs`, eliminating the two-copy divergence.)
 
 ### 1.6 Distribution path — no changes needed ✅
 When ready to publish: existing `apps/video/src/scripts/publish.js` + `publishToAll(item, channel)` post `rendered_video_url` to FB v22.0 and write `fb_status/fb_post_id/fb_posted_at`. Untouched per "skip upload" decision.
@@ -357,7 +357,7 @@ The DB (`content_items`) is the source of truth for lifecycle/status. The `produ
 | `apps/video/src/config/channels.js` | Added `wildlife/intimacy/EN` channel |
 | `packages/config/schema.js` | Registered `FB_PAGE_ID_WILD_CAPTURE`, `FB_ACCESS_TOKEN_WILD_CAPTURE` |
 | `.env.example` | Added Wild Capture section with page ID pre-filled |
-| `apps/video/src/services/ai.js` | Added `loadWildEyeContext()` helper |
+| `apps/video/scripts/create-brief.mjs` | `loadKnowledge()` loads the three knowledge files (replaces the removed `ai.js` `loadWildEyeContext()` helper) |
 | `.claude/settings.json` | Added `PostToolUse` hooks for `Write`/`Edit` → `safe-language-lint.mjs` |
 
 ### Not touched (by design)
