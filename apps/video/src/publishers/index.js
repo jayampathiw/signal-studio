@@ -1,10 +1,13 @@
-import * as facebook from './facebook.js';
+import * as facebook  from './facebook.js';
+import * as instagram from './instagram.js';
+import * as youtube   from './youtube.js';
+import * as tiktok    from './tiktok.js';
 
 const PUBLISHERS = {
   facebook,
-  // instagram: ... (M3)
-  // youtube:   ... (M5)
-  // tiktok:    ... (M6)
+  instagram,
+  youtube,
+  tiktok,
 };
 
 export function getPublisher(platform) {

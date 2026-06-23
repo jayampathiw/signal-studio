@@ -19,6 +19,7 @@
     "@signal-studio/media": "*",
     "@signal-studio/publishers": "*",
     "@signal-studio/types": "*",
-    "axios": "^1.7.0"
+    "axios": "^1.7.0",
+    "googleapis": "^144.0.0"
   }
 }

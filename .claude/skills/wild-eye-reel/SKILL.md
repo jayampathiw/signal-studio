@@ -193,9 +193,23 @@ Store: `UPDATE content_items SET seo = '{ "title": "...", "description": "...", 
 
 ### Step 6 — Set rendered_video_url and persist
 
+**Step 6.5 — 21s auto-stitch (run ONLY for 21s, after all 3 scenes reach `video_done`):**
+
+Download the 3 scene clips, concatenate via FFmpeg, upload to R2, and write `rendered_video_url` by running:
+
+```bash
+node apps/video/scripts/assemble-reel.mjs --id <id>
+```
+
+The script exits 0 and prints `{ id, rendered_video_url }` on success, or exits 1 with `{ error, message }` on failure. On failure: set `status = 'failed'`, `status_note = 'assembly failed: <message>'`, STOP.
+
+Requires on PATH: `ffmpeg`. Requires env: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_RENDERED`, `R2_PUBLIC_BASE_URL`.
+
+---
+
 Determine `rendered_video_url` by format:
 - `11s` → `scenes[0].clip_url` (single clip; no assembly needed)
-- `21s` → NULL (3 clips in `scenes[0,1,2].clip_url` need manual or automated assembly first)
+- `21s` → output of Step 6.5 `assemble-reel.mjs` (3 clips stitched into one MP4 on R2)
 - `portrait` → `scenes[0].start_frame_url` (the portrait image IS the final asset)
 
 ```sql
