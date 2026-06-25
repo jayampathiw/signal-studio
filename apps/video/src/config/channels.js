@@ -128,6 +128,12 @@ export const CHANNELS = {
     contentLanguage: 'English',
     source: 'higgsfield',
     renderer: 'higgsfield',
+    imageModel: 'nano_banana_pro',
+    videoModel: 'seedance_2_0',
+    imageRes: '2k',
+    videoRes: '720p',
+    aspectRatio: '9:16',
+    generateAudio: true,
     formats: {
       '11s': {
         type: 'reel',

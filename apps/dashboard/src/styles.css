@@ -29,12 +29,20 @@
   --ink-surface:    #ffffff;
   --ink-raised:     #f0f2f6;
   --ink-hover:      #e8eaf0;
-  --ink-border:     #d8dce8;
+  --ink-border:     #d0d5e4;
   --ink-dim:        #e8ecf4;
   --ink-text:       #0f1929;
-  --ink-text-2:     #8892a8;
-  --ink-text-3:     #bcc4d4;
+  --ink-text-2:     #5a6480;
+  --ink-text-3:     #8896b0;
 }
+
+[data-theme="light"] .detail-panel {
+  box-shadow: -2px 0 32px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.07);
+}
+
+[data-theme="light"] .article-row { border-color: #d0d5e4; border-left-color: #d0d5e4; }
+[data-theme="light"] .article-row:hover { background: var(--ink-hover); border-color: #b0b8cc; }
+[data-theme="light"] .ink-navbar { background: rgba(245,247,250,.92); border-bottom-color: #d0d5e4; }
 
 /* ── Base ──────────────────────────────────────────────── */
 html, body { background: var(--ink-bg); color: var(--ink-text); }
@@ -63,11 +71,13 @@ body {
 .animate-slide-right { animation: slide-right 0.32s cubic-bezier(.2, .8, .4, 1); }
 .animate-fade-in     { animation: fade-in     0.18s ease; }
 
-/* slide-up on mobile, slide-right on sm+ */
-.detail-panel { animation: slide-up 0.32s cubic-bezier(.2, .8, .4, 1); }
-@media (min-width: 640px) {
-  .detail-panel { animation: slide-right 0.32s cubic-bezier(.2, .8, .4, 1); }
+/* centered modal — scale-in on all sizes */
+@keyframes scale-in {
+  from { opacity: 0; transform: translate(-50%,-50%) scale(.96); }
+  to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 }
+.detail-panel { animation: scale-in 0.22s cubic-bezier(.2, .8, .4, 1); }
+
 
 /* ── Signal Dots ───────────────────────────────────────── */
 .sig {
@@ -231,6 +241,36 @@ body {
 }
 .country-strip::-webkit-scrollbar { display: none; }
 
+/* ── Channel Pills ─────────────────────────────────────── */
+.channel-strip {
+  display: flex; gap: 6px;
+  overflow-x: auto; padding-bottom: 2px;
+}
+.channel-strip::-webkit-scrollbar { display: none; }
+
+.channel-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 20px;
+  font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; border: 1px solid var(--ink-border);
+  background: var(--ink-raised); color: var(--ink-text-2);
+  white-space: nowrap; transition: all .15s; flex-shrink: 0;
+}
+.channel-pill:hover { border-color: var(--ink-text-2); color: var(--ink-text); }
+.channel-pill.active {
+  background: var(--pill-accent, var(--ink-brand));
+  color: #fff; border-color: var(--pill-accent, var(--ink-brand));
+}
+.channel-pill .pill-count {
+  font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 10px;
+  background: var(--ink-border); color: var(--ink-text-3);
+  line-height: 1.4; flex-shrink: 0;
+}
+.channel-pill.active .pill-count {
+  background: rgba(255,255,255,.22); color: #fff;
+}
+
 /* ── Country Pills ─────────────────────────────────────── */
 .country-pill {
   display: inline-flex; align-items: center; gap: 5px;
@@ -248,10 +288,13 @@ body {
 .cp-se.active { background: #006AA7; border-color: #006AA7; }
 
 /* ── Country Accent wrappers ───────────────────────────── */
-.ca-fr { border-top: 2px solid #0055a4; }
-.ca-it { border-top: 2px solid #009246; }
-.ca-au { border-top: 2px solid #00008B; }
-.ca-se { border-top: 2px solid #006AA7; }
+.ca-fr    { border-top: 2px solid #0055a4; }
+.ca-it    { border-top: 2px solid #009246; }
+.ca-au    { border-top: 2px solid #00008B; }
+.ca-se    { border-top: 2px solid #006AA7; }
+.ca-wild  { border-top: 2px solid #00cc70; }
+.ca-nature{ border-top: 2px solid #2d9b5c; }
+.ca-frame { border-top: 2px solid #7c3aed; }
 
 /* ── Stat Cards ────────────────────────────────────────── */
 .stat-card {

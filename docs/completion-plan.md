@@ -1,6 +1,6 @@
 # Signal Studio — Completion Plan
 
-**Status as of:** 2026-06-23
+**Status as of:** 2026-06-23 (updated session 2)
 **Branch:** `rename-to-signal-studio`
 **Scope:** What remains to take the Wild Capture (Wild Eye) channel from "generation code-complete" to "posting live."
 
@@ -126,6 +126,32 @@ FB_PAGE_ID_WILD_CAPTURE=<your page id>
 FB_ACCESS_TOKEN_WILD_CAPTURE=<your token>
 ```
 
+### Dashboard UI — Session 2 work (completed 2026-06-23)
+
+**Reels page — page/channel strip (mirrors articles country-strip):**
+- Sticky pill strip immediately below navbar: 🌿 All · 👁️ Wild Capture · 🌿 NaturePulse · 🎬 NatureFrame · 🇫🇷 France Aujourd'hui · 🇮🇹 Vivere in Italia
+- Clicking a page filters the full list to that page's channel keys and adds a colored top-border accent to the content area
+- Per-page accent colors: Wild Capture=#00cc70, NaturePulse=#2d9b5c, NatureFrame=#7c3aed, FR=#0055a4, IT=#009246
+- Files: `apps/dashboard/src/app/reels/reel-list.component.ts`, `src/styles.css` (added `.ca-wild`, `.ca-nature`, `.ca-frame`)
+
+**Reel detail popup — refactored to tab-based component (mirrors article-detail-dialog):**
+- New file: `apps/dashboard/src/app/reels/reel-detail-dialog.component.ts`
+- Status-colored gradient header (brief=indigo, generating=orange, rendered=blue, posted=green, blocked/failed=red)
+- 4 tabs: **Overview** (format/scenes/style stats, slot, dates, ID), **Scenes** (full-width start frames with vision check score overlay, clip video players, per-scene status badges), **SEO** (title/description/hashtags with copy buttons + "Copy full caption package" CTA), **Pipeline** (rendered video player, Higgsfield job IDs per scene, platform status rows)
+- Footer: Mark as Posted (if rendered) · Copy package (if rendered_video_url) · Delete · Close
+- `reel-list.component.ts` now renders `<app-reel-detail>` instead of inline panel HTML
+
+**Light theme contrast fixes:**
+- `--ink-text-2`: #8892a8 → #5a6480
+- `--ink-text-3`: #bcc4d4 → #8896b0
+- `.detail-panel` shadow override for light mode
+- `.ink-navbar` light-mode background
+
+**Content item #25 created:**
+- Title: "The Sound Hasn't Come Yet. She Already Knows. 👂"
+- channel: `wildlife/intimacy/EN`, format: `11s`, status: `brief`
+- This is the **test candidate for Phase 4** — cheapest possible run (1 scene, 1 image + 1 video credit)
+
 ### Phase 4 — First live validation run (joint — the real debugging) — Task #5
 
 **Blocked on Phase 3**: needs `.env` populated, reel-pipeline repo live, and secrets added.
@@ -158,8 +184,8 @@ node apps/video/scripts/create-brief.mjs \
 ```
 
 **Known things that will need debugging on first run:**
-- Higgsfield CLI flag spelling: the skill says `--end-image` and `--model seedance-2` — verify against `higgsfield generate --help`
-- `higgsfield account balance` output format — `higgsfield-credit-guard` parses the balance number; check the exact format
+- Higgsfield model IDs are now confirmed via MCP — see `docs/higgsfield-models.md` for the full list. Image default: `nano_banana_pro`. Video default: `seedance_2_0`. Generation goes through MCP tools (`generate_image`, `generate_video`), not the CLI binary.
+- Higgsfield CLI is only used for `higgsfield account balance` (credit-guard). Verify exact output format on first run — `higgsfield-credit-guard` parses the balance number from this output.
 - Headless `--dangerously-skip-permissions` + Supabase MCP: verify the MCP server starts cleanly in the runner environment
 - Storyboard / start-frame prompts: expect 1-2 refinement cycles before the output meets the vision gate
 

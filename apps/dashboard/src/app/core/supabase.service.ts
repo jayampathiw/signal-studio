@@ -131,11 +131,37 @@ export interface OnThisDayPost {
   created_at: string;
 }
 
+export interface GenConfig {
+  imageModel?: string;
+  videoModel?: string;
+  imageRes?: string;
+  videoRes?: string;
+  aspectRatio?: string;
+  duration?: number;
+}
+
+export interface ContentItemScene {
+  scene_num: number;
+  duration_sec?: number;
+  scenario?: number;
+  transition?: string;
+  scene_status?: string;
+  image_prompt?: string;
+  video_prompt?: Record<string, any>;
+  storyboard_url?: string | null;
+  start_frame_url?: string | null;
+  clip_url?: string | null;
+  final_frame_url?: string | null;
+  higgsfield_image_job?: string | null;
+  higgsfield_video_job?: string | null;
+  vision_check?: { status: string; score: number; attempts: number; issues: string[] } | null;
+}
+
 export interface ContentItem {
   id: number;
   channel_key: string;
   niche: string;
-  style: 'factual' | 'cinematic' | 'listicle' | 'silent';
+  style: 'factual' | 'cinematic' | 'listicle' | 'silent' | 'intimacy';
   language: string;
   source_type: string;
   source_clips: any[];
@@ -150,7 +176,8 @@ export interface ContentItem {
   rendered_at: string | null;
   duration_sec: number | null;
   thumbnail_url: string | null;
-  status: 'pending' | 'rendering' | 'rendered' | 'publishing' | 'posted' | 'failed' | 'blocked';
+  status: 'brief' | 'storyboard' | 'generating' | 'pending' | 'rendering' | 'rendered' | 'publishing' | 'posted' | 'failed' | 'blocked';
+  status_note: string | null;
   target_platforms: string[];
   fb_status: string | null; fb_post_id: string | null; fb_posted_at: string | null; fb_error: string | null;
   ig_status: string | null; ig_post_id: string | null; ig_posted_at: string | null; ig_error: string | null;
@@ -158,6 +185,12 @@ export interface ContentItem {
   tt_status: string | null; tt_video_id: string | null; tt_posted_at: string | null; tt_error: string | null;
   created_at: string;
   updated_at: string;
+  // Wild Eye / video pipeline fields
+  scenes: ContentItemScene[] | null;
+  seo: { title: string; description: string; hashtags: string[] } | null;
+  slot: string | null;
+  format: '11s' | '21s' | 'portrait' | null;
+  gen_config: GenConfig | null;
 }
 
 export interface ContentItemStats {
@@ -369,6 +402,54 @@ export class SupabaseService {
       this.client.from('render_queue').select('*', { count: 'exact', head: true }).eq('status', 'processing'),
     ]);
     return { queued: q.count ?? 0, processing: p.count ?? 0 };
+  }
+
+  async triggerGeneration(contentItemId: number): Promise<{ dispatched: boolean; runUrl: string | null; channelSlug: string }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/trigger-generation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({ content_item_id: contentItemId }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(body.error ?? `trigger-generation failed (${res.status})`);
+    }
+    return res.json();
+  }
+
+  async expandBrief(contentItemId: number): Promise<{ scenes: ContentItemScene[]; status: string }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/expand-brief`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({ content_item_id: contentItemId }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(body.error ?? `expand-brief failed (${res.status})`);
+    }
+    return res.json();
+  }
+
+  async updateContentItemScenes(id: number, scenes: ContentItemScene[]): Promise<void> {
+    const { error } = await this.client.from('content_items').update({ scenes }).eq('id', id);
+    if (error) throw error;
+  }
+
+  async updateContentItemFields(id: number, fields: Record<string, any>): Promise<void> {
+    const { error } = await this.client.from('content_items').update(fields).eq('id', id);
+    if (error) throw error;
   }
 
   async queueRender(channelKey: string): Promise<void> {

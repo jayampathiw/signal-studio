@@ -109,6 +109,17 @@ WHERE id = $id;
 
 Claim the row: `UPDATE content_items SET status = 'generating' WHERE id = $id` — prevents collision with another session.
 
+**Generation config resolution.** Model and resolution are NOT hardcoded. Resolve each value with precedence **reel `gen_config` → channel default**, where `channel` is the `wildlife/intimacy/EN` block in `apps/video/src/config/channels.js`:
+```
+imageModel = gen_config.imageModel ?? channel.imageModel   // default 'nano_banana_pro'
+videoModel = gen_config.videoModel ?? channel.videoModel   // default 'seedance_2_0'
+imageRes   = gen_config.imageRes   ?? channel.imageRes      // default '2k'
+videoRes   = gen_config.videoRes   ?? channel.videoRes      // default '720p'
+aspectRatio= gen_config.aspectRatio?? channel.aspectRatio   // default '9:16'
+generateAudio = channel.generateAudio                       // default true
+```
+`gen_config` is the per-reel jsonb column on `content_items` (set from the dashboard Config tab; null when unset). Use the canonical MCP model IDs — see `docs/higgsfield-models.md` for the authoritative list (`nano_banana_pro`, `seedance_2_0`, etc.). For `21s` (scenario `3`) the video model MUST support the `end_image` role — `seedance_2_0`, `kling3_0`, `wan2_7`, `cinematic_studio_3_0`, `seedance_1_5` do; `kling3_0_turbo` does NOT.
+
 **Generation order depends on the scenarios assigned in Step 2:**
 - **Any scene is scenario `3` (chain):** run **two-phase** — Phase A generates ALL start frames first, then Phase B generates all videos (each video's end frame = the next scene's start frame). The chain only works if every start frame exists before any video is generated.
 - **All scenes are scenario `1` or `2` (and every single-scene `11s` / `portrait`):** run a **single per-scene loop** — start frame → video, scene by scene.
@@ -122,8 +133,9 @@ The lettered sub-steps below are the building blocks; the two execution orders a
 **(start-frame) Start-frame image — SKIP for scenario `1` (uses the storyboard panel instead):**
 - Prompt: `scene.image_prompt`
 - Reference image: scenario `2` → previous scene's `final_frame_url` as CHARACTER reference; scenario `3` → previous scene's `start_frame_url` as CHARACTER reference; absent for scene 1
-- **Cloud:** `higgsfield:generate --type image --reference <referenceUrl> --resolution 2K --wait`
-- **Interactive:** `mcp__claude_ai_higgsfield__generate_image` with the reference image
+- Model: `imageModel` (resolved above; default `nano_banana_pro`); resolution: `imageRes` (default `2k`); aspect ratio: `aspectRatio` (default `9:16`)
+- **Cloud:** `higgsfield:generate --type image --model <imageModel> --reference <referenceUrl> --resolution <imageRes> --wait`
+- **Interactive:** `mcp__claude_ai_higgsfield__generate_image` with `params.model = <imageModel>`, `resolution = <imageRes>`, `aspect_ratio = <aspectRatio>`, and the reference image
 - Blocked/rights: call `reveal_generation` or `higgsfield generate reveal`, wait 5s, retry once. After 2 failures → write `scene_status = 'blocked'`, set `status = 'blocked'`, `status_note = 'scene N image blocked: <reason>'`, STOP.
 - **Write to DB immediately after success** (do not wait for video):
   ```sql
@@ -162,9 +174,9 @@ WHERE id = $id;
 - Build prompt string from `video_prompt` fields in order: composition, style, cameraMotion, subjects, action, location, audioCues, lighting, durationSec
 - Start image: `scene.start_frame_url` (scenario `2` / `3`) or the storyboard panel (scenario `1`)
 - End image: scenario `3` non-final scene only → the next scene's `start_frame_url` (`--end-image`); scenario `1` / `2` and the last scene → none
-- Model: Seedance 2.0; natural audio ON, NO music score
-- **Cloud:** `higgsfield:generate --type video --start-image <startUrl> [--end-image <nextStartUrl>] --model seedance-2 --duration <durationSec> --resolution 720p --wait`
-- **Interactive:** `mcp__claude_ai_higgsfield__generate_video` with start (and end, for scenario `3`) images at 1080p
+- Model: `videoModel` (resolved above; default `seedance_2_0`); audio: `generateAudio` (default ON), NO music score; resolution: `videoRes` (default `720p`)
+- **Cloud:** `higgsfield:generate --type video --start-image <startUrl> [--end-image <nextStartUrl>] --model <videoModel> --duration <durationSec> --resolution <videoRes> --wait`
+- **Interactive:** `mcp__claude_ai_higgsfield__generate_video` with `params.model = <videoModel>`, `resolution = <videoRes>`, `aspect_ratio = <aspectRatio>`, `generate_audio = <generateAudio>`, and start (and end, for scenario `3`) images
 - Blocked handling: same as start-frame — reveal → retry → `scene_status = 'blocked'` + `status = 'blocked'` + `status_note`.
 - **Write to DB immediately after success:** `higgsfield_video_job`, `clip_url`, `scene_status = 'video_done'`, plus — **scenario `2` only** — `final_frame_url` (extracted from the clip). Scenario `3` needs no `final_frame_url`: the clip's end point was the predetermined end frame.
 

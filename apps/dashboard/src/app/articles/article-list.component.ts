@@ -354,10 +354,7 @@ const COUNTRY_NAMES: Record<string, string> = { FR: 'France', IT: 'Italy', AU: '
     @if (selectedArticle()) {
       <div style="position:fixed;inset:0;z-index:50;" class="animate-fade-in">
         <div style="position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);" (click)="selectedArticle.set(null)"></div>
-        <div class="detail-panel absolute bottom-0 left-0 right-0 rounded-t-xl
-                    sm:bottom-auto sm:top-0 sm:left-auto sm:right-0 sm:w-[480px] sm:h-full sm:rounded-none
-                    flex flex-col overflow-hidden z-10"
-             style="height:92vh;box-shadow:-8px 0 32px rgba(0,0,0,.5);">
+        <div class="detail-panel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(700px,calc(100vw - 24px));max-height:90vh;border-radius:12px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);display:flex;flex-direction:column;">
           <app-article-detail
             [article]="selectedArticle()!"
             (closePanel)="selectedArticle.set(null)"

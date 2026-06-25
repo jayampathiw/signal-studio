@@ -1,7 +1,8 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { ContentItem, ContentItemStats, RenderQueueStats, SupabaseService } from '../core/supabase.service';
+import { ContentItem, ContentItemScene, ContentItemStats, RenderQueueStats, SupabaseService } from '../core/supabase.service';
+import { ReelDetailComponent } from './reel-detail-dialog.component';
 
 const STYLE_COLORS: Record<string, string> = {
   factual:   'rgba(30,122,255,.15)',
@@ -15,6 +16,26 @@ const STYLE_TEXT: Record<string, string> = {
   listicle:  '#ff8c00',
   silent:    '#888',
 };
+
+const PAGES = [
+  { key: 'Wild Capture',       icon: '👁️', label: 'Wild Capture',       channels: ['wildlife/intimacy/EN'],                              accent: '#00cc70' },
+  { key: 'NaturePulse',        icon: '🌿', label: 'NaturePulse',         channels: ['wildlife/factual/EN', 'wildlife/listicle/EN'],        accent: '#2d9b5c' },
+  { key: 'NatureFrame',        icon: '🎬', label: 'NatureFrame',         channels: ['wildlife/cinematic/EN', 'wildlife/silent/EN'],        accent: '#7c3aed' },
+  { key: "France Aujourd'hui", icon: '🇫🇷', label: "France Aujourd'hui", channels: ['culture/silent/FR', 'culture/silent/FR-long'],        accent: '#0055a4' },
+  { key: 'Vivere in Italia',   icon: '🇮🇹', label: 'Vivere in Italia',   channels: ['culture/silent/IT', 'culture/silent/IT-long'],       accent: '#009246' },
+];
+
+const CHANNEL_PILLS = [
+  { key: 'wildlife/intimacy/EN',   label: 'Wild Eye',     icon: '👁️', accent: '#00cc70' },
+  { key: 'wildlife/factual/EN',    label: 'NP Factual',   icon: '📰', accent: '#1e7aff' },
+  { key: 'wildlife/listicle/EN',   label: 'NP Listicle',  icon: '📋', accent: '#ff8c00' },
+  { key: 'wildlife/cinematic/EN',  label: 'NF Cinematic', icon: '🎬', accent: '#9060e0' },
+  { key: 'wildlife/silent/EN',     label: 'NF Silent',    icon: '🔇', accent: '#64748b' },
+  { key: 'culture/silent/FR',      label: 'FR Culture',   icon: '🇫🇷', accent: '#0055a4' },
+  { key: 'culture/silent/FR-long', label: 'FR Long',      icon: '🇫🇷', accent: '#0055a4' },
+  { key: 'culture/silent/IT',      label: 'IT Culture',   icon: '🇮🇹', accent: '#009246' },
+  { key: 'culture/silent/IT-long', label: 'IT Long',      icon: '🇮🇹', accent: '#009246' },
+];
 
 const AVAILABLE_CHANNELS = [
   { key: 'wildlife/factual/EN',    page: 'NaturePulse',        sub: 'Wildlife · Factual'    },
@@ -30,7 +51,7 @@ const AVAILABLE_CHANNELS = [
 @Component({
   selector: 'app-reel-list',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink],
+  imports: [DatePipe, DecimalPipe, RouterLink, ReelDetailComponent],
   template: `
     <!-- Navbar -->
     <nav class="ink-navbar" style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;">
@@ -51,7 +72,26 @@ const AVAILABLE_CHANNELS = [
       </div>
     </nav>
 
-    <div style="min-height:calc(100vh - 52px);">
+    <!-- Page strip (mirrors country-strip in articles) -->
+    <div class="channel-strip" style="padding:8px 12px;border-bottom:1px solid var(--ink-border);background:var(--ink-navbar);position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);">
+      <button class="channel-pill" [class.active]="filterPage() === ''" (click)="setPage('')">
+        🌿 All
+        <span class="pill-count">{{ totalCount() }}</span>
+      </button>
+      @for (p of PAGES; track p.key) {
+        <button class="channel-pill" [class.active]="filterPage() === p.key"
+          [style.--pill-accent]="p.accent"
+          (click)="setPage(p.key)">
+          <span style="font-size:13px;line-height:1;flex-shrink:0;">{{ p.icon }}</span>
+          {{ p.label }}
+          @if (pageCounts()[p.key]) {
+            <span class="pill-count">{{ pageCounts()[p.key] }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    <div [class]="pageAccentClass()" style="min-height:calc(100vh - 100px);">
       <div style="max-width:960px;margin:0 auto;padding:16px 12px 64px;">
 
         <!-- Stats row -->
@@ -269,140 +309,13 @@ const AVAILABLE_CHANNELS = [
     @if (selectedItem()) {
       <div style="position:fixed;inset:0;z-index:50;" class="animate-fade-in">
         <div style="position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);" (click)="selectedItem.set(null)"></div>
-        <div class="detail-panel absolute bottom-0 left-0 right-0 rounded-t-xl
-                    sm:bottom-auto sm:top-0 sm:left-auto sm:right-0 sm:w-[520px] sm:h-full sm:rounded-none
-                    flex flex-col overflow-hidden z-10"
-             style="height:92vh;box-shadow:-8px 0 32px rgba(0,0,0,.5);">
-
-          <!-- Panel header -->
-          <div style="padding:16px 20px 12px;border-bottom:1px solid var(--ink-border);flex-shrink:0;display:flex;align-items:flex-start;gap:12px;">
-            <div style="flex:1;min-width:0;">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span class="ink-badge" [style.background]="STYLE_COLORS[selectedItem()!.style]" [style.color]="STYLE_TEXT[selectedItem()!.style]" style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;">{{ selectedItem()!.style }}</span>
-                <span [class]="'ink-badge ' + statusBadgeClass(selectedItem()!.status)" style="font-size:9px;text-transform:uppercase;">{{ selectedItem()!.status }}</span>
-                <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--ink-text-3);">#{{ selectedItem()!.id }}</span>
-              </div>
-              <p style="font-size:15px;font-weight:600;color:var(--ink-text);line-height:1.4;margin:0;">{{ selectedItem()!.title ?? selectedItem()!.channel_key }}</p>
-              <p style="font-size:11px;color:var(--ink-text-3);margin:4px 0 0;font-family:'JetBrains Mono',monospace;">{{ selectedItem()!.channel_key }}</p>
-            </div>
-            <button class="btn-ghost-icon" style="flex-shrink:0;" (click)="selectedItem.set(null)">✕</button>
-          </div>
-
-          <!-- Panel body (scrollable) -->
-          <div style="flex:1;overflow-y:auto;padding:16px 20px 32px;display:flex;flex-direction:column;gap:20px;">
-
-            <!-- Video preview -->
-            @if (selectedItem()!.rendered_video_url) {
-              <div>
-                <div style="font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-text-3);margin-bottom:8px;">▶ Video Preview</div>
-                <video
-                  [src]="selectedItem()!.rendered_video_url!"
-                  controls
-                  style="width:100%;max-height:320px;border-radius:8px;background:#000;display:block;"
-                  preload="metadata"
-                ></video>
-                <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-                  @if (selectedItem()!.duration_sec) {
-                    <span class="ink-badge" style="font-family:'JetBrains Mono',monospace;font-size:10px;">{{ selectedItem()!.duration_sec | number:'1.0-0' }}s</span>
-                  }
-                  <span class="ink-badge" style="font-family:'JetBrains Mono',monospace;font-size:10px;">1080×1920</span>
-                </div>
-              </div>
-            }
-
-            <!-- Upload package -->
-            @if (selectedItem()!.rendered_video_url || selectedItem()!.ai_caption) {
-              <div>
-                <div style="font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-text-3);margin-bottom:10px;">📋 Upload Package</div>
-
-                @if (selectedItem()!.rendered_video_url) {
-                  <div style="margin-bottom:12px;">
-                    <div style="font-size:11px;font-weight:600;color:var(--ink-text-2);margin-bottom:4px;">Video URL</div>
-                    <div style="display:flex;gap:8px;align-items:flex-start;">
-                      <code style="flex:1;font-size:11px;background:var(--ink-raised);border:1px solid var(--ink-border);border-radius:4px;padding:6px 8px;color:var(--ink-text);word-break:break-all;display:block;line-height:1.5;">{{ selectedItem()!.rendered_video_url }}</code>
-                      <button class="btn-ink" style="height:28px;font-size:11px;padding:0 10px;flex-shrink:0;" (click)="copy(selectedItem()!.rendered_video_url!, 'URL')">Copy</button>
-                    </div>
-                  </div>
-                }
-
-                @if (selectedItem()!.ai_caption) {
-                  <div style="margin-bottom:12px;">
-                    <div style="font-size:11px;font-weight:600;color:var(--ink-text-2);margin-bottom:4px;">Caption</div>
-                    <div style="display:flex;gap:8px;align-items:flex-start;">
-                      <div style="flex:1;font-size:12px;background:var(--ink-raised);border:1px solid var(--ink-border);border-radius:4px;padding:8px 10px;color:var(--ink-text);line-height:1.6;white-space:pre-wrap;">{{ captionText(selectedItem()!) }}</div>
-                      <button class="btn-ink" style="height:28px;font-size:11px;padding:0 10px;flex-shrink:0;" (click)="copy(captionText(selectedItem()!), 'Caption')">Copy</button>
-                    </div>
-                  </div>
-                }
-
-                @if (selectedItem()!.hashtags.length) {
-                  <div>
-                    <div style="font-size:11px;font-weight:600;color:var(--ink-text-2);margin-bottom:4px;">Hashtags</div>
-                    <div style="display:flex;gap:8px;align-items:flex-start;">
-                      <div style="flex:1;font-size:12px;background:var(--ink-raised);border:1px solid var(--ink-border);border-radius:4px;padding:8px 10px;color:var(--ink-brand);line-height:1.6;word-break:break-all;">{{ selectedItem()!.hashtags.join(' ') }}</div>
-                      <button class="btn-ink" style="height:28px;font-size:11px;padding:0 10px;flex-shrink:0;" (click)="copy(selectedItem()!.hashtags.join(' '), 'Hashtags')">Copy</button>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-
-            <!-- Narration script -->
-            @if (selectedItem()!.narration_script) {
-              <div>
-                <div style="font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-text-3);margin-bottom:8px;">🎙 Narration Script</div>
-                <div style="font-size:12px;background:var(--ink-raised);border:1px solid var(--ink-border);border-radius:4px;padding:10px 12px;color:var(--ink-text);line-height:1.7;white-space:pre-wrap;">{{ selectedItem()!.narration_script }}</div>
-              </div>
-            }
-
-            <!-- Platform status -->
-            <div>
-              <div style="font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-text-3);margin-bottom:8px;">📡 Platforms</div>
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                @for (p of platformRows(selectedItem()!); track p.key) {
-                  <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--ink-raised);border-radius:6px;border:1px solid var(--ink-border);">
-                    <span [style.width]="'8px'" [style.height]="'8px'" [style.border-radius]="'50%'" [style.flex-shrink]="'0'" [style.background]="p.dotColor"></span>
-                    <span style="font-size:12px;font-weight:600;color:var(--ink-text);width:28px;flex-shrink:0;">{{ p.label }}</span>
-                    <span [class]="'ink-badge ' + p.badgeClass" style="font-size:10px;">{{ p.status }}</span>
-                    @if (p.postId) {
-                      <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--ink-text-3);">{{ p.postId }}</span>
-                    }
-                    @if (!p.targeted) {
-                      <span style="font-size:10px;color:var(--ink-text-3);font-style:italic;">not targeted</span>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Source info -->
-            <div>
-              <div style="font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-text-3);margin-bottom:8px;">ℹ Info</div>
-              <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--ink-text-2);">
-                <div style="display:flex;gap:8px;"><span style="width:100px;color:var(--ink-text-3);">Source</span><span>{{ selectedItem()!.source_type }}</span></div>
-                <div style="display:flex;gap:8px;"><span style="width:100px;color:var(--ink-text-3);">Language</span><span>{{ selectedItem()!.language }}</span></div>
-                <div style="display:flex;gap:8px;"><span style="width:100px;color:var(--ink-text-3);">Clips</span><span>{{ selectedItem()!.source_clips.length ?? 0 }}</span></div>
-                @if (selectedItem()!.source_query) {
-                  <div style="display:flex;gap:8px;"><span style="width:100px;color:var(--ink-text-3);">Query</span><span style="font-style:italic;">{{ selectedItem()!.source_query }}</span></div>
-                }
-                <div style="display:flex;gap:8px;"><span style="width:100px;color:var(--ink-text-3);">Created</span><span>{{ selectedItem()!.created_at | date:'dd MMM yyyy, HH:mm' }}</span></div>
-                @if (selectedItem()!.rendered_at) {
-                  <div style="display:flex;gap:8px;"><span style="width:100px;color:var(--ink-text-3);">Rendered</span><span>{{ selectedItem()!.rendered_at | date:'dd MMM yyyy, HH:mm' }}</span></div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- Panel footer actions -->
-          <div style="padding:12px 20px;border-top:1px solid var(--ink-border);flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;">
-            @if (selectedItem()!.status === 'rendered') {
-              <button class="btn-brand" style="background:var(--ink-trending);" (click)="markPosted(selectedItem()!); selectedItem.set(null)">✓ Mark as Posted</button>
-            }
-            @if (selectedItem()!.rendered_video_url) {
-              <button class="btn-ink" (click)="copy(fullUploadPackage(selectedItem()!), 'Upload package')">📋 Copy Full Package</button>
-            }
-            <button class="btn-reject" style="margin-left:auto;" (click)="deleteOne(selectedItem()!); selectedItem.set(null)">Delete</button>
-          </div>
+        <div class="detail-panel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(700px,calc(100vw - 24px));max-height:90vh;border-radius:12px;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);">
+          <app-reel-detail
+            [item]="selectedItem()!"
+            (closePanel)="selectedItem.set(null)"
+            (itemUpdated)="onItemUpdated($event)"
+            (itemDeleted)="onItemDeleted($event)"
+          ></app-reel-detail>
         </div>
       </div>
     }
@@ -481,16 +394,43 @@ export class ReelListComponent implements OnInit {
 
   niches   = computed(() => [...new Set(this._allItems().map(i => i.niche))].sort());
   channels = computed(() => [...new Set(this._allItems().map(i => i.channel_key))].sort());
+  totalCount    = computed(() => this._allItems().length);
+  channelCounts = computed(() => {
+    const counts: Record<string, number> = {};
+    for (const item of this._allItems()) counts[item.channel_key] = (counts[item.channel_key] ?? 0) + 1;
+    return counts;
+  });
   readonly AVAILABLE_CHANNELS = AVAILABLE_CHANNELS;
+  readonly CHANNEL_PILLS = CHANNEL_PILLS;
+  readonly PAGES = PAGES;
+
+  filterPage = signal('');
+
+  pageCounts = computed(() => {
+    const counts: Record<string, number> = {};
+    for (const item of this._allItems()) {
+      for (const page of PAGES) {
+        if (page.channels.includes(item.channel_key)) {
+          counts[page.key] = (counts[page.key] ?? 0) + 1;
+        }
+      }
+    }
+    return counts;
+  });
 
   filteredItems = computed(() => {
     let items = [...this._allItems()];
     const q = this.filterSearch().toLowerCase();
     if (q) items = items.filter(i => (i.title ?? '').toLowerCase().includes(q) || i.channel_key.toLowerCase().includes(q));
+    const page    = this.filterPage();
     const niche   = this.filterNiche();
     const style   = this.filterStyle();
     const status  = this.filterStatus();
     const channel = this.filterChannel();
+    if (page) {
+      const channels = PAGES.find(p => p.key === page)?.channels ?? [];
+      items = items.filter(i => channels.includes(i.channel_key));
+    }
     if (niche)   items = items.filter(i => i.niche === niche);
     if (style)   items = items.filter(i => i.style === style);
     if (status)  items = items.filter(i => i.status === status);
@@ -598,6 +538,38 @@ export class ReelListComponent implements OnInit {
 
   openDetail(item: ContentItem) { this.selectedItem.set(item); }
 
+  setPage(key: string) {
+    this.filterPage.set(key);
+    this.currentPage.set(0);
+  }
+
+  pageAccentClass(): string {
+    const page = this.filterPage();
+    const map: Record<string, string> = {
+      'Wild Capture':       'ca-wild',
+      'NaturePulse':        'ca-nature',
+      'NatureFrame':        'ca-frame',
+      "France Aujourd'hui": 'ca-fr',
+      'Vivere in Italia':   'ca-it',
+    };
+    return map[page] ?? '';
+  }
+
+  onItemUpdated(item: ContentItem) {
+    this._allItems.update(items => items.map(i => i.id === item.id ? item : i));
+  }
+
+  async onItemDeleted(id: number) {
+    try {
+      await this.supabase.deleteContentItem(id);
+      this._allItems.update(items => items.filter(i => i.id !== id));
+      this.selectedItem.set(null);
+      this.showToast('Deleted');
+    } catch (err: any) {
+      this.showToast(err.message, false);
+    }
+  }
+
   async markPosted(item: ContentItem) {
     try {
       await this.supabase.updateContentItemStatus(item.id, 'posted', {
@@ -704,6 +676,9 @@ export class ReelListComponent implements OnInit {
 
   statusBadgeClass(status: string): string {
     return ({
+      brief:      'ib-ai',
+      storyboard: 'ib-ai',
+      generating: 'ib-alert',
       pending:    '',
       rendering:  'ib-alert',
       rendered:   'ib-trending',
@@ -712,6 +687,22 @@ export class ReelListComponent implements OnInit {
       failed:     'ib-breaking',
       blocked:    'ib-breaking',
     } as any)[status] ?? '';
+  }
+
+  sceneStatusClass(status: string): string {
+    return ({
+      image_done: 'ib-ai',
+      video_done: 'ib-trending',
+      blocked:    'ib-breaking',
+    } as any)[status] ?? '';
+  }
+
+  visionBadgeClass(status: string): string {
+    return ({ pass: 'ib-standard', blocked: 'ib-breaking', retry: 'ib-alert' } as any)[status] ?? 'ib-ai';
+  }
+
+  hasPlatformActivity(item: ContentItem): boolean {
+    return ['fb', 'ig', 'yt', 'tt'].some(p => item.target_platforms?.includes(p));
   }
 
   platformDotColor(item: ContentItem, key: string): string {
