@@ -34,9 +34,8 @@ import {
               <div>
                 <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Model</label>
                 <select class="ink-select" style="height:30px;font-size:12px;padding:0 8px;width:100%;"
-                  [value]="draft().imageModel ?? CHANNEL_DEFAULTS.imageModel"
                   (change)="patch('imageModel', $any($event.target).value)">
-                  @for (m of IMAGE_MODELS; track m.id) { <option [value]="m.id">{{ m.label }}</option> }
+                  @for (m of IMAGE_MODELS; track m.id) { <option [value]="m.id" [selected]="(draft().imageModel ?? CHANNEL_DEFAULTS.imageModel) === m.id">{{ m.label }}</option> }
                 </select>
               </div>
               <div style="display:flex;gap:20px;flex-wrap:wrap;">
@@ -67,9 +66,8 @@ import {
               <div>
                 <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Model</label>
                 <select class="ink-select" style="height:30px;font-size:12px;padding:0 8px;width:100%;"
-                  [value]="draft().videoModel ?? CHANNEL_DEFAULTS.videoModel"
                   (change)="patch('videoModel', $any($event.target).value)">
-                  @for (m of VIDEO_MODELS; track m.id) { <option [value]="m.id">{{ m.label }}</option> }
+                  @for (m of VIDEO_MODELS; track m.id) { <option [value]="m.id" [selected]="(draft().videoModel ?? CHANNEL_DEFAULTS.videoModel) === m.id">{{ m.label }}</option> }
                 </select>
               </div>
               <div>

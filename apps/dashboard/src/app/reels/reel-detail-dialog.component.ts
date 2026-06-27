@@ -428,10 +428,9 @@ const TRANSITION_OPTIONS = [
               <div>
                 <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Model</label>
                 <select class="ink-select" style="height:30px;font-size:12px;padding:0 8px;width:100%;"
-                  [value]="genConfigDraft().imageModel ?? chDefault('imageModel')"
                   (change)="patchConfig('imageModel', $any($event.target).value)">
                   @for (m of IMAGE_MODELS; track m.id) {
-                    <option [value]="m.id">{{ m.label }}</option>
+                    <option [value]="m.id" [selected]="(genConfigDraft().imageModel ?? chDefault('imageModel')) === m.id">{{ m.label }}</option>
                   }
                 </select>
               </div>
@@ -466,10 +465,11 @@ const TRANSITION_OPTIONS = [
                 <div>
                   <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Model</label>
                   <select class="ink-select" style="height:30px;font-size:12px;padding:0 8px;width:100%;"
-                    [value]="genConfigDraft().videoModel ?? chDefault('videoModel')"
                     (change)="patchConfig('videoModel', $any($event.target).value)">
                     @for (m of VIDEO_MODELS; track m.id) {
-                      <option [value]="m.id" [disabled]="item.format === '21s' && !m.endImage">
+                      <option [value]="m.id"
+                        [selected]="(genConfigDraft().videoModel ?? chDefault('videoModel')) === m.id"
+                        [disabled]="item.format === '21s' && !m.endImage">
                         {{ m.label }}{{ item.format === '21s' && !m.endImage ? ' — no end_image ✗' : '' }}
                       </option>
                     }
