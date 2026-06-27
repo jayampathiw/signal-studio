@@ -109,19 +109,23 @@ WHERE id = $id;
 
 Claim the row: `UPDATE content_items SET status = 'generating' WHERE id = $id` — prevents collision with another session.
 
-**Generation config resolution.** Model and resolution are NOT hardcoded. Resolve each value with precedence **reel `gen_config` → channel default**, where `channel` is the `wildlife/intimacy/EN` block in `apps/video/src/config/channels.js`:
+**Generation config resolution.** Model and resolution are NOT hardcoded. There are **three** layers, in precedence order: per-reel `gen_config` → **channel config** (`channel_configs` table) → channel code default (`apps/video/src/config/channels.js`, the `wildlife/intimacy/EN` block). First **fetch the channel config row** via the Supabase MCP:
+```sql
+SELECT config FROM channel_configs WHERE channel_key = '<channel_key>';  -- jsonb; {} or no row = none set
 ```
-imageModel = gen_config.imageModel ?? channel.imageModel   // default 'nano_banana_pro'
-videoModel = gen_config.videoModel ?? channel.videoModel   // default 'seedance_2_0'
-imageRes   = gen_config.imageRes   ?? channel.imageRes      // default '2k'
-videoRes   = gen_config.videoRes   ?? channel.videoRes      // default '720p'
-aspectRatio= gen_config.aspectRatio?? channel.aspectRatio   // default '9:16'
-generateAudio = channel.generateAudio                       // default true
-durationSec= scene.durationSec ?? gen_config.duration ?? format.durationSec
+Call its `config` jsonb `chan_cfg` (treat a missing row as `{}`), and `channel` the code-default block. Resolve each value:
 ```
-**Duration:** resolve per scene as `scene.durationSec ?? gen_config.duration ?? format.durationSec` (11s preset → 11, 21s preset → 21 split across its scenes). A per-scene `durationSec` always wins; `gen_config.duration` is the single-clip override for single-scene formats (e.g. an `11s`-format reel set to 15s). **Clamp** the final value to the chosen `videoModel`'s valid range (see `docs/higgsfield-models.md`: `seedance_2_0`/`mini` 4–15s, `kling3_0` 3–15s, `wan2_7` 2–15s, `seedance_1_5` only 4/8/12s) — never pass `--duration` outside it.
+imageModel = gen_config.imageModel ?? chan_cfg.imageModel ?? channel.imageModel   // default 'nano_banana_pro'
+videoModel = gen_config.videoModel ?? chan_cfg.videoModel ?? channel.videoModel   // default 'seedance_2_0'
+imageRes   = gen_config.imageRes   ?? chan_cfg.imageRes   ?? channel.imageRes      // default '2k'
+videoRes   = gen_config.videoRes   ?? chan_cfg.videoRes   ?? channel.videoRes      // default '720p'
+aspectRatio= gen_config.aspectRatio?? chan_cfg.aspectRatio?? channel.aspectRatio   // default '9:16'
+generateAudio = channel.generateAudio                                             // default true
+durationSec= scene.durationSec ?? gen_config.duration ?? chan_cfg.duration ?? format.durationSec
+```
+**Duration:** resolve per scene as `scene.durationSec ?? gen_config.duration ?? chan_cfg.duration ?? format.durationSec` (11s preset → 11, 21s preset → 21 split across its scenes). A per-scene `durationSec` always wins; `gen_config.duration` is the single-clip override for single-scene formats (e.g. an `11s`-format reel set to 15s); `chan_cfg.duration` is the channel-wide default when no reel override is set. **Clamp** the final value to the chosen `videoModel`'s valid range (see `docs/higgsfield-models.md`: `seedance_2_0`/`mini` 4–15s, `kling3_0` 3–15s, `wan2_7` 2–15s, `seedance_1_5` only 4/8/12s) — never pass `--duration` outside it.
 
-`gen_config` is the per-reel jsonb column on `content_items` (set from the dashboard Config tab; null when unset). Use the canonical MCP model IDs — see `docs/higgsfield-models.md` for the authoritative list (`nano_banana_pro`, `seedance_2_0`, etc.). For `21s` (scenario `3`) the video model MUST support the `end_image` role — `seedance_2_0`, `kling3_0`, `wan2_7`, `cinematic_studio_3_0`, `seedance_1_5` do; `kling3_0_turbo` does NOT.
+`gen_config` is the per-reel jsonb column on `content_items` (set from the dashboard Config tab; null when unset). `channel_configs` holds per-channel (“page”) defaults set from the dashboard page-strip **⚙ Defaults** editor (keyed by `channel_key`; absent = use code defaults). Use the canonical MCP model IDs — see `docs/higgsfield-models.md` for the authoritative list (`nano_banana_pro`, `seedance_2_0`, etc.). For `21s` (scenario `3`) the video model MUST support the `end_image` role — `seedance_2_0`, `kling3_0`, `wan2_7`, `cinematic_studio_3_0`, `seedance_1_5` do; `kling3_0_turbo` does NOT.
 
 **Generation order depends on the scenarios assigned in Step 2:**
 - **Any scene is scenario `3` (chain):** run **two-phase** — Phase A generates ALL start frames first, then Phase B generates all videos (each video's end frame = the next scene's start frame). The chain only works if every start frame exists before any video is generated.

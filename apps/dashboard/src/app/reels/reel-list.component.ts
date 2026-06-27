@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { ContentItem, ContentItemScene, ContentItemStats, RenderQueueStats, SupabaseService } from '../core/supabase.service';
 import { ReelDetailComponent } from './reel-detail-dialog.component';
+import { ChannelConfigDialogComponent } from './channel-config-dialog.component';
 
 const STYLE_COLORS: Record<string, string> = {
   factual:   'rgba(30,122,255,.15)',
@@ -51,7 +52,7 @@ const AVAILABLE_CHANNELS = [
 @Component({
   selector: 'app-reel-list',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, ReelDetailComponent],
+  imports: [DatePipe, DecimalPipe, RouterLink, ReelDetailComponent, ChannelConfigDialogComponent],
   template: `
     <!-- Navbar -->
     <nav class="ink-navbar" style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;">
@@ -89,7 +90,17 @@ const AVAILABLE_CHANNELS = [
           }
         </button>
       }
+      @if (filterPage()) {
+        <button class="channel-pill" (click)="openChannelConfig()" title="Edit generation defaults for this page (channel_configs)">⚙ Defaults</button>
+      }
     </div>
+
+    @if (channelConfigKey()) {
+      <app-channel-config-dialog
+        [channelKey]="channelConfigKey()!"
+        [channelLabel]="channelConfigLabel()"
+        (close)="channelConfigKey.set(null)" />
+    }
 
     <div [class]="pageAccentClass()" style="min-height:calc(100vh - 100px);">
       <div style="max-width:960px;margin:0 auto;padding:16px 12px 64px;">
@@ -541,6 +552,21 @@ export class ReelListComponent implements OnInit {
   setPage(key: string) {
     this.filterPage.set(key);
     this.currentPage.set(0);
+  }
+
+  // Channel-level ("page") defaults editor. Opens channel_configs for the selected
+  // page's channel — uses the filtered channel if one is set, else the page's first.
+  channelConfigKey   = signal<string | null>(null);
+  channelConfigLabel = signal('');
+
+  openChannelConfig() {
+    const page = PAGES.find(p => p.key === this.filterPage());
+    if (!page) return;
+    const key = (this.filterChannel() && page.channels.includes(this.filterChannel()))
+      ? this.filterChannel()
+      : page.channels[0];
+    this.channelConfigKey.set(key);
+    this.channelConfigLabel.set(page.label);
   }
 
   pageAccentClass(): string {

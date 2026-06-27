@@ -452,6 +452,22 @@ export class SupabaseService {
     if (error) throw error;
   }
 
+  // Channel-level ("page") generation defaults. Precedence at generation time:
+  // reel gen_config → channel_configs.config (this) → channels.js code default.
+  async getChannelConfig(channelKey: string): Promise<GenConfig | null> {
+    const { data, error } = await this.client
+      .from('channel_configs').select('config').eq('channel_key', channelKey).maybeSingle();
+    if (error) throw error;
+    return (data?.config as GenConfig) ?? null;
+  }
+
+  async upsertChannelConfig(channelKey: string, config: GenConfig): Promise<void> {
+    const { error } = await this.client
+      .from('channel_configs')
+      .upsert({ channel_key: channelKey, config, updated_at: new Date().toISOString() }, { onConflict: 'channel_key' });
+    if (error) throw error;
+  }
+
   async queueRender(channelKey: string): Promise<void> {
     const { error } = await this.client.from('render_queue').insert({ channel_key: channelKey });
     if (error) throw error;
