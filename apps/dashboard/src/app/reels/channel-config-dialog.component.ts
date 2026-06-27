@@ -166,8 +166,9 @@ export class ChannelConfigDialogComponent implements OnInit {
     try {
       await this.supabase.upsertChannelConfig(this.channelKey, this.draft());
       this.dirty.set(false);
-      this.toast.set('Saved');
-      setTimeout(() => this.toast.set(''), 2500);
+      this.saving.set(false);
+      this.close.emit();
+      return;
     } catch (err: any) {
       this.toast.set(err.message ?? 'Save failed');
     } finally {

@@ -428,7 +428,7 @@ const TRANSITION_OPTIONS = [
               <div>
                 <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Model</label>
                 <select class="ink-select" style="height:30px;font-size:12px;padding:0 8px;width:100%;"
-                  [value]="genConfigDraft().imageModel ?? CHANNEL_DEFAULTS.imageModel"
+                  [value]="genConfigDraft().imageModel ?? chDefault('imageModel')"
                   (change)="patchConfig('imageModel', $any($event.target).value)">
                   @for (m of IMAGE_MODELS; track m.id) {
                     <option [value]="m.id">{{ m.label }}</option>
@@ -440,7 +440,7 @@ const TRANSITION_OPTIONS = [
                   <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Resolution</label>
                   <div style="display:flex;gap:4px;">
                     @for (r of IMAGE_RES; track r) {
-                      <button [class]="'pill ' + ((genConfigDraft().imageRes ?? CHANNEL_DEFAULTS.imageRes) === r ? 'pill-on' : '')"
+                      <button [class]="'pill ' + ((genConfigDraft().imageRes ?? chDefault('imageRes')) === r ? 'pill-on' : '')"
                         (click)="patchConfig('imageRes', r)">{{ r.toUpperCase() }}</button>
                     }
                   </div>
@@ -449,7 +449,7 @@ const TRANSITION_OPTIONS = [
                   <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Aspect Ratio</label>
                   <div style="display:flex;gap:4px;">
                     @for (a of ASPECT_RATIOS; track a) {
-                      <button [class]="'pill ' + ((genConfigDraft().aspectRatio ?? CHANNEL_DEFAULTS.aspectRatio) === a ? 'pill-on' : '')"
+                      <button [class]="'pill ' + ((genConfigDraft().aspectRatio ?? chDefault('aspectRatio')) === a ? 'pill-on' : '')"
                         (click)="patchConfig('aspectRatio', a)">{{ a }}</button>
                     }
                   </div>
@@ -466,7 +466,7 @@ const TRANSITION_OPTIONS = [
                 <div>
                   <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Model</label>
                   <select class="ink-select" style="height:30px;font-size:12px;padding:0 8px;width:100%;"
-                    [value]="genConfigDraft().videoModel ?? CHANNEL_DEFAULTS.videoModel"
+                    [value]="genConfigDraft().videoModel ?? chDefault('videoModel')"
                     (change)="patchConfig('videoModel', $any($event.target).value)">
                     @for (m of VIDEO_MODELS; track m.id) {
                       <option [value]="m.id" [disabled]="item.format === '21s' && !m.endImage">
@@ -482,7 +482,7 @@ const TRANSITION_OPTIONS = [
                   <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Resolution</label>
                   <div style="display:flex;gap:4px;flex-wrap:wrap;">
                     @for (r of VIDEO_RES; track r) {
-                      <button [class]="'pill ' + ((genConfigDraft().videoRes ?? CHANNEL_DEFAULTS.videoRes) === r ? 'pill-on' : '')"
+                      <button [class]="'pill ' + ((genConfigDraft().videoRes ?? chDefault('videoRes')) === r ? 'pill-on' : '')"
                         (click)="patchConfig('videoRes', r)">{{ r }}</button>
                     }
                   </div>
@@ -496,7 +496,7 @@ const TRANSITION_OPTIONS = [
                       [value]="resolvedDuration()"
                       (change)="setDuration($any($event.target).value)" />
                     <p style="font-size:9px;color:var(--ink-text-3);margin:4px 0 0;">
-                      {{ genConfigDraft().videoModel ?? CHANNEL_DEFAULTS.videoModel }} supports {{ durationRange().min }}–{{ durationRange().max }}s@if (durationRange().fixed) { · valid: {{ durationRange().fixed?.join(' / ') }}s }. Default {{ formatDurationDefault() }}s from {{ item.format }} preset.
+                      {{ genConfigDraft().videoModel ?? chDefault('videoModel') }} supports {{ durationRange().min }}–{{ durationRange().max }}s@if (durationRange().fixed) { · valid: {{ durationRange().fixed?.join(' / ') }}s }. Default {{ formatDurationDefault() }}s from {{ item.format }} preset.
                     </p>
                   </div>
                 }
@@ -697,6 +697,10 @@ export class ReelDetailComponent implements OnInit, OnChanges, OnDestroy {
   readonly ASPECT_RATIOS       = ASPECT_RATIOS;
   readonly CHANNEL_DEFAULTS    = CHANNEL_DEFAULTS;
 
+  // Channel-level defaults (channel_configs row) — the fallback layer between this
+  // reel's gen_config and the hardcoded code defaults, mirroring the skill's chain.
+  channelConfig = signal<GenConfig>({});
+
   private toastTimer: any;
   private _originalScenes: ContentItemScene[] = [];
 
@@ -716,11 +720,22 @@ export class ReelDetailComponent implements OnInit, OnChanges, OnDestroy {
     this._dirty.set(new Set());
     this.genConfigDraft.set(structuredClone(this.item.gen_config ?? {}));
     this._genConfigDirty.set(false);
+    this.channelConfig.set({});
+    if (this.item.channel_key) {
+      this.supabase.getChannelConfig(this.item.channel_key)
+        .then(c => this.channelConfig.set(c ?? {}))
+        .catch(() => this.channelConfig.set({}));
+    }
   }
 
   // ── Generation config (per-reel gen_config jsonb) ─────────
 
   genConfigDirty() { return this._genConfigDirty(); }
+
+  // Effective default for a field: channel_configs value, else hardcoded code default.
+  chDefault(field: keyof GenConfig): any {
+    return (this.channelConfig() as any)[field] ?? (CHANNEL_DEFAULTS as any)[field];
+  }
 
   patchConfig(field: keyof GenConfig, val: any) {
     this.genConfigDraft.update(c => ({ ...c, [field]: val }));
@@ -730,16 +745,16 @@ export class ReelDetailComponent implements OnInit, OnChanges, OnDestroy {
   // Clip-duration override (gen_config.duration). Overrides the format preset;
   // resolved/clamped to the selected video model's valid range.
   durationRange() {
-    return durationRangeFor(this.genConfigDraft().videoModel ?? CHANNEL_DEFAULTS.videoModel);
+    return durationRangeFor(this.genConfigDraft().videoModel ?? this.chDefault('videoModel'));
   }
   formatDurationDefault(): number {
     return this.item.format === '21s' ? 21 : 11;
   }
   resolvedDuration(): number {
-    return this.genConfigDraft().duration ?? this.formatDurationDefault();
+    return this.genConfigDraft().duration ?? this.channelConfig().duration ?? this.formatDurationDefault();
   }
   setDuration(raw: any) {
-    const v = clampDuration(raw, this.genConfigDraft().videoModel ?? CHANNEL_DEFAULTS.videoModel);
+    const v = clampDuration(raw, this.genConfigDraft().videoModel ?? this.chDefault('videoModel'));
     if (v !== null) this.patchConfig('duration', v);
   }
 
