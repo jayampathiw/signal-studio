@@ -57,6 +57,19 @@ const VIDEO_MODELS: { id: string; label: string; endImage: boolean }[] = [
   { id: 'cinematic_studio_3_0',label: 'Cinema Studio 3.0 — Higgsfield · premium',        endImage: true },
 ];
 
+// Per-model clip-duration limits (seconds). `fixed` = only these exact values are
+// valid (e.g. Seedance 1.5). Source: docs/higgsfield-models.md.
+const DURATION_RANGE: Record<string, { min: number; max: number; fixed?: number[] }> = {
+  seedance_2_0:         { min: 4, max: 15 },
+  seedance_2_0_mini:    { min: 4, max: 15 },
+  seedance_1_5:         { min: 4, max: 12, fixed: [4, 8, 12] },
+  kling3_0:             { min: 3, max: 15 },
+  kling3_0_turbo:       { min: 3, max: 15 },
+  wan2_7:               { min: 2, max: 15 },
+  cinematic_studio_3_0: { min: 4, max: 15 },
+};
+const DEFAULT_DURATION_RANGE = { min: 2, max: 15 };
+
 const IMAGE_RES = ['1k', '2k', '4k'];
 const VIDEO_RES = ['480p', '720p', '1080p', '4k'];
 const ASPECT_RATIOS = ['9:16', '16:9', '1:1'];
@@ -519,6 +532,19 @@ const CHANNEL_DEFAULTS = {
                     }
                   </div>
                 </div>
+                <!-- Clip duration (gen_config.duration) — overrides the format preset. -->
+                @if (item.format !== '21s') {
+                  <div>
+                    <label style="font-size:9px;color:var(--ink-text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Clip duration (s)</label>
+                    <input type="number" class="ink-select" style="height:30px;font-size:12px;padding:0 8px;width:120px;"
+                      [min]="durationRange().min" [max]="durationRange().max" step="1"
+                      [value]="resolvedDuration()"
+                      (change)="setDuration($any($event.target).value)" />
+                    <p style="font-size:9px;color:var(--ink-text-3);margin:4px 0 0;">
+                      {{ genConfigDraft().videoModel ?? CHANNEL_DEFAULTS.videoModel }} supports {{ durationRange().min }}–{{ durationRange().max }}s@if (durationRange().fixed) { · valid: {{ durationRange().fixed?.join(' / ') }}s }. Default {{ formatDurationDefault() }}s from {{ item.format }} preset.
+                    </p>
+                  </div>
+                }
               </div>
             </div>
           }
@@ -744,6 +770,26 @@ export class ReelDetailComponent implements OnInit, OnChanges, OnDestroy {
   patchConfig(field: keyof GenConfig, val: any) {
     this.genConfigDraft.update(c => ({ ...c, [field]: val }));
     this._genConfigDirty.set(true);
+  }
+
+  // Clip-duration override (gen_config.duration). Overrides the format preset;
+  // resolved/clamped to the selected video model's valid range.
+  durationRange() {
+    const model = this.genConfigDraft().videoModel ?? CHANNEL_DEFAULTS.videoModel;
+    return DURATION_RANGE[model] ?? DEFAULT_DURATION_RANGE;
+  }
+  formatDurationDefault(): number {
+    return this.item.format === '21s' ? 21 : 11;
+  }
+  resolvedDuration(): number {
+    return this.genConfigDraft().duration ?? this.formatDurationDefault();
+  }
+  setDuration(raw: any) {
+    const r = this.durationRange();
+    let v = Math.round(Number(raw));
+    if (!Number.isFinite(v)) return;
+    v = Math.min(r.max, Math.max(r.min, v));
+    this.patchConfig('duration', v);
   }
 
   async saveConfig() {

@@ -117,7 +117,10 @@ imageRes   = gen_config.imageRes   ?? channel.imageRes      // default '2k'
 videoRes   = gen_config.videoRes   ?? channel.videoRes      // default '720p'
 aspectRatio= gen_config.aspectRatio?? channel.aspectRatio   // default '9:16'
 generateAudio = channel.generateAudio                       // default true
+durationSec= scene.durationSec ?? gen_config.duration ?? format.durationSec
 ```
+**Duration:** resolve per scene as `scene.durationSec ?? gen_config.duration ?? format.durationSec` (11s preset → 11, 21s preset → 21 split across its scenes). A per-scene `durationSec` always wins; `gen_config.duration` is the single-clip override for single-scene formats (e.g. an `11s`-format reel set to 15s). **Clamp** the final value to the chosen `videoModel`'s valid range (see `docs/higgsfield-models.md`: `seedance_2_0`/`mini` 4–15s, `kling3_0` 3–15s, `wan2_7` 2–15s, `seedance_1_5` only 4/8/12s) — never pass `--duration` outside it.
+
 `gen_config` is the per-reel jsonb column on `content_items` (set from the dashboard Config tab; null when unset). Use the canonical MCP model IDs — see `docs/higgsfield-models.md` for the authoritative list (`nano_banana_pro`, `seedance_2_0`, etc.). For `21s` (scenario `3`) the video model MUST support the `end_image` role — `seedance_2_0`, `kling3_0`, `wan2_7`, `cinematic_studio_3_0`, `seedance_1_5` do; `kling3_0_turbo` does NOT.
 
 **Generation order depends on the scenarios assigned in Step 2:**
