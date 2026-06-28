@@ -18,6 +18,11 @@ output/
 /tmp/documentary/
 /tmp/reels/
 **/.remotion/
+temp/
+productions/
+
+# Supabase CLI local cache
+supabase/.temp/
 
 # Python
 __pycache__/
