@@ -9,6 +9,7 @@ export async function fetchNewsAPI(query, language, country) {
 
   try {
     const response = await axios.get('https://newsapi.org/v2/everything', {
+      timeout: 15_000,
       params: {
         q: query,
         language,
