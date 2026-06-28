@@ -8,6 +8,8 @@
 > **Wild Eye is the first channel on a generic multi-channel platform.**
 > Cloud automation architecture (generic, reusable for Sports/Cartoon/etc.): `docs/cloud-automation-workflow.md`
 > Wild Eye channel-specific automation notes: `docs/wild-eye/cloud-automation-workflow.md`
+>
+> ⚠️ **This is a point-in-time integration record (2026-06-21..22).** Some inventory tables below predate the 3-tier skills consolidation (the `higgsfield-storyboard`, `higgsfield-scene-video`, and `virality-gate` skills were removed; `tracker.mjs` was built). For the live "what's done vs pending" view, use **`docs/PROJECT-STATUS.md`**.
 
 ---
 
@@ -331,14 +333,17 @@ The DB (`content_items`) is the source of truth for lifecycle/status. The `produ
 | `apps/video/knowledge/wild-eye/seo-examples.md` | ✅ |
 | `apps/video/scripts/safe-language-lint.mjs` | ✅ |
 | `apps/video/src/sources/higgsfield.md` | ✅ |
-| `apps/video/scripts/tracker.mjs` | ⬜ Not yet built (optional) |
-| `.claude/skills/wild-eye-reel/SKILL.md` | ✅ |
+| `apps/video/scripts/tracker.mjs` | ✅ Built (2026-06-23) |
+| `apps/video/scripts/assemble-reel.mjs` | ✅ Built (21s FFmpeg concat → R2) |
+| `apps/video/src/config/channel-slugs.js` | ✅ Built (slug → channel_key registry) |
+| `.claude/skills/wild-eye-reel/SKILL.md` | ✅ (rewired to `higgsfield:generate`) |
 | `.claude/skills/wild-eye-brief/SKILL.md` | ✅ |
-| `.claude/skills/higgsfield-storyboard/SKILL.md` | ✅ |
-| `.claude/skills/higgsfield-scene-video/SKILL.md` | ✅ |
 | `.claude/skills/higgsfield-credit-guard/SKILL.md` | ✅ |
-| `.claude/skills/virality-gate/SKILL.md` | ✅ |
+| ~~`.claude/skills/higgsfield-storyboard/SKILL.md`~~ | ❌ Removed — replaced by Tier 1 `higgsfield:generate` |
+| ~~`.claude/skills/higgsfield-scene-video/SKILL.md`~~ | ❌ Removed — replaced by Tier 1 |
+| ~~`.claude/skills/virality-gate/SKILL.md`~~ | ❌ Removed — built into Tier 1 |
 | `.claude/agents/continuity-checker.md` | ✅ |
+| `.claude/agents/image-quality-gate.md` | ✅ (hard vision gate) |
 | `.claude/agents/seo-writer.md` | ✅ |
 | `.claude/agents/performance-analyst.md` | ✅ |
 | `.claude/commands/new-wild-reel.md` | ✅ |
