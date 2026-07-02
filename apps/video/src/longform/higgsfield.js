@@ -35,12 +35,17 @@ function isRateLimit(err) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Build `--name value` CLI args from a params object (skips null/undefined). */
+/** Build `--name value` CLI args from a params object (skips null/undefined).
+ *  Array values emit one --flag per element (e.g. image_references). */
 function paramArgs(params) {
   const out = [];
   for (const [k, v] of Object.entries(params)) {
     if (v === null || v === undefined) continue;
-    out.push(`--${k}`, String(v));
+    if (Array.isArray(v)) {
+      for (const item of v) out.push(`--${k}`, String(item));
+    } else {
+      out.push(`--${k}`, String(v));
+    }
   }
   return out;
 }

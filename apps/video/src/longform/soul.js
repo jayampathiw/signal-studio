@@ -40,7 +40,7 @@ export async function generatePrecisionStill({ prompt, referenceMediaIds = [], a
   const params = {
     prompt: fullPrompt(prompt),
     aspect_ratio: aspectRatio,
-    ...(referenceMediaIds.length ? { image_references: referenceMediaIds.join(',') } : {}),
+    ...(referenceMediaIds.length ? { image_references: referenceMediaIds } : {}),
   };
   const jobId = await submit('nano_banana_2', params);
   const { url } = await poll(jobId);
