@@ -12,6 +12,7 @@ Start here. This folder is the canonical documentation set for the project; each
 | 4 | [`video-generation-flow.md`](video-generation-flow.md) | The definitive reel lifecycle: brief → scenes → scenarios → status → rendered, with the `scenes` jsonb shape | Working on generation |
 | 5 | [`higgsfield-models.md`](higgsfield-models.md) | Higgsfield image/video model IDs, params, and the Scenario-3 `end_image` constraint | Picking or wiring models |
 | 6 | [`wild-eye/`](wild-eye/) | Wild Capture channel-specific addenda (schedule, formats, integration history) | Working on Wild Capture |
+| 7 | [`long-form-pipeline-plan.md`](long-form-pipeline-plan.md) | **Active initiative.** Design + build tracker for the long-form (10–15 min+) parallel generation pipeline | Building long-form |
 
 ## Also authoritative (outside this folder)
 

@@ -305,6 +305,43 @@ export const CHANNELS = {
     watermarkFile: 'vivere_in_italia_banner_logo.png',
     pageName: 'Vivere in Italia',
   },
+
+  // ── South American Football & Diaspora Stories — long-form documentary ─────
+  // Parallel long-form pipeline (docs/long-form-pipeline-plan.md). Input is a
+  // structured shot list; clips generated 8-wide with shared reference images.
+  'football/documentary/EN': {
+    niche: 'football',
+    style: 'documentary',
+    language: 'EN',
+    contentLanguage: 'English',
+    source: 'higgsfield',
+    renderer: 'higgsfield',
+    imageModel: 'nano_banana_2',     // reference-image bible (Higgsfield "Nano Banana Pro")
+    videoModel: 'seedance_2_0_mini', // unlimited this month; 8-concurrent ceiling
+    imageRes: '2k',
+    videoRes: '720p',
+    aspectRatio: '16:9',
+    generateAudio: false,            // VO is per-scene TTS, mixed in assembly
+    concurrency: 8,                  // Higgsfield per-account ceiling (API-enforced)
+    formats: {
+      'long_form': {
+        type: 'long_form',
+        generationStrategy: 'reference_pool',  // shared reference images + rolling 8-wide pool
+        clipDurationSec: 15,                    // max per clip; actual = per-scene VO length
+        narration: true,
+        narrationProvider: 'kokoro',            // per-scene TTS (@signal-studio/media)
+        music: true,
+        validation: { look: true, semanticAction: true }, // both gates (Phase 0 decision)
+        // targetDurationSec is per-project (from the shot list), not fixed here
+        description: 'Long-form documentary. Shot-list driven, parallel generation + validation.',
+      },
+    },
+    platforms: {
+      youtube: { enabled: true, envKey: 'FOOTBALL' },
+    },
+    watermarkFile: null,
+    pageName: 'South American Football Stories',
+  },
 };
 
 export function getChannel(key) {
