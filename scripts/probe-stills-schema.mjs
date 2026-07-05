@@ -33,7 +33,7 @@ async function main() {
   // Seed a dummy content_items row
   const { data: item, error: iErr } = await db
     .from('content_items')
-    .upsert({ id: PROBE_PROJECT, title: '__probe__', status: 'brief', channel: 'football/documentary/EN' }, { onConflict: 'id' })
+    .upsert({ id: PROBE_PROJECT, title: '__probe__', status: 'brief', channel_key: 'football/documentary/EN' }, { onConflict: 'id' })
     .select('id')
     .single();
   if (iErr) throw new Error(`Setup failed: ${iErr.message}`);
