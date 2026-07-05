@@ -1,3 +1,8 @@
+// DEPRECATED — longform stills are generated manually via Google Flow (see docs/longform-final-plan.md).
+// This script submits Higgsfield jobs which are no longer used in the longform pipeline.
+console.error('DEPRECATED: generate-references.mjs is not used in the current pipeline.\nStills and refs are generated manually via Google Flow. See docs/longform-final-plan.md.');
+process.exit(1);
+
 // Phase 3 — Reference images + gate (docs/long-form-pipeline-plan.md §4 Phase 3).
 // Generates the character/motif reference images in the 8-wide image pool, gates
 // each with the vision quality gate, and stores the reusable higgsfield_media_id.

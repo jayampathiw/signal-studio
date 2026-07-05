@@ -36,7 +36,7 @@ Status is tracked per **area**. Each area links to where the work lives. Deep de
 | Publishing (Facebook) | 🐞 | Works for news; **blank caption bug** for Wild Eye reels |
 | Publishing (IG / YT / TikTok) | ⬜ | Stubs that throw |
 | Future channels (Sports, Cartoon) | ⬜ | Stubbed in config + cron comments |
-| Long-form `chapter_chain` format | 🔄 | Design agreed (parallel rolling-pool, supersedes LLM-per-chapter); build not started — tracker: `docs/long-form-pipeline-plan.md` |
+| Long-form pipeline | 🔄 | **Merged final plan active** — stills-only, cloud-first, F0 complete; tracker: `docs/longform-final-plan.md` (phases F0–F10; F0 ✅ F1–F10 ⬜) |
 
 **The one critical blocker before the first publishable reel:** the SEO→publish caption bug (§6.1).
 

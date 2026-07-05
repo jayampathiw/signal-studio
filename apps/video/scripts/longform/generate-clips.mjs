@@ -1,3 +1,7 @@
+// DEPRECATED — Higgsfield video generation is not used in the stills-only pipeline (see docs/longform-final-plan.md).
+console.error('DEPRECATED: generate-clips.mjs is not used in the current pipeline.\nThe longform pipeline is stills-only; all visuals come from manually generated stills. See docs/longform-final-plan.md.');
+process.exit(1);
+
 // Phase 4 — Generation pool (docs/long-form-pipeline-plan.md §4 Phase 2).
 // Generates every clip in the 8-wide rolling pool, each conditioned on its
 // reference image(s) for cross-scene consistency. Resumable: reprocesses only

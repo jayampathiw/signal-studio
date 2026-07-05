@@ -1,5 +1,9 @@
 # Long-Form v2 — Readiness Audit & Phase/Task Breakdown
 
+> ⚠️ **SUPERSEDED 2026-07-05.** This plan is kept for reference only.
+> **Execute from `docs/longform-final-plan.md`** (phases F0–F10) — the merged
+> stills-only, cloud-first final plan. Do not update this document.
+
 > Companion to `docs/longform-v2-image-first-plan.md` (the *what/why*). This doc is the *how*:
 > verified prerequisites, then phases where **every phase ends with something runnable and testable**,
 > broken into junior-developer-sized tasks with acceptance criteria.

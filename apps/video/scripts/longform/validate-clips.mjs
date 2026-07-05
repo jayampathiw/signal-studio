@@ -1,3 +1,7 @@
+// DEPRECATED — the video-clip validation pool is not used in the stills-only pipeline (see docs/longform-final-plan.md).
+console.error('DEPRECATED: validate-clips.mjs is not used in the current pipeline.\nThe longform pipeline is stills-only with manual image approval gates. See docs/longform-final-plan.md.');
+process.exit(1);
+
 // Phase 5 — Validation pool (docs/long-form-pipeline-plan.md §5 Phase 2).
 //
 // Two-pass per clip (Phase 0 decision: both mechanisms from day one):
