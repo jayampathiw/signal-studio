@@ -1,0 +1,13 @@
+packages:
+  - 'apps/news'
+  - 'apps/video'
+  - 'apps/dashboard'
+  - 'packages/ai'
+  - 'packages/render/core'
+  - 'packages/render/ffmpeg'
+  - 'packages/render/remotion'
+  - 'packages/media'
+  - 'packages/database'
+  - 'packages/publishers'
+  - 'packages/config'
+  - 'packages/types'
