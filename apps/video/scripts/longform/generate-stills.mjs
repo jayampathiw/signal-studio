@@ -11,6 +11,7 @@ import { writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { getServiceClient } from '@signal-studio/database';
+import { env } from '@signal-studio/config';
 import { runPool } from '../../src/longform/pool.js';
 import { generateStill, generatePrecisionStill } from '../../src/longform/soul.js';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -39,10 +40,10 @@ function getR2() {
   if (!_r2) {
     _r2 = new S3Client({
       region: 'auto',
-      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId:     process.env.R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+        accessKeyId:     env.R2_ACCESS_KEY_ID,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
       },
     });
   }
@@ -50,9 +51,9 @@ function getR2() {
 }
 
 async function uploadBuffer(buffer, key, contentType = 'image/png') {
-  const bucket = process.env.R2_BUCKET_RENDERED;
+  const bucket = env.R2_BUCKET_RENDERED;
   await getR2().send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: buffer, ContentType: contentType }));
-  return `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
+  return `${env.R2_PUBLIC_BASE_URL}/${key}`;
 }
 
 async function downloadBuffer(url) {
@@ -126,11 +127,13 @@ async function main() {
           if (refs.length >= 2) {
             result = await generatePrecisionStill({
               prompt: clip.visual_prompt,
+              projectId,
               referenceMediaIds: refs.map((r) => r.higgsfield_media_id).filter(Boolean),
             });
           } else {
             result = await generateStill({
               prompt: clip.visual_prompt,
+              projectId,
               referenceMediaId: refs[0]?.higgsfield_media_id,
             });
           }

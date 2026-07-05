@@ -43,6 +43,11 @@ Thumbs.db
 evals/traces/
 evals/scorecards/
 
+# Audio kit binaries (manifest committed, media files are not)
+content/audio-kit/*
+!content/audio-kit/manifest.json
+!content/audio-kit/SOURCES.md
+
 # Logs
 *.log
 npm-debug.log*
