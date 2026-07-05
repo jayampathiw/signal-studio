@@ -1,5 +1,9 @@
 # Long-Form Video Pipeline — Plan & Progress Tracker
 
+> ⚠️ **SUPERSEDED 2026-07-05.** This plan is kept for reference only.
+> **Execute from `docs/longform-final-plan.md`** (phases F0–F10) — the merged
+> stills-only, cloud-first final plan. Do not update this document.
+
 > **Purpose:** track the design and build of the long-form (10–15 min+) video
 > generation pipeline. This is the working document — update it as decisions
 > land and tasks complete.
