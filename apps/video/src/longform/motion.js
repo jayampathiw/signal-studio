@@ -137,8 +137,9 @@ export function buildDrawtext({ at_sec, text, style, font_path }) {
 
 function escapeDrawtext(t) {
   // Inside single-quoted FFmpeg filter option, ' must use '\'' (close, escaped, reopen).
-  // Colons and brackets don't need escaping inside single quotes.
+  // Actual newline chars → \n (two chars) so FFmpeg drawtext renders line breaks.
   return String(t)
     .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
     .replace(/'/g, "'\\''");
 }

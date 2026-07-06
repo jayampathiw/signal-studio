@@ -51,3 +51,7 @@ content/audio-kit/*
 # Logs
 *.log
 npm-debug.log*
+
+# Longform generated images (large binaries — not committed, uploaded to R2)
+content/longform/*/stills/
+content/longform/*/refs/
