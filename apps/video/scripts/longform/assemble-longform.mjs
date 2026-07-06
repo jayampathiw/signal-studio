@@ -20,6 +20,7 @@ import { uploadToR2 } from '@signal-studio/media/storage';
 import { env } from '@signal-studio/config';
 import { buildMotionFilter, buildDrawtext, W, H, FPS } from '../../src/longform/motion.js';
 import { SERIF_FONT } from '../../src/longform/fonts.js';
+import { buildAudioMix, loadManifest } from '../../src/longform/audio-mix.js';
 
 const execAsync = promisify(execFile);
 const AR = 44100;
@@ -333,6 +334,12 @@ async function buildLegacyClip(clip, voPath, workDir) {
 async function main() {
   const db = getServiceClient();
 
+  // Load audio_plan from project row
+  const { data: projectRow, error: projErr } = await db.from('content_items')
+    .select('audio_plan, status').eq('id', projectId).single();
+  if (projErr) throw new Error(`DB project fetch: ${projErr.message}`);
+  const audioPlan = projectRow?.audio_plan ?? [];
+
   // Load scenes (content_clips, always the scene-level backbone)
   let clipsQuery = db.from('content_clips')
     .select('id, scene_n, kind, clip_url, vo_url, duration_sec, text_overlay, overlays, sfx, image_source')
@@ -456,9 +463,31 @@ async function main() {
 
     let finalPath = concatPath;
 
-    // ── Audio mix (P7 stub — skipped when --no-audio-mix) ───────────────────
+    // ── Audio mix (F5) ────────────────────────────────────────────────────────
     if (!noAudioMix) {
-      console.log('Audio mix: [P7 not yet implemented — video-only pass]');
+      if (!audioPlan.length) {
+        console.warn('[warn] No audio_plan on project — skipping audio mix (use --no-audio-mix to suppress)');
+      } else {
+        console.log('\nBuilding 4-layer audio mix…');
+        const mixedPath = join(workDir, `mixed_${projectId}.mp4`);
+        // Pass sfx from clips array (content_clips has the sfx column)
+        const clipsForMix = clips.map((c) => ({
+          scene_n: c.scene_n,
+          duration_sec: c.duration_sec,
+          sfx: Array.isArray(c.sfx) ? c.sfx : [],
+        }));
+        const { loudnormStats } = await buildAudioMix({
+          concatPath,
+          clips: clipsForMix,
+          audioPlan,
+          outputPath: mixedPath,
+          workDir,
+        });
+        finalPath = mixedPath;
+        console.log(`  Loudnorm measured: I=${Number(loudnormStats.input_i).toFixed(1)} → -14.0 LUFS, TP=${Number(loudnormStats.input_tp).toFixed(1)} → -1.0 dBTP`);
+      }
+    } else {
+      console.log('[skip] Audio mix disabled (--no-audio-mix)');
     }
 
     // ── Upload to R2 ──────────────────────────────────────────────────────────
