@@ -1,0 +1,122 @@
+{
+  "somber": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/somber.mp3",
+    "kind": "bed",
+    "duration": 183.696,
+    "sample_rate": 48000,
+    "channels": 2,
+    "desc": "Somber/dramatic orchestral bed — Act 1 lineage"
+  },
+  "tension": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/tension.mp3",
+    "kind": "bed",
+    "duration": 104.646556,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Building tension bed — Acts 2-3 match"
+  },
+  "drone": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/drone.mp3",
+    "kind": "bed",
+    "duration": 462.053878,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Low drone/minimal bed — Act 4 shootout"
+  },
+  "release": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/release.mp3",
+    "kind": "bed",
+    "duration": 361.613094,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Emotional release bed — Act 5 climax"
+  },
+  "reflective": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/reflective.mp3",
+    "kind": "bed",
+    "duration": 195.89225,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Reflective/hopeful bed — Act 5 outro"
+  },
+  "stadium_hum": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/stadium_hum.mp3",
+    "kind": "sfx",
+    "duration": 68.52,
+    "sample_rate": 48000,
+    "channels": 2,
+    "desc": "Continuous low stadium crowd hum/ambience loop"
+  },
+  "drum_hit": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/drum_hit.mp3",
+    "kind": "sfx",
+    "duration": 1.541224,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Single heavy low-freq drum hit (smash cuts)"
+  },
+  "musical_hit": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/musical_hit.mp3",
+    "kind": "sfx",
+    "duration": 1.776,
+    "sample_rate": 48000,
+    "channels": 2,
+    "desc": "Sharp musical impact (goal moments)"
+  },
+  "ref_whistle": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/ref_whistle.mp3",
+    "kind": "sfx",
+    "duration": 1.253878,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Referee whistle blast"
+  },
+  "crowd_roar": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/crowd_roar.mp3",
+    "kind": "sfx",
+    "duration": 5.668571,
+    "sample_rate": 44100,
+    "channels": 1,
+    "desc": "Crowd eruption roar (celebration)"
+  },
+  "celebration_cut": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/celebration_cut.mp3",
+    "kind": "sfx",
+    "duration": 3.030204,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Crowd roar cut to silence abruptly (S28)"
+  },
+  "hum_cut_silence": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/hum_cut_silence.mp3",
+    "kind": "sfx",
+    "duration": 2.037551,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Hum cuts to dead silence (S02 ending)"
+  },
+  "heartbeat": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/heartbeat.mp3",
+    "kind": "sfx",
+    "duration": 1.044898,
+    "sample_rate": 44100,
+    "channels": 1,
+    "desc": "Single heartbeat thud (S37 suspense walk)"
+  },
+  "crowd_quiet": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/crowd_quiet.mp3",
+    "kind": "sfx",
+    "duration": 18.408,
+    "sample_rate": 48000,
+    "channels": 1,
+    "desc": "Hushed held-breath crowd murmur"
+  },
+  "ball_thud": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/ball_thud.mp3",
+    "kind": "sfx",
+    "duration": 0.384,
+    "sample_rate": 48000,
+    "channels": 1,
+    "desc": "Ball hitting woodwork or turf thud"
+  }
+}
