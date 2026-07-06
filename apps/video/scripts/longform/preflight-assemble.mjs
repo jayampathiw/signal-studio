@@ -33,7 +33,7 @@ const [stilsRes, refsRes, manifestRes] = await Promise.all([
 
 const blockedStills = stilsRes.data ?? [];
 const blockedRefs   = refsRes.data ?? [];
-const audioPlan     = manifestRes.data?.audio_plan ?? [];
+const audioPlan     = manifestRes.data?.audio_plan ?? null;
 
 let ok = true;
 
@@ -49,7 +49,9 @@ if (blockedRefs.length) {
   ok = false;
 }
 
-if (!audioPlan.length) {
+const audioPlanEmpty = !audioPlan ||
+  (Array.isArray(audioPlan) ? audioPlan.length === 0 : Object.keys(audioPlan).length === 0);
+if (audioPlanEmpty) {
   console.error('❌ No audio_plan on project row — run seed stage first');
   ok = false;
 }
