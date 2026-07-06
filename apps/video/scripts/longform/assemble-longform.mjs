@@ -228,8 +228,8 @@ async function buildWithXfade(cutPaths, out) {
   const DISSOLVE_DUR = 0.5;
   const inputs = cutPaths.flatMap((c, i) => ['-i', c.path]);
   const filterParts = [];
-  let prev = '0:v';
-  let aacPrev = '0:a';
+  let prev = '[0:v]';
+  let aacPrev = '[0:a]';
 
   for (let i = 1; i < cutPaths.length; i++) {
     const outV = i < cutPaths.length - 1 ? `[v${i}]` : '[vout]';
