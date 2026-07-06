@@ -151,9 +151,9 @@ Any stage crash → `failed` + `status_note`; re-dispatch resumes from DB state.
 
 | # | Task | Files | Acceptance | Status |
 |---|---|---|---|---|
-| F6-1 | Wire `stage=assemble` → `assemble-longform.mjs --project $ID`; `timeout-minutes: 180`; artifact-upload the run log + loudnorm JSON | longform.yml | Exit test | ⬜ |
-| F6-2 | Guard: stage refuses to start unless all stills `passed` + refs `passed` + kit manifest reachable (assemble-with-hold from the old plan is **dropped** — stills are cheap to finish, holes are not acceptable) | assemble script or yml pre-step | dispatch with 1 pending still → clean error naming it, status back to `awaiting_stills` | ⬜ |
-| F6-3 | Publish guard carried over: `rendered → publishing` transition (F8) blocked while any still/ref is not `passed` — enforced in `trigger-longform` transition table | edge fn | 409 verified | ⬜ |
+| F6-1 | Wire `stage=assemble` → `assemble-longform.mjs --project $ID`; `timeout-minutes: 180`; artifact-upload the run log + loudnorm JSON | longform.yml | Exit test | ✅ |
+| F6-2 | Guard: `preflight-assemble.mjs` checks all stills + refs passed + audio_plan present before render; on failure reverts status to `awaiting_stills` | `apps/video/scripts/longform/preflight-assemble.mjs` | dispatch with pending still → clean error, status back to `awaiting_stills` | ✅ |
+| F6-3 | Publish guard carried over: `rendered → publishing` transition (F8) blocked while any still/ref is not `passed` — enforced in `trigger-longform` transition table | edge fn | 409 verified | ✅ |
 
 ---
 
