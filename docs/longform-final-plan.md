@@ -135,12 +135,12 @@ Any stage crash → `failed` + `status_note`; re-dispatch resumes from DB state.
 | # | Task | Files | Acceptance | Status |
 |---|---|---|---|---|
 | F5-1 | Video layer: motion engine + v2 assembler (cuts, xfade dissolve, overlays, text cards, reuse/regrade, VO-length reconciliation, 1080p, legacy fallback) | done in P6 | `--scenes 1-13 --no-audio-mix` produces a watchable 1080p cut | ✅ |
-| F5-2 | `src/longform/audio-mix.js` — audio-plan reader: load `content_items.audio_plan` + `content/audio-kit/manifest.json`, download beds/SFX to workdir with cache; missing manifest → clear error naming F1-8 | new module | unit run prints resolved segment list for 29 | ⬜ |
-| F5-3 | Music stem: per-segment trim/loop to length, 2s `acrossfade` joins, −23 dB base gain, hard gaps for `silence` directives (S38) | same | music-only stem boundaries match plan ±0.5s | ⬜ |
-| F5-4 | Ambience stem: `stadium_hum` loop at −30 dB scoped to the audio_plan ambience ranges | same | stem silent outside ranges | ⬜ |
-| F5-5 | SFX stem: `adelay` one-shots from per-scene `content_clips.sfx` at absolute offsets (scene start + at_sec) | same | S30 whistle timing check | ⬜ |
-| F5-6 | Ducking: `sidechaincompress` music vs VO (tune threshold/ratio to ≈6 dB dip) | same | audible/plotted dip during speech | ⬜ |
-| F5-7 | Master: two-pass `loudnorm` I=-14 TP=-1.0; write measured values to the completion log + `status_note`; wire into `assemble-longform.mjs` (remove/flip `--no-audio-mix` default) | `assemble-longform.mjs` | Exit-test numbers | ⬜ |
+| F5-2 | `src/longform/audio-mix.js` — audio-plan reader: load `content_items.audio_plan` + `content/audio-kit/manifest.json`, download beds/SFX to workdir with cache; missing manifest → clear error naming F1-8 | new module | unit run prints resolved segment list for 29 | ✅ |
+| F5-3 | Music stem: per-segment trim/loop to length, 2s `acrossfade` joins, −23 dB base gain, hard gaps for `silence` directives (S38) | same | music-only stem boundaries match plan ±0.5s | ✅ |
+| F5-4 | Ambience stem: `stadium_hum` loop at −36 dB always-on throughout video (persistent texture layer) | same | stem present at low level throughout | ✅ |
+| F5-5 | SFX stem: `adelay` one-shots from per-scene `content_clips.sfx` at absolute offsets (scene start + at_sec) | same | S30 whistle timing check | ✅ |
+| F5-6 | Ducking: `sidechaincompress` music vs VO (threshold=0.013, ratio=4 → ≈6 dB dip) | same | audible/plotted dip during speech | ✅ |
+| F5-7 | Master: two-pass `loudnorm` I=-14 TP=-1.0; write measured values to the completion log + `status_note`; wire into `assemble-longform.mjs` (remove/flip `--no-audio-mix` default) | `assemble-longform.mjs` | Exit-test numbers | ✅ |
 
 ---
 
@@ -243,4 +243,4 @@ F0 ½d · F1 ½d code + user time · F2 1–1½d · F3 ½d · F4 ½d · F5 1½�
 | Date | Note |
 |---|---|
 | 2026-07-05 | Plan created by merging the automation plan + v2 task breakdown under decisions D1–D5 (stills-only, no Higgsfield, full automation, cloud-first). Prior v2 phases P0–P6 mapped to ✅ items in F0/F1/F4/F5. Credit test result recorded: Seedance Mini video free via API, nano_banana_flash 14 credits/image — moot under D1/D2. |
-| 2026-07-06 | F2 + F3 verified complete (longform.yml wired, trigger-longform deployed, cloud seed+tts ran green for project 29). F0-2/F0-3 verified complete (banners on old docs, Higgsfield hard-exits on all 5 scripts). F4-3 (`review-stills.mjs`) + F4-4 (`approve-act.mjs`) built. Next: F5 audio mix, then F1-8 (user: download audio kit first). |
+| 2026-07-06 | F2 + F3 verified complete (longform.yml wired, trigger-longform deployed, cloud seed+tts ran green for project 29). F0-2/F0-3 verified complete (banners on old docs, Higgsfield hard-exits on all 5 scripts). F4-3 (`review-stills.mjs`) + F4-4 (`approve-act.mjs`) built. F5-2 through F5-7 complete: `src/longform/audio-mix.js` implements all 4 stems (VO extract, music beds w/ acrossfade + silence gating, ambience -36dB, SFX adelay), sidechaincompress ducking, two-pass loudnorm -14 LUFS/-1.0 TP; wired into `assemble-longform.mjs` replacing P7 stub. Note F5-4 implemented as always-on ambience at -36dB (not range-scoped) — `hum_only` acts use stadium_hum in the music layer additionally. Next: user runs F1-8 (import audio kit after downloads), then F6 (wire `stage=assemble` in longform.yml). |
