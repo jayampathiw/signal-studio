@@ -58,10 +58,10 @@ Any stage crash → `failed` + `status_note`; re-dispatch resumes from DB state.
 | # | Task | Files | Acceptance | Status |
 |---|---|---|---|---|
 | F0-1 | Branch `feat/longform-v2` with prior work (bug fixes F1/F6/F7/F9, snapshot script, schema migration applied to prod, parsers, seeder, TTS report, prompt-sheet v2, import v2, audio-kit script, motion engine, v2 assembler) | commits `2e04405`, `9da5c74`, `ac5c565` | branch checked out, 3 commits present | ✅ |
-| F0-2 | Add a superseded banner to the top of `docs/long-form-pipeline-plan.md` and `docs/longform-v2-task-breakdown.md` pointing here | both docs | banner visible in first 5 lines | ⬜ |
-| F0-3 | Neutralize Higgsfield in longform: `generate-stills.mjs` — either delete or add a top-of-file hard exit `console.error('deprecated: stills are generated manually via Google Flow — see docs/longform-final-plan.md'); process.exit(1)`. Same for `generate-clips.mjs`, `generate-references.mjs`, `look-gate-clips.mjs`, `validate-clips.mjs` if they submit jobs | `apps/video/scripts/longform/*.mjs` | running any of them prints the deprecation and exits 1; no Higgsfield submit reachable from longform scripts | ⬜ |
-| F0-4 | Update `docs/PROJECT-STATUS.md` roadmap line for long-form to point at this plan | doc | line updated | ⬜ |
-| F0-5 | Commit F0 as `chore(longform): de-scope Higgsfield — stills-only final plan` | git | commit exists | ⬜ |
+| F0-2 | Add a superseded banner to the top of `docs/long-form-pipeline-plan.md` and `docs/longform-v2-task-breakdown.md` pointing here | both docs | banner visible in first 5 lines | ✅ |
+| F0-3 | Neutralize Higgsfield in longform: `generate-stills.mjs` — either delete or add a top-of-file hard exit `console.error('deprecated: stills are generated manually via Google Flow — see docs/longform-final-plan.md'); process.exit(1)`. Same for `generate-clips.mjs`, `generate-references.mjs`, `look-gate-clips.mjs`, `validate-clips.mjs` if they submit jobs | `apps/video/scripts/longform/*.mjs` | running any of them prints the deprecation and exits 1; no Higgsfield submit reachable from longform scripts | ✅ |
+| F0-4 | Update `docs/PROJECT-STATUS.md` roadmap line for long-form to point at this plan | doc | line updated | ✅ |
+| F0-5 | Commit F0 as `chore(longform): de-scope Higgsfield — stills-only final plan` | git | commit exists | ✅ |
 
 ---
 
@@ -121,8 +121,8 @@ Any stage crash → `failed` + `status_note`; re-dispatch resumes from DB state.
 |---|---|---|---|---|
 | F4-1 | `prompt-sheet.mjs` v2 (refs-first, act sections, drift checklists, copy-blocks, filenames, no ART_DIRECTION) | done in P4 | sheet regenerates for 29 with 5 ref + 64 still blocks | ✅ |
 | F4-2 | `import-stills.mjs` v2 (S01-A regex → `content_stills`, legacy fallback, `--refs` mode) | done in P4 | mixed-folder routing verified in `--dry` | ✅ |
-| F4-3 | Review flow: `review-stills.mjs --project N --act A` — lists imported stills of an act with URLs; `--reject S07-B "reason"` resets that still to `pending` (+`fail_reason`), `--approve-all` sets act's `generated`→`passed` | new script | reject → reappears in the next prompt-sheet run; approve-all flips rows | ⬜ |
-| F4-4 | `approve-act.mjs` (or fold into F4-3): act complete = all its stills `passed`; when **all acts** passed AND 5 refs passed → project status `awaiting_stills`→ ready-for-assemble marker; prints the trigger-longform curl for `stage=assemble` | new script | Exit-test gating behaviour | ⬜ |
+| F4-3 | Review flow: `review-stills.mjs --project N --act A` — lists imported stills of an act with URLs; `--reject S07-B "reason"` resets that still to `pending` (+`fail_reason`), `--approve-all` sets act's `generated`→`passed` | new script | reject → reappears in the next prompt-sheet run; approve-all flips rows | ✅ |
+| F4-4 | `approve-act.mjs` (or fold into F4-3): act complete = all its stills `passed`; when **all acts** passed AND 5 refs passed → project status `awaiting_stills`→ ready-for-assemble marker; prints the trigger-longform curl for `stage=assemble` | new script | Exit-test gating behaviour | ✅ |
 | F4-5 | Sheet regeneration is incremental: `prompt-sheet.mjs` only lists `pending` rows — so after rejections the sheet contains exactly the redo work | existing behaviour — verify | rejected-only sheet confirmed | ⬜ |
 
 ---
@@ -243,3 +243,4 @@ F0 ½d · F1 ½d code + user time · F2 1–1½d · F3 ½d · F4 ½d · F5 1½�
 | Date | Note |
 |---|---|
 | 2026-07-05 | Plan created by merging the automation plan + v2 task breakdown under decisions D1–D5 (stills-only, no Higgsfield, full automation, cloud-first). Prior v2 phases P0–P6 mapped to ✅ items in F0/F1/F4/F5. Credit test result recorded: Seedance Mini video free via API, nano_banana_flash 14 credits/image — moot under D1/D2. |
+| 2026-07-06 | F2 + F3 verified complete (longform.yml wired, trigger-longform deployed, cloud seed+tts ran green for project 29). F0-2/F0-3 verified complete (banners on old docs, Higgsfield hard-exits on all 5 scripts). F4-3 (`review-stills.mjs`) + F4-4 (`approve-act.mjs`) built. Next: F5 audio mix, then F1-8 (user: download audio kit first). |

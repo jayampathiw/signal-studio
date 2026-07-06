@@ -1,10 +1,6 @@
-// Phase H2 — Still-image generation (docs/long-form-hybrid-plan.md §4 Phase H2).
-// Routes each still row to the correct provider: reference-reuse (free),
-// Soul V2 / nano_banana_2 (Higgsfield), or google (skipped — H3 workflow).
-// Resumable: only 'pending' rows are processed; re-run skips 'generated'/'passed'.
-//
-// Usage:
-//   node apps/video/scripts/longform/generate-stills.mjs --project 29 [--dry] [--limit N] [--source reference|higgsfield|google]
+// DEPRECATED — longform stills are generated manually via Google Flow (see docs/longform-final-plan.md).
+console.error('DEPRECATED: generate-stills.mjs is not used in the current pipeline.\nStills are generated manually via Google Flow and imported with import-stills.mjs. See docs/longform-final-plan.md.');
+process.exit(1);
 
 import { parseArgs } from 'util';
 import { writeFileSync, unlinkSync } from 'fs';
