@@ -11,9 +11,9 @@ export const W = 1920;
 export const H = 1080;
 export const FPS = 25;
 
-// Pre-scale canvas: 35% overscan gives room for z up to 1.30 (smash)
-const CANVAS_W = 2592; // W * 1.35
-const CANVAS_H = 1458; // H * 1.35
+// Pre-scale canvas: 50% overscan gives room for z up to 1.45 with visible motion headroom
+const CANVAS_W = 2880; // W * 1.50
+const CANVAS_H = 1620; // H * 1.50
 
 function prescale() {
   return `scale=${CANVAS_W}:${CANVAS_H}:force_original_aspect_ratio=increase:flags=lanczos,crop=${CANVAS_W}:${CANVAS_H}`;
@@ -46,37 +46,40 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
   switch (motion) {
     case 'push':
     case 'parallax': {
+      // 0% → 22% zoom — clearly visible Ken Burns push
+      const step = (0.22 / D).toFixed(8);
+      zpFilter = `zoompan=z='min(pzoom+${step},1.22)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      break;
+    }
+    case 'micro_push': {
+      // 0% → 12% zoom — subtle push for tight shots
       const step = (0.12 / D).toFixed(8);
       zpFilter = `zoompan=z='min(pzoom+${step},1.12)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
     }
-    case 'micro_push': {
-      const step = (0.06 / D).toFixed(8);
-      zpFilter = `zoompan=z='min(pzoom+${step},1.06)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
-      break;
-    }
     case 'pull': {
-      // pzoom can't start above 1.0; use static zoomed-in view as approximation
-      zpFilter = `zoompan=z='1.12':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Approximate pull: start zoomed in at 1.22, hold (true reverse not possible with pzoom)
+      zpFilter = `zoompan=z='1.22':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
     }
     case 'smash': {
-      const step = (0.30 / D).toFixed(8);
-      zpFilter = `zoompan=z='min(pzoom+${step},1.30)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // 0% → 40% fast push — impact zoom
+      const step = (0.40 / D).toFixed(8);
+      zpFilter = `zoompan=z='min(pzoom+${step},1.40)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
     }
     case 'pan_lr': {
-      // Constant z=1.10, pan left→right via px
-      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.10); // ~236px
+      // Constant z=1.20, pan left→right via px
+      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.20);
       const step = (maxX / D).toFixed(6);
-      zpFilter = `zoompan=z='1.10':x='min(px+${step},${maxX})':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      zpFilter = `zoompan=z='1.20':x='min(px+${step},${maxX})':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
     }
     case 'pan_rl': {
-      // Constant z=1.10, pan right→left via px (starts from right, moves left)
-      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.10); // ~236px
+      // Constant z=1.20, pan right→left via px
+      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.20);
       const step = (maxX / D).toFixed(6);
-      zpFilter = `zoompan=z='1.10':x='max(px-${step},0)':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      zpFilter = `zoompan=z='1.20':x='max(px-${step},0)':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
     }
     case 'hold':
