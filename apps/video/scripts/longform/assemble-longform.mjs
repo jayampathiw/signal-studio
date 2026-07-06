@@ -471,7 +471,7 @@ async function main() {
 
     // ── Audio mix (F5) ────────────────────────────────────────────────────────
     if (!noAudioMix) {
-      if (!audioPlan.length) {
+      if (!audioPlan?.segments?.length) {
         console.warn('[warn] No audio_plan on project — skipping audio mix (use --no-audio-mix to suppress)');
       } else {
         console.log('\nBuilding 4-layer audio mix…');
