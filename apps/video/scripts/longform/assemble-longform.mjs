@@ -78,7 +78,9 @@ function probeDuration(filePath) {
 // ── Text card builder ─────────────────────────────────────────────────────────
 
 async function buildTextCard(text, durationSec, out) {
-  const safe = text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/:/g, '\\:');
+  // Inside single-quoted FFmpeg filter options, ' must be escaped as '\'' (close, escaped, reopen).
+  // Using \' instead wrongly closes the quote — the colon doesn't need escaping inside single quotes.
+  const safe = text.replace(/\\/g, '\\\\').replace(/'/g, "'\\''");
   const dt = `drawtext=text='${safe}':fontfile='${SERIF_FONT}':fontcolor=white:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2`;
   await execAsync('ffmpeg', [
     '-y',
