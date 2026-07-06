@@ -12,8 +12,9 @@ export const H = 1080;
 export const FPS = 25;
 
 function easeExpr(n_var, D) {
-  // Quadratic ease-in-out for normalized t = n_var / D
-  return `if(lt(${n_var}/${D},0.5),2*pow(${n_var}/${D},2),1-pow(-2*(${n_var}/${D})+2,2)/2)`;
+  // Quadratic ease-in-out — avoid pow() which fails in FFmpeg 6.x zoompan eval
+  // t<0.5 → 2t²; t≥0.5 → 1-2(1-t)²
+  return `if(lt(${n_var}/${D},0.5),2*(${n_var}/${D})*(${n_var}/${D}),1-2*(1-${n_var}/${D})*(1-${n_var}/${D}))`;
 }
 
 /**
