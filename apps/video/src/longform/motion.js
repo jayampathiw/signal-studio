@@ -1,25 +1,35 @@
 // Ken Burns motion engine for 1920×1080 still-image scenes.
-// Returns an ffmpeg video filter string for a single still at given fps/duration/size.
+// Returns an ffmpeg video filter string for a single still.
 //
-// FFmpeg 6.x zoompan z-expression only accepts basic arithmetic (+,-,*,/) and
-// numeric variables (n, iw, ih, zoom, pzoom, etc.) — no if(), lt(), pow(), etc.
-// All motions use linear ramps for compatibility.
+// FFmpeg zoompan constraints (6.x and 4.x):
+//  - Input must be >= output size; pre-scale to CANVAS_W×CANVAS_H first
+//  - z expression: only 'pzoom' (prev frame zoom) is reliable — 'n' is not available
+//  - x/y expressions: use 'zoom' (current zoom) and 'px/py' (prev position) — NOT 'z'
+//  - if(), lt() etc. cause parse errors in z expressions on these FFmpeg builds
 
 export const W = 1920;
 export const H = 1080;
 export const FPS = 25;
 
+// Pre-scale canvas: 35% overscan gives room for z up to 1.30 (smash)
+const CANVAS_W = 2592; // W * 1.35
+const CANVAS_H = 1458; // H * 1.35
+
+function prescale() {
+  return `scale=${CANVAS_W}:${CANVAS_H}:force_original_aspect_ratio=increase:flags=lanczos,crop=${CANVAS_W}:${CANVAS_H}`;
+}
+
 /**
  * Build the ffmpeg -vf filter string for a single still cut.
  *
  * @param {object} opts
- * @param {string} opts.motion — one of push|micro_push|pull|smash|pan_lr|pan_rl|parallax|hold
- * @param {number} opts.durationSec — scene duration in seconds
- * @param {number} [opts.fps] — defaults to FPS (25)
- * @param {number} [opts.width] — defaults to W (1920)
- * @param {number} [opts.height] — defaults to H (1080)
+ * @param {string} opts.motion — push|micro_push|pull|smash|pan_lr|pan_rl|parallax|hold
+ * @param {number} opts.durationSec
+ * @param {number} [opts.fps]
+ * @param {number} [opts.width]
+ * @param {number} [opts.height]
  * @param {string|null} [opts.regrade] — 'warm_amber' | 'cold_blue' | null
- * @param {Array}  [opts.overlays] — [{at_sec, text, style}] timed text overlays
+ * @param {Array}  [opts.overlays]
  * @returns {string} ffmpeg vf filter chain
  */
 export function buildMotionFilter({ motion, durationSec, fps, width, height, regrade, overlays }) {
@@ -28,62 +38,65 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
   const fFPS = fps ?? FPS;
   const D = Math.max(1, Math.round(durationSec * fFPS));
 
+  const cx = `(iw-iw/zoom)/2`; // centered x using current zoom
+  const cy = `(ih-ih/zoom)/2`; // centered y using current zoom
+
   let zpFilter;
-  const center = `x='(iw-iw/z)/2':y='(ih-ih/z)/2'`;
 
   switch (motion) {
     case 'push':
-      // linear 1.00 → 1.12
-      zpFilter = `zoompan=z='1+0.12*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    case 'parallax': {
+      const step = (0.12 / D).toFixed(8);
+      zpFilter = `zoompan=z='min(pzoom+${step},1.12)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    case 'micro_push':
-      // linear 1.00 → 1.06
-      zpFilter = `zoompan=z='1+0.06*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    }
+    case 'micro_push': {
+      const step = (0.06 / D).toFixed(8);
+      zpFilter = `zoompan=z='min(pzoom+${step},1.06)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    case 'pull':
-      // linear 1.15 → 1.00
-      zpFilter = `zoompan=z='1.15-0.15*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    }
+    case 'pull': {
+      // pzoom can't start above 1.0; use static zoomed-in view as approximation
+      zpFilter = `zoompan=z='1.12':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    case 'smash':
-      // linear 1.00 → 1.30
-      zpFilter = `zoompan=z='1+0.30*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    }
+    case 'smash': {
+      const step = (0.30 / D).toFixed(8);
+      zpFilter = `zoompan=z='min(pzoom+${step},1.30)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    case 'pan_lr':
-      // pan left→right, constant z=1.10
-      zpFilter = `zoompan=z='1.10':x='(iw-iw/z)*n/${D}':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    }
+    case 'pan_lr': {
+      // Constant z=1.10, pan left→right via px
+      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.10); // ~236px
+      const step = (maxX / D).toFixed(6);
+      zpFilter = `zoompan=z='1.10':x='min(px+${step},${maxX})':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    case 'pan_rl':
-      // pan right→left, constant z=1.10
-      zpFilter = `zoompan=z='1.10':x='(iw-iw/z)*(${D}-n)/${D}':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    }
+    case 'pan_rl': {
+      // Constant z=1.10, pan right→left via px (starts from right, moves left)
+      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.10); // ~236px
+      const step = (maxX / D).toFixed(6);
+      zpFilter = `zoompan=z='1.10':x='max(px-${step},0)':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    case 'parallax':
-      // approximated as push
-      zpFilter = `zoompan=z='1+0.12*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
-      break;
+    }
     case 'hold':
-    default:
-      zpFilter = `zoompan=z='1.00':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    default: {
+      zpFilter = `zoompan=z='1.00':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
+    }
   }
 
-  const parts = [zpFilter];
+  const parts = [prescale(), zpFilter];
 
-  // Colour regrade (warm↔cold narrative punctuation)
   if (regrade === 'warm_amber') {
-    // Push shadows toward orange-amber, lift highlights warm
     parts.push('colorbalance=rs=0.1:gs=-0.05:bs=-0.15:rm=0.05:gm=0:bm=-0.1:rh=0.15:gh=0.05:bh=-0.1');
   } else if (regrade === 'cold_blue') {
-    // Push toward cold steel-blue
     parts.push('colorbalance=rs=-0.1:gs=0:bs=0.15:rm=-0.05:gm=0.05:bm=0.1:rh=-0.15:gh=0:bh=0.2');
   }
 
-  // Grain: subtle film grain on all stills (unifies disparate generations)
   parts.push('noise=alls=6:allf=t');
-
-  // Vignette: dark edge falloff
   parts.push('vignette=PI/6');
 
-  // Timed text overlays
   if (overlays?.length) {
     for (const ov of overlays) {
       const dt = buildDrawtext(ov);
@@ -91,7 +104,6 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     }
   }
 
-  // Ensure correct pixel format for concat compatibility
   parts.push('format=yuv420p');
 
   return parts.join(',');
