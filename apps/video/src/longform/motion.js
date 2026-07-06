@@ -1,21 +1,13 @@
 // Ken Burns motion engine for 1920×1080 still-image scenes.
 // Returns an ffmpeg video filter string for a single still at given fps/duration/size.
-// All zoom values are clamped to: push ≤1.15, micro_push ≤1.06, smash ≤1.30.
 //
-// Ease-in-out formula (quadratic):
-//   t = n/D   (n = frame number 0-based, D = total frames)
-//   ease(t) = t<0.5 ? 2t² : 1-(−2t+2)²/2
-// Expressed in ffmpeg's eval: if(lt(n/D,0.5), 2*pow(n/D,2), 1-pow(-2*(n/D)+2,2)/2)
+// FFmpeg 6.x zoompan z-expression only accepts basic arithmetic (+,-,*,/) and
+// numeric variables (n, iw, ih, zoom, pzoom, etc.) — no if(), lt(), pow(), etc.
+// All motions use linear ramps for compatibility.
 
 export const W = 1920;
 export const H = 1080;
 export const FPS = 25;
-
-function easeExpr(n_var, D) {
-  // Quadratic ease-in-out — no pow(), no nested parens (FFmpeg 6.x zoompan eval limitation)
-  // t<0.5 → 2t²; t≥0.5 → -1+4t-2t² (algebraic expansion of 1-2*(1-t)²)
-  return `if(lt(${n_var}/${D},0.5),2*${n_var}*${n_var}/${D}/${D},-1+4*${n_var}/${D}-2*${n_var}*${n_var}/${D}/${D})`;
-}
 
 /**
  * Build the ffmpeg -vf filter string for a single still cut.
@@ -37,54 +29,41 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
   const D = Math.max(1, Math.round(durationSec * fFPS));
 
   let zpFilter;
+  const center = `x='(iw-iw/z)/2':y='(ih-ih/z)/2'`;
 
   switch (motion) {
-    case 'push': {
-      const z0 = 1.00, z1 = 1.12;
-      const ease = easeExpr('n', D);
-      zpFilter = `zoompan=z='${z0}+(${z1 - z0})*${ease}':x='(iw-iw/z)/2':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    case 'push':
+      // linear 1.00 → 1.12
+      zpFilter = `zoompan=z='1+0.12*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
-    case 'micro_push': {
-      const z0 = 1.00, z1 = 1.06;
-      const ease = easeExpr('n', D);
-      zpFilter = `zoompan=z='${z0}+(${z1 - z0})*${ease}':x='(iw-iw/z)/2':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    case 'micro_push':
+      // linear 1.00 → 1.06
+      zpFilter = `zoompan=z='1+0.06*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
-    case 'pull': {
-      const z0 = 1.15, z1 = 1.00;
-      const ease = easeExpr('n', D);
-      zpFilter = `zoompan=z='${z0}+(${z1 - z0})*${ease}':x='(iw-iw/z)/2':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    case 'pull':
+      // linear 1.15 → 1.00
+      zpFilter = `zoompan=z='1.15-0.15*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
-    case 'smash': {
-      // 1.00 → 1.30 in 1.5s, then hold
-      const smashFrames = Math.min(Math.round(1.5 * fFPS), D);
-      zpFilter = `zoompan=z='if(lt(n,${smashFrames}),1.00+0.30*(n/${smashFrames}),1.30)':x='(iw-iw/z)/2':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    case 'smash':
+      // linear 1.00 → 1.30
+      zpFilter = `zoompan=z='1+0.30*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
-    case 'pan_lr': {
-      // Pan left→right at constant z=1.10
+    case 'pan_lr':
+      // pan left→right, constant z=1.10
       zpFilter = `zoompan=z='1.10':x='(iw-iw/z)*n/${D}':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
-    case 'pan_rl': {
-      // Pan right→left at constant z=1.10
-      zpFilter = `zoompan=z='1.10':x='(iw-iw/z)*(1-n/${D})':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    case 'pan_rl':
+      // pan right→left, constant z=1.10
+      zpFilter = `zoompan=z='1.10':x='(iw-iw/z)*(${D}-n)/${D}':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
-    case 'parallax': {
-      // Approximated as push until true parallax compositing is implemented
-      const z0 = 1.00, z1 = 1.12;
-      const ease = easeExpr('n', D);
-      zpFilter = `zoompan=z='${z0}+(${z1 - z0})*${ease}':x='(iw-iw/z)/2':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    case 'parallax':
+      // approximated as push
+      zpFilter = `zoompan=z='1+0.12*n/${D}':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
     case 'hold':
-    default: {
-      zpFilter = `zoompan=z='1.00':x='(iw-iw/z)/2':y='(ih-ih/z)/2':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+    default:
+      zpFilter = `zoompan=z='1.00':${center}:d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
       break;
-    }
   }
 
   const parts = [zpFilter];
