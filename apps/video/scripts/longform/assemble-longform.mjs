@@ -163,7 +163,11 @@ async function buildStillsScene(stills, clip, voPath, workDir) {
       })
       .filter(Boolean);
 
-    const imgPath = join(workDir, `cut_${cutId}${urlExt(still.clip_url ?? '', '.png')}`);
+    if (!still.clip_url) {
+      console.warn(`    [skip] S${n}-${still.cut}: clip_url is null (asset_reuse not resolved) — skipping cut`);
+      continue;
+    }
+    const imgPath = join(workDir, `cut_${cutId}${urlExt(still.clip_url, '.png')}`);
     await download(still.clip_url, imgPath);
 
     const cutPath = join(workDir, `cut_${cutId}.mp4`);
