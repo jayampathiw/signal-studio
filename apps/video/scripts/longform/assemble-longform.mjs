@@ -485,7 +485,7 @@ async function main() {
         const { loudnormStats } = await buildAudioMix({
           concatPath,
           clips: clipsForMix,
-          audioPlan,
+          audioPlan: audioPlan.segments,
           outputPath: mixedPath,
           workDir,
         });
