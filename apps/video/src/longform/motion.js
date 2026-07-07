@@ -34,20 +34,20 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
   const fW = width ?? W;
   const fH = height ?? H;
   const fFPS = fps ?? FPS;
-  const D = Math.max(2, Math.round(durationSec * fFPS));
-  const Dm1 = D - 1; // last frame index — zoom is at max at frame Dm1
+  // t = PTS in seconds; always increments for looped stills (unlike n which stays 0)
+  const T = durationSec.toFixed(6); // total duration clamp
 
   let zpFilter;
 
   switch (motion) {
     case 'push':
     case 'parallax': {
-      // Zoom 1.0 → 1.22 over D frames (22% Ken Burns push-in)
+      // Zoom 1.0 → 1.22 using t (timestamp), clamped to scene duration
       zpFilter = [
-        `crop=w='iw/(1+0.22*min(n,${Dm1})/${Dm1})'` +
-        `:h='ih/(1+0.22*min(n,${Dm1})/${Dm1})'` +
-        `:x='(iw-iw/(1+0.22*min(n,${Dm1})/${Dm1}))/2'` +
-        `:y='(ih-ih/(1+0.22*min(n,${Dm1})/${Dm1}))/2'`,
+        `crop=w='iw/(1+0.22*min(t\\,${T})/${T})'` +
+        `:h='ih/(1+0.22*min(t\\,${T})/${T})'` +
+        `:x='(iw-iw/(1+0.22*min(t\\,${T})/${T}))/2'` +
+        `:y='(ih-ih/(1+0.22*min(t\\,${T})/${T}))/2'`,
         `scale=${fW}:${fH}:flags=lanczos`,
       ].join(',');
       break;
@@ -55,10 +55,10 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     case 'micro_push': {
       // Zoom 1.0 → 1.12 (subtle push for tight shots)
       zpFilter = [
-        `crop=w='iw/(1+0.12*min(n,${Dm1})/${Dm1})'` +
-        `:h='ih/(1+0.12*min(n,${Dm1})/${Dm1})'` +
-        `:x='(iw-iw/(1+0.12*min(n,${Dm1})/${Dm1}))/2'` +
-        `:y='(ih-ih/(1+0.12*min(n,${Dm1})/${Dm1}))/2'`,
+        `crop=w='iw/(1+0.12*min(t\\,${T})/${T})'` +
+        `:h='ih/(1+0.12*min(t\\,${T})/${T})'` +
+        `:x='(iw-iw/(1+0.12*min(t\\,${T})/${T}))/2'` +
+        `:y='(ih-ih/(1+0.12*min(t\\,${T})/${T}))/2'`,
         `scale=${fW}:${fH}:flags=lanczos`,
       ].join(',');
       break;
@@ -66,10 +66,10 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     case 'pull': {
       // Zoom 1.22 → 1.0 (start close, pull back)
       zpFilter = [
-        `crop=w='iw/(1.22-0.22*min(n,${Dm1})/${Dm1})'` +
-        `:h='ih/(1.22-0.22*min(n,${Dm1})/${Dm1})'` +
-        `:x='(iw-iw/(1.22-0.22*min(n,${Dm1})/${Dm1}))/2'` +
-        `:y='(ih-ih/(1.22-0.22*min(n,${Dm1})/${Dm1}))/2'`,
+        `crop=w='iw/(1.22-0.22*min(t\\,${T})/${T})'` +
+        `:h='ih/(1.22-0.22*min(t\\,${T})/${T})'` +
+        `:x='(iw-iw/(1.22-0.22*min(t\\,${T})/${T}))/2'` +
+        `:y='(ih-ih/(1.22-0.22*min(t\\,${T})/${T}))/2'`,
         `scale=${fW}:${fH}:flags=lanczos`,
       ].join(',');
       break;
@@ -77,34 +77,34 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     case 'smash': {
       // Zoom 1.0 → 1.40 fast push — impact zoom
       zpFilter = [
-        `crop=w='iw/(1+0.40*min(n,${Dm1})/${Dm1})'` +
-        `:h='ih/(1+0.40*min(n,${Dm1})/${Dm1})'` +
-        `:x='(iw-iw/(1+0.40*min(n,${Dm1})/${Dm1}))/2'` +
-        `:y='(ih-ih/(1+0.40*min(n,${Dm1})/${Dm1}))/2'`,
+        `crop=w='iw/(1+0.40*min(t\\,${T})/${T})'` +
+        `:h='ih/(1+0.40*min(t\\,${T})/${T})'` +
+        `:x='(iw-iw/(1+0.40*min(t\\,${T})/${T}))/2'` +
+        `:y='(ih-ih/(1+0.40*min(t\\,${T})/${T}))/2'`,
         `scale=${fW}:${fH}:flags=lanczos`,
       ].join(',');
       break;
     }
     case 'pan_lr': {
-      // Constant z=1.20, pan left→right
+      // Constant z=1.20, pan left→right using t
       const panW = Math.round(CANVAS_W / 1.20);
       const panH = Math.round(CANVAS_H / 1.20);
       const maxX = CANVAS_W - panW;
       const panCY = Math.round((CANVAS_H - panH) / 2);
       zpFilter = [
-        `crop=w=${panW}:h=${panH}:x='${maxX}*min(n,${Dm1})/${Dm1}':y=${panCY}`,
+        `crop=w=${panW}:h=${panH}:x='${maxX}*min(t\\,${T})/${T}':y=${panCY}`,
         `scale=${fW}:${fH}:flags=lanczos`,
       ].join(',');
       break;
     }
     case 'pan_rl': {
-      // Constant z=1.20, pan right→left
+      // Constant z=1.20, pan right→left using t
       const panW = Math.round(CANVAS_W / 1.20);
       const panH = Math.round(CANVAS_H / 1.20);
       const maxX = CANVAS_W - panW;
       const panCY = Math.round((CANVAS_H - panH) / 2);
       zpFilter = [
-        `crop=w=${panW}:h=${panH}:x='${maxX}*(1-min(n,${Dm1})/${Dm1})':y=${panCY}`,
+        `crop=w=${panW}:h=${panH}:x='${maxX}*(1-min(t\\,${T})/${T})':y=${panCY}`,
         `scale=${fW}:${fH}:flags=lanczos`,
       ].join(',');
       break;
