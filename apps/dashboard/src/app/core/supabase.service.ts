@@ -131,6 +131,30 @@ export interface OnThisDayPost {
   created_at: string;
 }
 
+// ── Longform ──────────────────────────────────────────────────────────────────
+
+export type LongformStatus =
+  | 'brief' | 'scripting' | 'awaiting_script_approval'
+  | 'seeding' | 'awaiting_refs' | 'awaiting_stills'
+  | 'rendering' | 'rendered' | 'awaiting_final_approval'
+  | 'publishing' | 'posted' | 'failed' | 'blocked';
+
+export interface LongformProject {
+  id: number;
+  channel_key: string;
+  title: string | null;
+  description: string | null;
+  status: LongformStatus;
+  status_note: string | null;
+  rendered_video_url: string | null;
+  audio_plan: any | null;
+  seo: { title: string; description: string; hashtags: string[] } | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const LONGFORM_CHANNEL_KEYS = ['football/documentary/EN'];
+
 export interface GenConfig {
   imageModel?: string;
   videoModel?: string;
@@ -578,5 +602,54 @@ export class SupabaseService {
     });
     if (!res.ok) throw new Error(`Post On This Day error: ${await res.text()}`);
     return res.json();
+  }
+
+  // ── Longform ───────────────────────────────────────────────────────────────
+
+  async getLongformProjects(): Promise<LongformProject[]> {
+    const { data, error } = await this.client
+      .from('content_items')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, created_at, updated_at')
+      .in('channel_key', LONGFORM_CHANNEL_KEYS)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as LongformProject[];
+  }
+
+  async getLongformByChannel(channelKey: string): Promise<LongformProject[]> {
+    const { data, error } = await this.client
+      .from('content_items')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, created_at, updated_at')
+      .eq('channel_key', channelKey)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as LongformProject[];
+  }
+
+  async getLongformProject(id: number): Promise<LongformProject | null> {
+    const { data, error } = await this.client
+      .from('content_items')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, created_at, updated_at')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    return data as LongformProject | null;
+  }
+
+  async triggerLongform(projectId: number, stage: string): Promise<{ dispatched: boolean; runUrl: string | null }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/trigger-longform`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({ project_id: projectId, stage }),
+    });
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    if (!res.ok) throw new Error(body.error ?? `trigger-longform failed (${res.status})`);
+    return body;
   }
 }

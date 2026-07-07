@@ -42,5 +42,23 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
   },
+  {
+    path: 'longform',
+    loadComponent: () =>
+      import('./longform/longform-list.component').then((m) => m.LongformListComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'longform/channel/:slug',
+    loadComponent: () =>
+      import('./longform/longform-videos.component').then((m) => m.LongformVideosComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'longform/video/:id',
+    loadComponent: () =>
+      import('./longform/longform-detail.component').then((m) => m.LongformDetailComponent),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: 'articles' },
 ];
