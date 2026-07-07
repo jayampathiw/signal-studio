@@ -502,6 +502,28 @@ async function main() {
       console.log('[skip] Audio mix disabled (--no-audio-mix)');
     }
 
+    // ── Watermark overlay ─────────────────────────────────────────────────────
+    const wmSrc = resolve(REPO_ROOT, 'assets/logos/underdog_archive_standalone_icon.png');
+    if (existsSync(wmSrc)) {
+      console.log('\nApplying watermark…');
+      const wmPath = join(workDir, `wm_${projectId}.mp4`);
+      // Scale icon to 80px wide, 40% opacity, bottom-right with 20px padding
+      await execAsync('ffmpeg', [
+        '-y',
+        '-i', finalPath,
+        '-i', wmSrc,
+        '-filter_complex',
+        '[1:v]scale=80:-1,format=rgba,colorchannelmixer=aa=0.4[wm];[0:v][wm]overlay=W-w-20:H-h-20:format=auto',
+        '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
+        '-c:a', 'copy',
+        wmPath,
+      ]);
+      finalPath = wmPath;
+      console.log('  Watermark applied');
+    } else {
+      console.warn(`[warn] Watermark not found at ${wmSrc} — skipping`);
+    }
+
     // ── Upload to R2 ──────────────────────────────────────────────────────────
     if (!sceneRange) {
       const userOut = values.output;
