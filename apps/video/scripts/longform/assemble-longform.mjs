@@ -30,8 +30,11 @@ const { values } = parseArgs({
   options: {
     project:        { type: 'string' },
     scenes:         { type: 'string' },    // e.g. "1-13" for partial render
-    'no-audio-mix': { type: 'boolean', default: false },
-    'no-overlays':  { type: 'boolean', default: false }, // strip stamp overlays from stills
+    // Audio mix and overlays default OFF — opt in with --audio-mix / --overlays
+    'no-audio-mix': { type: 'boolean', default: true },
+    'no-overlays':  { type: 'boolean', default: true },
+    'audio-mix':    { type: 'boolean', default: false }, // opt-in: enable 4-layer audio mix
+    'overlays':     { type: 'boolean', default: false }, // opt-in: enable stamp overlays
     'keep-tmp':     { type: 'boolean', default: false },
     output:         { type: 'string' },    // override final output path
   },
@@ -40,8 +43,9 @@ const { values } = parseArgs({
 
 if (!values.project) { console.error('--project <id> required'); process.exit(2); }
 const projectId = Number(values.project);
-const noAudioMix = values['no-audio-mix'];
-const noOverlays = values['no-overlays'];
+// --audio-mix overrides the default no-mix; --no-audio-mix overrides --audio-mix
+const noAudioMix = values['audio-mix'] ? false : values['no-audio-mix'];
+const noOverlays = values['overlays'] ? false : values['no-overlays'];
 const keepTmp = values['keep-tmp'];
 
 // Scene range filter: --scenes 1-13 or --scenes 5
