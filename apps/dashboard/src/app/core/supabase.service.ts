@@ -636,6 +636,40 @@ export class SupabaseService {
     return data as LongformProject | null;
   }
 
+  async presignStillUpload(projectId: number, sceneN: number, cut: string, filename: string, contentType?: string): Promise<{ upload_url: string; public_url: string; key: string }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/upload-still`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({ action: 'presign', project_id: projectId, scene_n: sceneN, cut, filename, content_type: contentType }),
+    });
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    if (!res.ok) throw new Error(body.error ?? `presign failed (${res.status})`);
+    return body;
+  }
+
+  async confirmStillUpload(projectId: number, sceneN: number, cut: string, publicUrl: string): Promise<{ id: number; clip_url: string }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/upload-still`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({ action: 'confirm', project_id: projectId, scene_n: sceneN, cut, public_url: publicUrl }),
+    });
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    if (!res.ok) throw new Error(body.error ?? `confirm failed (${res.status})`);
+    return body;
+  }
+
   async triggerLongform(projectId: number, stage: string): Promise<{ dispatched: boolean; runUrl: string | null }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
