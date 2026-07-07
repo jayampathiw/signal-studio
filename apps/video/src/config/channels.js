@@ -339,7 +339,7 @@ export const CHANNELS = {
     platforms: {
       youtube: { enabled: true, envKey: 'FOOTBALL' },
     },
-    watermarkFile: null,
+    watermarkFile: 'underdog_archive_standalone_icon.png',
     pageName: 'South American Football Stories',
   },
 };
