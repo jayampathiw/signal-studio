@@ -1,17 +1,15 @@
 // Ken Burns motion engine for 1920×1080 still-image scenes.
 // Returns an ffmpeg video filter string for a single still.
 //
-// FFmpeg zoompan constraints (6.x and 4.x):
-//  - Input must be >= output size; pre-scale to CANVAS_W×CANVAS_H first
-//  - z expression: only 'pzoom' (prev frame zoom) is reliable — 'n' is not available
-//  - x/y expressions: use 'zoom' (current zoom) and 'px/py' (prev position) — NOT 'z'
-//  - if(), lt() etc. cause parse errors in z expressions on these FFmpeg builds
+// Implementation: crop+scale using 'n' (output frame counter) instead of zoompan/pzoom.
+// pzoom in zoompan is unreliable on some FFmpeg builds (stays at 1.0 → static frames).
+// crop filter's 'n' variable is reliable across all FFmpeg 4.x+ versions.
 
 export const W = 1920;
 export const H = 1080;
 export const FPS = 25;
 
-// Pre-scale canvas: 50% overscan gives room for z up to 1.45 with visible motion headroom
+// Pre-scale canvas: 50% overscan gives room for zoom up to 1.45 with motion headroom
 const CANVAS_W = 2880; // W * 1.50
 const CANVAS_H = 1620; // H * 1.50
 
@@ -36,55 +34,90 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
   const fW = width ?? W;
   const fH = height ?? H;
   const fFPS = fps ?? FPS;
-  const D = Math.max(1, Math.round(durationSec * fFPS));
-
-  const cx = `(iw-iw/zoom)/2`; // centered x using current zoom
-  const cy = `(ih-ih/zoom)/2`; // centered y using current zoom
+  const D = Math.max(2, Math.round(durationSec * fFPS));
+  const Dm1 = D - 1; // last frame index — zoom is at max at frame Dm1
 
   let zpFilter;
 
   switch (motion) {
     case 'push':
     case 'parallax': {
-      // 0% → 22% zoom — clearly visible Ken Burns push
-      const step = (0.22 / D).toFixed(8);
-      zpFilter = `zoompan=z='min(pzoom+${step},1.22)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Zoom 1.0 → 1.22 over D frames (22% Ken Burns push-in)
+      zpFilter = [
+        `crop=w='iw/(1+0.22*min(n,${Dm1})/${Dm1})'` +
+        `:h='ih/(1+0.22*min(n,${Dm1})/${Dm1})'` +
+        `:x='(iw-iw/(1+0.22*min(n,${Dm1})/${Dm1}))/2'` +
+        `:y='(ih-ih/(1+0.22*min(n,${Dm1})/${Dm1}))/2'`,
+        `scale=${fW}:${fH}:flags=lanczos`,
+      ].join(',');
       break;
     }
     case 'micro_push': {
-      // 0% → 12% zoom — subtle push for tight shots
-      const step = (0.12 / D).toFixed(8);
-      zpFilter = `zoompan=z='min(pzoom+${step},1.12)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Zoom 1.0 → 1.12 (subtle push for tight shots)
+      zpFilter = [
+        `crop=w='iw/(1+0.12*min(n,${Dm1})/${Dm1})'` +
+        `:h='ih/(1+0.12*min(n,${Dm1})/${Dm1})'` +
+        `:x='(iw-iw/(1+0.12*min(n,${Dm1})/${Dm1}))/2'` +
+        `:y='(ih-ih/(1+0.12*min(n,${Dm1})/${Dm1}))/2'`,
+        `scale=${fW}:${fH}:flags=lanczos`,
+      ].join(',');
       break;
     }
     case 'pull': {
-      // Approximate pull: start zoomed in at 1.22, hold (true reverse not possible with pzoom)
-      zpFilter = `zoompan=z='1.22':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Zoom 1.22 → 1.0 (start close, pull back)
+      zpFilter = [
+        `crop=w='iw/(1.22-0.22*min(n,${Dm1})/${Dm1})'` +
+        `:h='ih/(1.22-0.22*min(n,${Dm1})/${Dm1})'` +
+        `:x='(iw-iw/(1.22-0.22*min(n,${Dm1})/${Dm1}))/2'` +
+        `:y='(ih-ih/(1.22-0.22*min(n,${Dm1})/${Dm1}))/2'`,
+        `scale=${fW}:${fH}:flags=lanczos`,
+      ].join(',');
       break;
     }
     case 'smash': {
-      // 0% → 40% fast push — impact zoom
-      const step = (0.40 / D).toFixed(8);
-      zpFilter = `zoompan=z='min(pzoom+${step},1.40)':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Zoom 1.0 → 1.40 fast push — impact zoom
+      zpFilter = [
+        `crop=w='iw/(1+0.40*min(n,${Dm1})/${Dm1})'` +
+        `:h='ih/(1+0.40*min(n,${Dm1})/${Dm1})'` +
+        `:x='(iw-iw/(1+0.40*min(n,${Dm1})/${Dm1}))/2'` +
+        `:y='(ih-ih/(1+0.40*min(n,${Dm1})/${Dm1}))/2'`,
+        `scale=${fW}:${fH}:flags=lanczos`,
+      ].join(',');
       break;
     }
     case 'pan_lr': {
-      // Constant z=1.20, pan left→right via px
-      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.20);
-      const step = (maxX / D).toFixed(6);
-      zpFilter = `zoompan=z='1.20':x='min(px+${step},${maxX})':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Constant z=1.20, pan left→right
+      const panW = Math.round(CANVAS_W / 1.20);
+      const panH = Math.round(CANVAS_H / 1.20);
+      const maxX = CANVAS_W - panW;
+      const panCY = Math.round((CANVAS_H - panH) / 2);
+      zpFilter = [
+        `crop=w=${panW}:h=${panH}:x='${maxX}*min(n,${Dm1})/${Dm1}':y=${panCY}`,
+        `scale=${fW}:${fH}:flags=lanczos`,
+      ].join(',');
       break;
     }
     case 'pan_rl': {
-      // Constant z=1.20, pan right→left via px
-      const maxX = Math.round(CANVAS_W - CANVAS_W / 1.20);
-      const step = (maxX / D).toFixed(6);
-      zpFilter = `zoompan=z='1.20':x='max(px-${step},0)':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Constant z=1.20, pan right→left
+      const panW = Math.round(CANVAS_W / 1.20);
+      const panH = Math.round(CANVAS_H / 1.20);
+      const maxX = CANVAS_W - panW;
+      const panCY = Math.round((CANVAS_H - panH) / 2);
+      zpFilter = [
+        `crop=w=${panW}:h=${panH}:x='${maxX}*(1-min(n,${Dm1})/${Dm1})':y=${panCY}`,
+        `scale=${fW}:${fH}:flags=lanczos`,
+      ].join(',');
       break;
     }
     case 'hold':
     default: {
-      zpFilter = `zoompan=z='1.00':x='${cx}':y='${cy}':d=${D}:s=${fW}x${fH}:fps=${fFPS}`;
+      // Static center crop — no movement
+      const holdX = Math.round((CANVAS_W - fW) / 2);
+      const holdY = Math.round((CANVAS_H - fH) / 2);
+      zpFilter = [
+        `crop=w=${fW}:h=${fH}:x=${holdX}:y=${holdY}`,
+        `scale=${fW}:${fH}:flags=lanczos`,
+      ].join(',');
       break;
     }
   }
