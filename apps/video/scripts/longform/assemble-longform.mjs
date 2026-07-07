@@ -21,6 +21,7 @@ import { env } from '@signal-studio/config';
 import { buildMotionFilter, buildDrawtext, W, H, FPS } from '../../src/longform/motion.js';
 import { SERIF_FONT } from '../../src/longform/fonts.js';
 import { buildAudioMix, loadManifest } from '../../src/longform/audio-mix.js';
+import { getChannel } from '../../src/config/channels.js';
 
 const execAsync = promisify(execFile);
 const AR = 44100;
@@ -346,11 +347,20 @@ async function buildLegacyClip(clip, voPath, workDir) {
 async function main() {
   const db = getServiceClient();
 
-  // Load audio_plan from project row
+  // Load project row — audio_plan + channel_key (for watermark lookup)
   const { data: projectRow, error: projErr } = await db.from('content_items')
-    .select('audio_plan, status').eq('id', projectId).single();
+    .select('audio_plan, status, channel_key').eq('id', projectId).single();
   if (projErr) throw new Error(`DB project fetch: ${projErr.message}`);
   const audioPlan = projectRow?.audio_plan ?? [];
+
+  // Resolve watermark from channel config
+  let channelWatermarkFile = null;
+  if (projectRow?.channel_key) {
+    try {
+      const ch = getChannel(projectRow.channel_key);
+      channelWatermarkFile = ch?.watermarkFile ?? null;
+    } catch { /* unknown channel_key — skip watermark */ }
+  }
 
   // Load scenes (content_clips, always the scene-level backbone)
   let clipsQuery = db.from('content_clips')
@@ -503,8 +513,10 @@ async function main() {
     }
 
     // ── Watermark overlay ─────────────────────────────────────────────────────
-    const wmSrc = resolve(REPO_ROOT, 'assets/logos/underdog_archive_standalone_icon.png');
-    if (existsSync(wmSrc)) {
+    const wmSrc = channelWatermarkFile
+      ? resolve(REPO_ROOT, 'assets/logos', channelWatermarkFile)
+      : null;
+    if (wmSrc && existsSync(wmSrc)) {
       console.log('\nApplying watermark…');
       const wmPath = join(workDir, `wm_${projectId}.mp4`);
       // Scale icon to 80px wide, 40% opacity, bottom-right with 20px padding
@@ -520,8 +532,10 @@ async function main() {
       ]);
       finalPath = wmPath;
       console.log('  Watermark applied');
+    } else if (wmSrc) {
+      console.warn(`[warn] Watermark file not found: ${wmSrc} — skipping`);
     } else {
-      console.warn(`[warn] Watermark not found at ${wmSrc} — skipping`);
+      console.log('[skip] No watermark configured for this channel');
     }
 
     // ── Upload to R2 ──────────────────────────────────────────────────────────
