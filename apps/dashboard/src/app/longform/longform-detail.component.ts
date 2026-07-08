@@ -4,6 +4,7 @@ import { DatePipe } from '@angular/common';
 import { LongformProject, SupabaseService } from '../core/supabase.service';
 import { LongformWorkbenchComponent } from './longform-workbench.component';
 import { LongformScriptComponent } from './longform-script.component';
+import { LongformFinalReviewComponent } from './longform-final-review.component';
 
 type Stage = {
   key: string;
@@ -25,8 +26,7 @@ const STAGES: Stage[] = [
     action: { label: 'Approve stills → Render', stage: 'assemble' } },
   { key: 'rendering',                icon: '7', label: 'Rendering',        description: 'FFmpeg is assembling the final video.' },
   { key: 'rendered',                 icon: '8', label: 'Rendered',         description: 'Video assembled. Ready for final review.' },
-  { key: 'awaiting_final_approval',  icon: '9', label: 'Gate 4 — Review',  description: 'Watch the video and approve to publish.',
-    action: { label: 'Approve → Publish', stage: 'publish' } },
+  { key: 'awaiting_final_approval',  icon: '9', label: 'Gate 4 — Review',  description: 'Watch the video and approve to publish.' },
   { key: 'publishing',               icon: '10', label: 'Publishing',      description: 'Uploading to YouTube / Facebook.' },
   { key: 'posted',                   icon: '✓',  label: 'Posted',          description: 'Live on all configured platforms.' },
 ];
@@ -41,7 +41,7 @@ function stageIndex(status: string) {
 @Component({
   selector: 'app-longform-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent],
+  imports: [DatePipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent],
   template: `
     <!-- Navbar -->
     <nav style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;">
@@ -158,46 +158,53 @@ function stageIndex(status: string) {
           <app-longform-workbench [project]="project()!" />
         }
 
-        <!-- Video panel (shown when rendered or later) -->
-        @if (isRenderedOrLater()) {
-          <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:24px;margin-bottom:24px;">
-            <h2 style="margin:0 0 16px;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">Video preview</h2>
+        <!-- Gate 4: full review + publish (awaiting_final_approval only) -->
+        @if (project()!.status === 'awaiting_final_approval') {
+          <app-longform-final-review
+            [project]="project()!"
+            (published)="onPublished()" />
+        }
+
+        <!-- Generic video + SEO (rendered / publishing / posted) -->
+        @if (isSimpleVideoState()) {
+          <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+            <div style="padding:16px 20px;border-bottom:1px solid #1a1a1a;">
+              <h2 style="margin:0;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">Video</h2>
+            </div>
             @if (project()!.rendered_video_url) {
               <video [src]="project()!.rendered_video_url!"
                      controls
-                     style="width:100%;border-radius:8px;max-height:540px;background:#000;">
+                     preload="metadata"
+                     style="width:100%;display:block;background:#000;max-height:540px;">
               </video>
             } @else {
-              <div style="padding:40px 0;text-align:center;color:#475569;font-size:13px;">
-                Video URL not set yet.
-              </div>
+              <div style="padding:40px 0;text-align:center;color:#475569;font-size:13px;">Video URL not set yet.</div>
             }
           </div>
-        }
 
-        <!-- SEO panel (shown when rendered or later) -->
-        @if (isRenderedOrLater() && project()!.seo) {
-          <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:24px;">
-            <h2 style="margin:0 0 16px;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">SEO</h2>
-            <div style="margin-bottom:10px;">
-              <div style="font-size:11px;color:#475569;margin-bottom:3px;">Title</div>
-              <div style="font-size:14px;color:#e2e8f0;">{{ project()!.seo!.title }}</div>
-            </div>
-            <div style="margin-bottom:10px;">
-              <div style="font-size:11px;color:#475569;margin-bottom:3px;">Description</div>
-              <div style="font-size:13px;color:#94a3b8;white-space:pre-wrap;">{{ project()!.seo!.description }}</div>
-            </div>
-            @if (project()!.seo!.hashtags?.length) {
-              <div>
-                <div style="font-size:11px;color:#475569;margin-bottom:6px;">Hashtags</div>
-                <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                  @for (tag of project()!.seo!.hashtags; track tag) {
-                    <span style="padding:2px 8px;background:#1e1e1e;border-radius:4px;font-size:12px;color:#60a5fa;">#{{ tag }}</span>
-                  }
-                </div>
+          @if (project()!.seo) {
+            <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:20px;">
+              <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;">SEO</div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;color:#475569;margin-bottom:3px;">Title</div>
+                <div style="font-size:14px;color:#e2e8f0;">{{ project()!.seo!.title }}</div>
               </div>
-            }
-          </div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;color:#475569;margin-bottom:3px;">Description</div>
+                <div style="font-size:13px;color:#94a3b8;white-space:pre-wrap;">{{ project()!.seo!.description }}</div>
+              </div>
+              @if (project()!.seo!.hashtags?.length) {
+                <div>
+                  <div style="font-size:10px;color:#475569;margin-bottom:6px;">Hashtags</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    @for (tag of project()!.seo!.hashtags; track tag) {
+                      <span style="padding:2px 8px;background:#1e1e1e;border-radius:4px;font-size:12px;color:#60a5fa;">#{{ tag }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
         }
       }
     </div>
@@ -219,11 +226,9 @@ export class LongformDetailComponent implements OnInit {
     return ['/longform'];
   });
 
-  isRenderedOrLater = computed(() => {
-    const p = this.project();
-    if (!p) return false;
-    const rendered = ['rendered', 'awaiting_final_approval', 'publishing', 'posted'];
-    return rendered.includes(p.status);
+  isSimpleVideoState = computed(() => {
+    const s = this.project()?.status;
+    return s === 'rendered' || s === 'publishing' || s === 'posted';
   });
 
   isWorkbenchGate = computed(() => {
@@ -248,6 +253,13 @@ export class LongformDetailComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async onPublished() {
+    const p = this.project();
+    if (!p) return;
+    const updated = await this.svc.getLongformProject(p.id);
+    if (updated) this.project.set(updated);
   }
 
   async triggerStage(stage: string) {
