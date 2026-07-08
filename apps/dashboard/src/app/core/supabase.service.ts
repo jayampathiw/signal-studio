@@ -154,6 +154,25 @@ export interface LongformProject {
   updated_at: string;
 }
 
+export interface ContentClip {
+  id: number;
+  project_id: number;
+  scene_n: number;
+  kind: 'clip' | 'still' | 'text_card' | 'editor_build';
+  title: string | null;
+  visual_prompt: string | null;
+  vo_text: string | null;
+  audio_cue: string | null;
+  text_overlay: string | null;
+  duration_sec: number | null;
+  reference_keys: string[];
+  clip_url: string | null;
+  vo_url: string | null;
+  status: string;
+  fail_reason: string | null;
+  created_at: string;
+}
+
 export type StillStatus = 'pending' | 'generating' | 'generated' | 'validating' | 'passed' | 'failed' | 'blocked';
 export type StillCut = 'A' | 'B' | 'C' | 'D';
 
@@ -666,6 +685,16 @@ export class SupabaseService {
       .order('cut', { ascending: true });
     if (error) throw error;
     return (data ?? []) as ContentStill[];
+  }
+
+  async getContentClips(projectId: number): Promise<ContentClip[]> {
+    const { data, error } = await this.client
+      .from('content_clips')
+      .select('id, project_id, scene_n, kind, title, visual_prompt, vo_text, audio_cue, text_overlay, duration_sec, reference_keys, clip_url, vo_url, status, fail_reason, created_at')
+      .eq('project_id', projectId)
+      .order('scene_n', { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as ContentClip[];
   }
 
   async presignStillUpload(projectId: number, sceneN: number, cut: string, filename: string, contentType?: string): Promise<{ upload_url: string; public_url: string; key: string }> {
