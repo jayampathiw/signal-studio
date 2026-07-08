@@ -149,6 +149,27 @@ export interface LongformProject {
   rendered_video_url: string | null;
   audio_plan: any | null;
   seo: { title: string; description: string; hashtags: string[] } | null;
+  scenes: ContentItemScene[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type StillStatus = 'pending' | 'generating' | 'generated' | 'validating' | 'passed' | 'failed' | 'blocked';
+export type StillCut = 'A' | 'B' | 'C' | 'D';
+
+export interface ContentStill {
+  id: number;
+  project_id: number;
+  scene_n: number;
+  cut: StillCut;
+  act: number | null;
+  prompt: string | null;
+  motion: string;
+  image_source: string;
+  clip_url: string | null;
+  status: StillStatus;
+  retry_count: number;
+  fail_reason: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -629,11 +650,22 @@ export class SupabaseService {
   async getLongformProject(id: number): Promise<LongformProject | null> {
     const { data, error } = await this.client
       .from('content_items')
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, created_at, updated_at')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, created_at, updated_at')
       .eq('id', id)
       .single();
     if (error) throw error;
     return data as LongformProject | null;
+  }
+
+  async getContentStills(projectId: number): Promise<ContentStill[]> {
+    const { data, error } = await this.client
+      .from('content_stills')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('scene_n', { ascending: true })
+      .order('cut', { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as ContentStill[];
   }
 
   async presignStillUpload(projectId: number, sceneN: number, cut: string, filename: string, contentType?: string): Promise<{ upload_url: string; public_url: string; key: string }> {
