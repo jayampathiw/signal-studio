@@ -5,6 +5,7 @@ import { LongformProject, SupabaseService } from '../core/supabase.service';
 import { LongformWorkbenchComponent } from './longform-workbench.component';
 import { LongformScriptComponent } from './longform-script.component';
 import { LongformFinalReviewComponent } from './longform-final-review.component';
+import { LongformAudioComponent } from './longform-audio.component';
 
 type Stage = {
   key: string;
@@ -41,7 +42,7 @@ function stageIndex(status: string) {
 @Component({
   selector: 'app-longform-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent],
+  imports: [DatePipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent, LongformAudioComponent],
   template: `
     <!-- Navbar -->
     <nav style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;">
@@ -206,6 +207,8 @@ function stageIndex(status: string) {
             </div>
           }
         }
+        <!-- Audio plan editor (always shown) -->
+        <app-longform-audio [project]="project()!" />
       }
     </div>
   `,

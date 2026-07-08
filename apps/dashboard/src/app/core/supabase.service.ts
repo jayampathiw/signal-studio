@@ -173,6 +173,14 @@ export interface ContentClip {
   created_at: string;
 }
 
+export interface AudioPlanSegment {
+  act: number;
+  from_sec: number;
+  to_sec: number;
+  track: string;
+  gain_db: number;
+}
+
 export type StillStatus = 'pending' | 'generating' | 'generated' | 'validating' | 'passed' | 'failed' | 'blocked';
 export type StillCut = 'A' | 'B' | 'C' | 'D';
 
@@ -695,6 +703,14 @@ export class SupabaseService {
       .order('scene_n', { ascending: true });
     if (error) throw error;
     return (data ?? []) as ContentClip[];
+  }
+
+  async updateAudioPlan(projectId: number, audioPlan: AudioPlanSegment[]): Promise<void> {
+    const { error } = await this.client
+      .from('content_items')
+      .update({ audio_plan: audioPlan })
+      .eq('id', projectId);
+    if (error) throw error;
   }
 
   async presignStillUpload(projectId: number, sceneN: number, cut: string, filename: string, contentType?: string): Promise<{ upload_url: string; public_url: string; key: string }> {
