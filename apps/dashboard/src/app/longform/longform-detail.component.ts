@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { LongformProject, SupabaseService } from '../core/supabase.service';
+import { LongformWorkbenchComponent } from './longform-workbench.component';
 
 type Stage = {
   key: string;
@@ -39,7 +40,7 @@ function stageIndex(status: string) {
 @Component({
   selector: 'app-longform-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, LongformWorkbenchComponent],
   template: `
     <!-- Navbar -->
     <nav style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;">
@@ -146,6 +147,11 @@ function stageIndex(status: string) {
           </div>
         </div>
 
+        <!-- Stills workbench (Gate 2 / Gate 3) -->
+        @if (isWorkbenchGate()) {
+          <app-longform-workbench [project]="project()!" />
+        }
+
         <!-- Video panel (shown when rendered or later) -->
         @if (isRenderedOrLater()) {
           <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:24px;margin-bottom:24px;">
@@ -212,6 +218,11 @@ export class LongformDetailComponent implements OnInit {
     if (!p) return false;
     const rendered = ['rendered', 'awaiting_final_approval', 'publishing', 'posted'];
     return rendered.includes(p.status);
+  });
+
+  isWorkbenchGate = computed(() => {
+    const s = this.project()?.status;
+    return s === 'awaiting_refs' || s === 'awaiting_stills';
   });
 
   constructor(
