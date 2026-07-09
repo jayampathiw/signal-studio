@@ -134,7 +134,7 @@ export interface OnThisDayPost {
 // ── Longform ──────────────────────────────────────────────────────────────────
 
 export type LongformStatus =
-  | 'brief' | 'scripting' | 'awaiting_script_approval'
+  | 'brief' | 'storyboard' | 'scripting' | 'awaiting_script_approval'
   | 'seeding' | 'awaiting_refs' | 'awaiting_stills'
   | 'rendering' | 'rendered' | 'awaiting_final_approval'
   | 'publishing' | 'posted' | 'failed' | 'blocked';
@@ -672,6 +672,14 @@ export class SupabaseService {
       .order('created_at', { ascending: false });
     if (error) throw error;
     return (data ?? []) as LongformProject[];
+  }
+
+  async updateLongformStatus(id: number, status: string): Promise<void> {
+    const { error } = await this.client
+      .from('content_items')
+      .update({ status })
+      .eq('id', id);
+    if (error) throw error;
   }
 
   async createLongformProject(channelKey: string, title: string): Promise<LongformProject> {
