@@ -801,4 +801,36 @@ export class SupabaseService {
     if (!res.ok) throw new Error(body.error ?? `import-shotlist failed (${res.status})`);
     return body;
   }
+
+  async autoMatchStill(projectId: number, file: File): Promise<{
+    ok: boolean; slot: string; scene_n: number; cut: string; clip_url: string;
+  }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+
+    // Read file as base64
+    const arrayBuf = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuf);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    const image_base64 = btoa(binary);
+
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/auto-match-still`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        project_id: projectId,
+        image_base64,
+        mime_type: file.type || 'image/jpeg',
+        filename:  file.name,
+      }),
+    });
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    if (!res.ok) throw new Error(body.error ?? `auto-match-still failed (${res.status})`);
+    return body;
+  }
 }
