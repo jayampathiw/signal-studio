@@ -36,11 +36,21 @@ interface SceneGroup {
         </span>
       </div>
 
+      @if (!loading() && totalSlots() > 0) {
+        <!-- Progress bar -->
+        <div style="margin-bottom:16px;">
+          <div style="background:#1a1a1a;border-radius:4px;height:4px;overflow:hidden;">
+            <div style="height:100%;background:#4ade80;transition:width .3s;"
+                 [style.width]="(uploadedCount() / totalSlots() * 100) + '%'"></div>
+          </div>
+        </div>
+      }
+
       @if (loading()) {
         <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">Loading stills…</div>
       } @else if (scenes().length === 0) {
         <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">
-          No scenes found. The script may not have been approved yet.
+          No scenes found. Import a shot list first.
         </div>
       } @else {
         @for (scene of scenes(); track scene.scene_n) {
@@ -52,6 +62,7 @@ interface SceneGroup {
               @for (slot of scene.slots; track slot.cut) {
                 <div style="position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:1px solid;background:#0d0d0d;cursor:pointer;"
                      [style.border-color]="slot.uploading ? '#3b82f6' : slot.still?.clip_url ? '#262626' : '#1e3a2a'"
+                     [title]="slot.still?.prompt ?? ''"
                      (click)="openPicker(slot)">
 
                   @if (slot.still?.clip_url && !slot.uploading) {
@@ -96,6 +107,21 @@ interface SceneGroup {
             </div>
           </div>
         }
+
+        @if (project.status === 'storyboard' && uploadedCount() > 0) {
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;color:#475569;">
+              {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
+              @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
+            </span>
+            <button (click)="advanceToReview()"
+                    [disabled]="advancing()"
+                    style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;"
+                    [style.opacity]="advancing() ? '0.5' : '1'">
+              {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Review →' }}
+            </button>
+          </div>
+        }
       }
     </div>
 
@@ -120,46 +146,52 @@ export class LongformWorkbenchComponent implements OnInit {
 
   loading    = signal(true);
   stills     = signal<ContentStill[]>([]);
-  // Transient per-slot state (uploading/error) keyed by 'scene_n-cut'
   slotState  = signal<Record<string, SlotState>>({});
+  advancing  = signal(false);
 
   private pendingSlot: { scene_n: number; cut: StillCut } | null = null;
 
   scenes = computed<SceneGroup[]>(() => {
-    const rawStills  = this.stills();
-    const states     = this.slotState();
-    const projectScenes = this.project.scenes ?? [];
-
-    const sceneNums = new Set<number>();
-    projectScenes.forEach(s => sceneNums.add(s.scene_num));
-    rawStills.forEach(s => sceneNums.add(s.scene_n));
+    const rawStills = this.stills();
+    const states    = this.slotState();
 
     const stillMap = new Map<string, ContentStill>();
     rawStills.forEach(s => stillMap.set(`${s.scene_n}-${s.cut}`, s));
 
-    return [...sceneNums].sort((a, b) => a - b).map(scene_n => ({
-      scene_n,
-      label: `Scene ${scene_n}`,
-      slots: CUTS.map(cut => {
-        const key   = `${scene_n}-${cut}`;
-        const state = states[key] ?? { uploading: false, error: null };
-        return {
-          scene_n,
-          cut,
-          still: stillMap.get(key) ?? null,
-          uploading: state.uploading,
-          error: state.error,
-        };
-      }),
-    }));
+    // Group scene numbers from DB rows only (not all 4 cuts per scene)
+    const sceneNums = new Set<number>();
+    rawStills.forEach(s => sceneNums.add(s.scene_n));
+
+    return [...sceneNums].sort((a, b) => a - b).map(scene_n => {
+      // Only show cuts that exist in content_stills
+      const cutsInScene = CUTS.filter(cut => stillMap.has(`${scene_n}-${cut}`));
+      return {
+        scene_n,
+        label: `Scene ${scene_n}`,
+        slots: cutsInScene.map(cut => {
+          const key   = `${scene_n}-${cut}`;
+          const state = states[key] ?? { uploading: false, error: null };
+          return {
+            scene_n,
+            cut,
+            still: stillMap.get(key) ?? null,
+            uploading: state.uploading,
+            error: state.error,
+          };
+        }),
+      };
+    });
   });
 
   uploadedCount = computed(() => this.stills().filter(s => s.clip_url != null).length);
-  totalSlots    = computed(() => this.scenes().length * 4);
+  totalSlots    = computed(() => this.scenes().reduce((n, s) => n + s.slots.length, 0));
 
-  workbenchTitle = computed(() =>
-    this.project.status === 'awaiting_refs' ? 'Gate 2 — Reference Images' : 'Gate 3 — Scene Stills'
-  );
+  workbenchTitle = computed(() => {
+    const s = this.project.status;
+    if (s === 'storyboard')    return 'Upload Still Images';
+    if (s === 'awaiting_refs') return 'Gate 2 — Reference Images';
+    return 'Gate 3 — Scene Stills';
+  });
 
   constructor(private svc: SupabaseService) {}
 
@@ -234,6 +266,18 @@ export class LongformWorkbenchComponent implements OnInit {
       this.patchSlot(scene_n, cut, { uploading: false, error: null });
     } catch (e: any) {
       this.patchSlot(scene_n, cut, { uploading: false, error: e.message });
+    }
+  }
+
+  async advanceToReview() {
+    this.advancing.set(true);
+    try {
+      await this.svc.updateLongformStatus(this.project.id, 'awaiting_stills');
+      window.location.reload();
+    } catch (e: any) {
+      console.error('Advance failed:', e);
+    } finally {
+      this.advancing.set(false);
     }
   }
 
