@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
 
   if (pErr || !project) return json({ error: 'Project not found' }, 404);
 
-  const validStatuses = ['awaiting_stills', 'awaiting_refs', 'seeding'];
+  const validStatuses = ['storyboard', 'awaiting_stills', 'awaiting_refs', 'seeding'];
   if (!validStatuses.includes(project.status)) {
     return json({
       error: `Project is "${project.status}" — still uploads only allowed during: ${validStatuses.join(', ')}`,

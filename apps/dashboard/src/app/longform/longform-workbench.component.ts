@@ -27,80 +27,140 @@ interface SceneGroup {
   standalone: true,
   template: `
     <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:24px;margin-bottom:24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <h2 style="margin:0;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">
           {{ workbenchTitle() }}
         </h2>
-        <span style="font-size:12px;color:#475569;">
-          {{ uploadedCount() }} / {{ totalSlots() }} stills uploaded
-        </span>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12px;color:#475569;">{{ uploadedCount() }} / {{ totalSlots() }} uploaded</span>
+          <!-- View toggle -->
+          <div style="display:flex;border:1px solid #262626;border-radius:6px;overflow:hidden;">
+            <button (click)="listView.set(false)"
+                    style="padding:4px 10px;border:none;font-size:11px;cursor:pointer;transition:background .15s;"
+                    [style.background]="!listView() ? '#2563eb' : '#1a1a1a'"
+                    [style.color]="!listView() ? 'white' : '#64748b'">Grid</button>
+            <button (click)="listView.set(true)"
+                    style="padding:4px 10px;border:none;font-size:11px;cursor:pointer;transition:background .15s;"
+                    [style.background]="listView() ? '#2563eb' : '#1a1a1a'"
+                    [style.color]="listView() ? 'white' : '#64748b'">List</button>
+          </div>
+        </div>
       </div>
 
       @if (!loading() && totalSlots() > 0) {
-        <!-- Progress bar -->
-        <div style="margin-bottom:16px;">
-          <div style="background:#1a1a1a;border-radius:4px;height:4px;overflow:hidden;">
-            <div style="height:100%;background:#4ade80;transition:width .3s;"
-                 [style.width]="(uploadedCount() / totalSlots() * 100) + '%'"></div>
-          </div>
+        <div style="background:#1a1a1a;border-radius:4px;height:4px;overflow:hidden;margin-bottom:20px;">
+          <div style="height:100%;background:#4ade80;transition:width .3s;"
+               [style.width]="(uploadedCount() / totalSlots() * 100) + '%'"></div>
         </div>
       }
 
       @if (loading()) {
         <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">Loading stills…</div>
       } @else if (scenes().length === 0) {
-        <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">
-          No scenes found. Import a shot list first.
+        <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">No scenes found. Import a shot list first.</div>
+      } @else if (listView()) {
+
+        <!-- ── LIST VIEW: prompt text visible, one row per slot ── -->
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          @for (scene of scenes(); track scene.scene_n) {
+            @for (slot of scene.slots; track slot.cut) {
+              <div style="display:grid;grid-template-columns:64px 80px 1fr 110px;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid;"
+                   [style.border-color]="slot.uploading ? '#3b82f6' : slot.still?.clip_url ? '#1e293b' : '#1a1a1a'"
+                   [style.background]="slot.still?.clip_url ? 'rgba(30,41,59,.3)' : '#0d0d0d'">
+
+                <!-- Thumbnail -->
+                <div style="position:relative;aspect-ratio:16/9;border-radius:5px;overflow:hidden;background:#1a1a1a;cursor:pointer;"
+                     (click)="openPicker(slot)">
+                  @if (slot.still?.clip_url) {
+                    <img [src]="slot.still!.clip_url!" style="width:100%;height:100%;object-fit:cover;" />
+                  } @else if (slot.uploading) {
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                      <div class="spinner"></div>
+                    </div>
+                  } @else {
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#334155;font-size:18px;">+</div>
+                  }
+                </div>
+
+                <!-- Scene label -->
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:#94a3b8;font-family:monospace;">
+                    S{{ slot.scene_n }}-{{ slot.cut }}
+                  </div>
+                  @if (slot.still) {
+                    <span style="font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;"
+                          [style.background]="statusBg(slot.still.status)"
+                          [style.color]="statusColor(slot.still.status)">
+                      {{ slot.still.status }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Prompt text -->
+                <div style="font-size:11px;color:#475569;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                  {{ slot.still?.prompt ?? '—' }}
+                </div>
+
+                <!-- Upload button -->
+                <button (click)="openPicker(slot)"
+                        [disabled]="slot.uploading"
+                        style="padding:6px 12px;border-radius:6px;border:1px solid #262626;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;"
+                        [style.background]="slot.still?.clip_url ? '#1e293b' : '#0d0d0d'"
+                        [style.color]="slot.still?.clip_url ? '#60a5fa' : '#4ade80'">
+                  {{ slot.uploading ? 'Uploading…' : slot.still?.clip_url ? '↑ Replace' : '↑ Upload' }}
+                </button>
+
+                @if (slot.error) {
+                  <div style="grid-column:1/-1;font-size:11px;color:#f87171;padding-left:4px;">{{ slot.error }}</div>
+                }
+              </div>
+            }
+          }
         </div>
+
       } @else {
+
+        <!-- ── GRID VIEW ── -->
         @for (scene of scenes(); track scene.scene_n) {
           <div style="margin-bottom:24px;">
             <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
-              {{ scene.label }}
+              Scene {{ scene.scene_n }}
             </div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
               @for (slot of scene.slots; track slot.cut) {
-                <div style="position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:1px solid;background:#0d0d0d;cursor:pointer;"
+                <div style="border-radius:8px;overflow:hidden;border:1px solid;background:#0d0d0d;cursor:pointer;"
                      [style.border-color]="slot.uploading ? '#3b82f6' : slot.still?.clip_url ? '#262626' : '#1e3a2a'"
-                     [title]="slot.still?.prompt ?? ''"
                      (click)="openPicker(slot)">
-
-                  @if (slot.still?.clip_url && !slot.uploading) {
-                    <img [src]="slot.still!.clip_url!"
-                         style="width:100%;height:100%;object-fit:cover;display:block;"
-                         [alt]="'S' + slot.scene_n + '-' + slot.cut" />
-                  }
-
-                  @if (!slot.still?.clip_url && !slot.uploading) {
-                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-                      <div style="width:28px;height:28px;border-radius:50%;border:1.5px dashed #2d4a3a;display:flex;align-items:center;justify-content:center;color:#2d6a4f;font-size:16px;">+</div>
-                      <div style="font-size:10px;color:#2d6a4f;">Upload</div>
-                    </div>
-                  }
-
-                  @if (slot.uploading) {
-                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);">
-                      <div class="spinner"></div>
-                    </div>
-                  }
-
-                  @if (slot.error && !slot.uploading) {
-                    <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(220,38,38,.85);padding:3px 6px;font-size:10px;color:#fff;line-height:1.3;">
-                      {{ slot.error }}
-                    </div>
-                  }
-
-                  <div style="position:absolute;top:5px;left:5px;display:flex;gap:4px;align-items:center;">
-                    <span style="padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(0,0,0,.7);color:#94a3b8;">
-                      {{ slot.cut }}
-                    </span>
-                    @if (slot.still) {
-                      <span style="padding:1px 5px;border-radius:4px;font-size:9px;font-weight:600;"
-                            [style.background]="statusBg(slot.still.status)"
-                            [style.color]="statusColor(slot.still.status)">
-                        {{ slot.still.status }}
-                      </span>
+                  <!-- Image -->
+                  <div style="position:relative;aspect-ratio:16/9;">
+                    @if (slot.still?.clip_url && !slot.uploading) {
+                      <img [src]="slot.still!.clip_url!" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                    } @else if (slot.uploading) {
+                      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);">
+                        <div class="spinner"></div>
+                      </div>
+                    } @else {
+                      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+                        <div style="width:28px;height:28px;border-radius:50%;border:1.5px dashed #2d4a3a;display:flex;align-items:center;justify-content:center;color:#2d6a4f;font-size:16px;">+</div>
+                        <div style="font-size:10px;color:#2d6a4f;">Upload</div>
+                      </div>
                     }
+                    <div style="position:absolute;top:5px;left:5px;display:flex;gap:4px;align-items:center;">
+                      <span style="padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(0,0,0,.7);color:#94a3b8;">
+                        S{{ slot.scene_n }}-{{ slot.cut }}
+                      </span>
+                      @if (slot.still) {
+                        <span style="padding:1px 5px;border-radius:4px;font-size:9px;font-weight:600;"
+                              [style.background]="statusBg(slot.still.status)"
+                              [style.color]="statusColor(slot.still.status)">
+                          {{ slot.still.status }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                  <!-- Prompt text below image -->
+                  <div style="padding:6px 8px;font-size:10px;color:#475569;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:32px;">
+                    {{ slot.still?.prompt ?? '' }}
                   </div>
                 </div>
               }
@@ -108,18 +168,64 @@ interface SceneGroup {
           </div>
         }
 
-        @if (project.status === 'storyboard' && uploadedCount() > 0) {
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:12px;color:#475569;">
-              {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
-              @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
-            </span>
-            <button (click)="advanceToReview()"
-                    [disabled]="advancing()"
-                    style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;"
-                    [style.opacity]="advancing() ? '0.5' : '1'">
-              {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Review →' }}
-            </button>
+        @if (project.status === 'storyboard') {
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid #1a1a1a;">
+
+            <!-- Auto-match bulk upload -->
+            <div style="background:#0a1628;border:1px dashed #1e3a5f;border-radius:10px;padding:18px 20px;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#60a5fa;">Auto-Match All Images</div>
+                  <div style="font-size:11px;color:#475569;margin-top:2px;">Claude Vision analyses each image and assigns it to the correct scene slot automatically</div>
+                </div>
+                <button (click)="triggerAutoMatch()"
+                        [disabled]="autoMatching()"
+                        style="padding:8px 18px;border-radius:8px;background:#1d4ed8;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:16px;"
+                        [style.opacity]="autoMatching() ? '0.6' : '1'">
+                  {{ autoMatching() ? 'Analysing…' : '⚡ Select All Images' }}
+                </button>
+              </div>
+
+              @if (autoMatching() || matchProgress().log.length > 0) {
+                <!-- Progress -->
+                @if (autoMatching()) {
+                  <div style="margin-bottom:8px;">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:4px;">
+                      <span>Processing {{ matchProgress().current }} of {{ matchProgress().total }}</span>
+                      <span>{{ Math.round(matchProgress().current / matchProgress().total * 100) }}%</span>
+                    </div>
+                    <div style="background:#1a1a1a;border-radius:3px;height:3px;overflow:hidden;">
+                      <div style="height:100%;background:#3b82f6;transition:width .3s;"
+                           [style.width]="(matchProgress().current / matchProgress().total * 100) + '%'"></div>
+                    </div>
+                  </div>
+                }
+                <div style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
+                  @for (line of matchProgress().log; track $index) {
+                    <div style="font-size:11px;font-family:monospace;padding:2px 0;"
+                         [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('✗') ? '#f87171' : '#64748b'">
+                      {{ line }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Advance button -->
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:12px;color:#475569;">
+                {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
+                @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
+              </span>
+              @if (uploadedCount() > 0) {
+                <button (click)="advanceToReview()"
+                        [disabled]="advancing()"
+                        style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;"
+                        [style.opacity]="advancing() ? '0.5' : '1'">
+                  {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Review →' }}
+                </button>
+              }
+            </div>
           </div>
         }
       }
@@ -127,6 +233,8 @@ interface SceneGroup {
 
     <input #fileInput type="file" accept="image/*" style="display:none"
            (change)="onFileSelected($event)" />
+    <input #autoMatchInput type="file" accept="image/*" multiple style="display:none"
+           (change)="onAutoMatchFiles($event)" />
 
     <style>
       .spinner {
@@ -142,14 +250,21 @@ interface SceneGroup {
 })
 export class LongformWorkbenchComponent implements OnInit {
   @Input() project!: LongformProject;
-  @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('fileInput')      fileInputRef!:      ElementRef<HTMLInputElement>;
+  @ViewChild('autoMatchInput') autoMatchInputRef!: ElementRef<HTMLInputElement>;
 
-  loading    = signal(true);
-  stills     = signal<ContentStill[]>([]);
-  slotState  = signal<Record<string, SlotState>>({});
-  advancing  = signal(false);
+  loading       = signal(true);
+  stills        = signal<ContentStill[]>([]);
+  slotState     = signal<Record<string, SlotState>>({});
+  advancing     = signal(false);
+  listView      = signal(true);
+  autoMatching  = signal(false);
+  matchProgress = signal<{ current: number; total: number; log: string[] }>({ current: 0, total: 0, log: [] });
 
+  readonly Math = Math;
   private pendingSlot: { scene_n: number; cut: StillCut } | null = null;
+
+  constructor(private svc: SupabaseService) {}
 
   scenes = computed<SceneGroup[]>(() => {
     const rawStills = this.stills();
@@ -193,7 +308,6 @@ export class LongformWorkbenchComponent implements OnInit {
     return 'Gate 3 — Scene Stills';
   });
 
-  constructor(private svc: SupabaseService) {}
 
   async ngOnInit() {
     try {
@@ -267,6 +381,51 @@ export class LongformWorkbenchComponent implements OnInit {
     } catch (e: any) {
       this.patchSlot(scene_n, cut, { uploading: false, error: e.message });
     }
+  }
+
+  triggerAutoMatch() {
+    this.autoMatchInputRef.nativeElement.value = '';
+    this.autoMatchInputRef.nativeElement.click();
+  }
+
+  async onAutoMatchFiles(event: Event) {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    if (!files.length) return;
+
+    this.autoMatching.set(true);
+    this.matchProgress.set({ current: 0, total: files.length, log: [] });
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const p = this.matchProgress();
+      this.matchProgress.set({ ...p, current: i + 1, log: [...p.log, `Analysing ${file.name}…`] });
+
+      try {
+        const result = await this.svc.autoMatchStill(this.project.id, file);
+        const { scene_n, cut, clip_url, slot } = result;
+
+        // Update local stills signal
+        const current = this.stills();
+        const exists  = current.find(s => s.scene_n === scene_n && s.cut === cut);
+        if (exists) {
+          this.stills.set(current.map(s =>
+            s.scene_n === scene_n && s.cut === cut
+              ? { ...s, clip_url, status: 'generated' as const }
+              : s
+          ));
+        }
+
+        const updated = this.matchProgress();
+        const lastLog = updated.log.slice(0, -1);
+        this.matchProgress.set({ ...updated, log: [...lastLog, `✓ ${file.name} → ${slot}`] });
+      } catch (e: any) {
+        const updated = this.matchProgress();
+        const lastLog = updated.log.slice(0, -1);
+        this.matchProgress.set({ ...updated, log: [...lastLog, `✗ ${file.name}: ${e.message}`] });
+      }
+    }
+
+    this.autoMatching.set(false);
   }
 
   async advanceToReview() {
