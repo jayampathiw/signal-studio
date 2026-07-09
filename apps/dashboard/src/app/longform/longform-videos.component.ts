@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LongformProject, SupabaseService } from '../core/supabase.service';
 
 const CHANNEL_SLUG_MAP: Record<string, string> = {
@@ -37,7 +38,7 @@ const TAB_STATUSES: Record<FilterTab, string[]> = {
 @Component({
   selector: 'app-longform-videos',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, FormsModule],
   template: `
     <nav style="display:flex;align-items:center;gap:24px;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;">
       <span style="font-size:13px;font-weight:600;color:#e2e8f0;letter-spacing:.5px;">SIGNAL STUDIO</span>
@@ -62,7 +63,45 @@ const TAB_STATUSES: Record<FilterTab, string[]> = {
           <h1 style="margin:0;font-size:20px;font-weight:700;color:#e2e8f0;">{{ channelLabel() }}</h1>
           <p style="margin:4px 0 0;font-size:13px;color:#475569;">{{ filtered().length }} of {{ all().length }} videos</p>
         </div>
+        <button (click)="showNewModal.set(true)"
+                style="padding:8px 18px;border-radius:8px;background:#7c3aed;color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;">
+          + New Project
+        </button>
       </div>
+
+      <!-- New project modal -->
+      @if (showNewModal()) {
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;"
+             (click)="showNewModal.set(false)">
+          <div style="background:#111;border:1px solid #262626;border-radius:12px;padding:28px;width:420px;max-width:90vw;"
+               (click)="$event.stopPropagation()">
+            <h2 style="margin:0 0 20px;font-size:16px;font-weight:700;color:#e2e8f0;">New Longform Project</h2>
+            <div style="margin-bottom:16px;">
+              <label style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:6px;">
+                Video Title
+              </label>
+              <input [(ngModel)]="newTitle"
+                     placeholder="e.g. Silenced | The Night a Goalkeeper Sent Germany Home"
+                     style="width:100%;box-sizing:border-box;padding:9px 12px;background:#0d0d0d;border:1px solid #262626;border-radius:7px;color:#e2e8f0;font-size:13px;outline:none;" />
+            </div>
+            @if (createError()) {
+              <div style="font-size:12px;color:#f87171;margin-bottom:12px;">{{ createError() }}</div>
+            }
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+              <button (click)="showNewModal.set(false)"
+                      style="padding:7px 16px;border-radius:7px;background:#1a1a1a;color:#94a3b8;border:1px solid #262626;font-size:12px;cursor:pointer;">
+                Cancel
+              </button>
+              <button (click)="createProject()"
+                      [disabled]="creating()"
+                      style="padding:7px 16px;border-radius:7px;background:#7c3aed;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;"
+                      [style.opacity]="creating() ? '0.5' : '1'">
+                {{ creating() ? 'Creating…' : 'Create Project' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
 
       <!-- Filter tabs -->
       <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid #1a1a1a;padding-bottom:0;">
@@ -153,6 +192,11 @@ export class LongformVideosComponent implements OnInit {
   activeTab = signal<FilterTab>('all');
   slug      = '';
 
+  showNewModal = signal(false);
+  newTitle     = '';
+  creating     = signal(false);
+  createError  = signal<string | null>(null);
+
   tabs: { key: FilterTab; label: string }[] = [
     { key: 'all',     label: 'All'         },
     { key: 'pending', label: 'Pending'     },
@@ -182,7 +226,7 @@ export class LongformVideosComponent implements OnInit {
     return key === 'football/documentary/EN' ? '⚽ Football Documentary' : this.slug;
   });
 
-  constructor(private route: ActivatedRoute, private svc: SupabaseService) {}
+  constructor(private route: ActivatedRoute, private svc: SupabaseService, private router: Router) {}
 
   async ngOnInit() {
     this.slug = this.route.snapshot.paramMap.get('slug') ?? '';
@@ -195,6 +239,25 @@ export class LongformVideosComponent implements OnInit {
       if (hasReview) this.activeTab.set('review');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  async createProject() {
+    const title = this.newTitle.trim();
+    if (!title) { this.createError.set('Title is required.'); return; }
+    const channelKey = CHANNEL_SLUG_MAP[this.slug];
+    if (!channelKey) return;
+    this.creating.set(true);
+    this.createError.set(null);
+    try {
+      const project = await this.svc.createLongformProject(channelKey, title);
+      this.showNewModal.set(false);
+      this.newTitle = '';
+      this.router.navigate(['/longform/video', project.id]);
+    } catch (e: any) {
+      this.createError.set(e.message);
+    } finally {
+      this.creating.set(false);
     }
   }
 

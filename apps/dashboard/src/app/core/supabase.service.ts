@@ -674,6 +674,16 @@ export class SupabaseService {
     return (data ?? []) as LongformProject[];
   }
 
+  async createLongformProject(channelKey: string, title: string): Promise<LongformProject> {
+    const { data, error } = await this.client
+      .from('content_items')
+      .insert({ channel_key: channelKey, title, status: 'brief' })
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, created_at, updated_at')
+      .single();
+    if (error) throw error;
+    return data as LongformProject;
+  }
+
   async getLongformProject(id: number): Promise<LongformProject | null> {
     const { data, error } = await this.client
       .from('content_items')
