@@ -109,22 +109,28 @@ Deno.serve(async (req: Request) => {
           },
           {
             type: 'text',
-            text: `Look at this image carefully. Match it to exactly one slot from the shot list below.\nReturn ONLY the slot ID (format: S7-A), nothing else — no explanation, no punctuation.\n\nShot list:\n${slotList}`,
+            text: `Look at this image carefully. Match it to exactly one slot from the shot list below.\nReturn ONLY the slot ID (format: S7-A), nothing else — no explanation, no punctuation.\nIf this image is a kit reference, logo, or does not match any scene slot, return exactly: NO_MATCH\n\nShot list:\n${slotList}`,
           },
         ],
       }],
     });
-    matchedSlot = ((res.content[0] as { text: string }).text ?? '').trim().replace(/[^S0-9\-A-D]/gi, '');
+    matchedSlot = ((res.content[0] as { text: string }).text ?? '').trim();
   } catch (e: any) {
     return json({ error: `Claude Vision error: ${e.message}` }, 500);
   }
 
-  // Validate slot format S{N}-{CUT}
-  const slotM = matchedSlot.match(/^S(\d+)-([A-D])$/i);
-  if (!slotM) return json({ error: `Unexpected Claude response: "${matchedSlot}"` }, 422);
+  // Check for explicit no-match
+  if (matchedSlot.toUpperCase().includes('NO_MATCH') || matchedSlot === '') {
+    return json({ error: 'NO_MATCH: image does not correspond to any scene slot (kit ref or unrecognised)' }, 422);
+  }
+
+  // Validate slot format S{N}-{CUT} — extract from raw response in case Claude added punctuation
+  const slotM = matchedSlot.match(/S(\d+)-([A-D])/i);
+  if (!slotM) return json({ error: `Unrecognised Claude response: "${matchedSlot.slice(0, 40)}"` }, 422);
 
   const scene_n = Number(slotM[1]);
   const cut     = slotM[2].toUpperCase();
+  const slot    = `S${scene_n}-${cut}`;
 
   // Verify slot exists in DB
   const slotExists = stills.some(s => s.scene_n === scene_n && s.cut === cut);

@@ -203,7 +203,7 @@ interface SceneGroup {
                 <div style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
                   @for (line of matchProgress().log; track $index) {
                     <div style="font-size:11px;font-family:monospace;padding:2px 0;"
-                         [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('✗') ? '#f87171' : '#64748b'">
+                         [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('⚠') ? '#f59e0b' : line.startsWith('✗') ? '#f87171' : '#64748b'">
                       {{ line }}
                     </div>
                   }
@@ -421,7 +421,10 @@ export class LongformWorkbenchComponent implements OnInit {
       } catch (e: any) {
         const updated = this.matchProgress();
         const lastLog = updated.log.slice(0, -1);
-        this.matchProgress.set({ ...updated, log: [...lastLog, `✗ ${file.name}: ${e.message}`] });
+        const isNoMatch = (e.message as string).includes('NO_MATCH');
+        const prefix = isNoMatch ? '⚠' : '✗';
+        const msg    = isNoMatch ? `${file.name} — skipped (kit ref / no scene match)` : `${file.name}: ${e.message}`;
+        this.matchProgress.set({ ...updated, log: [...lastLog, `${prefix} ${msg}`] });
       }
     }
 
