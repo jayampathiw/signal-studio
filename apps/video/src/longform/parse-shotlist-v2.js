@@ -64,12 +64,18 @@ function parseOverlayLine(line) {
 
 export function parseShotlistV2(filePath) {
   const text = readFileSync(filePath, 'utf-8');
+  return parseShotlistText(text);
+}
+
+export function parseShotlistText(text) {
   const lines = text.split('\n');
 
   const scenes = [];
   let currentScene = null;
   let currentAct = null;
   let stillCount = 0;
+  let targetDurationSec = null;
+  let title = null;
 
   const flush = () => {
     if (currentScene) scenes.push(currentScene);
@@ -78,6 +84,16 @@ export function parseShotlistV2(filePath) {
   };
 
   for (const line of lines) {
+    // Header metadata
+    if (!title) {
+      const titleM = line.match(/^\*\*TITLE:\*\*\s*(.*)/);
+      if (titleM) { title = titleM[1].trim(); continue; }
+    }
+    if (targetDurationSec === null) {
+      const durM = line.match(/\*\*TARGET_DURATION_SEC:\*\*\s*(\d+)/);
+      if (durM) { targetDurationSec = Number(durM[1]); continue; }
+    }
+
     // Act section headers: ## COLD OPEN, ## ACT 1, etc.
     const actM = line.match(/^##\s+(COLD OPEN|ACT \d+|OUTRO)/);
     if (actM) {
@@ -110,9 +126,16 @@ export function parseShotlistV2(filePath) {
 
     if (!currentScene) continue;
 
-    // Still lines: 🖼️ STILL A: ...
+    // Still lines: 🖼️ STILL A: <prompt> or 🖼️ STILLS: <reuse note>
     if (line.startsWith('🖼️')) {
       stillCount++;
+      const cutM = line.match(/🖼️\s+STILL\s+([A-D]):\s*(.*)/);
+      if (cutM) {
+        const prompt = cutM[2].trim();
+        const refKeys = [...prompt.matchAll(/\[([A-Z][A-Z0-9-]+)\]/g)].map((m) => m[1]);
+        if (!currentScene.stills) currentScene.stills = [];
+        currentScene.stills.push({ cut: cutM[1], prompt, reference_keys: refKeys });
+      }
       continue;
     }
 
@@ -152,18 +175,19 @@ export function parseShotlistV2(filePath) {
     }
   }
 
-  return scenes;
+  return { title, target_duration_sec: targetDurationSec, scenes };
 }
 
 // CLI
 if (process.argv[1].endsWith('parse-shotlist-v2.js')) {
   const path = process.argv[2];
   if (!path) { console.error('Usage: node parse-shotlist-v2.js <shotlist-v2.md>'); process.exit(1); }
-  const scenes = parseShotlistV2(path);
+  const { title, target_duration_sec, scenes } = parseShotlistV2(path);
+  console.log(`Title: ${title}`);
+  console.log(`Duration: ${target_duration_sec}s`);
   console.log(`Total scenes: ${scenes.length} (expect ~51)`);
-  // Spot checks
   const s12 = scenes.find((s) => s.scene_n === 12);
   if (s12) console.log('S12 overlay:', JSON.stringify(s12.overlays));
   const s7 = scenes.find((s) => s.scene_n === 7);
-  if (s7) console.log('S7 motions:', JSON.stringify(s7.still_motions));
+  if (s7) console.log('S7 stills:', JSON.stringify(s7.stills?.map(s => s.cut)));
 }

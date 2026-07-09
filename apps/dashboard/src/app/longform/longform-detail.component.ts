@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { LongformProject, SupabaseService } from '../core/supabase.service';
 import { LongformWorkbenchComponent } from './longform-workbench.component';
 import { LongformScriptComponent } from './longform-script.component';
@@ -42,7 +42,7 @@ function stageIndex(status: string) {
 @Component({
   selector: 'app-longform-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent, LongformAudioComponent],
+  imports: [DatePipe, DecimalPipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent, LongformAudioComponent],
   template: `
     <!-- Navbar -->
     <nav style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;">
@@ -112,6 +112,55 @@ function stageIndex(status: string) {
                   </div>
                   @if (active) {
                     <div style="font-size:12px;color:#64748b;margin-top:2px;">{{ stage.description }}</div>
+
+                    <!-- Shot list upload (brief stage only) -->
+                    @if (stage.key === 'brief') {
+                      <div style="margin-top:14px;padding:16px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;">
+                        <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px;">Upload shot list</div>
+                        <div style="font-size:11px;color:#475569;margin-bottom:12px;line-height:1.5;">
+                          Upload a <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px;color:#94a3b8;">.md</code> file in the standard silenced-shotlist format.
+                          The parser will create <strong style="color:#64748b;">content_stills</strong> and <strong style="color:#64748b;">content_clips</strong> rows and advance the project to <em>storyboard</em>.
+                        </div>
+
+                        <label style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:7px;background:#1a1a1a;border:1px solid #262626;font-size:12px;color:#94a3b8;cursor:pointer;">
+                          📄 Choose shot list (.md)
+                          <input type="file" accept=".md,text/markdown" style="display:none;"
+                                 (change)="onShotlistFileSelect($event)" />
+                        </label>
+
+                        @if (shotlistPreview()) {
+                          <div style="margin-top:12px;padding:10px 12px;background:#111;border:1px solid #1e293b;border-radius:6px;">
+                            <div style="font-size:11px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Preview</div>
+                            @if (shotlistPreview()!.title) {
+                              <div style="font-size:12px;color:#e2e8f0;margin-bottom:4px;">{{ shotlistPreview()!.title }}</div>
+                            }
+                            <div style="font-size:11px;color:#64748b;">
+                              {{ shotlistPreview()!.scenes }} scenes ·
+                              @if (shotlistPreview()!.duration) {
+                                {{ shotlistPreview()!.duration }}s ({{ (shotlistPreview()!.duration! / 60 | number:'1.0-1') }}m) ·
+                              }
+                              {{ shotlistPreview()!.stills }} generated stills · {{ shotlistPreview()!.editorBuilds }} editor builds
+                            </div>
+                          </div>
+                        }
+
+                        @if (shotlistFile()) {
+                          <button (click)="importShotlist()"
+                                  [disabled]="importing()"
+                                  style="margin-top:12px;padding:7px 16px;border-radius:7px;background:#7c3aed;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                                  [style.opacity]="importing() ? '0.5' : '1'">
+                            {{ importing() ? 'Importing…' : 'Import shot list' }}
+                          </button>
+                        }
+
+                        @if (importResult()) {
+                          <div style="margin-top:8px;font-size:12px;"
+                               [style.color]="importResult()!.ok ? '#4ade80' : '#f87171'">
+                            {{ importResult()!.message }}
+                          </div>
+                        }
+                      </div>
+                    }
 
                     @if (stage.action) {
                       <button (click)="triggerStage(stage.action!.stage)"
@@ -220,6 +269,12 @@ export class LongformDetailComponent implements OnInit {
   triggering = signal(false);
   triggerResult = signal<{ ok: boolean; message: string; runUrl?: string | null } | null>(null);
 
+  // Shot list upload
+  shotlistFile     = signal<File | null>(null);
+  shotlistPreview  = signal<{ title: string | null; scenes: number; stills: number; editorBuilds: number; duration: number | null } | null>(null);
+  importing        = signal(false);
+  importResult     = signal<{ ok: boolean; message: string } | null>(null);
+
   stages = STAGES;
 
   currentStageIndex = computed(() => stageIndex(this.project()?.status ?? 'brief'));
@@ -263,6 +318,56 @@ export class LongformDetailComponent implements OnInit {
     if (!p) return;
     const updated = await this.svc.getLongformProject(p.id);
     if (updated) this.project.set(updated);
+  }
+
+  onShotlistFileSelect(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.shotlistFile.set(file);
+    this.shotlistPreview.set(null);
+    this.importResult.set(null);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      // Quick client-side preview parse
+      const titleM = text.match(/\*\*TITLE:\*\*\s*(.*)/);
+      const durM = text.match(/\*\*TARGET_DURATION_SEC:\*\*\s*(\d+)/);
+      const sceneMatches = text.match(/\*\*SCENE\s+\d+/g) ?? [];
+      const editorMatches = text.match(/EDITOR (BUILD|GRAPHIC)/g) ?? [];
+      const stillMatches = text.match(/🖼️\s+STILL\s+[A-D]:/g) ?? [];
+      this.shotlistPreview.set({
+        title:        titleM ? titleM[1].trim() : null,
+        duration:     durM ? Number(durM[1]) : null,
+        scenes:       sceneMatches.length,
+        stills:       stillMatches.length - editorMatches.length,
+        editorBuilds: editorMatches.length,
+      });
+    };
+    reader.readAsText(file);
+  }
+
+  async importShotlist() {
+    const file = this.shotlistFile();
+    const p = this.project();
+    if (!file || !p) return;
+    this.importing.set(true);
+    this.importResult.set(null);
+    try {
+      const text = await file.text();
+      const res = await this.svc.importShotlist(p.id, text);
+      this.importResult.set({
+        ok: true,
+        message: `Imported: ${res.scenes_total} scenes, ${res.stills_inserted} stills inserted. Project advanced to storyboard.`,
+      });
+      // Refresh project
+      const updated = await this.svc.getLongformProject(p.id);
+      if (updated) this.project.set(updated);
+    } catch (e: any) {
+      this.importResult.set({ ok: false, message: e.message });
+    } finally {
+      this.importing.set(false);
+    }
   }
 
   async triggerStage(stage: string) {

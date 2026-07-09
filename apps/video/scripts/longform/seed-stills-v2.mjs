@@ -93,7 +93,7 @@ async function main() {
   console.log(`[seed-stills-v2] project=${projectId} dry=${dry}`);
 
   const promptRows = parsePromptsV2(promptsPath);
-  const shotlistScenes = parseShotlistV2(shotlistPath);
+  const { scenes: shotlistScenes } = parseShotlistV2(shotlistPath);
   const unmatched = mapAllCues(shotlistScenes);
   if (unmatched.length) {
     console.warn(`[warn] ${unmatched.length} unmatched audio cues:`, unmatched.map((u) => `S${u.scene_n}`).join(', '));
