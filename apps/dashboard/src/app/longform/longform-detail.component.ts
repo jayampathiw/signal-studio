@@ -16,19 +16,16 @@ type Stage = {
 };
 
 const STAGES: Stage[] = [
-  { key: 'brief',                    icon: '1', label: 'Brief',            description: 'Project created. Waiting for script.' },
-  { key: 'scripting',                icon: '2', label: 'Scripting',        description: 'AI is writing the script.' },
-  { key: 'awaiting_script_approval', icon: '3', label: 'Gate 1 — Script',  description: 'Review the script and approve to continue.',
-    action: { label: 'Approve script → Seed', stage: 'seed' } },
-  { key: 'seeding',                  icon: '4', label: 'Seeding',          description: 'AI is generating reference images.' },
-  { key: 'awaiting_refs',            icon: '5', label: 'Gate 2 — Refs',    description: 'Review reference images and approve.',
+  { key: 'brief',                    icon: '1', label: 'Brief',            description: 'Project created. Waiting for shot list.' },
+  { key: 'storyboard',               icon: '2', label: 'Storyboard',       description: 'Shot list imported. Upload your generated still images.' },
+  { key: 'awaiting_refs',            icon: '3', label: 'Gate 2 — Refs',    description: 'Review reference images and approve.',
     action: { label: 'Approve refs → Stills', stage: 'tts' } },
-  { key: 'awaiting_stills',          icon: '6', label: 'Gate 3 — Stills',  description: 'Review all scene stills and approve.',
+  { key: 'awaiting_stills',          icon: '4', label: 'Gate 3 — Stills',  description: 'Review all scene stills and approve.',
     action: { label: 'Approve stills → Render', stage: 'assemble' } },
-  { key: 'rendering',                icon: '7', label: 'Rendering',        description: 'FFmpeg is assembling the final video.' },
-  { key: 'rendered',                 icon: '8', label: 'Rendered',         description: 'Video assembled. Ready for final review.' },
-  { key: 'awaiting_final_approval',  icon: '9', label: 'Gate 4 — Review',  description: 'Watch the video and approve to publish.' },
-  { key: 'publishing',               icon: '10', label: 'Publishing',      description: 'Uploading to YouTube / Facebook.' },
+  { key: 'rendering',                icon: '5', label: 'Rendering',        description: 'FFmpeg is assembling the final video.' },
+  { key: 'rendered',                 icon: '6', label: 'Rendered',         description: 'Video assembled. Ready for final review.' },
+  { key: 'awaiting_final_approval',  icon: '7', label: 'Gate 4 — Review',  description: 'Watch the video and approve to publish.' },
+  { key: 'publishing',               icon: '8', label: 'Publishing',       description: 'Uploading to YouTube / Facebook.' },
   { key: 'posted',                   icon: '✓',  label: 'Posted',          description: 'Live on all configured platforms.' },
 ];
 
@@ -291,7 +288,7 @@ export class LongformDetailComponent implements OnInit {
 
   isWorkbenchGate = computed(() => {
     const s = this.project()?.status;
-    return s === 'awaiting_refs' || s === 'awaiting_stills';
+    return s === 'storyboard' || s === 'awaiting_refs' || s === 'awaiting_stills';
   });
 
   constructor(
