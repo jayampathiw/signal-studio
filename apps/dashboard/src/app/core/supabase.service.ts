@@ -763,4 +763,24 @@ export class SupabaseService {
     if (!res.ok) throw new Error(body.error ?? `trigger-longform failed (${res.status})`);
     return body;
   }
+
+  async importShotlist(projectId: number, shotlistText: string): Promise<{
+    ok: boolean; title: string | null; target_duration_sec: number | null;
+    scenes_total: number; stills_inserted: number; stills_skipped: number; clips_upserted: number;
+  }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/import-shotlist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({ project_id: projectId, shotlist_text: shotlistText }),
+    });
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    if (!res.ok) throw new Error(body.error ?? `import-shotlist failed (${res.status})`);
+    return body;
+  }
 }
