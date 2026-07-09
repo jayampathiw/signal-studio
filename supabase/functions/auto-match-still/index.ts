@@ -95,7 +95,8 @@ Deno.serve(async (req: Request) => {
   try {
     const res = await anthropic.messages.create({
       model,
-      max_tokens: 20,
+      max_tokens: 15,
+      system: 'You are a slot-matching engine. Output ONLY a slot ID like "S7-A" or the word "NO_MATCH". Never describe images. Never explain. No punctuation. No other words.',
       messages: [{
         role: 'user',
         content: [
@@ -109,7 +110,7 @@ Deno.serve(async (req: Request) => {
           },
           {
             type: 'text',
-            text: `Look at this image carefully. Match it to exactly one slot from the shot list below.\nReturn ONLY the slot ID (format: S7-A), nothing else — no explanation, no punctuation.\nIf this image is a kit reference, logo, or does not match any scene slot, return exactly: NO_MATCH\n\nShot list:\n${slotList}`,
+            text: `Which slot does this image match? Output only the slot ID or NO_MATCH.\n\n${slotList}`,
           },
         ],
       }],
@@ -119,14 +120,14 @@ Deno.serve(async (req: Request) => {
     return json({ error: `Claude Vision error: ${e.message}` }, 500);
   }
 
-  // Check for explicit no-match
-  if (matchedSlot.toUpperCase().includes('NO_MATCH') || matchedSlot === '') {
-    return json({ error: 'NO_MATCH: image does not correspond to any scene slot (kit ref or unrecognised)' }, 422);
+  // Check for explicit no-match or descriptions (Claude ignoring instruction)
+  if (matchedSlot.toUpperCase().startsWith('NO_MATCH') || matchedSlot === '') {
+    return json({ error: 'NO_MATCH: image does not correspond to any scene slot' }, 422);
   }
 
-  // Validate slot format S{N}-{CUT} — extract from raw response in case Claude added punctuation
+  // Extract slot ID — works even if Claude added a word or punctuation
   const slotM = matchedSlot.match(/S(\d+)-([A-D])/i);
-  if (!slotM) return json({ error: `Unrecognised Claude response: "${matchedSlot.slice(0, 40)}"` }, 422);
+  if (!slotM) return json({ error: `NO_MATCH: Claude could not identify a slot` }, 422);
 
   const scene_n = Number(slotM[1]);
   const cut     = slotM[2].toUpperCase();
@@ -155,25 +156,29 @@ Deno.serve(async (req: Request) => {
 
   const public_url = `${Deno.env.get('R2_PUBLIC_BASE_URL')}/${key}`;
 
-  // Update the content_stills row
+  // Update the content_stills row — skip if slot already has an image
   const { data: existing } = await supabase
     .from('content_stills')
-    .select('id, status')
+    .select('id, status, clip_url')
     .eq('project_id', project_id)
     .eq('scene_n', scene_n)
     .eq('cut', cut)
     .maybeSingle();
 
   if (existing) {
+    const row = existing as { id: number; status: string; clip_url: string | null };
+    if (row.clip_url) {
+      return json({ error: `ALREADY_FILLED: slot ${slot} already has an image — skipped` }, 409);
+    }
     const updatable = ['pending', 'generating', 'generated', 'failed'];
-    if (!updatable.includes((existing as { status: string }).status)) {
-      return json({ error: `Slot S${scene_n}-${cut} is "${(existing as { status: string }).status}" — cannot overwrite` }, 409);
+    if (!updatable.includes(row.status)) {
+      return json({ error: `Slot ${slot} is "${row.status}" — cannot overwrite` }, 409);
     }
     await supabase
       .from('content_stills')
       .update({ clip_url: public_url, status: 'generated' })
-      .eq('id', (existing as { id: number }).id);
+      .eq('id', row.id);
   }
 
-  return json({ ok: true, slot: `S${scene_n}-${cut}`, scene_n, cut, clip_url: public_url });
+  return json({ ok: true, slot, scene_n, cut, clip_url: public_url });
 });
