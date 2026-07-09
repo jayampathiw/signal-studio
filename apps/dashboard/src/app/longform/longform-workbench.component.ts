@@ -421,9 +421,13 @@ export class LongformWorkbenchComponent implements OnInit {
       } catch (e: any) {
         const updated = this.matchProgress();
         const lastLog = updated.log.slice(0, -1);
-        const isNoMatch = (e.message as string).includes('NO_MATCH');
-        const prefix = isNoMatch ? '⚠' : '✗';
-        const msg    = isNoMatch ? `${file.name} — skipped (kit ref / no scene match)` : `${file.name}: ${e.message}`;
+        const msg_str  = e.message as string;
+        const isNoMatch   = msg_str.includes('NO_MATCH');
+        const isFilled    = msg_str.includes('ALREADY_FILLED');
+        const prefix = (isNoMatch || isFilled) ? '⚠' : '✗';
+        const msg    = isNoMatch  ? `${file.name} — skipped (no scene match)`
+                     : isFilled   ? `${file.name} — slot already filled, skipped`
+                     : `${file.name}: ${msg_str}`;
         this.matchProgress.set({ ...updated, log: [...lastLog, `${prefix} ${msg}`] });
       }
     }
