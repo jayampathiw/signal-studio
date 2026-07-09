@@ -50,15 +50,48 @@ function normalizeMotion(raw) {
 }
 
 function parseOverlayLine(line) {
-  // "📝 Editor overlay at 2:07: "16 years" (small, cream)"
-  // Returns { at_sec, text, style }
+  // v2 format: "📝 CARD TEXT — Bebas Neue, amber "WORD", white rest, large, right third. 3s. Drops at 2:07"
+  // v1 format: "📝 Editor overlay at 2:07: "16 years" (small, cream)"
+  // Returns { text, amber_word, size, zone, duration_sec, at_sec }
+  const raw = line.replace(/^📝\s*/, '').trim();
+
+  // Detect v2 format by "Bebas Neue" or "— Bebas" separator
+  const v2sep = raw.indexOf(' — Bebas');
+  if (v2sep !== -1) {
+    const cardText = raw.slice(0, v2sep).trim();
+    const meta = raw.slice(v2sep + 2);
+
+    // Amber word(s): amber "WORD" or amber on "WORD PHRASE"
+    const amberM = meta.match(/amber(?:\s+on)?\s+"([^"]+)"/i);
+    // Duration: Ns
+    const durM = meta.match(/(\d+)s[\s.]/);
+    // Drop timecode: at M:SS
+    const atM = meta.match(/at\s+(\d+:\d+)/i);
+    // Zone: right third / left third / bottom third / centered / over ... / editor
+    const zoneM = meta.match(/(right third|left third|bottom third|centered|over [^,\.]+|editor [^,\.]+)/i);
+    // Size
+    const sizeM = meta.match(/\b(large|small)\b/i);
+
+    return {
+      text:         cardText,
+      amber_word:   amberM ? amberM[1] : null,
+      size:         sizeM ? sizeM[1].toLowerCase() : 'large',
+      zone:         zoneM ? zoneM[1].toLowerCase().trim() : null,
+      duration_sec: durM ? Number(durM[1]) : null,
+      at_sec:       atM ? tcToSec(atM[1]) : null,
+    };
+  }
+
+  // v1 fallback
   const timeMatch = line.match(/at\s+(\d+:\d+)/);
   const textMatch = line.match(/"([^"]+)"/);
-  const styleMatch = line.match(/\(([^)]+)\)/);
   return {
-    at_sec: timeMatch ? tcToSec(timeMatch[1]) : null,
-    text: textMatch ? textMatch[1] : line.replace(/^📝\s*/, '').trim(),
-    style: styleMatch ? styleMatch[1].toLowerCase().replace(/[\s,]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') : 'small_cream',
+    text:         textMatch ? textMatch[1] : raw,
+    amber_word:   null,
+    size:         'small',
+    zone:         null,
+    duration_sec: null,
+    at_sec:       timeMatch ? tcToSec(timeMatch[1]) : null,
   };
 }
 
@@ -107,16 +140,19 @@ export function parseShotlistText(text) {
     if (sceneM) {
       flush();
       const [, n, fromTc, toTc, durStr] = sceneM;
+      const gradeM = line.match(/·\s*(WARM|COLD|MONOCHROME|MOURNFUL)/i);
       currentScene = {
         scene_n: Number(n),
         act: currentAct,
         from_tc: fromTc,
         to_tc: toTc,
         duration_sec: Number(durStr),
+        grade: gradeM ? gradeM[1].toUpperCase() : null,
         vo_text: null,
         audio_cue: null,
         overlays: [],
         still_motions: [],
+        stills: [],
         keep_video: line.includes('KEEP-VIDEO'),
         kind: line.includes('EDITOR GRAPHIC') || line.includes('EDITOR BUILD') ? 'editor_build' : 'still',
       };
@@ -132,9 +168,16 @@ export function parseShotlistText(text) {
       const cutM = line.match(/🖼️\s+STILL\s+([A-D]):\s*(.*)/);
       if (cutM) {
         const prompt = cutM[2].trim();
-        const refKeys = [...prompt.matchAll(/\[([A-Z][A-Z0-9-]+)\]/g)].map((m) => m[1]);
+        // [TOKEN] bracket refs
+        const bracketRefs = [...prompt.matchAll(/\[([A-Z][A-Z0-9-]+)\]/g)].map((m) => m[1]);
+        // @tag refs (TurboFlow Image Library)
+        const atRefs = [...prompt.matchAll(/@([a-z][a-z0-9]+)\b/g)].map((m) => m[1]);
+        const refKeys = [...new Set([...bracketRefs, ...atRefs])];
+        // Negative space zone: "Right third negative space", "Left third negative space", "Bottom third negative space"
+        const zoneM = prompt.match(/(right|left|bottom) third negative space/i);
+        const negative_space = zoneM ? `${zoneM[1].toLowerCase()}_third` : null;
         if (!currentScene.stills) currentScene.stills = [];
-        currentScene.stills.push({ cut: cutM[1], prompt, reference_keys: refKeys });
+        currentScene.stills.push({ cut: cutM[1], prompt, reference_keys: refKeys, negative_space });
       }
       continue;
     }
