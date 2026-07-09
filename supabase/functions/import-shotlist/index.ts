@@ -52,13 +52,36 @@ function parseMotionLine(motionLine: string, cutCount: number) {
 }
 
 function parseOverlayLine(line: string) {
+  // v2: "📝 CARD TEXT — Bebas Neue, amber "WORD", white rest, large, right third. 3s. Drops at 2:07"
+  // v1: "📝 Editor overlay at 2:07: "16 years" (small, cream)"
+  const raw = line.replace(/^📝\s*/, '').trim();
+  const v2sep = raw.indexOf(' — Bebas');
+  if (v2sep !== -1) {
+    const cardText = raw.slice(0, v2sep).trim();
+    const meta = raw.slice(v2sep + 2);
+    const amberM = meta.match(/amber(?:\s+on)?\s+"([^"]+)"/i);
+    const durM = meta.match(/(\d+)s[\s.]/);
+    const atM = meta.match(/at\s+(\d+:\d+)/i);
+    const zoneM = meta.match(/(right third|left third|bottom third|centered|over [^,\.]+|editor [^,\.]+)/i);
+    const sizeM = meta.match(/\b(large|small)\b/i);
+    return {
+      text: cardText,
+      amber_word: amberM ? amberM[1] : null,
+      size: sizeM ? sizeM[1].toLowerCase() : 'large',
+      zone: zoneM ? zoneM[1].toLowerCase().trim() : null,
+      duration_sec: durM ? Number(durM[1]) : null,
+      at_sec: atM ? tcToSec(atM[1]) : null,
+    };
+  }
   const timeMatch = line.match(/at\s+(\d+:\d+)/);
   const textMatch = line.match(/"([^"]+)"/);
-  const styleMatch = line.match(/\(([^)]+)\)/);
   return {
+    text: textMatch ? textMatch[1] : raw,
+    amber_word: null,
+    size: 'small',
+    zone: null,
+    duration_sec: null,
     at_sec: timeMatch ? tcToSec(timeMatch[1]) : null,
-    text: textMatch ? textMatch[1] : line.replace(/^📝\s*/, '').trim(),
-    style: styleMatch ? styleMatch[1].toLowerCase().replace(/[\s,]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') : 'small_cream',
   };
 }
 
@@ -66,6 +89,7 @@ interface Still {
   cut: string;
   prompt: string;
   reference_keys: string[];
+  negative_space: string | null;
 }
 
 interface Scene {
@@ -74,6 +98,7 @@ interface Scene {
   from_tc: string;
   to_tc: string;
   duration_sec: number;
+  grade: string | null;
   vo_text: string | null;
   audio_cue: string | null;
   overlays: ReturnType<typeof parseOverlayLine>[];
@@ -126,12 +151,14 @@ function parseShotlistText(text: string): ParseResult {
     if (sceneM) {
       flush();
       const [, n, fromTc, toTc, durStr] = sceneM;
+      const gradeM = line.match(/·\s*(WARM|COLD|MONOCHROME|MOURNFUL)/i);
       currentScene = {
         scene_n: Number(n),
         act: currentAct,
         from_tc: fromTc,
         to_tc: toTc,
         duration_sec: Number(durStr),
+        grade: gradeM ? gradeM[1].toUpperCase() : null,
         vo_text: null,
         audio_cue: null,
         overlays: [],
@@ -151,8 +178,12 @@ function parseShotlistText(text: string): ParseResult {
       const cutM = line.match(/🖼️\s+STILL\s+([A-D]):\s*(.*)/);
       if (cutM) {
         const prompt = cutM[2].trim();
-        const refKeys = [...prompt.matchAll(/\[([A-Z][A-Z0-9-]+)\]/g)].map((m) => m[1]);
-        currentScene.stills.push({ cut: cutM[1], prompt, reference_keys: refKeys });
+        const bracketRefs = [...prompt.matchAll(/\[([A-Z][A-Z0-9-]+)\]/g)].map((m: RegExpMatchArray) => m[1]);
+        const atRefs = [...prompt.matchAll(/@([a-z][a-z0-9]+)\b/g)].map((m: RegExpMatchArray) => m[1]);
+        const refKeys = [...new Set([...bracketRefs, ...atRefs])];
+        const zoneM = prompt.match(/(right|left|bottom) third negative space/i);
+        const negative_space = zoneM ? `${zoneM[1].toLowerCase()}_third` : null;
+        currentScene.stills.push({ cut: cutM[1], prompt, reference_keys: refKeys, negative_space });
       }
       continue;
     }
@@ -261,6 +292,8 @@ Deno.serve(async (req: Request) => {
           reference_keys: still.reference_keys,
           prompt: still.prompt,
           status: 'pending',
+          // v2 fields
+          ...(still.negative_space ? { regrade: null } : {}), // negative_space stored in prompt text
         });
       }
     }
@@ -303,6 +336,8 @@ Deno.serve(async (req: Request) => {
       audio_cue: scene.audio_cue,
       duration_sec: scene.duration_sec,
       overlays: scene.overlays.length ? scene.overlays : null,
+      // v2: colour grade stored in sfx jsonb for now (no dedicated column yet)
+      sfx: scene.grade ? { grade: scene.grade } : null,
     };
 
     if (existing) {
