@@ -67,7 +67,39 @@ Deno.serve(async (req: Request) => {
     }, 409);
   }
 
-  // ── PRESIGN ─────────────────────────────────────────────────────────────────
+  // ── UPLOAD (server-side, avoids browser CORS on R2) ─────────────────────────
+  if (action === 'upload') {
+    const { filename, content_type, image_base64 } = body as typeof body & { image_base64?: string };
+    if (!filename)     return json({ error: 'filename required' }, 400);
+    if (!image_base64) return json({ error: 'image_base64 required' }, 400);
+
+    const ext    = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const key    = `longform/${project_id}/stills/S${String(scene_n).padStart(2,'0')}-${cut}/${Date.now()}.${ext}`;
+    const bucket = Deno.env.get('R2_BUCKET_RENDERED')!;
+    const mime   = content_type ?? (ext === 'png' ? 'image/png' : 'image/jpeg');
+
+    // Decode base64 → binary
+    const binary = atob(image_base64);
+    const bytes  = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+    try {
+      await r2Client().send(new PutObjectCommand({
+        Bucket:      bucket,
+        Key:         key,
+        ContentType: mime,
+        Body:        bytes,
+      }));
+    } catch (e: any) {
+      return json({ error: `R2 upload failed: ${e.message}` }, 500);
+    }
+
+    const public_url = `${Deno.env.get('R2_PUBLIC_BASE_URL')}/${key}`;
+    // Fall through to confirm logic below
+    body = { ...body, action: 'confirm', public_url };
+  }
+
+  // ── PRESIGN (legacy — kept for reference, not used by dashboard) ─────────────
   if (action === 'presign') {
     const { filename, content_type } = body;
     if (!filename) return json({ error: 'filename required for presign' }, 400);
