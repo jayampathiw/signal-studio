@@ -731,6 +731,41 @@ export class SupabaseService {
     if (error) throw error;
   }
 
+  // Single-call upload — sends file as base64 to edge function, which uploads to R2 server-side.
+  // Replaces the old presign+PUT+confirm three-step flow that had browser CORS issues with R2.
+  async uploadStill(projectId: number, sceneN: number, cut: string, file: File): Promise<{ id: number; clip_url: string }> {
+    const session = await this.getSession();
+    const token = session?.access_token ?? environment.supabaseAnonKey;
+
+    const arrayBuf = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuf);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    const image_base64 = btoa(binary);
+
+    const res = await fetch(`${environment.supabaseUrl}/functions/v1/upload-still`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': environment.supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        action: 'upload',
+        project_id: projectId,
+        scene_n: sceneN,
+        cut,
+        filename:     file.name,
+        content_type: file.type || 'image/jpeg',
+        image_base64,
+      }),
+    });
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    if (!res.ok) throw new Error(body.error ?? `upload failed (${res.status})`);
+    return body;
+  }
+
+  // Kept for backward-compat — not used by dashboard anymore
   async presignStillUpload(projectId: number, sceneN: number, cut: string, filename: string, contentType?: string): Promise<{ upload_url: string; public_url: string; key: string }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;

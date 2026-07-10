@@ -378,20 +378,7 @@ export class LongformWorkbenchComponent implements OnInit {
     this.patchSlot(scene_n, cut, { uploading: true, error: null });
 
     try {
-      const { upload_url, public_url } = await this.svc.presignStillUpload(
-        this.project.id, scene_n, cut, file.name, file.type
-      );
-
-      const putRes = await fetch(upload_url, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-      if (!putRes.ok) throw new Error(`R2 upload failed (${putRes.status})`);
-
-      const { id, clip_url } = await this.svc.confirmStillUpload(
-        this.project.id, scene_n, cut, public_url
-      );
+      const { id, clip_url } = await this.svc.uploadStill(this.project.id, scene_n, cut, file);
 
       const current = this.stills();
       const exists  = current.find(s => s.scene_n === scene_n && s.cut === cut);
@@ -455,17 +442,7 @@ export class LongformWorkbenchComponent implements OnInit {
       const cut     = slotM[2].toUpperCase() as StillCut;
 
       try {
-        const { upload_url, public_url } = await this.svc.presignStillUpload(
-          this.project.id, scene_n, cut, file.name, file.type || 'image/jpeg'
-        );
-
-        const putRes = await fetch(upload_url, {
-          method: 'PUT', body: file,
-          headers: { 'Content-Type': file.type || 'image/jpeg' },
-        });
-        if (!putRes.ok) throw new Error(`R2 upload failed (${putRes.status})`);
-
-        const { clip_url } = await this.svc.confirmStillUpload(this.project.id, scene_n, cut, public_url);
+        const { clip_url } = await this.svc.uploadStill(this.project.id, scene_n, cut, file);
 
         // Update local stills
         const current = this.stills();
