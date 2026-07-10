@@ -171,18 +171,56 @@ interface SceneGroup {
         @if (project.status === 'storyboard') {
           <div style="margin-top:24px;padding-top:20px;border-top:1px solid #1a1a1a;">
 
-            <!-- Auto-match bulk upload -->
+            <!-- Filename-based bulk upload (fast, no AI) -->
+            <div style="background:#0a1a0a;border:1px dashed #1a3a1a;border-radius:10px;padding:18px 20px;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#4ade80;">📁 Bulk Upload by Filename</div>
+                  <div style="font-size:11px;color:#475569;margin-top:2px;">Files must be named <code style="background:#111;padding:1px 4px;border-radius:3px;">S7-A.jpeg</code> — slot assigned from filename instantly, no AI needed</div>
+                </div>
+                <button (click)="triggerFilenameUpload()"
+                        [disabled]="filenameUploading()"
+                        style="padding:8px 18px;border-radius:8px;background:#15803d;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:16px;"
+                        [style.opacity]="filenameUploading() ? '0.6' : '1'">
+                  {{ filenameUploading() ? 'Uploading…' : '📁 Select S{N}-{CUT} Files' }}
+                </button>
+              </div>
+              @if (filenameUploading() || filenameProgress().log.length > 0) {
+                @if (filenameUploading()) {
+                  <div style="margin-bottom:6px;">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:3px;">
+                      <span>{{ filenameProgress().current }} of {{ filenameProgress().total }}</span>
+                      <span>{{ Math.round(filenameProgress().current / filenameProgress().total * 100) }}%</span>
+                    </div>
+                    <div style="background:#1a1a1a;border-radius:3px;height:3px;overflow:hidden;">
+                      <div style="height:100%;background:#4ade80;transition:width .3s;"
+                           [style.width]="(filenameProgress().current / filenameProgress().total * 100) + '%'"></div>
+                    </div>
+                  </div>
+                }
+                <div style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
+                  @for (line of filenameProgress().log; track $index) {
+                    <div style="font-size:11px;font-family:monospace;padding:2px 0;"
+                         [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('⚠') ? '#f59e0b' : line.startsWith('✗') ? '#f87171' : '#64748b'">
+                      {{ line }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Auto-match bulk upload (AI Vision fallback) -->
             <div style="background:#0a1628;border:1px dashed #1e3a5f;border-radius:10px;padding:18px 20px;margin-bottom:16px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <div>
-                  <div style="font-size:13px;font-weight:600;color:#60a5fa;">Auto-Match All Images</div>
-                  <div style="font-size:11px;color:#475569;margin-top:2px;">Claude Vision analyses each image and assigns it to the correct scene slot automatically</div>
+                  <div style="font-size:13px;font-weight:600;color:#60a5fa;">⚡ Auto-Match via Claude Vision</div>
+                  <div style="font-size:11px;color:#475569;margin-top:2px;">Any filename — Claude Vision analyses each image and assigns it to the correct slot</div>
                 </div>
                 <button (click)="triggerAutoMatch()"
                         [disabled]="autoMatching()"
                         style="padding:8px 18px;border-radius:8px;background:#1d4ed8;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:16px;"
                         [style.opacity]="autoMatching() ? '0.6' : '1'">
-                  {{ autoMatching() ? 'Analysing…' : '⚡ Select All Images' }}
+                  {{ autoMatching() ? 'Analysing…' : '⚡ Select Images' }}
                 </button>
               </div>
 
@@ -235,6 +273,8 @@ interface SceneGroup {
            (change)="onFileSelected($event)" />
     <input #autoMatchInput type="file" accept="image/*" multiple style="display:none"
            (change)="onAutoMatchFiles($event)" />
+    <input #filenameInput type="file" accept="image/*" multiple style="display:none"
+           (change)="onFilenameUpload($event)" />
 
     <style>
       .spinner {
@@ -250,16 +290,19 @@ interface SceneGroup {
 })
 export class LongformWorkbenchComponent implements OnInit {
   @Input() project!: LongformProject;
-  @ViewChild('fileInput')      fileInputRef!:      ElementRef<HTMLInputElement>;
-  @ViewChild('autoMatchInput') autoMatchInputRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('fileInput')      fileInputRef!:       ElementRef<HTMLInputElement>;
+  @ViewChild('autoMatchInput') autoMatchInputRef!:  ElementRef<HTMLInputElement>;
+  @ViewChild('filenameInput')  filenameInputRef!:   ElementRef<HTMLInputElement>;
 
-  loading       = signal(true);
-  stills        = signal<ContentStill[]>([]);
-  slotState     = signal<Record<string, SlotState>>({});
-  advancing     = signal(false);
-  listView      = signal(true);
-  autoMatching  = signal(false);
-  matchProgress = signal<{ current: number; total: number; log: string[] }>({ current: 0, total: 0, log: [] });
+  loading          = signal(true);
+  stills           = signal<ContentStill[]>([]);
+  slotState        = signal<Record<string, SlotState>>({});
+  advancing        = signal(false);
+  listView         = signal(true);
+  autoMatching     = signal(false);
+  matchProgress    = signal<{ current: number; total: number; log: string[] }>({ current: 0, total: 0, log: [] });
+  filenameUploading = signal(false);
+  filenameProgress  = signal<{ current: number; total: number; log: string[] }>({ current: 0, total: 0, log: [] });
 
   readonly Math = Math;
   private pendingSlot: { scene_n: number; cut: StillCut } | null = null;
@@ -381,6 +424,66 @@ export class LongformWorkbenchComponent implements OnInit {
     } catch (e: any) {
       this.patchSlot(scene_n, cut, { uploading: false, error: e.message });
     }
+  }
+
+  triggerFilenameUpload() {
+    this.filenameInputRef.nativeElement.value = '';
+    this.filenameInputRef.nativeElement.click();
+  }
+
+  async onFilenameUpload(event: Event) {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    if (!files.length) return;
+
+    this.filenameUploading.set(true);
+    this.filenameProgress.set({ current: 0, total: files.length, log: [] });
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const p = this.filenameProgress();
+      this.filenameProgress.set({ ...p, current: i + 1, log: [...p.log, `Uploading ${file.name}…`] });
+
+      // Parse S{N}-{CUT} from filename (e.g. S7-A.jpeg, S12-B.jpg)
+      const slotM = file.name.match(/^S(\d+)-([A-D])\./i);
+      if (!slotM) {
+        const updated = this.filenameProgress();
+        this.filenameProgress.set({ ...updated, log: [...updated.log.slice(0, -1), `⚠ ${file.name} — skipped (filename must be S{N}-{CUT}.jpeg)`] });
+        continue;
+      }
+
+      const scene_n = Number(slotM[1]);
+      const cut     = slotM[2].toUpperCase() as StillCut;
+
+      try {
+        const { upload_url, public_url } = await this.svc.presignStillUpload(
+          this.project.id, scene_n, cut, file.name, file.type || 'image/jpeg'
+        );
+
+        const putRes = await fetch(upload_url, {
+          method: 'PUT', body: file,
+          headers: { 'Content-Type': file.type || 'image/jpeg' },
+        });
+        if (!putRes.ok) throw new Error(`R2 upload failed (${putRes.status})`);
+
+        const { clip_url } = await this.svc.confirmStillUpload(this.project.id, scene_n, cut, public_url);
+
+        // Update local stills
+        const current = this.stills();
+        this.stills.set(current.map(s =>
+          s.scene_n === scene_n && s.cut === cut
+            ? { ...s, clip_url, status: 'generated' as const }
+            : s
+        ));
+
+        const updated = this.filenameProgress();
+        this.filenameProgress.set({ ...updated, log: [...updated.log.slice(0, -1), `✓ ${file.name} → S${scene_n}-${cut}`] });
+      } catch (e: any) {
+        const updated = this.filenameProgress();
+        this.filenameProgress.set({ ...updated, log: [...updated.log.slice(0, -1), `✗ ${file.name}: ${e.message}`] });
+      }
+    }
+
+    this.filenameUploading.set(false);
   }
 
   triggerAutoMatch() {
