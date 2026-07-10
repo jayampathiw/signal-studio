@@ -80,119 +80,120 @@ function stageIndex(status: string) {
         </div>
 
         <!-- Stage tracker -->
-        <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:24px;margin-bottom:24px;">
-          <h2 style="margin:0 0 20px;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">Pipeline stages</h2>
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
 
-          <div style="display:flex;flex-direction:column;gap:0;">
+          <!-- Horizontal strip -->
+          <div style="display:flex;align-items:flex-start;overflow-x:auto;padding-bottom:4px;gap:0;">
             @for (stage of stages; track stage.key; let i = $index) {
               @let sIdx = currentStageIndex();
               @let done = i < sIdx;
               @let active = i === sIdx;
               @let future = i > sIdx;
 
-              <div style="display:flex;gap:16px;align-items:flex-start;padding:12px 0;"
+              <!-- Stage node -->
+              <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;min-width:72px;max-width:88px;opacity:1;"
                    [style.opacity]="future ? '0.35' : '1'">
-
-                <!-- Circle -->
-                <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;transition:all .2s;"
+                <div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;flex-shrink:0;"
                      [style.background]="done ? '#16a34a' : active ? '#2563eb' : '#1a1a1a'"
                      [style.border]="active ? '2px solid #3b82f6' : done ? '2px solid #16a34a' : '2px solid #262626'"
                      [style.color]="(done || active) ? 'white' : '#475569'">
                   {{ done ? '✓' : stage.icon }}
                 </div>
-
-                <!-- Label + description + action -->
-                <div style="flex:1;padding-top:6px;">
-                  <div style="font-size:13px;font-weight:600;"
-                       [style.color]="active ? '#e2e8f0' : done ? '#4ade80' : '#475569'">
-                    {{ stage.label }}
-                  </div>
-                  @if (active) {
-                    <div style="font-size:12px;color:#64748b;margin-top:2px;">{{ stage.description }}</div>
-
-                    <!-- Shot list upload (brief stage only) -->
-                    @if (stage.key === 'brief') {
-                      <div style="margin-top:14px;padding:16px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;">
-                        <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px;">Upload shot list</div>
-                        <div style="font-size:11px;color:#475569;margin-bottom:12px;line-height:1.5;">
-                          Upload a <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px;color:#94a3b8;">.md</code> file in the standard silenced-shotlist format.
-                          The parser will create <strong style="color:#64748b;">content_stills</strong> and <strong style="color:#64748b;">content_clips</strong> rows and advance the project to <em>storyboard</em>.
-                        </div>
-
-                        <label style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:7px;background:#1a1a1a;border:1px solid #262626;font-size:12px;color:#94a3b8;cursor:pointer;">
-                          📄 Choose shot list (.md)
-                          <input type="file" accept=".md,text/markdown" style="display:none;"
-                                 (change)="onShotlistFileSelect($event)" />
-                        </label>
-
-                        @if (shotlistPreview()) {
-                          <div style="margin-top:12px;padding:10px 12px;background:#111;border:1px solid #1e293b;border-radius:6px;">
-                            <div style="font-size:11px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Preview</div>
-                            @if (shotlistPreview()!.title) {
-                              <div style="font-size:12px;color:#e2e8f0;margin-bottom:4px;">{{ shotlistPreview()!.title }}</div>
-                            }
-                            <div style="font-size:11px;color:#64748b;">
-                              {{ shotlistPreview()!.scenes }} scenes ·
-                              @if (shotlistPreview()!.duration) {
-                                {{ shotlistPreview()!.duration }}s ({{ (shotlistPreview()!.duration! / 60 | number:'1.0-1') }}m) ·
-                              }
-                              {{ shotlistPreview()!.stills }} generated stills · {{ shotlistPreview()!.editorBuilds }} editor builds
-                            </div>
-                          </div>
-                        }
-
-                        @if (shotlistFile()) {
-                          <button (click)="importShotlist()"
-                                  [disabled]="importing()"
-                                  style="margin-top:12px;padding:7px 16px;border-radius:7px;background:#7c3aed;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
-                                  [style.opacity]="importing() ? '0.5' : '1'">
-                            {{ importing() ? 'Importing…' : 'Import shot list' }}
-                          </button>
-                        }
-
-                        @if (importResult()) {
-                          <div style="margin-top:8px;font-size:12px;"
-                               [style.color]="importResult()!.ok ? '#4ade80' : '#f87171'">
-                            {{ importResult()!.message }}
-                          </div>
-                        }
-                      </div>
-                    }
-
-                    @if (stage.action) {
-                      <button (click)="triggerStage(stage.action!.stage)"
-                              [disabled]="triggering()"
-                              style="margin-top:10px;padding:7px 16px;border-radius:7px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
-                              [style.opacity]="triggering() ? '0.5' : '1'">
-                        {{ triggering() ? 'Dispatching…' : stage.action!.label }}
-                      </button>
-                    }
-
-                    @if (triggerResult()) {
-                      <div style="margin-top:8px;font-size:12px;"
-                           [style.color]="triggerResult()!.ok ? '#4ade80' : '#f87171'">
-                        {{ triggerResult()!.message }}
-                        @if (triggerResult()!.ok && triggerResult()!.runUrl) {
-                          · <a [href]="triggerResult()!.runUrl" target="_blank" style="color:#60a5fa;">View run ↗</a>
-                        }
-                      </div>
-                    }
-
-                    @if (project()!.status_note) {
-                      <div style="margin-top:6px;font-size:11px;color:#64748b;font-family:monospace;background:#0d0d0d;padding:8px 10px;border-radius:6px;max-height:80px;overflow:auto;">
-                        {{ project()!.status_note }}
-                      </div>
-                    }
-                  }
+                <div style="margin-top:6px;font-size:10px;font-weight:600;text-align:center;line-height:1.3;word-break:break-word;padding:0 4px;"
+                     [style.color]="active ? '#e2e8f0' : done ? '#4ade80' : '#475569'">
+                  {{ stage.label }}
                 </div>
-
-                <!-- Connector line -->
-                @if (i < stages.length - 1) {
-                  <div style="position:absolute;left:36px;width:2px;height:24px;background:#1a1a1a;margin-top:44px;"></div>
-                }
               </div>
+
+              <!-- Connector between nodes -->
+              @if (i < stages.length - 1) {
+                <div style="flex:1;height:2px;min-width:12px;margin-top:14px;flex-shrink:1;"
+                     [style.background]="i < sIdx ? '#16a34a' : '#262626'"></div>
+              }
             }
           </div>
+
+          <!-- Active stage detail (below the strip) -->
+          @let activeStage = stages[currentStageIndex()];
+          @if (activeStage) {
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;">
+              <div style="font-size:12px;color:#64748b;margin-bottom:10px;">{{ activeStage.description }}</div>
+
+              <!-- Shot list upload (brief stage only) -->
+              @if (activeStage.key === 'brief') {
+                <div style="padding:16px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;">
+                  <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px;">Upload shot list</div>
+                  <div style="font-size:11px;color:#475569;margin-bottom:12px;line-height:1.5;">
+                    Upload a <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px;color:#94a3b8;">.md</code> file in the standard silenced-shotlist format.
+                    The parser will create <strong style="color:#64748b;">content_stills</strong> and <strong style="color:#64748b;">content_clips</strong> rows and advance the project to <em>storyboard</em>.
+                  </div>
+
+                  <label style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:7px;background:#1a1a1a;border:1px solid #262626;font-size:12px;color:#94a3b8;cursor:pointer;">
+                    📄 Choose shot list (.md)
+                    <input type="file" accept=".md,text/markdown" style="display:none;"
+                           (change)="onShotlistFileSelect($event)" />
+                  </label>
+
+                  @if (shotlistPreview()) {
+                    <div style="margin-top:12px;padding:10px 12px;background:#111;border:1px solid #1e293b;border-radius:6px;">
+                      <div style="font-size:11px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Preview</div>
+                      @if (shotlistPreview()!.title) {
+                        <div style="font-size:12px;color:#e2e8f0;margin-bottom:4px;">{{ shotlistPreview()!.title }}</div>
+                      }
+                      <div style="font-size:11px;color:#64748b;">
+                        {{ shotlistPreview()!.scenes }} scenes ·
+                        @if (shotlistPreview()!.duration) {
+                          {{ shotlistPreview()!.duration }}s ({{ (shotlistPreview()!.duration! / 60 | number:'1.0-1') }}m) ·
+                        }
+                        {{ shotlistPreview()!.stills }} generated stills · {{ shotlistPreview()!.editorBuilds }} editor builds
+                      </div>
+                    </div>
+                  }
+
+                  @if (shotlistFile()) {
+                    <button (click)="importShotlist()"
+                            [disabled]="importing()"
+                            style="margin-top:12px;padding:7px 16px;border-radius:7px;background:#7c3aed;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                            [style.opacity]="importing() ? '0.5' : '1'">
+                      {{ importing() ? 'Importing…' : 'Import shot list' }}
+                    </button>
+                  }
+
+                  @if (importResult()) {
+                    <div style="margin-top:8px;font-size:12px;"
+                         [style.color]="importResult()!.ok ? '#4ade80' : '#f87171'">
+                      {{ importResult()!.message }}
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (activeStage.action) {
+                <button (click)="triggerStage(activeStage.action!.stage)"
+                        [disabled]="triggering()"
+                        style="margin-top:10px;padding:7px 16px;border-radius:7px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                        [style.opacity]="triggering() ? '0.5' : '1'">
+                  {{ triggering() ? 'Dispatching…' : activeStage.action!.label }}
+                </button>
+              }
+
+              @if (triggerResult()) {
+                <div style="margin-top:8px;font-size:12px;"
+                     [style.color]="triggerResult()!.ok ? '#4ade80' : '#f87171'">
+                  {{ triggerResult()!.message }}
+                  @if (triggerResult()!.ok && triggerResult()!.runUrl) {
+                    · <a [href]="triggerResult()!.runUrl" target="_blank" style="color:#60a5fa;">View run ↗</a>
+                  }
+                </div>
+              }
+
+              @if (project()!.status_note) {
+                <div style="margin-top:6px;font-size:11px;color:#64748b;font-family:monospace;background:#0d0d0d;padding:8px 10px;border-radius:6px;max-height:80px;overflow:auto;">
+                  {{ project()!.status_note }}
+                </div>
+              }
+            </div>
+          }
         </div>
 
         <!-- Script viewer (Gate 1) -->
