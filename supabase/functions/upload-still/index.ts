@@ -78,25 +78,40 @@ Deno.serve(async (req: Request) => {
     const bucket = Deno.env.get('R2_BUCKET_RENDERED')!;
     const mime   = content_type ?? (ext === 'png' ? 'image/png' : 'image/jpeg');
 
-    // Decode base64 → binary
     const binary = atob(image_base64);
     const bytes  = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
     try {
-      await r2Client().send(new PutObjectCommand({
-        Bucket:      bucket,
-        Key:         key,
-        ContentType: mime,
-        Body:        bytes,
-      }));
+      await r2Client().send(new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: mime, Body: bytes }));
     } catch (e: any) {
       return json({ error: `R2 upload failed: ${e.message}` }, 500);
     }
 
     const public_url = `${Deno.env.get('R2_PUBLIC_BASE_URL')}/${key}`;
-    // Fall through to confirm logic below
-    body = { ...body, action: 'confirm', public_url };
+
+    // Upsert content_stills row
+    const { data: existing } = await db
+      .from('content_stills')
+      .select('id, status')
+      .eq('project_id', project_id).eq('scene_n', scene_n).eq('cut', cut)
+      .maybeSingle();
+
+    if (existing) {
+      const updatable = ['pending', 'generating', 'generated', 'failed'];
+      if (!updatable.includes(existing.status)) {
+        return json({ error: `Still is "${existing.status}" — cannot overwrite` }, 409);
+      }
+      await db.from('content_stills').update({ clip_url: public_url, status: 'generated' }).eq('id', existing.id);
+      return json({ id: existing.id, clip_url: public_url, status: 'generated' });
+    } else {
+      const { data: inserted, error: iErr } = await db
+        .from('content_stills')
+        .insert({ project_id, scene_n, cut, image_source: 'editor', clip_url: public_url, status: 'generated', motion: 'push' })
+        .select('id').single();
+      if (iErr) return json({ error: iErr.message }, 500);
+      return json({ id: inserted.id, clip_url: public_url, status: 'generated' });
+    }
   }
 
   // ── PRESIGN (legacy — kept for reference, not used by dashboard) ─────────────
