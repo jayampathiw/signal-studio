@@ -119,6 +119,16 @@ function stageIndex(status: string) {
             <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;">
               <div style="font-size:12px;color:#64748b;margin-bottom:10px;">{{ activeStage.description }}</div>
 
+              <!-- Storyboard: advance to Gate 3 once stills are uploaded -->
+              @if (activeStage.key === 'storyboard') {
+                <button (click)="advanceToStills()"
+                        [disabled]="advancing()"
+                        style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                        [style.opacity]="advancing() ? '0.5' : '1'">
+                  {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Stills Review →' }}
+                </button>
+              }
+
               <!-- Shot list upload (brief stage only) -->
               @if (activeStage.key === 'brief') {
                 <div style="padding:16px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;">
@@ -266,6 +276,7 @@ export class LongformDetailComponent implements OnInit {
   error      = signal<string | null>(null);
   triggering = signal(false);
   triggerResult = signal<{ ok: boolean; message: string; runUrl?: string | null } | null>(null);
+  advancing  = signal(false);
 
   // Shot list upload
   shotlistFile     = signal<File | null>(null);
@@ -365,6 +376,21 @@ export class LongformDetailComponent implements OnInit {
       this.importResult.set({ ok: false, message: e.message });
     } finally {
       this.importing.set(false);
+    }
+  }
+
+  async advanceToStills() {
+    const p = this.project();
+    if (!p) return;
+    this.advancing.set(true);
+    try {
+      await this.svc.updateLongformStatus(p.id, 'awaiting_stills');
+      const updated = await this.svc.getLongformProject(p.id);
+      if (updated) this.project.set(updated);
+    } catch (e: any) {
+      console.error('Advance failed:', e);
+    } finally {
+      this.advancing.set(false);
     }
   }
 

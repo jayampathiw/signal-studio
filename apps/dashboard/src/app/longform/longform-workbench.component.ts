@@ -288,20 +288,10 @@ interface SceneGroup {
             }
           </div>
 
-          <!-- Advance button -->
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:12px;color:#475569;">
-              {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
-              @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
-            </span>
-            @if (uploadedCount() > 0) {
-              <button (click)="advanceToReview()"
-                      [disabled]="advancing()"
-                      style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;"
-                      [style.opacity]="advancing() ? '0.5' : '1'">
-                {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Review →' }}
-              </button>
-            }
+          <!-- Upload count summary -->
+          <div style="font-size:12px;color:#475569;">
+            {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
+            @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
           </div>
         </div>
       }
@@ -335,7 +325,6 @@ export class LongformWorkbenchComponent implements OnInit {
   loading          = signal(true);
   stills           = signal<ContentStill[]>([]);
   slotState        = signal<Record<string, SlotState>>({});
-  advancing        = signal(false);
   collapsed        = signal(false);
   listView         = signal(true);
   autoMatching     = signal(false);
@@ -557,18 +546,6 @@ export class LongformWorkbenchComponent implements OnInit {
     }
 
     this.autoMatching.set(false);
-  }
-
-  async advanceToReview() {
-    this.advancing.set(true);
-    try {
-      await this.svc.updateLongformStatus(this.project.id, 'awaiting_stills');
-      window.location.reload();
-    } catch (e: any) {
-      console.error('Advance failed:', e);
-    } finally {
-      this.advancing.set(false);
-    }
   }
 
   private patchSlot(scene_n: number, cut: StillCut, state: SlotState) {
