@@ -28,22 +28,30 @@ interface SceneGroup {
   template: `
     <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:24px;margin-bottom:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 style="margin:0;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">
-          {{ workbenchTitle() }}
-        </h2>
+        <!-- Collapse toggle + title -->
+        <button (click)="collapsed.set(!collapsed())"
+                style="display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:0;">
+          <span style="font-size:12px;color:#475569;transition:transform .2s;"
+                [style.transform]="collapsed() ? 'rotate(-90deg)' : 'rotate(0)'">▼</span>
+          <h2 style="margin:0;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">
+            {{ workbenchTitle() }}
+          </h2>
+        </button>
         <div style="display:flex;align-items:center;gap:12px;">
           <span style="font-size:12px;color:#475569;">{{ uploadedCount() }} / {{ totalSlots() }} uploaded</span>
-          <!-- View toggle -->
-          <div style="display:flex;border:1px solid #262626;border-radius:6px;overflow:hidden;">
-            <button (click)="listView.set(false)"
-                    style="padding:4px 10px;border:none;font-size:11px;cursor:pointer;transition:background .15s;"
-                    [style.background]="!listView() ? '#2563eb' : '#1a1a1a'"
-                    [style.color]="!listView() ? 'white' : '#64748b'">Grid</button>
-            <button (click)="listView.set(true)"
-                    style="padding:4px 10px;border:none;font-size:11px;cursor:pointer;transition:background .15s;"
-                    [style.background]="listView() ? '#2563eb' : '#1a1a1a'"
-                    [style.color]="listView() ? 'white' : '#64748b'">List</button>
-          </div>
+          <!-- View toggle — only shown when expanded -->
+          @if (!collapsed()) {
+            <div style="display:flex;border:1px solid #262626;border-radius:6px;overflow:hidden;">
+              <button (click)="listView.set(false)"
+                      style="padding:4px 10px;border:none;font-size:11px;cursor:pointer;transition:background .15s;"
+                      [style.background]="!listView() ? '#2563eb' : '#1a1a1a'"
+                      [style.color]="!listView() ? 'white' : '#64748b'">Grid</button>
+              <button (click)="listView.set(true)"
+                      style="padding:4px 10px;border:none;font-size:11px;cursor:pointer;transition:background .15s;"
+                      [style.background]="listView() ? '#2563eb' : '#1a1a1a'"
+                      [style.color]="listView() ? 'white' : '#64748b'">List</button>
+            </div>
+          }
         </div>
       </div>
 
@@ -53,6 +61,8 @@ interface SceneGroup {
                [style.width]="(uploadedCount() / totalSlots() * 100) + '%'"></div>
         </div>
       }
+
+      @if (!collapsed()) {
 
       @if (loading()) {
         <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">Loading stills…</div>
@@ -194,104 +204,106 @@ interface SceneGroup {
           </div>
         }
 
-        @if (project.status === 'storyboard') {
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid #1a1a1a;">
+      }
 
-            <!-- Filename-based bulk upload (fast, no AI) -->
-            <div style="background:#0a1a0a;border:1px dashed #1a3a1a;border-radius:10px;padding:18px 20px;margin-bottom:12px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <div>
-                  <div style="font-size:13px;font-weight:600;color:#4ade80;">📁 Bulk Upload by Filename</div>
-                  <div style="font-size:11px;color:#475569;margin-top:2px;">Files must be named <code style="background:#111;padding:1px 4px;border-radius:3px;">S7-A.jpeg</code> — slot assigned from filename instantly, no AI needed</div>
-                </div>
-                <button (click)="triggerFilenameUpload()"
-                        [disabled]="filenameUploading()"
-                        style="padding:8px 18px;border-radius:8px;background:#15803d;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:16px;"
-                        [style.opacity]="filenameUploading() ? '0.6' : '1'">
-                  {{ filenameUploading() ? 'Uploading…' : '📁 Select S{N}-{CUT} Files' }}
-                </button>
+      } <!-- end !collapsed() -->
+
+      <!-- ── ACTION PANEL — always visible regardless of collapse/view state ── -->
+      @if (project.status === 'storyboard') {
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;">
+
+          <!-- Filename-based bulk upload (fast, no AI) -->
+          <div style="background:#0a1a0a;border:1px dashed #1a3a1a;border-radius:10px;padding:18px 20px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#4ade80;">📁 Bulk Upload by Filename</div>
+                <div style="font-size:11px;color:#475569;margin-top:2px;">Files must be named <code style="background:#111;padding:1px 4px;border-radius:3px;">S7-A.jpeg</code> — slot assigned from filename instantly, no AI needed</div>
               </div>
-              @if (filenameUploading() || filenameProgress().log.length > 0) {
-                @if (filenameUploading()) {
-                  <div style="margin-bottom:6px;">
-                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:3px;">
-                      <span>{{ filenameProgress().current }} of {{ filenameProgress().total }}</span>
-                      <span>{{ Math.round(filenameProgress().current / filenameProgress().total * 100) }}%</span>
-                    </div>
-                    <div style="background:#1a1a1a;border-radius:3px;height:3px;overflow:hidden;">
-                      <div style="height:100%;background:#4ade80;transition:width .3s;"
-                           [style.width]="(filenameProgress().current / filenameProgress().total * 100) + '%'"></div>
-                    </div>
+              <button (click)="triggerFilenameUpload()"
+                      [disabled]="filenameUploading()"
+                      style="padding:8px 18px;border-radius:8px;background:#15803d;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:16px;"
+                      [style.opacity]="filenameUploading() ? '0.6' : '1'">
+                {{ filenameUploading() ? 'Uploading…' : '📁 Select S{N}-{CUT} Files' }}
+              </button>
+            </div>
+            @if (filenameUploading() || filenameProgress().log.length > 0) {
+              @if (filenameUploading()) {
+                <div style="margin-bottom:6px;">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:3px;">
+                    <span>{{ filenameProgress().current }} of {{ filenameProgress().total }}</span>
+                    <span>{{ Math.round(filenameProgress().current / filenameProgress().total * 100) }}%</span>
+                  </div>
+                  <div style="background:#1a1a1a;border-radius:3px;height:3px;overflow:hidden;">
+                    <div style="height:100%;background:#4ade80;transition:width .3s;"
+                         [style.width]="(filenameProgress().current / filenameProgress().total * 100) + '%'"></div>
+                  </div>
+                </div>
+              }
+              <div style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
+                @for (line of filenameProgress().log; track $index) {
+                  <div style="font-size:11px;font-family:monospace;padding:2px 0;"
+                       [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('⚠') ? '#f59e0b' : line.startsWith('✗') ? '#f87171' : '#64748b'">
+                    {{ line }}
                   </div>
                 }
-                <div style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
-                  @for (line of filenameProgress().log; track $index) {
-                    <div style="font-size:11px;font-family:monospace;padding:2px 0;"
-                         [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('⚠') ? '#f59e0b' : line.startsWith('✗') ? '#f87171' : '#64748b'">
-                      {{ line }}
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-
-            <!-- Auto-match bulk upload (AI Vision fallback) -->
-            <div style="background:#0a1628;border:1px dashed #1e3a5f;border-radius:10px;padding:18px 20px;margin-bottom:16px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <div>
-                  <div style="font-size:13px;font-weight:600;color:#60a5fa;">⚡ Auto-Match via Claude Vision</div>
-                  <div style="font-size:11px;color:#475569;margin-top:2px;">Any filename — Claude Vision analyses each image and assigns it to the correct slot</div>
-                </div>
-                <button (click)="triggerAutoMatch()"
-                        [disabled]="autoMatching()"
-                        style="padding:8px 18px;border-radius:8px;background:#1d4ed8;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:16px;"
-                        [style.opacity]="autoMatching() ? '0.6' : '1'">
-                  {{ autoMatching() ? 'Analysing…' : '⚡ Select Images' }}
-                </button>
               </div>
-
-              @if (autoMatching() || matchProgress().log.length > 0) {
-                <!-- Progress -->
-                @if (autoMatching()) {
-                  <div style="margin-bottom:8px;">
-                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:4px;">
-                      <span>Processing {{ matchProgress().current }} of {{ matchProgress().total }}</span>
-                      <span>{{ Math.round(matchProgress().current / matchProgress().total * 100) }}%</span>
-                    </div>
-                    <div style="background:#1a1a1a;border-radius:3px;height:3px;overflow:hidden;">
-                      <div style="height:100%;background:#3b82f6;transition:width .3s;"
-                           [style.width]="(matchProgress().current / matchProgress().total * 100) + '%'"></div>
-                    </div>
-                  </div>
-                }
-                <div style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
-                  @for (line of matchProgress().log; track $index) {
-                    <div style="font-size:11px;font-family:monospace;padding:2px 0;"
-                         [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('⚠') ? '#f59e0b' : line.startsWith('✗') ? '#f87171' : '#64748b'">
-                      {{ line }}
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-
-            <!-- Advance button -->
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:12px;color:#475569;">
-                {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
-                @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
-              </span>
-              @if (uploadedCount() > 0) {
-                <button (click)="advanceToReview()"
-                        [disabled]="advancing()"
-                        style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;"
-                        [style.opacity]="advancing() ? '0.5' : '1'">
-                  {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Review →' }}
-                </button>
-              }
-            </div>
+            }
           </div>
-        }
+
+          <!-- Auto-match bulk upload (AI Vision fallback) -->
+          <div style="background:#0a1628;border:1px dashed #1e3a5f;border-radius:10px;padding:18px 20px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#60a5fa;">⚡ Auto-Match via Claude Vision</div>
+                <div style="font-size:11px;color:#475569;margin-top:2px;">Any filename — Claude Vision analyses each image and assigns it to the correct slot</div>
+              </div>
+              <button (click)="triggerAutoMatch()"
+                      [disabled]="autoMatching()"
+                      style="padding:8px 18px;border-radius:8px;background:#1d4ed8;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:16px;"
+                      [style.opacity]="autoMatching() ? '0.6' : '1'">
+                {{ autoMatching() ? 'Analysing…' : '⚡ Select Images' }}
+              </button>
+            </div>
+            @if (autoMatching() || matchProgress().log.length > 0) {
+              @if (autoMatching()) {
+                <div style="margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:4px;">
+                    <span>Processing {{ matchProgress().current }} of {{ matchProgress().total }}</span>
+                    <span>{{ Math.round(matchProgress().current / matchProgress().total * 100) }}%</span>
+                  </div>
+                  <div style="background:#1a1a1a;border-radius:3px;height:3px;overflow:hidden;">
+                    <div style="height:100%;background:#3b82f6;transition:width .3s;"
+                         [style.width]="(matchProgress().current / matchProgress().total * 100) + '%'"></div>
+                  </div>
+                </div>
+              }
+              <div style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
+                @for (line of matchProgress().log; track $index) {
+                  <div style="font-size:11px;font-family:monospace;padding:2px 0;"
+                       [style.color]="line.startsWith('✓') ? '#4ade80' : line.startsWith('⚠') ? '#f59e0b' : line.startsWith('✗') ? '#f87171' : '#64748b'">
+                    {{ line }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Advance button -->
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;color:#475569;">
+              {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
+              @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
+            </span>
+            @if (uploadedCount() > 0) {
+              <button (click)="advanceToReview()"
+                      [disabled]="advancing()"
+                      style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;"
+                      [style.opacity]="advancing() ? '0.5' : '1'">
+                {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Review →' }}
+              </button>
+            }
+          </div>
+        </div>
       }
     </div>
 
@@ -324,6 +336,7 @@ export class LongformWorkbenchComponent implements OnInit {
   stills           = signal<ContentStill[]>([]);
   slotState        = signal<Record<string, SlotState>>({});
   advancing        = signal(false);
+  collapsed        = signal(false);
   listView         = signal(true);
   autoMatching     = signal(false);
   matchProgress    = signal<{ current: number; total: number; log: string[] }>({ current: 0, total: 0, log: [] });
