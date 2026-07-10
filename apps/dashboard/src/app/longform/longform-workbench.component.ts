@@ -64,56 +64,69 @@ interface SceneGroup {
         <div style="display:flex;flex-direction:column;gap:6px;">
           @for (scene of scenes(); track scene.scene_n) {
             @for (slot of scene.slots; track slot.cut) {
-              <div style="display:grid;grid-template-columns:64px 80px 1fr 110px;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid;"
-                   [style.border-color]="slot.uploading ? '#3b82f6' : slot.still?.clip_url ? '#1e293b' : '#1a1a1a'"
-                   [style.background]="slot.still?.clip_url ? 'rgba(30,41,59,.3)' : '#0d0d0d'">
-
-                <!-- Thumbnail -->
-                <div style="position:relative;aspect-ratio:16/9;border-radius:5px;overflow:hidden;background:#1a1a1a;cursor:pointer;"
-                     (click)="openPicker(slot)">
-                  @if (slot.still?.clip_url) {
-                    <img [src]="slot.still!.clip_url!" style="width:100%;height:100%;object-fit:cover;" />
-                  } @else if (slot.uploading) {
-                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-                      <div class="spinner"></div>
-                    </div>
-                  } @else {
-                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#334155;font-size:18px;">+</div>
-                  }
-                </div>
-
-                <!-- Scene label -->
-                <div>
-                  <div style="font-size:13px;font-weight:700;color:#94a3b8;font-family:monospace;">
-                    S{{ slot.scene_n }}-{{ slot.cut }}
+              @if (isEditorBuild(slot)) {
+                <!-- Editor-build slot: no image needed, show as disabled row -->
+                <div style="display:grid;grid-template-columns:64px 80px 1fr 110px;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid #131313;background:#0a0a0a;opacity:.45;">
+                  <div style="aspect-ratio:16/9;border-radius:5px;background:#111;display:flex;align-items:center;justify-content:center;font-size:18px;">🎬</div>
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:#475569;font-family:monospace;">S{{ slot.scene_n }}-{{ slot.cut }}</div>
+                    <span style="font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;background:rgba(100,116,139,.2);color:#64748b;">editor build</span>
                   </div>
-                  @if (slot.still) {
-                    <span style="font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;"
-                          [style.background]="statusBg(slot.still.status)"
-                          [style.color]="statusColor(slot.still.status)">
-                      {{ slot.still.status }}
-                    </span>
+                  <div style="font-size:11px;color:#334155;font-style:italic;">No image needed — built in editor</div>
+                  <div style="font-size:11px;color:#334155;text-align:right;">—</div>
+                </div>
+              } @else {
+                <div style="display:grid;grid-template-columns:64px 80px 1fr 110px;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid;"
+                     [style.border-color]="slot.uploading ? '#3b82f6' : slot.still?.clip_url ? '#1e293b' : '#1a1a1a'"
+                     [style.background]="slot.still?.clip_url ? 'rgba(30,41,59,.3)' : '#0d0d0d'">
+
+                  <!-- Thumbnail -->
+                  <div style="position:relative;aspect-ratio:16/9;border-radius:5px;overflow:hidden;background:#1a1a1a;cursor:pointer;"
+                       (click)="openPicker(slot)">
+                    @if (slot.still?.clip_url) {
+                      <img [src]="slot.still!.clip_url!" style="width:100%;height:100%;object-fit:cover;" />
+                    } @else if (slot.uploading) {
+                      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                        <div class="spinner"></div>
+                      </div>
+                    } @else {
+                      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#334155;font-size:18px;">+</div>
+                    }
+                  </div>
+
+                  <!-- Scene label -->
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:#94a3b8;font-family:monospace;">
+                      S{{ slot.scene_n }}-{{ slot.cut }}
+                    </div>
+                    @if (slot.still) {
+                      <span style="font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;"
+                            [style.background]="statusBg(slot.still.status)"
+                            [style.color]="statusColor(slot.still.status)">
+                        {{ slot.still.status }}
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Prompt text -->
+                  <div style="font-size:11px;color:#475569;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                    {{ slot.still?.prompt ?? '—' }}
+                  </div>
+
+                  <!-- Upload button -->
+                  <button (click)="openPicker(slot)"
+                          [disabled]="slot.uploading"
+                          style="padding:6px 12px;border-radius:6px;border:1px solid #262626;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;"
+                          [style.background]="slot.still?.clip_url ? '#1e293b' : '#0d0d0d'"
+                          [style.color]="slot.still?.clip_url ? '#60a5fa' : '#4ade80'">
+                    {{ slot.uploading ? 'Uploading…' : slot.still?.clip_url ? '↑ Replace' : '↑ Upload' }}
+                  </button>
+
+                  @if (slot.error) {
+                    <div style="grid-column:1/-1;font-size:11px;color:#f87171;padding-left:4px;">{{ slot.error }}</div>
                   }
                 </div>
-
-                <!-- Prompt text -->
-                <div style="font-size:11px;color:#475569;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
-                  {{ slot.still?.prompt ?? '—' }}
-                </div>
-
-                <!-- Upload button -->
-                <button (click)="openPicker(slot)"
-                        [disabled]="slot.uploading"
-                        style="padding:6px 12px;border-radius:6px;border:1px solid #262626;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;"
-                        [style.background]="slot.still?.clip_url ? '#1e293b' : '#0d0d0d'"
-                        [style.color]="slot.still?.clip_url ? '#60a5fa' : '#4ade80'">
-                  {{ slot.uploading ? 'Uploading…' : slot.still?.clip_url ? '↑ Replace' : '↑ Upload' }}
-                </button>
-
-                @if (slot.error) {
-                  <div style="grid-column:1/-1;font-size:11px;color:#f87171;padding-left:4px;">{{ slot.error }}</div>
-                }
-              </div>
+              }
             }
           }
         </div>
@@ -128,41 +141,54 @@ interface SceneGroup {
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
               @for (slot of scene.slots; track slot.cut) {
-                <div style="border-radius:8px;overflow:hidden;border:1px solid;background:#0d0d0d;cursor:pointer;"
-                     [style.border-color]="slot.uploading ? '#3b82f6' : slot.still?.clip_url ? '#262626' : '#1e3a2a'"
-                     (click)="openPicker(slot)">
-                  <!-- Image -->
-                  <div style="position:relative;aspect-ratio:16/9;">
-                    @if (slot.still?.clip_url && !slot.uploading) {
-                      <img [src]="slot.still!.clip_url!" style="width:100%;height:100%;object-fit:cover;display:block;" />
-                    } @else if (slot.uploading) {
-                      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);">
-                        <div class="spinner"></div>
-                      </div>
-                    } @else {
-                      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-                        <div style="width:28px;height:28px;border-radius:50%;border:1.5px dashed #2d4a3a;display:flex;align-items:center;justify-content:center;color:#2d6a4f;font-size:16px;">+</div>
-                        <div style="font-size:10px;color:#2d6a4f;">Upload</div>
-                      </div>
-                    }
-                    <div style="position:absolute;top:5px;left:5px;display:flex;gap:4px;align-items:center;">
-                      <span style="padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(0,0,0,.7);color:#94a3b8;">
-                        S{{ slot.scene_n }}-{{ slot.cut }}
-                      </span>
-                      @if (slot.still) {
-                        <span style="padding:1px 5px;border-radius:4px;font-size:9px;font-weight:600;"
-                              [style.background]="statusBg(slot.still.status)"
-                              [style.color]="statusColor(slot.still.status)">
-                          {{ slot.still.status }}
-                        </span>
-                      }
+                @if (isEditorBuild(slot)) {
+                  <!-- Editor-build: greyed out, no click -->
+                  <div style="border-radius:8px;overflow:hidden;border:1px solid #131313;background:#0a0a0a;opacity:.4;">
+                    <div style="position:relative;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+                      <div style="font-size:22px;">🎬</div>
+                      <div style="font-size:10px;color:#475569;font-weight:600;">Editor Build</div>
+                    </div>
+                    <div style="padding:6px 8px;font-size:10px;color:#334155;font-style:italic;min-height:32px;">
+                      S{{ slot.scene_n }}-{{ slot.cut }} — no image needed
                     </div>
                   </div>
-                  <!-- Prompt text below image -->
-                  <div style="padding:6px 8px;font-size:10px;color:#475569;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:32px;">
-                    {{ slot.still?.prompt ?? '' }}
+                } @else {
+                  <div style="border-radius:8px;overflow:hidden;border:1px solid;background:#0d0d0d;cursor:pointer;"
+                       [style.border-color]="slot.uploading ? '#3b82f6' : slot.still?.clip_url ? '#262626' : '#1e3a2a'"
+                       (click)="openPicker(slot)">
+                    <!-- Image -->
+                    <div style="position:relative;aspect-ratio:16/9;">
+                      @if (slot.still?.clip_url && !slot.uploading) {
+                        <img [src]="slot.still!.clip_url!" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                      } @else if (slot.uploading) {
+                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);">
+                          <div class="spinner"></div>
+                        </div>
+                      } @else {
+                        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+                          <div style="width:28px;height:28px;border-radius:50%;border:1.5px dashed #2d4a3a;display:flex;align-items:center;justify-content:center;color:#2d6a4f;font-size:16px;">+</div>
+                          <div style="font-size:10px;color:#2d6a4f;">Upload</div>
+                        </div>
+                      }
+                      <div style="position:absolute;top:5px;left:5px;display:flex;gap:4px;align-items:center;">
+                        <span style="padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(0,0,0,.7);color:#94a3b8;">
+                          S{{ slot.scene_n }}-{{ slot.cut }}
+                        </span>
+                        @if (slot.still) {
+                          <span style="padding:1px 5px;border-radius:4px;font-size:9px;font-weight:600;"
+                                [style.background]="statusBg(slot.still.status)"
+                                [style.color]="statusColor(slot.still.status)">
+                            {{ slot.still.status }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                    <!-- Prompt text below image -->
+                    <div style="padding:6px 8px;font-size:10px;color:#475569;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:32px;">
+                      {{ slot.still?.prompt ?? '' }}
+                    </div>
                   </div>
-                </div>
+                }
               }
             </div>
           </div>
@@ -341,8 +367,13 @@ export class LongformWorkbenchComponent implements OnInit {
     });
   });
 
+  // Editor-build slots: passed with no image — intentionally empty, never need upload
+  isEditorBuild = (slot: StillSlot) => slot.still?.status === 'passed' && !slot.still?.clip_url;
+
   uploadedCount = computed(() => this.stills().filter(s => s.clip_url != null).length);
-  totalSlots    = computed(() => this.scenes().reduce((n, s) => n + s.slots.length, 0));
+  totalSlots    = computed(() =>
+    this.scenes().reduce((n, s) => n + s.slots.filter(slot => !this.isEditorBuild(slot)).length, 0)
+  );
 
   workbenchTitle = computed(() => {
     const s = this.project.status;
