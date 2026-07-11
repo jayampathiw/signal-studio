@@ -20,12 +20,13 @@ const GITHUB_WORKFLOW = 'longform.yml';
 // Legal stage transitions: current_status → stage → running_status
 // Only these combinations are allowed — everything else returns 409.
 const TRANSITIONS: Record<string, { from: string[]; running: string }> = {
-  script:   { from: ['brief', 'awaiting_script_approval'],             running: 'scripting' },
-  seed:     { from: ['awaiting_script_approval', 'awaiting_refs'],     running: 'seeding'   },
-  tts:      { from: ['awaiting_refs'],                                  running: 'seeding'   },
-  assemble: { from: ['awaiting_stills'],                                running: 'rendering' },
-  publish:  { from: ['awaiting_final_approval'],                        running: 'publishing'},
-  noop:     { from: ['*'],                                              running: ''          },
+  script:       { from: ['brief', 'awaiting_script_approval'],                        running: 'scripting' },
+  seed:         { from: ['awaiting_script_approval', 'awaiting_refs'],                running: 'seeding'   },
+  tts:          { from: ['awaiting_refs'],                                             running: 'seeding'   },
+  assemble:     { from: ['awaiting_stills'],                                           running: 'rendering' },
+  tts_assemble: { from: ['awaiting_final_approval', 'awaiting_stills', 'awaiting_refs'], running: 'rendering' },
+  publish:      { from: ['awaiting_final_approval'],                                   running: 'publishing'},
+  noop:         { from: ['*'],                                                         running: ''          },
 };
 
 Deno.serve(async (req: Request) => {

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { LongformProject, SupabaseService } from '../core/supabase.service';
@@ -31,8 +31,17 @@ const STAGES: Stage[] = [
 
 const STATUS_ORDER = STAGES.map(s => s.key);
 
+// Map transient/error statuses to the nearest display stage
+const STATUS_ALIAS: Record<string, string> = {
+  scripting:  'storyboard',
+  seeding:    'awaiting_refs',
+  rendering:  'rendering',
+  failed:     'rendering',   // show rendering stage highlighted when failed during assemble
+};
+
 function stageIndex(status: string) {
-  const i = STATUS_ORDER.indexOf(status);
+  const resolved = STATUS_ALIAS[status] ?? status;
+  const i = STATUS_ORDER.indexOf(resolved);
   return i < 0 ? 0 : i;
 }
 
@@ -68,6 +77,31 @@ function stageIndex(status: string) {
       }
 
       @if (!loading() && project()) {
+
+        <!-- Failed banner -->
+        @if (project()!.status === 'failed') {
+          <div style="margin-bottom:20px;padding:12px 16px;border-radius:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);display:flex;align-items:flex-start;gap:12px;">
+            <span style="font-size:16px;flex-shrink:0;">❌</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#f87171;margin-bottom:4px;">Pipeline run failed</div>
+              <div style="font-size:11px;color:#94a3b8;font-family:monospace;word-break:break-all;">{{ project()!.status_note }}</div>
+              <button (click)="retryAssemble()" [disabled]="advancing()"
+                      style="margin-top:10px;padding:6px 14px;border-radius:6px;background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;font-size:11px;font-weight:600;cursor:pointer;"
+                      [style.opacity]="advancing() ? '0.5' : '1'">
+                {{ advancing() ? 'Resetting…' : '↺ Retry assemble' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Rendering in-progress banner -->
+        @if (project()!.status === 'rendering') {
+          <div style="margin-bottom:20px;padding:12px 16px;border-radius:8px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);display:flex;align-items:center;gap:12px;">
+            <div class="spinner-sm"></div>
+            <div style="font-size:13px;color:#93c5fd;">FFmpeg assembly in progress — this page will refresh automatically every 30s</div>
+          </div>
+        }
+
         <!-- Back link + title -->
         <div style="margin-bottom:24px;">
           <a [routerLink]="backLink()" style="font-size:12px;color:#475569;text-decoration:none;">← Back to videos</a>
@@ -220,7 +254,8 @@ function stageIndex(status: string) {
         @if (project()!.status === 'awaiting_final_approval') {
           <app-longform-final-review
             [project]="project()!"
-            (published)="onPublished()" />
+            (published)="onPublished()"
+            (rerendering)="onRerendering()" />
         }
 
         <!-- Generic video + SEO (rendered / publishing / posted) -->
@@ -268,15 +303,27 @@ function stageIndex(status: string) {
         <app-longform-audio [project]="project()!" />
       }
     </div>
+    <style>
+      .spinner-sm {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(147,197,253,.3);
+        border-top-color: #93c5fd;
+        border-radius: 50%;
+        animation: spin .8s linear infinite;
+        flex-shrink: 0;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
   `,
 })
-export class LongformDetailComponent implements OnInit {
+export class LongformDetailComponent implements OnInit, OnDestroy {
   project    = signal<LongformProject | null>(null);
   loading    = signal(true);
   error      = signal<string | null>(null);
   triggering = signal(false);
   triggerResult = signal<{ ok: boolean; message: string; runUrl?: string | null } | null>(null);
   advancing  = signal(false);
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
 
   // Shot list upload
   shotlistFile     = signal<File | null>(null);
@@ -315,11 +362,45 @@ export class LongformDetailComponent implements OnInit {
     try {
       this.project.set(await this.svc.getLongformProject(id));
       if (!this.project()) this.error.set('Project not found.');
+      else this.startPollIfRendering(id);
     } catch (e: any) {
       this.error.set(e.message);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  ngOnDestroy() {
+    this.stopPoll();
+  }
+
+  private startPollIfRendering(id: number) {
+    if (this.project()?.status !== 'rendering') return;
+    this.stopPoll();
+    this.pollTimer = setInterval(async () => {
+      const updated = await this.svc.getLongformProject(id);
+      if (updated) {
+        this.project.set(updated);
+        if (updated.status !== 'rendering') this.stopPoll();
+      }
+    }, 30_000);
+  }
+
+  private stopPoll() {
+    if (this.pollTimer != null) { clearInterval(this.pollTimer); this.pollTimer = null; }
+  }
+
+  async onRerendering() {
+    const p = this.project();
+    if (!p) return;
+    // Refresh so the rendering banner appears, then start polling
+    setTimeout(async () => {
+      const updated = await this.svc.getLongformProject(p.id);
+      if (updated) {
+        this.project.set(updated);
+        this.startPollIfRendering(p.id);
+      }
+    }, 2000);
   }
 
   async onPublished() {
@@ -394,6 +475,34 @@ export class LongformDetailComponent implements OnInit {
     }
   }
 
+  async retryAssemble() {
+    const p = this.project();
+    if (!p) return;
+    this.advancing.set(true);
+    this.triggerResult.set(null);
+    try {
+      // Reset status so edge function accepts the dispatch (requires awaiting_stills)
+      await this.svc.updateLongformStatus(p.id, 'awaiting_stills');
+      const res = await this.svc.triggerLongform(p.id, 'assemble');
+      this.triggerResult.set({
+        ok: true,
+        message: res.dispatched ? 'Assemble re-dispatched.' : 'Already in progress.',
+        runUrl: res.runUrl,
+      });
+      setTimeout(async () => {
+        const updated = await this.svc.getLongformProject(p.id);
+        if (updated) {
+          this.project.set(updated);
+          this.startPollIfRendering(p.id);
+        }
+      }, 2000);
+    } catch (e: any) {
+      this.triggerResult.set({ ok: false, message: e.message });
+    } finally {
+      this.advancing.set(false);
+    }
+  }
+
   async triggerStage(stage: string) {
     const p = this.project();
     if (!p) return;
@@ -406,10 +515,13 @@ export class LongformDetailComponent implements OnInit {
         message: res.dispatched ? 'Workflow dispatched.' : 'Already in progress.',
         runUrl: res.runUrl,
       });
-      // Refresh project status after a short delay
+      // Refresh project status after a short delay, then start polling if rendering
       setTimeout(async () => {
         const updated = await this.svc.getLongformProject(p.id);
-        if (updated) this.project.set(updated);
+        if (updated) {
+          this.project.set(updated);
+          this.startPollIfRendering(p.id);
+        }
       }, 2000);
     } catch (e: any) {
       this.triggerResult.set({ ok: false, message: e.message });

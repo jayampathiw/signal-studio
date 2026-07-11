@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, inject } from '@angular/core';
 import { LongformProject, SupabaseService } from '../core/supabase.service';
 
 const CHECKLIST = [
@@ -121,17 +121,66 @@ const CHECKLIST = [
         <div style="margin-top:10px;font-size:12px;color:#f87171;">{{ publishError() }}</div>
       }
     </div>
+
+    <!-- Add narration & re-render -->
+    <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:20px;margin-bottom:24px;">
+      <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Need narration?</div>
+      <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:14px;">
+        If this render has no voiceover, run TTS to generate narration audio for all scenes then re-assemble.
+        The video will return here once complete (~15–20 min).
+      </div>
+      @if (!renarrating()) {
+        <button (click)="renarrating.set(true)"
+                style="padding:7px 16px;border-radius:7px;background:#1e1e1e;color:#94a3b8;border:1px solid #262626;font-size:12px;font-weight:600;cursor:pointer;">
+          🎙 Add Narration &amp; Re-render
+        </button>
+      } @else {
+        <div style="padding:14px;border-radius:8px;border:1px solid rgba(234,179,8,.3);background:rgba(234,179,8,.06);">
+          <div style="font-size:13px;color:#fbbf24;font-weight:600;margin-bottom:4px;">Re-run TTS + assemble?</div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;">
+            This will generate Kokoro TTS audio for all 40 clips then re-assemble the full video. The current render stays in R2 until overwritten.
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button (click)="confirmRenarrate()"
+                    [disabled]="renarrationBusy()"
+                    style="padding:8px 18px;border-radius:7px;background:#7c3aed;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                    [style.opacity]="renarrationBusy() ? '0.5' : '1'">
+              {{ renarrationBusy() ? 'Dispatching…' : 'Yes, run TTS + re-assemble' }}
+            </button>
+            <button (click)="renarrating.set(false)"
+                    [disabled]="renarrationBusy()"
+                    style="padding:8px 18px;border-radius:7px;background:#1e1e1e;color:#94a3b8;border:1px solid #262626;font-size:12px;cursor:pointer;">
+              Cancel
+            </button>
+          </div>
+          @if (renarrationResult()) {
+            <div style="margin-top:10px;font-size:12px;"
+                 [style.color]="renarrationResult()!.ok ? '#4ade80' : '#f87171'">
+              {{ renarrationResult()!.message }}
+              @if (renarrationResult()!.ok && renarrationResult()!.runUrl) {
+                · <a [href]="renarrationResult()!.runUrl" target="_blank" style="color:#60a5fa;">View run ↗</a>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
   `,
 })
 export class LongformFinalReviewComponent {
   @Input() project!: LongformProject;
-  @Output() published = new EventEmitter<void>();
+  @Output() published    = new EventEmitter<void>();
+  @Output() rerendering  = new EventEmitter<void>();
 
   checklist    = CHECKLIST;
   checked      = signal<boolean[]>(CHECKLIST.map(() => false));
   confirmStep  = signal(false);
   publishing   = signal(false);
   publishError = signal<string | null>(null);
+
+  renarrating      = signal(false);
+  renarrationBusy  = signal(false);
+  renarrationResult = signal<{ ok: boolean; message: string; runUrl?: string | null } | null>(null);
 
   allChecked = computed(() => this.checked().every(Boolean));
 
@@ -162,6 +211,24 @@ export class LongformFinalReviewComponent {
       this.confirmStep.set(false);
     } finally {
       this.publishing.set(false);
+    }
+  }
+
+  async confirmRenarrate() {
+    this.renarrationBusy.set(true);
+    this.renarrationResult.set(null);
+    try {
+      const res = await this.svc.triggerLongform(this.project.id, 'tts_assemble');
+      this.renarrationResult.set({
+        ok: true,
+        message: 'TTS + assemble dispatched.',
+        runUrl: res.runUrl,
+      });
+      this.rerendering.emit();
+    } catch (e: any) {
+      this.renarrationResult.set({ ok: false, message: e.message });
+    } finally {
+      this.renarrationBusy.set(false);
     }
   }
 
