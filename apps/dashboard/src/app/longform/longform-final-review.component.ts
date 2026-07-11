@@ -218,7 +218,7 @@ export class LongformFinalReviewComponent {
     this.renarrationBusy.set(true);
     this.renarrationResult.set(null);
     try {
-      const res = await this.svc.triggerLongform(this.project.id, 'tts_assemble');
+      const res = await this.svc.triggerLongform(this.project.id, 'tts_assemble', '--audio-mix');
       this.renarrationResult.set({
         ok: true,
         message: 'TTS + assemble dispatched.',
