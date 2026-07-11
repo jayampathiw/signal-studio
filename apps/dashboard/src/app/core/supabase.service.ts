@@ -800,7 +800,7 @@ export class SupabaseService {
     return body;
   }
 
-  async triggerLongform(projectId: number, stage: string): Promise<{ dispatched: boolean; runUrl: string | null }> {
+  async triggerLongform(projectId: number, stage: string, assembleFlags?: string): Promise<{ dispatched: boolean; runUrl: string | null }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const res = await fetch(`${environment.supabaseUrl}/functions/v1/trigger-longform`, {
@@ -810,7 +810,7 @@ export class SupabaseService {
         'Authorization': `Bearer ${token}`,
         'apikey': environment.supabaseAnonKey,
       },
-      body: JSON.stringify({ project_id: projectId, stage }),
+      body: JSON.stringify({ project_id: projectId, stage, ...(assembleFlags ? { assemble_flags: assembleFlags } : {}) }),
     });
     const body = await res.json().catch(() => ({ error: res.statusText }));
     if (!res.ok) throw new Error(body.error ?? `trigger-longform failed (${res.status})`);

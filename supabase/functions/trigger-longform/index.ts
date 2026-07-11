@@ -32,10 +32,10 @@ const TRANSITIONS: Record<string, { from: string[]; running: string }> = {
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
-  let body: { project_id?: number; stage?: string };
+  let body: { project_id?: number; stage?: string; assemble_flags?: string };
   try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
 
-  const { project_id, stage } = body;
+  const { project_id, stage, assemble_flags } = body;
   if (!project_id) return json({ error: 'project_id is required' }, 400);
   if (!stage)      return json({ error: 'stage is required (script|seed|tts|assemble|publish|noop)' }, 400);
 
@@ -96,7 +96,7 @@ Deno.serve(async (req: Request) => {
       headers: ghHeaders,
       body: JSON.stringify({
         ref: 'main',
-        inputs: { project_id: String(project_id), stage },
+        inputs: { project_id: String(project_id), stage, ...(assemble_flags ? { assemble_flags } : {}) },
       }),
     },
   );
