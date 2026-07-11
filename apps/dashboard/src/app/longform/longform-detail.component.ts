@@ -481,12 +481,12 @@ export class LongformDetailComponent implements OnInit, OnDestroy {
     this.advancing.set(true);
     this.triggerResult.set(null);
     try {
-      // Reset status so edge function accepts the dispatch (requires awaiting_stills)
+      // Reset status so edge function accepts tts_assemble (requires awaiting_stills/refs)
       await this.svc.updateLongformStatus(p.id, 'awaiting_stills');
-      const res = await this.svc.triggerLongform(p.id, 'assemble');
+      const res = await this.svc.triggerLongform(p.id, 'tts_assemble', '--audio-mix');
       this.triggerResult.set({
         ok: true,
-        message: res.dispatched ? 'Assemble re-dispatched.' : 'Already in progress.',
+        message: res.dispatched ? 'TTS + assemble re-dispatched.' : 'Already in progress.',
         runUrl: res.runUrl,
       });
       setTimeout(async () => {
