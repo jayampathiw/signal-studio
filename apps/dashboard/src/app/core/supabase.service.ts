@@ -723,7 +723,7 @@ export class SupabaseService {
     return (data ?? []) as ContentClip[];
   }
 
-  async updateAudioPlan(projectId: number, audioPlan: AudioPlanSegment[]): Promise<void> {
+  async updateAudioPlan(projectId: number, audioPlan: any): Promise<void> {
     const { error } = await this.client
       .from('content_items')
       .update({ audio_plan: audioPlan })

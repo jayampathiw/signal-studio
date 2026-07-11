@@ -161,7 +161,12 @@ export class LongformAudioComponent implements OnInit {
   }
 
   ngOnInit() {
-    const plan: AudioPlanSegment[] = this.project.audio_plan ?? [];
+    const raw = this.project.audio_plan;
+    // audio_plan may be a nested object { segments: [...], ambience, ... } (written by assembler)
+    // or a flat array (written by this editor). Handle both.
+    const plan: AudioPlanSegment[] = Array.isArray(raw)
+      ? raw
+      : (Array.isArray(raw?.segments) ? raw.segments : []);
     this.rows.set(structuredClone(plan));
     this.original = JSON.stringify(plan);
   }
@@ -194,7 +199,12 @@ export class LongformAudioComponent implements OnInit {
     this.saveError.set(null);
     this.saveOk.set(false);
     try {
-      await this.svc.updateAudioPlan(this.project.id, this.rows());
+      const raw = this.project.audio_plan;
+      // Preserve assembler metadata (ambience, ambience_ranges) if present
+      const payload = raw && !Array.isArray(raw)
+        ? { ...raw, segments: this.rows() }
+        : this.rows();
+      await this.svc.updateAudioPlan(this.project.id, payload);
       this.original = JSON.stringify(this.rows());
       this.saveOk.set(true);
       setTimeout(() => this.saveOk.set(false), 3000);
