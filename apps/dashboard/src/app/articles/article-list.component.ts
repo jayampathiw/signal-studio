@@ -4,7 +4,7 @@ import { DatePipe } from '@angular/common';
 import { Article, ArticleStats, SupabaseService } from '../core/supabase.service';
 import { ArticleDetailComponent } from './article-detail-dialog.component';
 import {
-  assignArticlesToTodaySlots, bestSlotForArticle, bestSlotIntent, slotIntent,
+  getTodaySlotShells, pickTopCandidateForSlot, bestSlotForArticle, bestSlotIntent, slotIntent,
   slotIntentLabel, slotToIST, type SlotAssignment, type SlotIntent,
 } from '../core/slot-matcher';
 
@@ -124,10 +124,14 @@ const COUNTRY_NAMES: Record<string, string> = { FR: 'France', IT: 'Italy', AU: '
                             <span style="margin-left:auto;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--ink-text-3);">score {{ slot.article.publish_score?.toFixed(0) ?? '—' }}</span>
                           </div>
                         </div>
-                        <button class="btn-brand" style="height:26px;font-size:11px;padding:0 10px;align-self:stretch;" [disabled]="posting()" (click)="postOne(slot.article!)">
-                          @if (posting()) { <span class="loading loading-spinner loading-xs"></span> }
-                          📤 Post now
-                        </button>
+                        @if (slot.article.status === 'pending') {
+                          <button class="btn-brand" style="height:26px;font-size:11px;padding:0 10px;align-self:stretch;" [disabled]="posting()" (click)="postOne(slot.article!)">
+                            @if (posting()) { <span class="loading loading-spinner loading-xs"></span> }
+                            📤 Post now
+                          </button>
+                        } @else {
+                          <span class="ink-badge ib-posted" style="align-self:flex-start;font-size:10px;">✓ {{ slot.article.status }}</span>
+                        }
                       } @else {
                         <button class="btn-ink" style="height:28px;font-size:11px;padding:0 10px;align-self:flex-start;margin-top:2px;"
                           (click)="pickForSlot(slot, plan.country); $event.stopPropagation()">
@@ -205,6 +209,11 @@ const COUNTRY_NAMES: Record<string, string> = { FR: 'France', IT: 'Italy', AU: '
             (click)="setSort('created_at')"
           >Date {{ sortIcon('created_at') }}</button>
           <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--ink-text-3);">{{ totalItems() }} article{{ totalItems() !== 1 ? 's' : '' }}</span>
+          @if (filterIntent()) {
+            <span class="ink-badge ib-brand" style="cursor:pointer;" (click)="clearSlotFilter()" title="Showing top candidates for this slot only">
+              ⚡ Top picks · {{ filterIntent() }} ✕
+            </span>
+          }
         </div>
 
         <!-- ── Batch bar ── -->
@@ -392,6 +401,8 @@ export class ArticleListComponent implements OnInit, OnDestroy {
   filterTags        = signal<string[]>([]);
   filterCategory    = signal('');
   filterSource      = signal('');
+  filterIntent      = signal<SlotIntent | null>(null);
+  readonly slotPickTopN = 8;
   sortField  = signal('publish_score');
   sortDir    = signal<'asc' | 'desc'>('desc');
   currentPage = signal(0);
@@ -430,6 +441,8 @@ export class ArticleListComponent implements OnInit, OnDestroy {
     if (category) items = items.filter(a => a.story_category === category);
     const source = this.filterSource();
     if (source) items = items.filter(a => (a.source_type ?? 'news') === source);
+    const intent = this.filterIntent();
+    if (intent) items = items.filter(a => bestSlotIntent(a) === intent);
 
     const field = this.sortField();
     const dir = this.sortDir() === 'asc' ? 1 : -1;
@@ -439,6 +452,8 @@ export class ArticleListComponent implements OnInit, OnDestroy {
       const bv = numericFields.includes(field) ? ((b as any)[field] ?? 0) : String((b as any)[field] ?? '');
       return av < bv ? -dir : av > bv ? dir : 0;
     });
+    // A slot-pick filter narrows the table to just the top candidates for that slot.
+    if (intent) items = items.slice(0, this.slotPickTopN);
     return items;
   });
 
@@ -457,13 +472,21 @@ export class ArticleListComponent implements OnInit, OnDestroy {
     this.pagedArticles().every(a => this.selectedIds().includes(a.id))
   );
 
+  // slot key (`${country}-${slot}`) -> manually picked article id.
+  manualPicks = signal<Record<string, string>>({});
+
   todayPlans = computed<{ country: string; assignments: SlotAssignment[] }[]>(() => {
-    const pending = this._allArticles().filter(a => a.status === 'pending' && a.ai_caption?.intro);
-    const countryFilter = this.filterCountry();
-    const countriesToShow = countryFilter ? [countryFilter] : ['IT', 'FR'];
-    return countriesToShow
-      .map(c => ({ country: c, assignments: assignArticlesToTodaySlots(c, pending) }))
-      .filter(p => p.assignments.length > 0);
+    const country = this.filterCountry();
+    if (!country) return []; // Today's Plan only shows once a specific country is selected.
+    const picks = this.manualPicks();
+    const byId = new Map(this._allArticles().map(a => [a.id, a]));
+    const shells = getTodaySlotShells(country);
+    const assignments = shells.map(shell => {
+      const pickedId = picks[`${country}-${shell.slot}`];
+      const article = pickedId ? (byId.get(pickedId) ?? null) : null;
+      return { ...shell, article };
+    });
+    return assignments.length > 0 ? [{ country, assignments }] : [];
   });
 
   highlightedArticleId = signal<string | null>(null);
@@ -494,6 +517,7 @@ export class ArticleListComponent implements OnInit, OnDestroy {
 
   setCountry(country: string) {
     this.filterCountry.set(country);
+    this.filterIntent.set(null);
     this.resetPage();
   }
 
@@ -809,28 +833,35 @@ export class ArticleListComponent implements OnInit, OnDestroy {
   }
 
   pickForSlot(slot: SlotAssignment, country: string) {
-    const pending = this._allArticles().filter(a =>
-      a.country === country && a.status === 'pending'
-    );
-
+    const pending = this._allArticles().filter(a => a.country === country && a.status === 'pending');
     if (!pending.length) {
       this.showToast('No pending articles available for this country', false);
       return;
     }
 
-    const byIntent = pending
-      .filter(a => bestSlotIntent(a) === slot.intent)
-      .sort((a, b) => (b.publish_score ?? 0) - (a.publish_score ?? 0));
+    // Don't re-pick an article already assigned to another slot today.
+    const alreadyPicked = new Set(
+      Object.entries(this.manualPicks())
+        .filter(([key]) => key.startsWith(`${country}-`))
+        .map(([, id]) => id),
+    );
 
-    const pick = byIntent[0] ??
-      [...pending].sort((a, b) => (b.publish_score ?? 0) - (a.publish_score ?? 0))[0];
+    const pick = pickTopCandidateForSlot(country, slot.intent, pending, alreadyPicked);
+    if (!pick) {
+      this.showToast('No eligible pending articles left for this slot', false);
+      return;
+    }
+
+    this.manualPicks.update(m => ({ ...m, [`${country}-${slot.slot}`]: pick.id }));
 
     clearTimeout(this.highlightTimer);
     this.highlightedArticleId.set(pick.id);
     this.highlightTimer = setTimeout(() => this.highlightedArticleId.set(null), 5000);
 
+    // Narrow the table below to the top candidates for this slot only.
     this.filterCountry.set(country);
     this.filterStatus.set('pending');
+    this.filterIntent.set(slot.intent);
     this.filterSearch.set('');
     this.filterCriticality.set('');
     this.filterTags.set([]);
@@ -843,6 +874,11 @@ export class ArticleListComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       document.getElementById(`article-${pick.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
+  }
+
+  clearSlotFilter() {
+    this.filterIntent.set(null);
+    this.resetPage();
   }
 
   async postOne(article: Article) {
