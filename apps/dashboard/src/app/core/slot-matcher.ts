@@ -106,28 +106,38 @@ export interface SlotAssignment {
   article: Article | null;
 }
 
-export function assignArticlesToTodaySlots(
-  country: string,
-  pendingArticles: Article[],
-  date: Date = new Date(),
-): SlotAssignment[] {
+// Returns today's slot shells for a country with no article pre-assigned.
+// Articles are only assigned on explicit user pick (see pickTopCandidateForSlot).
+export function getTodaySlotShells(country: string, date: Date = new Date()): SlotAssignment[] {
   const slots = getSlotsForDate(country, date);
+  return slots.map(slot => ({ slot, intent: slotIntent(slot), article: null }));
+}
+
+// Ranked candidates for a given slot: matching intent first (by score desc),
+// then any other pending/eligible article as fallback, still sorted by score.
+export function candidatesForSlot(
+  country: string,
+  intent: SlotIntent,
+  pendingArticles: Article[],
+): Article[] {
   const eligible = pendingArticles
     .filter(a => a.country === country && a.status === 'pending' && a.ai_caption?.intro);
-  const used = new Set<string>();
-  return slots.map(slot => {
-    const intent = slotIntent(slot);
-    const matches = eligible
-      .filter(a => !used.has(a.id) && bestSlotIntent(a) === intent)
-      .sort((a, b) => (b.publish_score ?? 0) - (a.publish_score ?? 0));
-    let pick = matches[0];
-    if (!pick) {
-      const fallback = eligible
-        .filter(a => !used.has(a.id))
-        .sort((a, b) => (b.publish_score ?? 0) - (a.publish_score ?? 0));
-      pick = fallback[0];
-    }
-    if (pick) used.add(pick.id);
-    return { slot, intent, article: pick ?? null };
-  });
+  const matching = eligible
+    .filter(a => bestSlotIntent(a) === intent)
+    .sort((a, b) => (b.publish_score ?? 0) - (a.publish_score ?? 0));
+  const rest = eligible
+    .filter(a => bestSlotIntent(a) !== intent)
+    .sort((a, b) => (b.publish_score ?? 0) - (a.publish_score ?? 0));
+  return [...matching, ...rest];
+}
+
+export function pickTopCandidateForSlot(
+  country: string,
+  intent: SlotIntent,
+  pendingArticles: Article[],
+  excludeIds: Set<string> = new Set(),
+): Article | null {
+  const candidates = candidatesForSlot(country, intent, pendingArticles)
+    .filter(a => !excludeIds.has(a.id));
+  return candidates[0] ?? null;
 }
