@@ -6,7 +6,7 @@ const ACT_FROM_HEADER = {
   'OUTRO': 6,
 };
 
-function tcToSec(tc) {
+export function tcToSec(tc) {
   const [m, s] = tc.split(':').map(Number);
   return m * 60 + s;
 }
@@ -39,6 +39,7 @@ function parseMotionLine(motionLine, cutCount) {
 
 function normalizeMotion(raw) {
   const s = raw.toLowerCase();
+  if (s.includes('static') || s.includes('no zoom') || s.includes('no-zoom')) return 'static';
   if (s.includes('smash')) return 'smash';
   if (s.includes('parallax') || s.includes('2.5d')) return 'parallax';
   if (s.includes('micro') || s.includes('1.06')) return 'micro_push';
@@ -49,11 +50,80 @@ function normalizeMotion(raw) {
   return 'push';
 }
 
+// Shared tail-parsing for the two-tier "TIER N at H:MM: **TEXT** — <description>. <marker>" format.
+// Extracts duration via a trailing marker regex, then (tier 1 only) an "amber "WORD"" clause,
+// leaving whatever free text remains as the placement zone description.
+function parseTierTail(raw, durationRe) {
+  const atM = raw.match(/at\s+(\d+:\d+):/i);
+  const textM = raw.match(/\*\*(.+?)\*\*/);
+  // Only look for the "— <placement>" separator AFTER the closing **, so an
+  // em-dash inside the card text itself (e.g. "**ARGENTINA vs EGYPT — ROUND OF 16**")
+  // isn't mistaken for the separator.
+  const afterText = textM ? raw.slice(textM.index + textM[0].length) : raw;
+  const tailM = afterText.match(/—\s*(.+)$/);
+
+  let zone = null;
+  let amber_word = null;
+  let duration_sec = null;
+
+  if (tailM) {
+    let tail = tailM[1].trim();
+
+    const durM = tail.match(durationRe);
+    if (durM) {
+      duration_sec = Number(durM[1]);
+      tail = tail.slice(0, durM.index).trim();
+    }
+
+    const amberM = tail.match(/amber\s+(?:on\s+)?"([^"]+)"/i);
+    if (amberM) {
+      amber_word = amberM[1];
+      tail = (tail.slice(0, amberM.index) + tail.slice(amberM.index + amberM[0].length)).trim();
+    }
+
+    zone = tail.replace(/^[,.\s]+|[,.\s]+$/g, '') || null;
+  }
+
+  return {
+    text: textM ? textM[1] : raw,
+    amber_word,
+    zone,
+    duration_sec,
+    at_sec: atM ? tcToSec(atM[1]) : null,
+  };
+}
+
+// New Tier 1 format: "TIER 1 at 0:32: **CARD TEXT** — amber "WORD", <placement>. 4s."
+// `format: 'tiered'` is the discriminator motion.js uses to route into the new
+// hero-card/caption-accent renderer — legacy v1/v2 overlays never set this field,
+// so existing project-29 data keeps rendering through the untouched legacy path.
+function parseTier1Line(raw) {
+  const parsed = parseTierTail(raw, /(\d+(?:\.\d+)?)s\.?\s*$/);
+  return { format: 'tiered', tier: 1, size: 'large', ...parsed };
+}
+
+// New Tier 2 format: "TIER 2 at 0:44: **WORD(S)** — <placement>. holds ~1.4s."
+function parseTier2Line(raw) {
+  const parsed = parseTierTail(raw, /holds?\s*~?(\d+(?:\.\d+)?)s\.?\s*$/i);
+  return { format: 'tiered', tier: 2, size: 'small', ...parsed };
+}
+
 function parseOverlayLine(line) {
+  // 🔤 word-sync accent (Tier 2) — always the new format, no legacy variant exists.
+  if (line.startsWith('🔤')) {
+    const raw = line.replace(/^🔤\s*/, '').trim();
+    return parseTier2Line(raw);
+  }
+
   // v2 format: "📝 CARD TEXT — Bebas Neue, amber "WORD", white rest, large, right third. 3s. Drops at 2:07"
   // v1 format: "📝 Editor overlay at 2:07: "16 years" (small, cream)"
-  // Returns { text, amber_word, size, zone, duration_sec, at_sec }
+  // new format: "📝 TIER 1 at 0:32: **CARD TEXT** — amber "WORD", <placement>. 4s."
+  // Returns { tier, text, amber_word, size, zone, duration_sec, at_sec }
   const raw = line.replace(/^📝\s*/, '').trim();
+
+  if (/^TIER\s*1\b/i.test(raw)) {
+    return parseTier1Line(raw);
+  }
 
   // Detect v2 format by "Bebas Neue" or "— Bebas" separator
   const v2sep = raw.indexOf(' — Bebas');
@@ -73,6 +143,7 @@ function parseOverlayLine(line) {
     const sizeM = meta.match(/\b(large|small)\b/i);
 
     return {
+      tier:         1,
       text:         cardText,
       amber_word:   amberM ? amberM[1] : null,
       size:         sizeM ? sizeM[1].toLowerCase() : 'large',
@@ -86,6 +157,7 @@ function parseOverlayLine(line) {
   const timeMatch = line.match(/at\s+(\d+:\d+)/);
   const textMatch = line.match(/"([^"]+)"/);
   return {
+    tier:         1,
     text:         textMatch ? textMatch[1] : raw,
     amber_word:   null,
     size:         'small',
@@ -201,8 +273,8 @@ export function parseShotlistText(text) {
       continue;
     }
 
-    // Text overlays
-    if (line.startsWith('📝')) {
+    // Text overlays — 📝 Tier 1 hero cards, 🔤 Tier 2 word-sync accents
+    if (line.startsWith('📝') || line.startsWith('🔤')) {
       const ov = parseOverlayLine(line);
       currentScene.overlays.push(ov);
       continue;
