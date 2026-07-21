@@ -20,6 +20,7 @@
     "@signal-studio/publishers": "*",
     "@signal-studio/types": "*",
     "axios": "^1.7.0",
+    "fontkit": "^2.0.4",
     "googleapis": "^144.0.0"
   }
 }
