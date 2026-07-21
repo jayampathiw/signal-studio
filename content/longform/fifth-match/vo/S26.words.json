@@ -1,0 +1,102 @@
+[
+  {
+    "word": "Eighty",
+    "start": 0,
+    "end": 0.8
+  },
+  {
+    "word": "Thousand",
+    "start": 0.8,
+    "end": 1.32
+  },
+  {
+    "word": "People",
+    "start": 1.32,
+    "end": 1.64
+  },
+  {
+    "word": "Didn",
+    "start": 1.64,
+    "end": 1.86
+  },
+  {
+    "word": "'T",
+    "start": 1.86,
+    "end": 1.86
+  },
+  {
+    "word": "Get",
+    "start": 1.86,
+    "end": 2.04
+  },
+  {
+    "word": "The",
+    "start": 2.04,
+    "end": 2.28
+  },
+  {
+    "word": "Ending",
+    "start": 2.28,
+    "end": 2.6
+  },
+  {
+    "word": "They",
+    "start": 2.6,
+    "end": 2.76
+  },
+  {
+    "word": "Came",
+    "start": 2.76,
+    "end": 3.04
+  },
+  {
+    "word": "For.",
+    "start": 3.04,
+    "end": 3.46
+  },
+  {
+    "word": "They",
+    "start": 3.9,
+    "end": 4.08
+  },
+  {
+    "word": "Still",
+    "start": 4.08,
+    "end": 4.34
+  },
+  {
+    "word": "Didn",
+    "start": 4.34,
+    "end": 4.5
+  },
+  {
+    "word": "'T",
+    "start": 4.5,
+    "end": 4.62
+  },
+  {
+    "word": "Leave",
+    "start": 4.62,
+    "end": 4.9
+  },
+  {
+    "word": "Believing",
+    "start": 4.9,
+    "end": 5.34
+  },
+  {
+    "word": "It",
+    "start": 5.34,
+    "end": 5.48
+  },
+  {
+    "word": "Was",
+    "start": 5.48,
+    "end": 5.72
+  },
+  {
+    "word": "Over.",
+    "start": 5.72,
+    "end": 6.06
+  }
+]

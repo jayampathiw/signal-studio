@@ -1,0 +1,82 @@
+[
+  {
+    "word": "And",
+    "start": 0,
+    "end": 0.58
+  },
+  {
+    "word": "Then",
+    "start": 0.58,
+    "end": 0.78
+  },
+  {
+    "word": "Came",
+    "start": 0.78,
+    "end": 0.98
+  },
+  {
+    "word": "Tonight.",
+    "start": 0.98,
+    "end": 1.42
+  },
+  {
+    "word": "And",
+    "start": 1.9,
+    "end": 1.98
+  },
+  {
+    "word": "A",
+    "start": 1.98,
+    "end": 2.14
+  },
+  {
+    "word": "New",
+    "start": 2.14,
+    "end": 2.24
+  },
+  {
+    "word": "Name",
+    "start": 2.24,
+    "end": 2.46
+  },
+  {
+    "word": "In",
+    "start": 2.46,
+    "end": 2.64
+  },
+  {
+    "word": "That",
+    "start": 2.64,
+    "end": 2.82
+  },
+  {
+    "word": "Long",
+    "start": 2.82,
+    "end": 3.12
+  },
+  {
+    "word": "Line",
+    "start": 3.12,
+    "end": 3.4
+  },
+  {
+    "word": "Of",
+    "start": 3.4,
+    "end": 3.62
+  },
+  {
+    "word": "Walls,",
+    "start": 3.62,
+    "end": 4.32
+  },
+  {
+    "word": "Orlando",
+    "start": 4.32,
+    "end": 4.78
+  },
+  {
+    "word": "Gill.",
+    "start": 4.78,
+    "end": 5.36
+  }
+]

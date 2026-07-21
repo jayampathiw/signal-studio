@@ -1,0 +1,142 @@
+[
+  {
+    "word": "Germany",
+    "start": 0,
+    "end": 0.74
+  },
+  {
+    "word": "Take",
+    "start": 0.74,
+    "end": 1.08
+  },
+  {
+    "word": "The",
+    "start": 1.08,
+    "end": 1.28
+  },
+  {
+    "word": "Ball",
+    "start": 1.28,
+    "end": 1.5
+  },
+  {
+    "word": "And",
+    "start": 1.5,
+    "end": 1.78
+  },
+  {
+    "word": "Keep",
+    "start": 1.78,
+    "end": 1.96
+  },
+  {
+    "word": "It",
+    "start": 1.96,
+    "end": 2.28
+  },
+  {
+    "word": "Seventy",
+    "start": 2.28,
+    "end": 2.8
+  },
+  {
+    "word": "-Eight",
+    "start": 2.8,
+    "end": 2.96
+  },
+  {
+    "word": "Percent",
+    "start": 2.96,
+    "end": 3.3
+  },
+  {
+    "word": "Of",
+    "start": 3.3,
+    "end": 3.44
+  },
+  {
+    "word": "It.",
+    "start": 3.44,
+    "end": 3.9
+  },
+  {
+    "word": "They",
+    "start": 4.22,
+    "end": 4.4
+  },
+  {
+    "word": "Press,",
+    "start": 4.4,
+    "end": 4.78
+  },
+  {
+    "word": "They",
+    "start": 5.02,
+    "end": 5.24
+  },
+  {
+    "word": "Probe,",
+    "start": 5.24,
+    "end": 5.8
+  },
+  {
+    "word": "They",
+    "start": 6.06,
+    "end": 6.24
+  },
+  {
+    "word": "Wait",
+    "start": 6.24,
+    "end": 6.4
+  },
+  {
+    "word": "For",
+    "start": 6.4,
+    "end": 6.58
+  },
+  {
+    "word": "The",
+    "start": 6.58,
+    "end": 6.72
+  },
+  {
+    "word": "Goal",
+    "start": 6.72,
+    "end": 7.04
+  },
+  {
+    "word": "That",
+    "start": 7.04,
+    "end": 7.28
+  },
+  {
+    "word": "'S",
+    "start": 7.28,
+    "end": 7.42
+  },
+  {
+    "word": "Supposed",
+    "start": 7.42,
+    "end": 7.72
+  },
+  {
+    "word": "To",
+    "start": 7.72,
+    "end": 7.84
+  },
+  {
+    "word": "Be",
+    "start": 7.84,
+    "end": 8.02
+  },
+  {
+    "word": "A",
+    "start": 8.02,
+    "end": 8.12
+  },
+  {
+    "word": "Formality.",
+    "start": 8.12,
+    "end": 8.68
+  }
+]

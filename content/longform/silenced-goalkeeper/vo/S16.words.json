@@ -1,0 +1,62 @@
+[
+  {
+    "word": "June",
+    "start": 0,
+    "end": 0.68
+  },
+  {
+    "word": "29th.",
+    "start": 0.68,
+    "end": 1.9
+  },
+  {
+    "word": "The",
+    "start": 2.06,
+    "end": 2.08
+  },
+  {
+    "word": "First",
+    "start": 2.08,
+    "end": 2.34
+  },
+  {
+    "word": "Half",
+    "start": 2.34,
+    "end": 2.64
+  },
+  {
+    "word": "Plays",
+    "start": 2.64,
+    "end": 2.98
+  },
+  {
+    "word": "Out",
+    "start": 2.98,
+    "end": 3.28
+  },
+  {
+    "word": "Exactly",
+    "start": 3.28,
+    "end": 3.76
+  },
+  {
+    "word": "The",
+    "start": 3.76,
+    "end": 4.02
+  },
+  {
+    "word": "Way",
+    "start": 4.02,
+    "end": 4.28
+  },
+  {
+    "word": "Everyone",
+    "start": 4.28,
+    "end": 4.68
+  },
+  {
+    "word": "Expected.",
+    "start": 4.68,
+    "end": 5.32
+  }
+]

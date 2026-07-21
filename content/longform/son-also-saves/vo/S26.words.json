@@ -1,0 +1,57 @@
+[
+  {
+    "word": "Eleven",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "Minutes",
+    "start": 0.7,
+    "end": 1.14
+  },
+  {
+    "word": "Left.",
+    "start": 1.14,
+    "end": 1.44
+  },
+  {
+    "word": "Two",
+    "start": 1.66,
+    "end": 1.88
+  },
+  {
+    "word": "Goals",
+    "start": 1.88,
+    "end": 2.22
+  },
+  {
+    "word": "Ahead.",
+    "start": 2.22,
+    "end": 2.76
+  },
+  {
+    "word": "Egypt",
+    "start": 3.08,
+    "end": 3.28
+  },
+  {
+    "word": "Had",
+    "start": 3.28,
+    "end": 3.54
+  },
+  {
+    "word": "Never",
+    "start": 3.54,
+    "end": 3.72
+  },
+  {
+    "word": "Been",
+    "start": 3.72,
+    "end": 4
+  },
+  {
+    "word": "Closer.",
+    "start": 4,
+    "end": 4.48
+  }
+]

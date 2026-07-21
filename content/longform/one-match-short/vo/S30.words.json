@@ -1,0 +1,122 @@
+[
+  {
+    "word": "This",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "Is",
+    "start": 0.56,
+    "end": 0.84
+  },
+  {
+    "word": "Now",
+    "start": 0.84,
+    "end": 0.98
+  },
+  {
+    "word": "The",
+    "start": 0.98,
+    "end": 1.2
+  },
+  {
+    "word": "Second",
+    "start": 1.2,
+    "end": 1.46
+  },
+  {
+    "word": "Time",
+    "start": 1.46,
+    "end": 1.84
+  },
+  {
+    "word": "In",
+    "start": 1.84,
+    "end": 2.1
+  },
+  {
+    "word": "Three",
+    "start": 2.1,
+    "end": 2.4
+  },
+  {
+    "word": "Tournaments",
+    "start": 2.4,
+    "end": 2.98
+  },
+  {
+    "word": "That",
+    "start": 2.98,
+    "end": 3.6
+  },
+  {
+    "word": "A",
+    "start": 3.6,
+    "end": 3.7
+  },
+  {
+    "word": "Penalty",
+    "start": 3.7,
+    "end": 4.24
+  },
+  {
+    "word": "Shootout",
+    "start": 4.24,
+    "end": 4.7
+  },
+  {
+    "word": "Has",
+    "start": 4.7,
+    "end": 4.92
+  },
+  {
+    "word": "Ended",
+    "start": 4.92,
+    "end": 5.34
+  },
+  {
+    "word": "Colombia",
+    "start": 5.34,
+    "end": 5.7
+  },
+  {
+    "word": "'S",
+    "start": 5.7,
+    "end": 6
+  },
+  {
+    "word": "World",
+    "start": 6,
+    "end": 6.26
+  },
+  {
+    "word": "Cup",
+    "start": 6.26,
+    "end": 6.62
+  },
+  {
+    "word": "In",
+    "start": 6.62,
+    "end": 6.84
+  },
+  {
+    "word": "The",
+    "start": 6.84,
+    "end": 6.9
+  },
+  {
+    "word": "Round",
+    "start": 6.9,
+    "end": 7.12
+  },
+  {
+    "word": "Of",
+    "start": 7.12,
+    "end": 7.36
+  },
+  {
+    "word": "Sixteen.",
+    "start": 7.36,
+    "end": 7.98
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "word": "Imagine",
+    "start": 0,
+    "end": 0.84
+  },
+  {
+    "word": "You",
+    "start": 0.84,
+    "end": 1.08
+  },
+  {
+    "word": "Are",
+    "start": 1.08,
+    "end": 1.26
+  },
+  {
+    "word": "Twenty",
+    "start": 1.26,
+    "end": 1.56
+  },
+  {
+    "word": "-Six",
+    "start": 1.56,
+    "end": 1.86
+  },
+  {
+    "word": "Years",
+    "start": 1.86,
+    "end": 2.16
+  },
+  {
+    "word": "Old.",
+    "start": 2.16,
+    "end": 2.56
+  }
+]

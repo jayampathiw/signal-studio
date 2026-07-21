@@ -1,0 +1,127 @@
+[
+  {
+    "word": "Egypt",
+    "start": 0,
+    "end": 0.68
+  },
+  {
+    "word": "Had",
+    "start": 0.68,
+    "end": 1
+  },
+  {
+    "word": "Never",
+    "start": 1,
+    "end": 1.28
+  },
+  {
+    "word": "Won",
+    "start": 1.28,
+    "end": 1.5
+  },
+  {
+    "word": "A",
+    "start": 1.5,
+    "end": 1.66
+  },
+  {
+    "word": "World",
+    "start": 1.66,
+    "end": 1.98
+  },
+  {
+    "word": "Cup",
+    "start": 1.98,
+    "end": 2.26
+  },
+  {
+    "word": "Match",
+    "start": 2.26,
+    "end": 2.62
+  },
+  {
+    "word": "Before",
+    "start": 2.62,
+    "end": 2.98
+  },
+  {
+    "word": "This",
+    "start": 2.98,
+    "end": 3.26
+  },
+  {
+    "word": "Tournament.",
+    "start": 3.26,
+    "end": 3.78
+  },
+  {
+    "word": "They",
+    "start": 4.22,
+    "end": 4.36
+  },
+  {
+    "word": "Had",
+    "start": 4.36,
+    "end": 4.54
+  },
+  {
+    "word": "Never",
+    "start": 4.54,
+    "end": 4.82
+  },
+  {
+    "word": "Reached",
+    "start": 4.82,
+    "end": 5.14
+  },
+  {
+    "word": "A",
+    "start": 5.14,
+    "end": 5.34
+  },
+  {
+    "word": "Knockout",
+    "start": 5.34,
+    "end": 5.84
+  },
+  {
+    "word": "Round.",
+    "start": 5.84,
+    "end": 6.24
+  },
+  {
+    "word": "They",
+    "start": 6.7,
+    "end": 6.78
+  },
+  {
+    "word": "Were",
+    "start": 6.78,
+    "end": 6.92
+  },
+  {
+    "word": "Not",
+    "start": 6.92,
+    "end": 7.16
+  },
+  {
+    "word": "Supposed",
+    "start": 7.16,
+    "end": 7.62
+  },
+  {
+    "word": "To",
+    "start": 7.62,
+    "end": 7.78
+  },
+  {
+    "word": "Be",
+    "start": 7.78,
+    "end": 7.98
+  },
+  {
+    "word": "Here.",
+    "start": 7.98,
+    "end": 8.26
+  }
+]

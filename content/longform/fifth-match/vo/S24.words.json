@@ -1,0 +1,122 @@
+[
+  {
+    "word": "Forty",
+    "start": 0,
+    "end": 0.8
+  },
+  {
+    "word": "Years",
+    "start": 0.8,
+    "end": 1.1
+  },
+  {
+    "word": "Since",
+    "start": 1.1,
+    "end": 1.38
+  },
+  {
+    "word": "Mexico",
+    "start": 1.38,
+    "end": 1.84
+  },
+  {
+    "word": "Last",
+    "start": 1.84,
+    "end": 2.32
+  },
+  {
+    "word": "Reached",
+    "start": 2.32,
+    "end": 2.6
+  },
+  {
+    "word": "A",
+    "start": 2.6,
+    "end": 2.78
+  },
+  {
+    "word": "Fifth",
+    "start": 2.78,
+    "end": 3.02
+  },
+  {
+    "word": "Match.",
+    "start": 3.02,
+    "end": 3.52
+  },
+  {
+    "word": "This",
+    "start": 4.22,
+    "end": 4.38
+  },
+  {
+    "word": "Tournament,",
+    "start": 4.38,
+    "end": 4.98
+  },
+  {
+    "word": "Hosting",
+    "start": 5.36,
+    "end": 5.74
+  },
+  {
+    "word": "Again",
+    "start": 5.74,
+    "end": 6.06
+  },
+  {
+    "word": "With",
+    "start": 6.06,
+    "end": 6.3
+  },
+  {
+    "word": "Everything",
+    "start": 6.3,
+    "end": 6.74
+  },
+  {
+    "word": "In",
+    "start": 6.74,
+    "end": 6.96
+  },
+  {
+    "word": "Their",
+    "start": 6.96,
+    "end": 7.14
+  },
+  {
+    "word": "Favor,",
+    "start": 7.14,
+    "end": 7.52
+  },
+  {
+    "word": "Still",
+    "start": 7.86,
+    "end": 8
+  },
+  {
+    "word": "Didn",
+    "start": 8,
+    "end": 8.26
+  },
+  {
+    "word": "'T",
+    "start": 8.26,
+    "end": 8.26
+  },
+  {
+    "word": "Move",
+    "start": 8.26,
+    "end": 8.5
+  },
+  {
+    "word": "The",
+    "start": 8.5,
+    "end": 8.74
+  },
+  {
+    "word": "Number.",
+    "start": 8.74,
+    "end": 9.02
+  }
+]

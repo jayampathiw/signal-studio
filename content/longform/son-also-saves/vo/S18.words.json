@@ -1,0 +1,107 @@
+[
+  {
+    "word": "Argentina",
+    "start": 0,
+    "end": 0.9
+  },
+  {
+    "word": "Had",
+    "start": 0.9,
+    "end": 1.26
+  },
+  {
+    "word": "Won",
+    "start": 1.26,
+    "end": 1.42
+  },
+  {
+    "word": "Every",
+    "start": 1.42,
+    "end": 1.76
+  },
+  {
+    "word": "World",
+    "start": 1.76,
+    "end": 2.1
+  },
+  {
+    "word": "Cup",
+    "start": 2.1,
+    "end": 2.38
+  },
+  {
+    "word": "Match",
+    "start": 2.38,
+    "end": 2.68
+  },
+  {
+    "word": "They",
+    "start": 2.68,
+    "end": 2.9
+  },
+  {
+    "word": "Had",
+    "start": 2.9,
+    "end": 3.06
+  },
+  {
+    "word": "Ever",
+    "start": 3.06,
+    "end": 3.32
+  },
+  {
+    "word": "Played",
+    "start": 3.32,
+    "end": 3.74
+  },
+  {
+    "word": "Against",
+    "start": 3.74,
+    "end": 3.98
+  },
+  {
+    "word": "An",
+    "start": 3.98,
+    "end": 4.32
+  },
+  {
+    "word": "African",
+    "start": 4.32,
+    "end": 4.52
+  },
+  {
+    "word": "Nation.",
+    "start": 4.52,
+    "end": 5.28
+  },
+  {
+    "word": "Eight",
+    "start": 6.04,
+    "end": 6.12
+  },
+  {
+    "word": "Matches.",
+    "start": 6.12,
+    "end": 6.76
+  },
+  {
+    "word": "Eight",
+    "start": 7.08,
+    "end": 7.34
+  },
+  {
+    "word": "Wins.",
+    "start": 7.34,
+    "end": 7.86
+  },
+  {
+    "word": "No",
+    "start": 8.28,
+    "end": 8.46
+  },
+  {
+    "word": "Exceptions.",
+    "start": 8.46,
+    "end": 9.22
+  }
+]

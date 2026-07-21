@@ -1,0 +1,72 @@
+[
+  {
+    "word": "Twenty",
+    "start": 0,
+    "end": 0.66
+  },
+  {
+    "word": "-One",
+    "start": 0.66,
+    "end": 1
+  },
+  {
+    "word": "Shots.",
+    "start": 1,
+    "end": 1.52
+  },
+  {
+    "word": "And",
+    "start": 1.96,
+    "end": 2.04
+  },
+  {
+    "word": "He",
+    "start": 2.04,
+    "end": 2.1
+  },
+  {
+    "word": "Would",
+    "start": 2.1,
+    "end": 2.24
+  },
+  {
+    "word": "Not",
+    "start": 2.24,
+    "end": 2.44
+  },
+  {
+    "word": "Let",
+    "start": 2.44,
+    "end": 2.6
+  },
+  {
+    "word": "Them",
+    "start": 2.6,
+    "end": 2.8
+  },
+  {
+    "word": "Have",
+    "start": 2.8,
+    "end": 3.04
+  },
+  {
+    "word": "The",
+    "start": 3.04,
+    "end": 3.22
+  },
+  {
+    "word": "One",
+    "start": 3.22,
+    "end": 3.36
+  },
+  {
+    "word": "That",
+    "start": 3.36,
+    "end": 3.6
+  },
+  {
+    "word": "Mattered.",
+    "start": 3.6,
+    "end": 3.9
+  }
+]

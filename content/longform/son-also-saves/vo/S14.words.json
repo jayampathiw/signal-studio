@@ -1,0 +1,132 @@
+[
+  {
+    "word": "And",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "Then",
+    "start": 0.54,
+    "end": 0.7
+  },
+  {
+    "word": "In",
+    "start": 0.7,
+    "end": 0.88
+  },
+  {
+    "word": "The",
+    "start": 0.88,
+    "end": 0.94
+  },
+  {
+    "word": "Group",
+    "start": 0.94,
+    "end": 1.18
+  },
+  {
+    "word": "Stage",
+    "start": 1.18,
+    "end": 1.5
+  },
+  {
+    "word": "Against",
+    "start": 1.5,
+    "end": 1.86
+  },
+  {
+    "word": "Iran,",
+    "start": 1.86,
+    "end": 2.32
+  },
+  {
+    "word": "Mostafa",
+    "start": 2.66,
+    "end": 3.08
+  },
+  {
+    "word": "Shobeir",
+    "start": 3.08,
+    "end": 3.7
+  },
+  {
+    "word": "Saved",
+    "start": 3.7,
+    "end": 3.98
+  },
+  {
+    "word": "A",
+    "start": 3.98,
+    "end": 4.06
+  },
+  {
+    "word": "Penalty",
+    "start": 4.06,
+    "end": 4.5
+  },
+  {
+    "word": "From",
+    "start": 4.5,
+    "end": 4.74
+  },
+  {
+    "word": "Striker",
+    "start": 4.74,
+    "end": 5.16
+  },
+  {
+    "word": "Mehdi",
+    "start": 5.16,
+    "end": 5.48
+  },
+  {
+    "word": "Taremi.",
+    "start": 5.48,
+    "end": 6.22
+  },
+  {
+    "word": "Egypt",
+    "start": 6.64,
+    "end": 6.8
+  },
+  {
+    "word": "Drew.",
+    "start": 6.8,
+    "end": 7.3
+  },
+  {
+    "word": "They",
+    "start": 7.6,
+    "end": 7.74
+  },
+  {
+    "word": "Did",
+    "start": 7.74,
+    "end": 7.9
+  },
+  {
+    "word": "Not",
+    "start": 7.9,
+    "end": 8.14
+  },
+  {
+    "word": "Lose.",
+    "start": 8.14,
+    "end": 8.62
+  },
+  {
+    "word": "They",
+    "start": 8.8,
+    "end": 8.98
+  },
+  {
+    "word": "Moved",
+    "start": 8.98,
+    "end": 9.3
+  },
+  {
+    "word": "Forward.",
+    "start": 9.3,
+    "end": 9.66
+  }
+]

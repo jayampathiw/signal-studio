@@ -1,0 +1,496 @@
+{
+  "S01": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.88,
+      "words": [
+        {
+          "text": "Every",
+          "offset_start": 0,
+          "offset_end": 0.68
+        },
+        {
+          "text": "great",
+          "offset_start": 0.68,
+          "offset_end": 1
+        },
+        {
+          "text": "story",
+          "offset_start": 1,
+          "offset_end": 1.36
+        },
+        {
+          "text": "starts",
+          "offset_start": 1.36,
+          "offset_end": 1.86
+        },
+        {
+          "text": "the",
+          "offset_start": 1.86,
+          "offset_end": 1.96
+        },
+        {
+          "text": "same",
+          "offset_start": 1.96,
+          "offset_end": 2.22
+        },
+        {
+          "text": "way.",
+          "offset_start": 2.22,
+          "offset_end": 2.58
+        }
+      ]
+    }
+  ],
+  "S02": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.6,
+      "words": [
+        {
+          "text": "Someone",
+          "offset_start": 0,
+          "offset_end": 0.7
+        },
+        {
+          "text": "nobody",
+          "offset_start": 0.7,
+          "offset_end": 1.2
+        },
+        {
+          "text": "expected",
+          "offset_start": 1.2,
+          "offset_end": 1.76
+        },
+        {
+          "text": "to",
+          "offset_start": 1.76,
+          "offset_end": 2
+        },
+        {
+          "text": "win.",
+          "offset_start": 2,
+          "offset_end": 2.3
+        }
+      ]
+    }
+  ],
+  "S04": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.58,
+      "words": [
+        {
+          "text": "A",
+          "offset_start": 0,
+          "offset_end": 0.52
+        },
+        {
+          "text": "goalkeeper",
+          "offset_start": 0.52,
+          "offset_end": 1.08
+        },
+        {
+          "text": "who",
+          "offset_start": 1.08,
+          "offset_end": 1.42
+        },
+        {
+          "text": "shocked",
+          "offset_start": 1.42,
+          "offset_end": 1.84
+        },
+        {
+          "text": "the",
+          "offset_start": 1.84,
+          "offset_end": 1.9
+        },
+        {
+          "text": "world.",
+          "offset_start": 1.9,
+          "offset_end": 2.28
+        }
+      ]
+    }
+  ],
+  "S05": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.52,
+      "words": [
+        {
+          "text": "A",
+          "offset_start": 0,
+          "offset_end": 0.56
+        },
+        {
+          "text": "team",
+          "offset_start": 0.56,
+          "offset_end": 0.8
+        },
+        {
+          "text": "that",
+          "offset_start": 0.8,
+          "offset_end": 1
+        },
+        {
+          "text": "came",
+          "offset_start": 1,
+          "offset_end": 1.26
+        },
+        {
+          "text": "one",
+          "offset_start": 1.26,
+          "offset_end": 1.54
+        },
+        {
+          "text": "kick",
+          "offset_start": 1.54,
+          "offset_end": 1.82
+        },
+        {
+          "text": "short.",
+          "offset_start": 1.82,
+          "offset_end": 2.22
+        }
+      ]
+    }
+  ],
+  "S06": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.4,
+      "words": [
+        {
+          "text": "A",
+          "offset_start": 0,
+          "offset_end": 0.54
+        },
+        {
+          "text": "fortress",
+          "offset_start": 0.54,
+          "offset_end": 1
+        },
+        {
+          "text": "that",
+          "offset_start": 1,
+          "offset_end": 1.26
+        },
+        {
+          "text": "fell",
+          "offset_start": 1.26,
+          "offset_end": 1.48
+        },
+        {
+          "text": "for",
+          "offset_start": 1.48,
+          "offset_end": 1.66
+        },
+        {
+          "text": "the",
+          "offset_start": 1.66,
+          "offset_end": 1.78
+        },
+        {
+          "text": "first",
+          "offset_start": 1.78,
+          "offset_end": 2.06
+        },
+        {
+          "text": "time",
+          "offset_start": 2.06,
+          "offset_end": 2.4
+        }
+      ]
+    },
+    {
+      "at_sec": 2.4,
+      "duration_sec": 0.66,
+      "words": [
+        {
+          "text": "ever.",
+          "offset_start": 0,
+          "offset_end": 0.36
+        }
+      ]
+    }
+  ],
+  "S07": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.44,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.5
+        },
+        {
+          "text": "same",
+          "offset_start": 0.5,
+          "offset_end": 0.78
+        },
+        {
+          "text": "hero,",
+          "offset_start": 0.78,
+          "offset_end": 1.14
+        }
+      ]
+    },
+    {
+      "at_sec": 1.56,
+      "duration_sec": 1.76,
+      "words": [
+        {
+          "text": "facing",
+          "offset_start": 0,
+          "offset_end": 0.24
+        },
+        {
+          "text": "an",
+          "offset_start": 0.24,
+          "offset_end": 0.48
+        },
+        {
+          "text": "even",
+          "offset_start": 0.48,
+          "offset_end": 0.72
+        },
+        {
+          "text": "bigger",
+          "offset_start": 0.72,
+          "offset_end": 1.08
+        },
+        {
+          "text": "test.",
+          "offset_start": 1.08,
+          "offset_end": 1.46
+        }
+      ]
+    }
+  ],
+  "S08": [
+    {
+      "at_sec": 0,
+      "duration_sec": 3.08,
+      "words": [
+        {
+          "text": "A",
+          "offset_start": 0,
+          "offset_end": 0.54
+        },
+        {
+          "text": "team",
+          "offset_start": 0.54,
+          "offset_end": 0.82
+        },
+        {
+          "text": "that",
+          "offset_start": 0.82,
+          "offset_end": 1.1
+        },
+        {
+          "text": "almost",
+          "offset_start": 1.1,
+          "offset_end": 1.4
+        },
+        {
+          "text": "pulled",
+          "offset_start": 1.4,
+          "offset_end": 1.8
+        },
+        {
+          "text": "off",
+          "offset_start": 1.8,
+          "offset_end": 1.96
+        },
+        {
+          "text": "the",
+          "offset_start": 1.96,
+          "offset_end": 2.14
+        },
+        {
+          "text": "impossible.",
+          "offset_start": 2.14,
+          "offset_end": 2.78
+        }
+      ]
+    }
+  ],
+  "S09": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.46,
+      "words": [
+        {
+          "text": "Real",
+          "offset_start": 0,
+          "offset_end": 0.64
+        },
+        {
+          "text": "matches.",
+          "offset_start": 0.64,
+          "offset_end": 1.26
+        }
+      ]
+    },
+    {
+      "at_sec": 1.46,
+      "duration_sec": 0.76,
+      "words": [
+        {
+          "text": "Real",
+          "offset_start": 0,
+          "offset_end": 0
+        },
+        {
+          "text": "history.",
+          "offset_start": 0,
+          "offset_end": 0.46
+        }
+      ]
+    },
+    {
+      "at_sec": 2.24,
+      "duration_sec": 1.12,
+      "words": [
+        {
+          "text": "Real",
+          "offset_start": 0,
+          "offset_end": 0.26
+        },
+        {
+          "text": "emotion.",
+          "offset_start": 0.26,
+          "offset_end": 0.82
+        }
+      ]
+    }
+  ],
+  "S10": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.6,
+      "words": [
+        {
+          "text": "This",
+          "offset_start": 0,
+          "offset_end": 0.58
+        },
+        {
+          "text": "is",
+          "offset_start": 0.58,
+          "offset_end": 0.88
+        },
+        {
+          "text": "The",
+          "offset_start": 0.88,
+          "offset_end": 1.12
+        },
+        {
+          "text": "Underdog",
+          "offset_start": 1.12,
+          "offset_end": 1.56
+        },
+        {
+          "text": "Archive.",
+          "offset_start": 1.56,
+          "offset_end": 2.3
+        }
+      ]
+    }
+  ],
+  "S11": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.26,
+      "words": [
+        {
+          "text": "New",
+          "offset_start": 0,
+          "offset_end": 0.64
+        },
+        {
+          "text": "stories,",
+          "offset_start": 0.64,
+          "offset_end": 1.02
+        }
+      ]
+    },
+    {
+      "at_sec": 1.26,
+      "duration_sec": 0.88,
+      "words": [
+        {
+          "text": "every",
+          "offset_start": 0,
+          "offset_end": 0.2
+        },
+        {
+          "text": "week.",
+          "offset_start": 0.2,
+          "offset_end": 0.58
+        }
+      ]
+    }
+  ],
+  "S12": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.28,
+      "words": [
+        {
+          "text": "Subscribe.",
+          "offset_start": 0,
+          "offset_end": 1
+        }
+      ]
+    },
+    {
+      "at_sec": 1.28,
+      "duration_sec": 2.42,
+      "words": [
+        {
+          "text": "Five",
+          "offset_start": 0,
+          "offset_end": 0.26
+        },
+        {
+          "text": "stories",
+          "offset_start": 0.26,
+          "offset_end": 0.66
+        },
+        {
+          "text": "are",
+          "offset_start": 0.66,
+          "offset_end": 0.92
+        },
+        {
+          "text": "waiting",
+          "offset_start": 0.92,
+          "offset_end": 1.12
+        },
+        {
+          "text": "for",
+          "offset_start": 1.12,
+          "offset_end": 1.38
+        },
+        {
+          "text": "you",
+          "offset_start": 1.38,
+          "offset_end": 1.54
+        },
+        {
+          "text": "right",
+          "offset_start": 1.54,
+          "offset_end": 1.76
+        },
+        {
+          "text": "now.",
+          "offset_start": 1.76,
+          "offset_end": 2.12
+        }
+      ]
+    }
+  ]
+}

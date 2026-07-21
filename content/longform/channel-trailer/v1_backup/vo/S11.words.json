@@ -1,0 +1,32 @@
+[
+  {
+    "word": "And",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "This",
+    "start": 0.56,
+    "end": 0.76
+  },
+  {
+    "word": "Time,",
+    "start": 0.76,
+    "end": 1.14
+  },
+  {
+    "word": "It",
+    "start": 1.38,
+    "end": 1.38
+  },
+  {
+    "word": "Wasn'",
+    "start": 1.38,
+    "end": 1.54
+  },
+  {
+    "word": "Enough.",
+    "start": 1.64,
+    "end": 2
+  }
+]

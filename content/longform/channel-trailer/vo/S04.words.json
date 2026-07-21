@@ -1,0 +1,32 @@
+[
+  {
+    "word": "A",
+    "start": 0,
+    "end": 0.52
+  },
+  {
+    "word": "Goalkeeper",
+    "start": 0.52,
+    "end": 1.08
+  },
+  {
+    "word": "Who",
+    "start": 1.08,
+    "end": 1.42
+  },
+  {
+    "word": "Shocked",
+    "start": 1.42,
+    "end": 1.84
+  },
+  {
+    "word": "The",
+    "start": 1.84,
+    "end": 1.9
+  },
+  {
+    "word": "World.",
+    "start": 1.9,
+    "end": 2.28
+  }
+]

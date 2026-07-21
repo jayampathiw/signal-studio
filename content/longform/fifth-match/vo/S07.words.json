@@ -1,0 +1,62 @@
+[
+  {
+    "word": "Mexico",
+    "start": 0,
+    "end": 0.86
+  },
+  {
+    "word": "Arrived",
+    "start": 0.86,
+    "end": 1.52
+  },
+  {
+    "word": "Unbeaten,",
+    "start": 1.52,
+    "end": 2.52
+  },
+  {
+    "word": "Having",
+    "start": 2.66,
+    "end": 2.78
+  },
+  {
+    "word": "Not",
+    "start": 2.78,
+    "end": 3.08
+  },
+  {
+    "word": "Conceded",
+    "start": 3.08,
+    "end": 3.66
+  },
+  {
+    "word": "A",
+    "start": 3.66,
+    "end": 3.76
+  },
+  {
+    "word": "Single",
+    "start": 3.76,
+    "end": 4.06
+  },
+  {
+    "word": "Goal",
+    "start": 4.06,
+    "end": 4.46
+  },
+  {
+    "word": "Across",
+    "start": 4.46,
+    "end": 4.72
+  },
+  {
+    "word": "Four",
+    "start": 4.72,
+    "end": 5.16
+  },
+  {
+    "word": "Matches.",
+    "start": 5.16,
+    "end": 5.78
+  }
+]

@@ -1,0 +1,87 @@
+[
+  {
+    "word": "France",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "Had",
+    "start": 0.7,
+    "end": 1.02
+  },
+  {
+    "word": "Almost",
+    "start": 1.02,
+    "end": 1.26
+  },
+  {
+    "word": "All",
+    "start": 1.26,
+    "end": 1.56
+  },
+  {
+    "word": "Of",
+    "start": 1.56,
+    "end": 1.72
+  },
+  {
+    "word": "The",
+    "start": 1.72,
+    "end": 1.86
+  },
+  {
+    "word": "Ball.",
+    "start": 1.86,
+    "end": 2.2
+  },
+  {
+    "word": "Seventy",
+    "start": 2.6,
+    "end": 3.02
+  },
+  {
+    "word": "-Six",
+    "start": 3.02,
+    "end": 3.24
+  },
+  {
+    "word": "Percent",
+    "start": 3.24,
+    "end": 3.7
+  },
+  {
+    "word": "Of",
+    "start": 3.7,
+    "end": 3.86
+  },
+  {
+    "word": "It.",
+    "start": 3.86,
+    "end": 4.16
+  },
+  {
+    "word": "And",
+    "start": 4.38,
+    "end": 4.52
+  },
+  {
+    "word": "Nowhere",
+    "start": 4.52,
+    "end": 4.92
+  },
+  {
+    "word": "To",
+    "start": 4.92,
+    "end": 5.1
+  },
+  {
+    "word": "Put",
+    "start": 5.1,
+    "end": 5.26
+  },
+  {
+    "word": "It.",
+    "start": 5.26,
+    "end": 5.5
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "Wall",
+    "start": 0.56,
+    "end": 0.82
+  },
+  {
+    "word": "That",
+    "start": 0.82,
+    "end": 1.08
+  },
+  {
+    "word": "Finally",
+    "start": 1.08,
+    "end": 1.46
+  },
+  {
+    "word": "Broke.",
+    "start": 1.46,
+    "end": 2.06
+  }
+]

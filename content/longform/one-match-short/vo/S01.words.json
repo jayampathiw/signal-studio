@@ -1,0 +1,57 @@
+[
+  {
+    "word": "Colombia",
+    "start": 0,
+    "end": 0.8
+  },
+  {
+    "word": "Had",
+    "start": 0.8,
+    "end": 1.12
+  },
+  {
+    "word": "The",
+    "start": 1.12,
+    "end": 1.2
+  },
+  {
+    "word": "Better",
+    "start": 1.2,
+    "end": 1.5
+  },
+  {
+    "word": "Chances.",
+    "start": 1.5,
+    "end": 2.1
+  },
+  {
+    "word": "The",
+    "start": 2.64,
+    "end": 2.66
+  },
+  {
+    "word": "Better",
+    "start": 2.66,
+    "end": 2.94
+  },
+  {
+    "word": "Shots.",
+    "start": 2.94,
+    "end": 3.5
+  },
+  {
+    "word": "The",
+    "start": 3.8,
+    "end": 3.8
+  },
+  {
+    "word": "Better",
+    "start": 3.8,
+    "end": 4.06
+  },
+  {
+    "word": "Numbers.",
+    "start": 4.06,
+    "end": 4.6
+  }
+]

@@ -1,0 +1,77 @@
+[
+  {
+    "word": "One",
+    "start": 0,
+    "end": 0.62
+  },
+  {
+    "word": "Hundred",
+    "start": 0.62,
+    "end": 0.96
+  },
+  {
+    "word": "And",
+    "start": 0.96,
+    "end": 1.2
+  },
+  {
+    "word": "Twenty",
+    "start": 1.2,
+    "end": 1.48
+  },
+  {
+    "word": "Minutes",
+    "start": 1.48,
+    "end": 1.74
+  },
+  {
+    "word": "Of",
+    "start": 1.74,
+    "end": 1.94
+  },
+  {
+    "word": "The",
+    "start": 1.94,
+    "end": 1.96
+  },
+  {
+    "word": "Better",
+    "start": 1.96,
+    "end": 2.22
+  },
+  {
+    "word": "Team.",
+    "start": 2.22,
+    "end": 2.72
+  },
+  {
+    "word": "Zero",
+    "start": 3.2,
+    "end": 3.54
+  },
+  {
+    "word": "Goals",
+    "start": 3.54,
+    "end": 4
+  },
+  {
+    "word": "To",
+    "start": 4,
+    "end": 4.24
+  },
+  {
+    "word": "Show",
+    "start": 4.24,
+    "end": 4.54
+  },
+  {
+    "word": "For",
+    "start": 4.54,
+    "end": 4.76
+  },
+  {
+    "word": "It.",
+    "start": 4.76,
+    "end": 4.98
+  }
+]

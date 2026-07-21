@@ -1,0 +1,102 @@
+[
+  {
+    "word": "This",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "Wasn",
+    "start": 0.56,
+    "end": 0.82
+  },
+  {
+    "word": "'T",
+    "start": 0.82,
+    "end": 0.82
+  },
+  {
+    "word": "The",
+    "start": 0.82,
+    "end": 1.02
+  },
+  {
+    "word": "France",
+    "start": 1.02,
+    "end": 1.36
+  },
+  {
+    "word": "That",
+    "start": 1.36,
+    "end": 1.54
+  },
+  {
+    "word": "Had",
+    "start": 1.54,
+    "end": 1.7
+  },
+  {
+    "word": "Scored",
+    "start": 1.7,
+    "end": 2.04
+  },
+  {
+    "word": "Freely",
+    "start": 2.04,
+    "end": 2.56
+  },
+  {
+    "word": "All",
+    "start": 2.56,
+    "end": 2.92
+  },
+  {
+    "word": "Tournament.",
+    "start": 2.92,
+    "end": 3.42
+  },
+  {
+    "word": "This",
+    "start": 3.86,
+    "end": 4.16
+  },
+  {
+    "word": "Was",
+    "start": 4.16,
+    "end": 4.44
+  },
+  {
+    "word": "A",
+    "start": 4.44,
+    "end": 4.62
+  },
+  {
+    "word": "Team",
+    "start": 4.62,
+    "end": 5.04
+  },
+  {
+    "word": "Boiling",
+    "start": 5.04,
+    "end": 5.38
+  },
+  {
+    "word": "In",
+    "start": 5.38,
+    "end": 5.62
+  },
+  {
+    "word": "Its",
+    "start": 5.62,
+    "end": 5.88
+  },
+  {
+    "word": "Own",
+    "start": 5.88,
+    "end": 6.1
+  },
+  {
+    "word": "Frustration.",
+    "start": 6.1,
+    "end": 6.86
+  }
+]

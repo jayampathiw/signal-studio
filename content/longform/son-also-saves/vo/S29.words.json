@@ -1,0 +1,67 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "Hands",
+    "start": 0.54,
+    "end": 0.9
+  },
+  {
+    "word": "That",
+    "start": 0.9,
+    "end": 1.18
+  },
+  {
+    "word": "Had",
+    "start": 1.18,
+    "end": 1.26
+  },
+  {
+    "word": "Saved",
+    "start": 1.26,
+    "end": 1.66
+  },
+  {
+    "word": "Messi",
+    "start": 1.66,
+    "end": 2.02
+  },
+  {
+    "word": "Had",
+    "start": 2.02,
+    "end": 2.6
+  },
+  {
+    "word": "Just",
+    "start": 2.6,
+    "end": 2.76
+  },
+  {
+    "word": "Given",
+    "start": 2.76,
+    "end": 3
+  },
+  {
+    "word": "Him",
+    "start": 3,
+    "end": 3.28
+  },
+  {
+    "word": "Back",
+    "start": 3.28,
+    "end": 3.54
+  },
+  {
+    "word": "His",
+    "start": 3.54,
+    "end": 3.74
+  },
+  {
+    "word": "Goal.",
+    "start": 3.74,
+    "end": 4.28
+  }
+]

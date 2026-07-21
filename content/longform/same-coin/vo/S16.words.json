@@ -1,0 +1,47 @@
+[
+  {
+    "word": "He",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "sends",
+    "start": 0.54,
+    "end": 0.82
+  },
+  {
+    "word": "Gill",
+    "start": 0.82,
+    "end": 1.06
+  },
+  {
+    "word": "The",
+    "start": 1.06,
+    "end": 1.28
+  },
+  {
+    "word": "Wrong",
+    "start": 1.28,
+    "end": 1.52
+  },
+  {
+    "word": "Way.",
+    "start": 1.52,
+    "end": 1.88
+  },
+  {
+    "word": "Bottom",
+    "start": 2.18,
+    "end": 2.38
+  },
+  {
+    "word": "Corner.",
+    "start": 2.38,
+    "end": 2.8
+  },
+  {
+    "word": "One–Nil.",
+    "start": 3.12,
+    "end": 3.66
+  }
+]

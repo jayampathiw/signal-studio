@@ -1,0 +1,32 @@
+[
+  {
+    "word": "What",
+    "start": 0,
+    "end": 0.62
+  },
+  {
+    "word": "Follows",
+    "start": 0.62,
+    "end": 1.14
+  },
+  {
+    "word": "Instead",
+    "start": 1.14,
+    "end": 1.48
+  },
+  {
+    "word": "Is",
+    "start": 1.48,
+    "end": 1.8
+  },
+  {
+    "word": "A",
+    "start": 1.8,
+    "end": 2.04
+  },
+  {
+    "word": "Siege.",
+    "start": 2.04,
+    "end": 2.38
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "word": "And",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "He",
+    "start": 0.54,
+    "end": 0.72
+  },
+  {
+    "word": "Sends",
+    "start": 0.72,
+    "end": 0.96
+  },
+  {
+    "word": "It",
+    "start": 0.96,
+    "end": 1.2
+  },
+  {
+    "word": "Over",
+    "start": 1.2,
+    "end": 1.34
+  },
+  {
+    "word": "The",
+    "start": 1.34,
+    "end": 1.56
+  },
+  {
+    "word": "Bar.",
+    "start": 1.56,
+    "end": 1.94
+  }
+]

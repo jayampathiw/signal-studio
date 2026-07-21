@@ -1,0 +1,92 @@
+[
+  {
+    "word": "Back",
+    "start": 0,
+    "end": 0.62
+  },
+  {
+    "word": "And",
+    "start": 0.62,
+    "end": 0.8
+  },
+  {
+    "word": "Forth.",
+    "start": 0.8,
+    "end": 1.34
+  },
+  {
+    "word": "Germany",
+    "start": 1.62,
+    "end": 1.64
+  },
+  {
+    "word": "Score.",
+    "start": 1.64,
+    "end": 2.3
+  },
+  {
+    "word": "Paraguay",
+    "start": 2.66,
+    "end": 3.06
+  },
+  {
+    "word": "Score.",
+    "start": 3.06,
+    "end": 3.52
+  },
+  {
+    "word": "Gill",
+    "start": 3.7,
+    "end": 3.94
+  },
+  {
+    "word": "Dives",
+    "start": 3.94,
+    "end": 4.24
+  },
+  {
+    "word": "Again.",
+    "start": 4.24,
+    "end": 4.72
+  },
+  {
+    "word": "And",
+    "start": 5.02,
+    "end": 5.02
+  },
+  {
+    "word": "Stops",
+    "start": 5.02,
+    "end": 5.32
+  },
+  {
+    "word": "Woltemade.",
+    "start": 5.32,
+    "end": 6.06
+  },
+  {
+    "word": "Paraguay",
+    "start": 6.5,
+    "end": 6.9
+  },
+  {
+    "word": "Are",
+    "start": 6.9,
+    "end": 7.06
+  },
+  {
+    "word": "On",
+    "start": 7.06,
+    "end": 7.22
+  },
+  {
+    "word": "The",
+    "start": 7.22,
+    "end": 7.3
+  },
+  {
+    "word": "Brink.",
+    "start": 7.3,
+    "end": 7.58
+  }
+]

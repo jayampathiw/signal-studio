@@ -1,0 +1,87 @@
+[
+  {
+    "word": "Twenty",
+    "start": 0,
+    "end": 0.66
+  },
+  {
+    "word": "-One",
+    "start": 0.66,
+    "end": 0.92
+  },
+  {
+    "word": "Shots.",
+    "start": 0.92,
+    "end": 1.42
+  },
+  {
+    "word": "Sixteen",
+    "start": 1.84,
+    "end": 2.38
+  },
+  {
+    "word": "Corners.",
+    "start": 2.38,
+    "end": 2.88
+  },
+  {
+    "word": "For",
+    "start": 3.28,
+    "end": 3.34
+  },
+  {
+    "word": "The",
+    "start": 3.34,
+    "end": 3.48
+  },
+  {
+    "word": "Rest",
+    "start": 3.48,
+    "end": 3.66
+  },
+  {
+    "word": "Of",
+    "start": 3.66,
+    "end": 3.84
+  },
+  {
+    "word": "The",
+    "start": 3.84,
+    "end": 3.96
+  },
+  {
+    "word": "Match,",
+    "start": 3.96,
+    "end": 4.3
+  },
+  {
+    "word": "Germany",
+    "start": 4.56,
+    "end": 4.64
+  },
+  {
+    "word": "Throw",
+    "start": 4.64,
+    "end": 5.04
+  },
+  {
+    "word": "Everything",
+    "start": 5.04,
+    "end": 5.52
+  },
+  {
+    "word": "At",
+    "start": 5.52,
+    "end": 5.84
+  },
+  {
+    "word": "One",
+    "start": 5.84,
+    "end": 6.02
+  },
+  {
+    "word": "Man.",
+    "start": 6.02,
+    "end": 6.44
+  }
+]

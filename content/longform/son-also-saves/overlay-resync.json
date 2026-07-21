@@ -1,0 +1,27 @@
+{
+  "S01-2-0": {
+    "at_sec": 1.36,
+    "duration_sec": 0.7,
+    "exact": true
+  },
+  "S10-2-0": {
+    "at_sec": 15.96,
+    "duration_sec": 1.32,
+    "exact": true
+  },
+  "S12-2-0": {
+    "at_sec": 9.98,
+    "duration_sec": 0.6,
+    "exact": true
+  },
+  "S04-2-0": {
+    "at_sec": 0.64,
+    "duration_sec": 1.6,
+    "exact": true
+  },
+  "S07-2-0": {
+    "at_sec": 10.16,
+    "duration_sec": 1.4,
+    "exact": true
+  }
+}

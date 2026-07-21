@@ -1,0 +1,47 @@
+[
+  {
+    "word": "A",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "Fortress",
+    "start": 0.54,
+    "end": 1
+  },
+  {
+    "word": "That",
+    "start": 1,
+    "end": 1.26
+  },
+  {
+    "word": "Fell",
+    "start": 1.26,
+    "end": 1.48
+  },
+  {
+    "word": "For",
+    "start": 1.48,
+    "end": 1.66
+  },
+  {
+    "word": "The",
+    "start": 1.66,
+    "end": 1.78
+  },
+  {
+    "word": "First",
+    "start": 1.78,
+    "end": 2.06
+  },
+  {
+    "word": "Time",
+    "start": 2.06,
+    "end": 2.4
+  },
+  {
+    "word": "Ever.",
+    "start": 2.4,
+    "end": 2.76
+  }
+]

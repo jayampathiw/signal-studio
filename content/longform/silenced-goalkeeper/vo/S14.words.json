@@ -1,0 +1,62 @@
+[
+  {
+    "word": "Let's",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "Be",
+    "start": 0.7,
+    "end": 0.94
+  },
+  {
+    "word": "Honest",
+    "start": 0.94,
+    "end": 1.22
+  },
+  {
+    "word": "About",
+    "start": 1.22,
+    "end": 1.52
+  },
+  {
+    "word": "The",
+    "start": 1.52,
+    "end": 1.66
+  },
+  {
+    "word": "Gap.",
+    "start": 1.66,
+    "end": 2.14
+  },
+  {
+    "word": "Germany",
+    "start": 2.48,
+    "end": 2.76
+  },
+  {
+    "word": "Are",
+    "start": 2.76,
+    "end": 3.1
+  },
+  {
+    "word": "Four",
+    "start": 3.1,
+    "end": 3.32
+  },
+  {
+    "word": "-Time",
+    "start": 3.32,
+    "end": 3.7
+  },
+  {
+    "word": "World",
+    "start": 3.7,
+    "end": 4.06
+  },
+  {
+    "word": "Champions.",
+    "start": 4.06,
+    "end": 4.56
+  }
+]

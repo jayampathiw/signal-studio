@@ -1,0 +1,42 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "Same",
+    "start": 0.54,
+    "end": 0.86
+  },
+  {
+    "word": "Wall,",
+    "start": 0.86,
+    "end": 1.24
+  },
+  {
+    "word": "Tested",
+    "start": 1.56,
+    "end": 1.84
+  },
+  {
+    "word": "By",
+    "start": 1.84,
+    "end": 2.06
+  },
+  {
+    "word": "Someone",
+    "start": 2.06,
+    "end": 2.38
+  },
+  {
+    "word": "Even",
+    "start": 2.38,
+    "end": 2.78
+  },
+  {
+    "word": "Bigger.",
+    "start": 2.78,
+    "end": 3.2
+  }
+]

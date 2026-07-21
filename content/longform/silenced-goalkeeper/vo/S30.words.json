@@ -1,0 +1,32 @@
+[
+  {
+    "word": "Goal",
+    "start": 0,
+    "end": 0.74
+  },
+  {
+    "word": "Disallowed.",
+    "start": 0.74,
+    "end": 1.5
+  },
+  {
+    "word": "One",
+    "start": 1.5,
+    "end": 1.68
+  },
+  {
+    "word": "Push.",
+    "start": 1.68,
+    "end": 1.98
+  },
+  {
+    "word": "One",
+    "start": 2.22,
+    "end": 2.42
+  },
+  {
+    "word": "Whistle.",
+    "start": 2.42,
+    "end": 2.76
+  }
+]

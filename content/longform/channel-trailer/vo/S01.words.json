@@ -1,0 +1,37 @@
+[
+  {
+    "word": "Every",
+    "start": 0,
+    "end": 0.68
+  },
+  {
+    "word": "Great",
+    "start": 0.68,
+    "end": 1
+  },
+  {
+    "word": "Story",
+    "start": 1,
+    "end": 1.36
+  },
+  {
+    "word": "Starts",
+    "start": 1.36,
+    "end": 1.86
+  },
+  {
+    "word": "The",
+    "start": 1.86,
+    "end": 1.96
+  },
+  {
+    "word": "Same",
+    "start": 1.96,
+    "end": 2.22
+  },
+  {
+    "word": "Way.",
+    "start": 2.22,
+    "end": 2.58
+  }
+]

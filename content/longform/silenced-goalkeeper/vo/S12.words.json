@@ -1,0 +1,112 @@
+[
+  {
+    "word": "That",
+    "start": 0,
+    "end": 0.5
+  },
+  {
+    "word": "Was",
+    "start": 0.5,
+    "end": 0.66
+  },
+  {
+    "word": "Sixteen",
+    "start": 0.66,
+    "end": 1.18
+  },
+  {
+    "word": "Years",
+    "start": 1.18,
+    "end": 1.44
+  },
+  {
+    "word": "Ago.",
+    "start": 1.44,
+    "end": 2.14
+  },
+  {
+    "word": "Sixteen",
+    "start": 2.6,
+    "end": 2.92
+  },
+  {
+    "word": "Years",
+    "start": 2.92,
+    "end": 3.22
+  },
+  {
+    "word": "Of",
+    "start": 3.22,
+    "end": 3.42
+  },
+  {
+    "word": "Being",
+    "start": 3.42,
+    "end": 3.56
+  },
+  {
+    "word": "The",
+    "start": 3.56,
+    "end": 3.74
+  },
+  {
+    "word": "Small",
+    "start": 3.74,
+    "end": 4.14
+  },
+  {
+    "word": "Country",
+    "start": 4.14,
+    "end": 4.6
+  },
+  {
+    "word": "The",
+    "start": 4.6,
+    "end": 4.84
+  },
+  {
+    "word": "Giants",
+    "start": 4.84,
+    "end": 5.36
+  },
+  {
+    "word": "Walk",
+    "start": 5.36,
+    "end": 5.66
+  },
+  {
+    "word": "Past",
+    "start": 5.66,
+    "end": 6.08
+  },
+  {
+    "word": "On",
+    "start": 6.08,
+    "end": 6.3
+  },
+  {
+    "word": "Their",
+    "start": 6.3,
+    "end": 6.46
+  },
+  {
+    "word": "Way",
+    "start": 6.46,
+    "end": 6.68
+  },
+  {
+    "word": "To",
+    "start": 6.68,
+    "end": 6.8
+  },
+  {
+    "word": "The",
+    "start": 6.8,
+    "end": 7
+  },
+  {
+    "word": "Final.",
+    "start": 7,
+    "end": 7.32
+  }
+]

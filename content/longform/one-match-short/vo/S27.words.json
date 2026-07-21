@@ -1,0 +1,72 @@
+[
+  {
+    "word": "Better",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "Chances.",
+    "start": 0.7,
+    "end": 1.34
+  },
+  {
+    "word": "Better",
+    "start": 1.66,
+    "end": 1.8
+  },
+  {
+    "word": "Shots.",
+    "start": 1.8,
+    "end": 2.44
+  },
+  {
+    "word": "Better",
+    "start": 2.8,
+    "end": 2.94
+  },
+  {
+    "word": "Numbers.",
+    "start": 2.94,
+    "end": 3.56
+  },
+  {
+    "word": "None",
+    "start": 3.78,
+    "end": 3.9
+  },
+  {
+    "word": "Of",
+    "start": 3.9,
+    "end": 4.04
+  },
+  {
+    "word": "It",
+    "start": 4.04,
+    "end": 4.12
+  },
+  {
+    "word": "Is",
+    "start": 4.12,
+    "end": 4.28
+  },
+  {
+    "word": "What",
+    "start": 4.28,
+    "end": 4.38
+  },
+  {
+    "word": "The",
+    "start": 4.38,
+    "end": 4.6
+  },
+  {
+    "word": "Scoreboard",
+    "start": 4.6,
+    "end": 5.06
+  },
+  {
+    "word": "Remembers.",
+    "start": 5.06,
+    "end": 5.66
+  }
+]

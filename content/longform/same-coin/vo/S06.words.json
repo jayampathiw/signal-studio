@@ -1,0 +1,77 @@
+[
+  {
+    "word": "July",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "4th.",
+    "start": 0.7,
+    "end": 2.2
+  },
+  {
+    "word": "Philadelphia.",
+    "start": 2.2,
+    "end": 2.2
+  },
+  {
+    "word": "Sixty",
+    "start": 2.94,
+    "end": 3.18
+  },
+  {
+    "word": "-Eight",
+    "start": 3.18,
+    "end": 3.34
+  },
+  {
+    "word": "Thousand",
+    "start": 3.34,
+    "end": 3.82
+  },
+  {
+    "word": "Fans,",
+    "start": 3.82,
+    "end": 4.3
+  },
+  {
+    "word": "And",
+    "start": 4.48,
+    "end": 4.6
+  },
+  {
+    "word": "A",
+    "start": 4.6,
+    "end": 4.68
+  },
+  {
+    "word": "Heat",
+    "start": 4.68,
+    "end": 4.94
+  },
+  {
+    "word": "Warning",
+    "start": 4.94,
+    "end": 5.18
+  },
+  {
+    "word": "Across",
+    "start": 5.18,
+    "end": 5.62
+  },
+  {
+    "word": "The",
+    "start": 5.62,
+    "end": 5.86
+  },
+  {
+    "word": "Entire",
+    "start": 5.86,
+    "end": 6.36
+  },
+  {
+    "word": "Region.",
+    "start": 6.36,
+    "end": 6.8
+  }
+]

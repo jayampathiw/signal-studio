@@ -1,0 +1,57 @@
+[
+  {
+    "word": "And",
+    "start": 0,
+    "end": 0.58
+  },
+  {
+    "word": "Then,",
+    "start": 0.58,
+    "end": 0.82
+  },
+  {
+    "word": "Minutes",
+    "start": 0.84,
+    "end": 1.12
+  },
+  {
+    "word": "Before",
+    "start": 1.12,
+    "end": 1.44
+  },
+  {
+    "word": "Half",
+    "start": 1.44,
+    "end": 1.8
+  },
+  {
+    "word": "-Time,",
+    "start": 1.8,
+    "end": 2.2
+  },
+  {
+    "word": "The",
+    "start": 2.62,
+    "end": 2.66
+  },
+  {
+    "word": "Game",
+    "start": 2.66,
+    "end": 2.92
+  },
+  {
+    "word": "Forgets",
+    "start": 2.92,
+    "end": 3.3
+  },
+  {
+    "word": "Its",
+    "start": 3.3,
+    "end": 3.62
+  },
+  {
+    "word": "Script.",
+    "start": 3.62,
+    "end": 3.92
+  }
+]

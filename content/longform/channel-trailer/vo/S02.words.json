@@ -1,0 +1,27 @@
+[
+  {
+    "word": "Someone",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "Nobody",
+    "start": 0.7,
+    "end": 1.2
+  },
+  {
+    "word": "Expected",
+    "start": 1.2,
+    "end": 1.76
+  },
+  {
+    "word": "To",
+    "start": 1.76,
+    "end": 2
+  },
+  {
+    "word": "Win.",
+    "start": 2,
+    "end": 2.3
+  }
+]

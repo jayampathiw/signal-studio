@@ -1,0 +1,77 @@
+[
+  {
+    "word": "A",
+    "start": 0,
+    "end": 0.52
+  },
+  {
+    "word": "Goalkeeper",
+    "start": 0.52,
+    "end": 1.14
+  },
+  {
+    "word": "'S",
+    "start": 1.14,
+    "end": 1.44
+  },
+  {
+    "word": "Son,",
+    "start": 1.44,
+    "end": 1.72
+  },
+  {
+    "word": "Carrying",
+    "start": 2.16,
+    "end": 2.34
+  },
+  {
+    "word": "His",
+    "start": 2.34,
+    "end": 2.6
+  },
+  {
+    "word": "Father's",
+    "start": 2.6,
+    "end": 3.08
+  },
+  {
+    "word": "Name",
+    "start": 3.08,
+    "end": 3.3
+  },
+  {
+    "word": "Into",
+    "start": 3.3,
+    "end": 3.52
+  },
+  {
+    "word": "A",
+    "start": 3.52,
+    "end": 3.7
+  },
+  {
+    "word": "Night",
+    "start": 3.7,
+    "end": 3.92
+  },
+  {
+    "word": "That",
+    "start": 3.92,
+    "end": 4.2
+  },
+  {
+    "word": "Almost",
+    "start": 4.2,
+    "end": 4.52
+  },
+  {
+    "word": "Changed",
+    "start": 4.52,
+    "end": 4.98
+  },
+  {
+    "word": "Everything.",
+    "start": 4.98,
+    "end": 5.52
+  }
+]

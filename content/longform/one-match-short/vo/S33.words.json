@@ -1,0 +1,77 @@
+[
+  {
+    "word": "Twelve",
+    "start": 0,
+    "end": 0.64
+  },
+  {
+    "word": "Years",
+    "start": 0.64,
+    "end": 1.02
+  },
+  {
+    "word": "Since",
+    "start": 1.02,
+    "end": 1.28
+  },
+  {
+    "word": "The",
+    "start": 1.28,
+    "end": 1.5
+  },
+  {
+    "word": "Ceiling",
+    "start": 1.5,
+    "end": 1.8
+  },
+  {
+    "word": "Was",
+    "start": 1.8,
+    "end": 2.04
+  },
+  {
+    "word": "Set.",
+    "start": 2.04,
+    "end": 2.54
+  },
+  {
+    "word": "Colombia",
+    "start": 3.02,
+    "end": 3.18
+  },
+  {
+    "word": "Are",
+    "start": 3.18,
+    "end": 3.54
+  },
+  {
+    "word": "Still",
+    "start": 3.54,
+    "end": 3.78
+  },
+  {
+    "word": "Standing",
+    "start": 3.78,
+    "end": 4.14
+  },
+  {
+    "word": "Beneath",
+    "start": 4.14,
+    "end": 4.62
+  },
+  {
+    "word": "It,",
+    "start": 4.62,
+    "end": 4.76
+  },
+  {
+    "word": "Looking",
+    "start": 4.82,
+    "end": 4.98
+  },
+  {
+    "word": "Up.",
+    "start": 4.98,
+    "end": 5.36
+  }
+]

@@ -1,0 +1,112 @@
+[
+  {
+    "word": "First",
+    "start": 0,
+    "end": 0.72
+  },
+  {
+    "word": "-Ever",
+    "start": 0.72,
+    "end": 1.04
+  },
+  {
+    "word": "Home",
+    "start": 1.04,
+    "end": 1.4
+  },
+  {
+    "word": "Defeat",
+    "start": 1.4,
+    "end": 1.82
+  },
+  {
+    "word": "At",
+    "start": 1.82,
+    "end": 2.02
+  },
+  {
+    "word": "A",
+    "start": 2.02,
+    "end": 2.08
+  },
+  {
+    "word": "World",
+    "start": 2.08,
+    "end": 2.32
+  },
+  {
+    "word": "Cup,",
+    "start": 2.32,
+    "end": 2.78
+  },
+  {
+    "word": "In",
+    "start": 3.04,
+    "end": 3.12
+  },
+  {
+    "word": "This",
+    "start": 3.12,
+    "end": 3.36
+  },
+  {
+    "word": "Stadium",
+    "start": 3.36,
+    "end": 3.7
+  },
+  {
+    "word": "'S",
+    "start": 3.7,
+    "end": 4.32
+  },
+  {
+    "word": "Entire",
+    "start": 4.32,
+    "end": 4.5
+  },
+  {
+    "word": "History.",
+    "start": 4.5,
+    "end": 5.04
+  },
+  {
+    "word": "Of",
+    "start": 5.7,
+    "end": 5.84
+  },
+  {
+    "word": "All",
+    "start": 5.84,
+    "end": 6.04
+  },
+  {
+    "word": "The",
+    "start": 6.04,
+    "end": 6.18
+  },
+  {
+    "word": "Nights",
+    "start": 6.18,
+    "end": 6.42
+  },
+  {
+    "word": "For",
+    "start": 6.42,
+    "end": 6.66
+  },
+  {
+    "word": "It",
+    "start": 6.66,
+    "end": 6.78
+  },
+  {
+    "word": "To",
+    "start": 6.78,
+    "end": 6.96
+  },
+  {
+    "word": "Happen.",
+    "start": 6.96,
+    "end": 7.38
+  }
+]

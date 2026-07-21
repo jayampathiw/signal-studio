@@ -1,0 +1,659 @@
+{
+  "S02": [
+    {
+      "at_sec": 0,
+      "duration_sec": 3,
+      "words": [
+        {
+          "text": "Every",
+          "offset_start": 0,
+          "offset_end": 0.72
+        },
+        {
+          "text": "underdog",
+          "offset_start": 0.72,
+          "offset_end": 1.2
+        },
+        {
+          "text": "story",
+          "offset_start": 1.2,
+          "offset_end": 1.58
+        },
+        {
+          "text": "ends",
+          "offset_start": 1.58,
+          "offset_end": 2.2
+        },
+        {
+          "text": "the",
+          "offset_start": 2.2,
+          "offset_end": 2.3
+        },
+        {
+          "text": "same",
+          "offset_start": 2.3,
+          "offset_end": 2.52
+        },
+        {
+          "text": "way",
+          "offset_start": 2.52,
+          "offset_end": 2.82
+        },
+        {
+          "text": "in",
+          "offset_start": 2.82,
+          "offset_end": 3
+        }
+      ]
+    },
+    {
+      "at_sec": 3,
+      "duration_sec": 1.28,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.12
+        },
+        {
+          "text": "highlight",
+          "offset_start": 0.12,
+          "offset_end": 0.52
+        },
+        {
+          "text": "reels—",
+          "offset_start": 0.52,
+          "offset_end": 0.98
+        }
+      ]
+    }
+  ],
+  "S03": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.28,
+      "words": [
+        {
+          "text": "—a",
+          "offset_start": 0,
+          "offset_end": 0.6
+        },
+        {
+          "text": "scoreline,",
+          "offset_start": 0.6,
+          "offset_end": 1.08
+        }
+      ]
+    },
+    {
+      "at_sec": 1.28,
+      "duration_sec": 1.06,
+      "words": [
+        {
+          "text": "and",
+          "offset_start": 0,
+          "offset_end": 0.02
+        },
+        {
+          "text": "nothing",
+          "offset_start": 0.02,
+          "offset_end": 0.28
+        },
+        {
+          "text": "else.",
+          "offset_start": 0.28,
+          "offset_end": 0.76
+        }
+      ]
+    }
+  ],
+  "S05": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.06,
+      "words": [
+        {
+          "text": "We",
+          "offset_start": 0,
+          "offset_end": 0.58
+        },
+        {
+          "text": "start",
+          "offset_start": 0.58,
+          "offset_end": 0.88
+        },
+        {
+          "text": "somewhere",
+          "offset_start": 0.88,
+          "offset_end": 1.3
+        },
+        {
+          "text": "else.",
+          "offset_start": 1.3,
+          "offset_end": 1.76
+        }
+      ]
+    }
+  ],
+  "S06": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.36,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.56
+        },
+        {
+          "text": "wall",
+          "offset_start": 0.56,
+          "offset_end": 0.82
+        },
+        {
+          "text": "that",
+          "offset_start": 0.82,
+          "offset_end": 1.08
+        },
+        {
+          "text": "finally",
+          "offset_start": 1.08,
+          "offset_end": 1.46
+        },
+        {
+          "text": "broke—",
+          "offset_start": 1.46,
+          "offset_end": 2.06
+        }
+      ]
+    }
+  ],
+  "S07": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.16,
+      "words": [
+        {
+          "text": "—twelve",
+          "offset_start": 0,
+          "offset_end": 0.78
+        },
+        {
+          "text": "years",
+          "offset_start": 0.78,
+          "offset_end": 1.18
+        },
+        {
+          "text": "in",
+          "offset_start": 1.18,
+          "offset_end": 1.4
+        },
+        {
+          "text": "the",
+          "offset_start": 1.4,
+          "offset_end": 1.48
+        },
+        {
+          "text": "making.",
+          "offset_start": 1.48,
+          "offset_end": 1.86
+        }
+      ]
+    }
+  ],
+  "S08": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.16,
+      "words": [
+        {
+          "text": "A",
+          "offset_start": 0,
+          "offset_end": 0.6
+        },
+        {
+          "text": "storm",
+          "offset_start": 0.6,
+          "offset_end": 0.92
+        },
+        {
+          "text": "before",
+          "offset_start": 0.92,
+          "offset_end": 1.3
+        },
+        {
+          "text": "the",
+          "offset_start": 1.3,
+          "offset_end": 1.5
+        },
+        {
+          "text": "storm—",
+          "offset_start": 1.5,
+          "offset_end": 1.86
+        }
+      ]
+    }
+  ],
+  "S09": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.28,
+      "words": [
+        {
+          "text": "—and",
+          "offset_start": 0,
+          "offset_end": 0.6
+        },
+        {
+          "text": "a",
+          "offset_start": 0.6,
+          "offset_end": 0.7
+        },
+        {
+          "text": "fortress",
+          "offset_start": 0.7,
+          "offset_end": 1.18
+        },
+        {
+          "text": "that",
+          "offset_start": 1.18,
+          "offset_end": 1.46
+        },
+        {
+          "text": "fell",
+          "offset_start": 1.46,
+          "offset_end": 1.68
+        },
+        {
+          "text": "for",
+          "offset_start": 1.68,
+          "offset_end": 1.84
+        },
+        {
+          "text": "the",
+          "offset_start": 1.84,
+          "offset_end": 2
+        },
+        {
+          "text": "first",
+          "offset_start": 2,
+          "offset_end": 2.28
+        }
+      ]
+    },
+    {
+      "at_sec": 2.28,
+      "duration_sec": 1,
+      "words": [
+        {
+          "text": "time",
+          "offset_start": 0,
+          "offset_end": 0.36
+        },
+        {
+          "text": "ever.",
+          "offset_start": 0.36,
+          "offset_end": 0.7
+        }
+      ]
+    }
+  ],
+  "S10": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.54,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.54
+        },
+        {
+          "text": "same",
+          "offset_start": 0.54,
+          "offset_end": 0.86
+        },
+        {
+          "text": "wall,",
+          "offset_start": 0.86,
+          "offset_end": 1.24
+        }
+      ]
+    },
+    {
+      "at_sec": 1.56,
+      "duration_sec": 1.94,
+      "words": [
+        {
+          "text": "tested",
+          "offset_start": 0,
+          "offset_end": 0.28
+        },
+        {
+          "text": "by",
+          "offset_start": 0.28,
+          "offset_end": 0.5
+        },
+        {
+          "text": "someone",
+          "offset_start": 0.5,
+          "offset_end": 0.82
+        },
+        {
+          "text": "even",
+          "offset_start": 0.82,
+          "offset_end": 1.22
+        },
+        {
+          "text": "bigger.",
+          "offset_start": 1.22,
+          "offset_end": 1.64
+        }
+      ]
+    }
+  ],
+  "S11": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.38,
+      "words": [
+        {
+          "text": "And",
+          "offset_start": 0,
+          "offset_end": 0.56
+        },
+        {
+          "text": "this",
+          "offset_start": 0.56,
+          "offset_end": 0.76
+        },
+        {
+          "text": "time,",
+          "offset_start": 0.76,
+          "offset_end": 1.14
+        }
+      ]
+    },
+    {
+      "at_sec": 1.38,
+      "duration_sec": 0.92,
+      "words": [
+        {
+          "text": "it",
+          "offset_start": 0,
+          "offset_end": 0
+        },
+        {
+          "text": "wasn't",
+          "offset_start": 0,
+          "offset_end": 0.16
+        },
+        {
+          "text": "enough.",
+          "offset_start": 0.26,
+          "offset_end": 0.62
+        }
+      ]
+    }
+  ],
+  "S12": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.203,
+      "words": [
+        {
+          "text": "A",
+          "offset_start": 0,
+          "offset_end": 0.071
+        },
+        {
+          "text": "goalkeeper's",
+          "offset_start": 0.071,
+          "offset_end": 0.92
+        },
+        {
+          "text": "son,",
+          "offset_start": 0.92,
+          "offset_end": 1.203
+        }
+      ]
+    },
+    {
+      "at_sec": 1.203,
+      "duration_sec": 2.618,
+      "words": [
+        {
+          "text": "carrying",
+          "offset_start": 0,
+          "offset_end": 0.566
+        },
+        {
+          "text": "his",
+          "offset_start": 0.566,
+          "offset_end": 0.778
+        },
+        {
+          "text": "father's",
+          "offset_start": 0.778,
+          "offset_end": 1.345
+        },
+        {
+          "text": "name",
+          "offset_start": 1.345,
+          "offset_end": 1.628
+        },
+        {
+          "text": "into",
+          "offset_start": 1.628,
+          "offset_end": 1.911
+        },
+        {
+          "text": "a",
+          "offset_start": 1.911,
+          "offset_end": 1.982
+        },
+        {
+          "text": "night",
+          "offset_start": 1.982,
+          "offset_end": 2.335
+        },
+        {
+          "text": "that",
+          "offset_start": 2.335,
+          "offset_end": 2.618
+        }
+      ]
+    },
+    {
+      "at_sec": 3.822,
+      "duration_sec": 1.998,
+      "words": [
+        {
+          "text": "almost",
+          "offset_start": 0,
+          "offset_end": 0.425
+        },
+        {
+          "text": "changed",
+          "offset_start": 0.425,
+          "offset_end": 0.92
+        },
+        {
+          "text": "everything.",
+          "offset_start": 0.92,
+          "offset_end": 1.698
+        }
+      ]
+    }
+  ],
+  "S13": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.24,
+      "words": [
+        {
+          "text": "Almost.",
+          "offset_start": 0,
+          "offset_end": 0.94
+        }
+      ]
+    }
+  ],
+  "S14": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.6,
+      "words": [
+        {
+          "text": "Five",
+          "offset_start": 0,
+          "offset_end": 0.72
+        },
+        {
+          "text": "stories.",
+          "offset_start": 0.72,
+          "offset_end": 1.3
+        }
+      ]
+    }
+  ],
+  "S15": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.7,
+      "words": [
+        {
+          "text": "One",
+          "offset_start": 0,
+          "offset_end": 0.68
+        },
+        {
+          "text": "World",
+          "offset_start": 0.68,
+          "offset_end": 0.98
+        },
+        {
+          "text": "Cup.",
+          "offset_start": 0.98,
+          "offset_end": 1.4
+        }
+      ]
+    }
+  ],
+  "S16": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.64,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.52
+        },
+        {
+          "text": "stories",
+          "offset_start": 0.52,
+          "offset_end": 0.82
+        },
+        {
+          "text": "the",
+          "offset_start": 0.82,
+          "offset_end": 1.1
+        },
+        {
+          "text": "highlight",
+          "offset_start": 1.1,
+          "offset_end": 1.52
+        },
+        {
+          "text": "reels",
+          "offset_start": 1.52,
+          "offset_end": 1.98
+        },
+        {
+          "text": "skip.",
+          "offset_start": 1.98,
+          "offset_end": 2.34
+        }
+      ]
+    }
+  ],
+  "S17": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.26,
+      "words": [
+        {
+          "text": "New",
+          "offset_start": 0,
+          "offset_end": 0.64
+        },
+        {
+          "text": "stories,",
+          "offset_start": 0.64,
+          "offset_end": 1.02
+        }
+      ]
+    },
+    {
+      "at_sec": 1.26,
+      "duration_sec": 0.88,
+      "words": [
+        {
+          "text": "every",
+          "offset_start": 0,
+          "offset_end": 0.2
+        },
+        {
+          "text": "week.",
+          "offset_start": 0.2,
+          "offset_end": 0.58
+        }
+      ]
+    }
+  ],
+  "S19": [
+    {
+      "at_sec": 0,
+      "duration_sec": 0.794,
+      "words": [
+        {
+          "text": "Subscribe.",
+          "offset_start": 0,
+          "offset_end": 0.794
+        }
+      ]
+    },
+    {
+      "at_sec": 0.794,
+      "duration_sec": 2.206,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.238
+        },
+        {
+          "text": "next",
+          "offset_start": 0.238,
+          "offset_end": 0.556
+        },
+        {
+          "text": "one's",
+          "offset_start": 0.556,
+          "offset_end": 0.953
+        },
+        {
+          "text": "already",
+          "offset_start": 0.953,
+          "offset_end": 1.509
+        },
+        {
+          "text": "here.",
+          "offset_start": 1.509,
+          "offset_end": 1.906
+        }
+      ]
+    }
+  ]
+}

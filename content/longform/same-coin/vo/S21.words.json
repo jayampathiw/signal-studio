@@ -1,0 +1,87 @@
+[
+  {
+    "word": "Not",
+    "start": 0,
+    "end": 0.62
+  },
+  {
+    "word": "A",
+    "start": 0.62,
+    "end": 0.84
+  },
+  {
+    "word": "Shootout",
+    "start": 0.84,
+    "end": 1.18
+  },
+  {
+    "word": "This",
+    "start": 1.18,
+    "end": 1.36
+  },
+  {
+    "word": "Time.",
+    "start": 1.36,
+    "end": 1.8
+  },
+  {
+    "word": "Just",
+    "start": 2.32,
+    "end": 2.54
+  },
+  {
+    "word": "One",
+    "start": 2.54,
+    "end": 2.88
+  },
+  {
+    "word": "Kick,",
+    "start": 2.88,
+    "end": 3.16
+  },
+  {
+    "word": "From",
+    "start": 3.42,
+    "end": 3.48
+  },
+  {
+    "word": "One",
+    "start": 3.48,
+    "end": 3.64
+  },
+  {
+    "word": "Of",
+    "start": 3.64,
+    "end": 3.78
+  },
+  {
+    "word": "The",
+    "start": 3.78,
+    "end": 3.84
+  },
+  {
+    "word": "Best",
+    "start": 3.84,
+    "end": 4.04
+  },
+  {
+    "word": "To",
+    "start": 4.04,
+    "end": 4.26
+  },
+  {
+    "word": "Ever",
+    "start": 4.26,
+    "end": 4.46
+  },
+  {
+    "word": "Take",
+    "start": 4.46,
+    "end": 4.72
+  },
+  {
+    "word": "One.",
+    "start": 4.72,
+    "end": 5.08
+  }
+]

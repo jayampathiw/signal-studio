@@ -1,0 +1,77 @@
+[
+  {
+    "word": "You",
+    "start": 0,
+    "end": 0.5
+  },
+  {
+    "word": "Know",
+    "start": 0.5,
+    "end": 0.7
+  },
+  {
+    "word": "The",
+    "start": 0.7,
+    "end": 0.84
+  },
+  {
+    "word": "Story",
+    "start": 0.84,
+    "end": 1.14
+  },
+  {
+    "word": "Already.",
+    "start": 1.14,
+    "end": 1.72
+  },
+  {
+    "word": "Paraguay,",
+    "start": 2.38,
+    "end": 2.96
+  },
+  {
+    "word": "Penalties,",
+    "start": 3.08,
+    "end": 3.56
+  },
+  {
+    "word": "And",
+    "start": 3.88,
+    "end": 3.94
+  },
+  {
+    "word": "A",
+    "start": 3.94,
+    "end": 4.02
+  },
+  {
+    "word": "Goalkeeper",
+    "start": 4.02,
+    "end": 4.54
+  },
+  {
+    "word": "The",
+    "start": 4.54,
+    "end": 4.8
+  },
+  {
+    "word": "World",
+    "start": 4.8,
+    "end": 5.06
+  },
+  {
+    "word": "Had",
+    "start": 5.06,
+    "end": 5.24
+  },
+  {
+    "word": "Just",
+    "start": 5.24,
+    "end": 5.52
+  },
+  {
+    "word": "Discovered.",
+    "start": 5.52,
+    "end": 6.26
+  }
+]

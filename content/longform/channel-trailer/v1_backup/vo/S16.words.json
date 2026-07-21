@@ -1,0 +1,32 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.52
+  },
+  {
+    "word": "Stories",
+    "start": 0.52,
+    "end": 0.82
+  },
+  {
+    "word": "The",
+    "start": 0.82,
+    "end": 1.1
+  },
+  {
+    "word": "Highlight",
+    "start": 1.1,
+    "end": 1.52
+  },
+  {
+    "word": "Reels",
+    "start": 1.52,
+    "end": 1.98
+  },
+  {
+    "word": "Skip.",
+    "start": 1.98,
+    "end": 2.34
+  }
+]

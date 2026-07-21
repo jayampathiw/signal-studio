@@ -1,0 +1,217 @@
+{
+  "S01": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.639,
+      "words": [
+        {
+          "text": "If",
+          "offset_start": 0,
+          "offset_end": 0.147
+        },
+        {
+          "text": "you",
+          "offset_start": 0.147,
+          "offset_end": 0.366
+        },
+        {
+          "text": "want",
+          "offset_start": 0.366,
+          "offset_end": 0.66
+        },
+        {
+          "text": "the",
+          "offset_start": 0.66,
+          "offset_end": 0.88
+        },
+        {
+          "text": "stories",
+          "offset_start": 0.88,
+          "offset_end": 1.393
+        },
+        {
+          "text": "the",
+          "offset_start": 1.393,
+          "offset_end": 1.612
+        },
+        {
+          "text": "highlight",
+          "offset_start": 1.612,
+          "offset_end": 2.272
+        },
+        {
+          "text": "reels",
+          "offset_start": 2.272,
+          "offset_end": 2.639
+        }
+      ]
+    },
+    {
+      "at_sec": 2.639,
+      "duration_sec": 0.44,
+      "words": [
+        {
+          "text": "skip —",
+          "offset_start": 0,
+          "offset_end": 0.44
+        }
+      ]
+    },
+    {
+      "at_sec": 3.078,
+      "duration_sec": 0.953,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.22
+        },
+        {
+          "text": "underdogs,",
+          "offset_start": 0.22,
+          "offset_end": 0.953
+        }
+      ]
+    },
+    {
+      "at_sec": 4.031,
+      "duration_sec": 0.953,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.22
+        },
+        {
+          "text": "rivalries,",
+          "offset_start": 0.22,
+          "offset_end": 0.953
+        }
+      ]
+    },
+    {
+      "at_sec": 4.984,
+      "duration_sec": 3.005,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.22
+        },
+        {
+          "text": "forgotten",
+          "offset_start": 0.22,
+          "offset_end": 0.88
+        },
+        {
+          "text": "history",
+          "offset_start": 0.88,
+          "offset_end": 1.393
+        },
+        {
+          "text": "behind",
+          "offset_start": 1.393,
+          "offset_end": 1.832
+        },
+        {
+          "text": "the",
+          "offset_start": 1.832,
+          "offset_end": 2.052
+        },
+        {
+          "text": "world's",
+          "offset_start": 2.052,
+          "offset_end": 2.565
+        },
+        {
+          "text": "game —",
+          "offset_start": 2.565,
+          "offset_end": 3.005
+        }
+      ]
+    },
+    {
+      "at_sec": 7.989,
+      "duration_sec": 1.246,
+      "words": [
+        {
+          "text": "this",
+          "offset_start": 0,
+          "offset_end": 0.293
+        },
+        {
+          "text": "is",
+          "offset_start": 0.293,
+          "offset_end": 0.44
+        },
+        {
+          "text": "the",
+          "offset_start": 0.44,
+          "offset_end": 0.66
+        },
+        {
+          "text": "channel.",
+          "offset_start": 0.66,
+          "offset_end": 1.246
+        }
+      ]
+    },
+    {
+      "at_sec": 9.235,
+      "duration_sec": 0.733,
+      "words": [
+        {
+          "text": "Subscribe,",
+          "offset_start": 0,
+          "offset_end": 0.733
+        }
+      ]
+    },
+    {
+      "at_sec": 9.968,
+      "duration_sec": 2.572,
+      "words": [
+        {
+          "text": "and",
+          "offset_start": 0,
+          "offset_end": 0.22
+        },
+        {
+          "text": "the",
+          "offset_start": 0.22,
+          "offset_end": 0.44
+        },
+        {
+          "text": "next",
+          "offset_start": 0.44,
+          "offset_end": 0.733
+        },
+        {
+          "text": "one's",
+          "offset_start": 0.733,
+          "offset_end": 1.099
+        },
+        {
+          "text": "already",
+          "offset_start": 1.099,
+          "offset_end": 1.612
+        },
+        {
+          "text": "on",
+          "offset_start": 1.612,
+          "offset_end": 1.759
+        },
+        {
+          "text": "its",
+          "offset_start": 1.759,
+          "offset_end": 1.979
+        },
+        {
+          "text": "way.",
+          "offset_start": 1.979,
+          "offset_end": 2.272
+        }
+      ]
+    }
+  ]
+}

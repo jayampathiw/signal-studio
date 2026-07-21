@@ -1,0 +1,52 @@
+[
+  {
+    "word": "And",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "Orlando",
+    "start": 0.56,
+    "end": 0.98
+  },
+  {
+    "word": "Gill",
+    "start": 0.98,
+    "end": 1.38
+  },
+  {
+    "word": "Says",
+    "start": 1.38,
+    "end": 1.6
+  },
+  {
+    "word": "No.",
+    "start": 1.6,
+    "end": 2.02
+  },
+  {
+    "word": "And",
+    "start": 2.36,
+    "end": 2.54
+  },
+  {
+    "word": "No.",
+    "start": 2.54,
+    "end": 2.86
+  },
+  {
+    "word": "And",
+    "start": 3.06,
+    "end": 3.22
+  },
+  {
+    "word": "No",
+    "start": 3.22,
+    "end": 3.36
+  },
+  {
+    "word": "Again.",
+    "start": 3.36,
+    "end": 3.74
+  }
+]

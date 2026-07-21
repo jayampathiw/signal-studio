@@ -1,0 +1,87 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.5
+  },
+  {
+    "word": "Frustration",
+    "start": 0.5,
+    "end": 1.1
+  },
+  {
+    "word": "Showed",
+    "start": 1.1,
+    "end": 1.64
+  },
+  {
+    "word": "Early.",
+    "start": 1.64,
+    "end": 2.02
+  },
+  {
+    "word": "Shoves.",
+    "start": 2.62,
+    "end": 2.96
+  },
+  {
+    "word": "Words.",
+    "start": 3.24,
+    "end": 3.6
+  },
+  {
+    "word": "A",
+    "start": 4.1,
+    "end": 4.22
+  },
+  {
+    "word": "League",
+    "start": 4.22,
+    "end": 4.34
+  },
+  {
+    "word": "Of",
+    "start": 4.34,
+    "end": 4.58
+  },
+  {
+    "word": "Players",
+    "start": 4.58,
+    "end": 4.84
+  },
+  {
+    "word": "Used",
+    "start": 4.84,
+    "end": 5.16
+  },
+  {
+    "word": "To",
+    "start": 5.16,
+    "end": 5.4
+  },
+  {
+    "word": "Scoring,",
+    "start": 5.4,
+    "end": 5.8
+  },
+  {
+    "word": "Unable",
+    "start": 5.88,
+    "end": 6.34
+  },
+  {
+    "word": "To",
+    "start": 6.34,
+    "end": 6.52
+  },
+  {
+    "word": "Break",
+    "start": 6.52,
+    "end": 6.74
+  },
+  {
+    "word": "Through.",
+    "start": 6.74,
+    "end": 7.14
+  }
+]

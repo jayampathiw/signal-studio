@@ -1,0 +1,37 @@
+[
+  {
+    "word": "Subscribe.",
+    "start": 0,
+    "end": 1
+  },
+  {
+    "word": "The",
+    "start": 1.26,
+    "end": 1.32
+  },
+  {
+    "word": "Next",
+    "start": 1.32,
+    "end": 1.56
+  },
+  {
+    "word": "One",
+    "start": 1.56,
+    "end": 1.82
+  },
+  {
+    "word": "'S",
+    "start": 1.82,
+    "end": 2.02
+  },
+  {
+    "word": "Already",
+    "start": 2.02,
+    "end": 2.2
+  },
+  {
+    "word": "Here.",
+    "start": 2.2,
+    "end": 2.7
+  }
+]

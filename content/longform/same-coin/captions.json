@@ -1,0 +1,2684 @@
+{
+  "S01": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.339,
+      "words": [
+        {
+          "text": "Eleven",
+          "offset_start": 0,
+          "offset_end": 0.446
+        },
+        {
+          "text": "days",
+          "offset_start": 0.446,
+          "offset_end": 0.744
+        },
+        {
+          "text": "earlier,",
+          "offset_start": 0.744,
+          "offset_end": 1.339
+        }
+      ]
+    },
+    {
+      "at_sec": 1.339,
+      "duration_sec": 2.679,
+      "words": [
+        {
+          "text": "this",
+          "offset_start": 0,
+          "offset_end": 0.298
+        },
+        {
+          "text": "goalkeeper",
+          "offset_start": 0.298,
+          "offset_end": 1.042
+        },
+        {
+          "text": "had",
+          "offset_start": 1.042,
+          "offset_end": 1.265
+        },
+        {
+          "text": "done",
+          "offset_start": 1.265,
+          "offset_end": 1.563
+        },
+        {
+          "text": "the",
+          "offset_start": 1.563,
+          "offset_end": 1.786
+        },
+        {
+          "text": "impossible —",
+          "offset_start": 1.786,
+          "offset_end": 2.679
+        }
+      ]
+    },
+    {
+      "at_sec": 4.018,
+      "duration_sec": 3.202,
+      "words": [
+        {
+          "text": "beaten",
+          "offset_start": 0,
+          "offset_end": 0.446
+        },
+        {
+          "text": "the",
+          "offset_start": 0.446,
+          "offset_end": 0.67
+        },
+        {
+          "text": "four-time",
+          "offset_start": 0.67,
+          "offset_end": 1.339
+        },
+        {
+          "text": "champions",
+          "offset_start": 1.339,
+          "offset_end": 2.009
+        },
+        {
+          "text": "on",
+          "offset_start": 2.009,
+          "offset_end": 2.158
+        },
+        {
+          "text": "penalties.",
+          "offset_start": 2.158,
+          "offset_end": 2.902
+        }
+      ]
+    }
+  ],
+  "S02": [
+    {
+      "at_sec": 0,
+      "duration_sec": 0.443,
+      "words": [
+        {
+          "text": "Today,",
+          "offset_start": 0,
+          "offset_end": 0.443
+        }
+      ]
+    },
+    {
+      "at_sec": 0.443,
+      "duration_sec": 1.844,
+      "words": [
+        {
+          "text": "in",
+          "offset_start": 0,
+          "offset_end": 0.148
+        },
+        {
+          "text": "thirty-nine-degree",
+          "offset_start": 0.148,
+          "offset_end": 1.475
+        },
+        {
+          "text": "heat,",
+          "offset_start": 1.475,
+          "offset_end": 1.844
+        }
+      ]
+    },
+    {
+      "at_sec": 2.287,
+      "duration_sec": 2.508,
+      "words": [
+        {
+          "text": "he'd",
+          "offset_start": 0,
+          "offset_end": 0.295
+        },
+        {
+          "text": "face",
+          "offset_start": 0.295,
+          "offset_end": 0.59
+        },
+        {
+          "text": "someone",
+          "offset_start": 0.59,
+          "offset_end": 1.107
+        },
+        {
+          "text": "even",
+          "offset_start": 1.107,
+          "offset_end": 1.402
+        },
+        {
+          "text": "more",
+          "offset_start": 1.402,
+          "offset_end": 1.697
+        },
+        {
+          "text": "dangerous —",
+          "offset_start": 1.697,
+          "offset_end": 2.508
+        }
+      ]
+    },
+    {
+      "at_sec": 4.795,
+      "duration_sec": 0.885,
+      "words": [
+        {
+          "text": "and",
+          "offset_start": 0,
+          "offset_end": 0.221
+        },
+        {
+          "text": "this",
+          "offset_start": 0.221,
+          "offset_end": 0.516
+        },
+        {
+          "text": "time,",
+          "offset_start": 0.516,
+          "offset_end": 0.885
+        }
+      ]
+    },
+    {
+      "at_sec": 5.681,
+      "duration_sec": 2.439,
+      "words": [
+        {
+          "text": "there'd",
+          "offset_start": 0,
+          "offset_end": 0.516
+        },
+        {
+          "text": "be",
+          "offset_start": 0.516,
+          "offset_end": 0.664
+        },
+        {
+          "text": "no",
+          "offset_start": 0.664,
+          "offset_end": 0.812
+        },
+        {
+          "text": "shootout",
+          "offset_start": 0.812,
+          "offset_end": 1.402
+        },
+        {
+          "text": "to",
+          "offset_start": 1.402,
+          "offset_end": 1.549
+        },
+        {
+          "text": "save",
+          "offset_start": 1.549,
+          "offset_end": 1.844
+        },
+        {
+          "text": "him.",
+          "offset_start": 1.844,
+          "offset_end": 2.139
+        }
+      ]
+    }
+  ],
+  "S04": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.02,
+      "words": [
+        {
+          "text": "You",
+          "offset_start": 0,
+          "offset_end": 0.5
+        },
+        {
+          "text": "know",
+          "offset_start": 0.5,
+          "offset_end": 0.7
+        },
+        {
+          "text": "the",
+          "offset_start": 0.7,
+          "offset_end": 0.84
+        },
+        {
+          "text": "story",
+          "offset_start": 0.84,
+          "offset_end": 1.14
+        },
+        {
+          "text": "already.",
+          "offset_start": 1.14,
+          "offset_end": 1.72
+        }
+      ]
+    },
+    {
+      "at_sec": 2.38,
+      "duration_sec": 0.7,
+      "words": [
+        {
+          "text": "Paraguay,",
+          "offset_start": 0,
+          "offset_end": 0.58
+        }
+      ]
+    },
+    {
+      "at_sec": 3.08,
+      "duration_sec": 0.78,
+      "words": [
+        {
+          "text": "penalties,",
+          "offset_start": 0,
+          "offset_end": 0.48
+        }
+      ]
+    },
+    {
+      "at_sec": 3.88,
+      "duration_sec": 2.68,
+      "words": [
+        {
+          "text": "and",
+          "offset_start": 0,
+          "offset_end": 0.06
+        },
+        {
+          "text": "a",
+          "offset_start": 0.06,
+          "offset_end": 0.14
+        },
+        {
+          "text": "goalkeeper",
+          "offset_start": 0.14,
+          "offset_end": 0.66
+        },
+        {
+          "text": "the",
+          "offset_start": 0.66,
+          "offset_end": 0.92
+        },
+        {
+          "text": "world",
+          "offset_start": 0.92,
+          "offset_end": 1.18
+        },
+        {
+          "text": "had",
+          "offset_start": 1.18,
+          "offset_end": 1.36
+        },
+        {
+          "text": "just",
+          "offset_start": 1.36,
+          "offset_end": 1.64
+        },
+        {
+          "text": "discovered.",
+          "offset_start": 1.64,
+          "offset_end": 2.38
+        }
+      ]
+    }
+  ],
+  "S05": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.92,
+      "words": [
+        {
+          "text": "What",
+          "offset_start": 0,
+          "offset_end": 0.58
+        },
+        {
+          "text": "that",
+          "offset_start": 0.58,
+          "offset_end": 0.8
+        },
+        {
+          "text": "win",
+          "offset_start": 0.8,
+          "offset_end": 1
+        },
+        {
+          "text": "actually",
+          "offset_start": 1,
+          "offset_end": 1.36
+        },
+        {
+          "text": "bought",
+          "offset_start": 1.36,
+          "offset_end": 1.74
+        },
+        {
+          "text": "them",
+          "offset_start": 1.74,
+          "offset_end": 1.96
+        },
+        {
+          "text": "was",
+          "offset_start": 1.96,
+          "offset_end": 2.16
+        },
+        {
+          "text": "this:",
+          "offset_start": 2.16,
+          "offset_end": 2.62
+        }
+      ]
+    },
+    {
+      "at_sec": 3.18,
+      "duration_sec": 1.22,
+      "words": [
+        {
+          "text": "a",
+          "offset_start": 0,
+          "offset_end": 0.12
+        },
+        {
+          "text": "date",
+          "offset_start": 0.12,
+          "offset_end": 0.3
+        },
+        {
+          "text": "with",
+          "offset_start": 0.3,
+          "offset_end": 0.54
+        },
+        {
+          "text": "France,",
+          "offset_start": 0.54,
+          "offset_end": 0.94
+        }
+      ]
+    },
+    {
+      "at_sec": 4.4,
+      "duration_sec": 2.18,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0
+        },
+        {
+          "text": "tournament's",
+          "offset_start": 0,
+          "offset_end": 0.58
+        },
+        {
+          "text": "most",
+          "offset_start": 0.58,
+          "offset_end": 0.82
+        },
+        {
+          "text": "dangerous",
+          "offset_start": 0.82,
+          "offset_end": 1.44
+        },
+        {
+          "text": "team,",
+          "offset_start": 1.44,
+          "offset_end": 1.9
+        }
+      ]
+    },
+    {
+      "at_sec": 6.58,
+      "duration_sec": 1.82,
+      "words": [
+        {
+          "text": "and",
+          "offset_start": 0,
+          "offset_end": 0.06
+        },
+        {
+          "text": "its",
+          "offset_start": 0.06,
+          "offset_end": 0.22
+        },
+        {
+          "text": "most",
+          "offset_start": 0.22,
+          "offset_end": 0.48
+        },
+        {
+          "text": "dangerous",
+          "offset_start": 0.48,
+          "offset_end": 1.14
+        },
+        {
+          "text": "man.",
+          "offset_start": 1.14,
+          "offset_end": 1.52
+        }
+      ]
+    }
+  ],
+  "S06": [
+    {
+      "at_sec": 0,
+      "duration_sec": 0.663,
+      "words": [
+        {
+          "text": "July",
+          "offset_start": 0,
+          "offset_end": 0.332
+        },
+        {
+          "text": "4th.",
+          "offset_start": 0.332,
+          "offset_end": 0.663
+        }
+      ]
+    },
+    {
+      "at_sec": 0.663,
+      "duration_sec": 1.078,
+      "words": [
+        {
+          "text": "Philadelphia.",
+          "offset_start": 0,
+          "offset_end": 1.078
+        }
+      ]
+    },
+    {
+      "at_sec": 1.741,
+      "duration_sec": 1.99,
+      "words": [
+        {
+          "text": "Sixty-eight",
+          "offset_start": 0,
+          "offset_end": 0.912
+        },
+        {
+          "text": "thousand",
+          "offset_start": 0.912,
+          "offset_end": 1.576
+        },
+        {
+          "text": "fans,",
+          "offset_start": 1.576,
+          "offset_end": 1.99
+        }
+      ]
+    },
+    {
+      "at_sec": 3.732,
+      "duration_sec": 3.368,
+      "words": [
+        {
+          "text": "and",
+          "offset_start": 0,
+          "offset_end": 0.249
+        },
+        {
+          "text": "a",
+          "offset_start": 0.249,
+          "offset_end": 0.332
+        },
+        {
+          "text": "heat",
+          "offset_start": 0.332,
+          "offset_end": 0.663
+        },
+        {
+          "text": "warning",
+          "offset_start": 0.663,
+          "offset_end": 1.244
+        },
+        {
+          "text": "across",
+          "offset_start": 1.244,
+          "offset_end": 1.741
+        },
+        {
+          "text": "the",
+          "offset_start": 1.741,
+          "offset_end": 1.99
+        },
+        {
+          "text": "entire",
+          "offset_start": 1.99,
+          "offset_end": 2.488
+        },
+        {
+          "text": "region.",
+          "offset_start": 2.488,
+          "offset_end": 3.068
+        }
+      ]
+    }
+  ],
+  "S07": [
+    {
+      "at_sec": 0.44,
+      "duration_sec": 1.56,
+      "words": [
+        {
+          "text": "Paraguay",
+          "offset_start": 0,
+          "offset_end": 0.44
+        },
+        {
+          "text": "had",
+          "offset_start": 0.44,
+          "offset_end": 0.64
+        },
+        {
+          "text": "one",
+          "offset_start": 0.64,
+          "offset_end": 0.86
+        },
+        {
+          "text": "plan,",
+          "offset_start": 0.86,
+          "offset_end": 1.32
+        }
+      ]
+    },
+    {
+      "at_sec": 2,
+      "duration_sec": 1.68,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.18
+        },
+        {
+          "text": "same",
+          "offset_start": 0.18,
+          "offset_end": 0.38
+        },
+        {
+          "text": "one",
+          "offset_start": 0.38,
+          "offset_end": 0.56
+        },
+        {
+          "text": "that",
+          "offset_start": 0.56,
+          "offset_end": 0.68
+        },
+        {
+          "text": "beat",
+          "offset_start": 0.68,
+          "offset_end": 0.9
+        },
+        {
+          "text": "Germany:",
+          "offset_start": 0.9,
+          "offset_end": 1.38
+        }
+      ]
+    },
+    {
+      "at_sec": 4.12,
+      "duration_sec": 0.72,
+      "words": [
+        {
+          "text": "sit",
+          "offset_start": 0,
+          "offset_end": 0.16
+        },
+        {
+          "text": "deep,",
+          "offset_start": 0.16,
+          "offset_end": 0.52
+        }
+      ]
+    },
+    {
+      "at_sec": 4.84,
+      "duration_sec": 0.94,
+      "words": [
+        {
+          "text": "absorb",
+          "offset_start": 0,
+          "offset_end": 0.32
+        },
+        {
+          "text": "everything,",
+          "offset_start": 0.32,
+          "offset_end": 0.74
+        }
+      ]
+    },
+    {
+      "at_sec": 5.78,
+      "duration_sec": 1.32,
+      "words": [
+        {
+          "text": "make",
+          "offset_start": 0,
+          "offset_end": 0.16
+        },
+        {
+          "text": "the",
+          "offset_start": 0.16,
+          "offset_end": 0.36
+        },
+        {
+          "text": "game",
+          "offset_start": 0.36,
+          "offset_end": 0.6
+        },
+        {
+          "text": "ugly.",
+          "offset_start": 0.6,
+          "offset_end": 1.02
+        }
+      ]
+    }
+  ],
+  "S08": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.232,
+      "words": [
+        {
+          "text": "France",
+          "offset_start": 0,
+          "offset_end": 0.478
+        },
+        {
+          "text": "had",
+          "offset_start": 0.478,
+          "offset_end": 0.717
+        },
+        {
+          "text": "almost",
+          "offset_start": 0.717,
+          "offset_end": 1.196
+        },
+        {
+          "text": "all",
+          "offset_start": 1.196,
+          "offset_end": 1.435
+        },
+        {
+          "text": "of",
+          "offset_start": 1.435,
+          "offset_end": 1.594
+        },
+        {
+          "text": "the",
+          "offset_start": 1.594,
+          "offset_end": 1.833
+        },
+        {
+          "text": "ball.",
+          "offset_start": 1.833,
+          "offset_end": 2.232
+        }
+      ]
+    },
+    {
+      "at_sec": 2.232,
+      "duration_sec": 1.833,
+      "words": [
+        {
+          "text": "Seventy-six",
+          "offset_start": 0,
+          "offset_end": 0.877
+        },
+        {
+          "text": "percent",
+          "offset_start": 0.877,
+          "offset_end": 1.435
+        },
+        {
+          "text": "of",
+          "offset_start": 1.435,
+          "offset_end": 1.594
+        },
+        {
+          "text": "it.",
+          "offset_start": 1.594,
+          "offset_end": 1.833
+        }
+      ]
+    },
+    {
+      "at_sec": 4.065,
+      "duration_sec": 1.735,
+      "words": [
+        {
+          "text": "And",
+          "offset_start": 0,
+          "offset_end": 0.239
+        },
+        {
+          "text": "nowhere",
+          "offset_start": 0.239,
+          "offset_end": 0.797
+        },
+        {
+          "text": "to",
+          "offset_start": 0.797,
+          "offset_end": 0.957
+        },
+        {
+          "text": "put",
+          "offset_start": 0.957,
+          "offset_end": 1.196
+        },
+        {
+          "text": "it.",
+          "offset_start": 1.196,
+          "offset_end": 1.435
+        }
+      ]
+    }
+  ],
+  "S09": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.32,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.5
+        },
+        {
+          "text": "frustration",
+          "offset_start": 0.5,
+          "offset_end": 1.1
+        },
+        {
+          "text": "showed",
+          "offset_start": 1.1,
+          "offset_end": 1.64
+        },
+        {
+          "text": "early.",
+          "offset_start": 1.64,
+          "offset_end": 2.02
+        }
+      ]
+    },
+    {
+      "at_sec": 2.62,
+      "duration_sec": 0.62,
+      "words": [
+        {
+          "text": "Shoves.",
+          "offset_start": 0,
+          "offset_end": 0.34
+        }
+      ]
+    },
+    {
+      "at_sec": 3.24,
+      "duration_sec": 0.66,
+      "words": [
+        {
+          "text": "Words.",
+          "offset_start": 0,
+          "offset_end": 0.36
+        }
+      ]
+    },
+    {
+      "at_sec": 4.1,
+      "duration_sec": 1.78,
+      "words": [
+        {
+          "text": "A",
+          "offset_start": 0,
+          "offset_end": 0.12
+        },
+        {
+          "text": "league",
+          "offset_start": 0.12,
+          "offset_end": 0.24
+        },
+        {
+          "text": "of",
+          "offset_start": 0.24,
+          "offset_end": 0.48
+        },
+        {
+          "text": "players",
+          "offset_start": 0.48,
+          "offset_end": 0.74
+        },
+        {
+          "text": "used",
+          "offset_start": 0.74,
+          "offset_end": 1.06
+        },
+        {
+          "text": "to",
+          "offset_start": 1.06,
+          "offset_end": 1.3
+        },
+        {
+          "text": "scoring,",
+          "offset_start": 1.3,
+          "offset_end": 1.7
+        }
+      ]
+    },
+    {
+      "at_sec": 5.88,
+      "duration_sec": 1.56,
+      "words": [
+        {
+          "text": "unable",
+          "offset_start": 0,
+          "offset_end": 0.46
+        },
+        {
+          "text": "to",
+          "offset_start": 0.46,
+          "offset_end": 0.64
+        },
+        {
+          "text": "break",
+          "offset_start": 0.64,
+          "offset_end": 0.86
+        },
+        {
+          "text": "through.",
+          "offset_start": 0.86,
+          "offset_end": 1.26
+        }
+      ]
+    }
+  ],
+  "S10": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.56,
+      "words": [
+        {
+          "text": "Every",
+          "offset_start": 0,
+          "offset_end": 0.68
+        },
+        {
+          "text": "time",
+          "offset_start": 0.68,
+          "offset_end": 0.98
+        },
+        {
+          "text": "France",
+          "offset_start": 0.98,
+          "offset_end": 1.34
+        },
+        {
+          "text": "found",
+          "offset_start": 1.34,
+          "offset_end": 1.62
+        },
+        {
+          "text": "a",
+          "offset_start": 1.62,
+          "offset_end": 1.86
+        },
+        {
+          "text": "shot,",
+          "offset_start": 1.86,
+          "offset_end": 2.26
+        }
+      ]
+    },
+    {
+      "at_sec": 2.58,
+      "duration_sec": 1.46,
+      "words": [
+        {
+          "text": "Gill",
+          "offset_start": 0,
+          "offset_end": 0.1
+        },
+        {
+          "text": "was",
+          "offset_start": 0.1,
+          "offset_end": 0.44
+        },
+        {
+          "text": "already",
+          "offset_start": 0.44,
+          "offset_end": 0.72
+        },
+        {
+          "text": "there.",
+          "offset_start": 0.72,
+          "offset_end": 1.16
+        }
+      ]
+    }
+  ],
+  "S11": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.865,
+      "words": [
+        {
+          "text": "This",
+          "offset_start": 0,
+          "offset_end": 0.302
+        },
+        {
+          "text": "wasn't",
+          "offset_start": 0.302,
+          "offset_end": 0.754
+        },
+        {
+          "text": "the",
+          "offset_start": 0.754,
+          "offset_end": 0.98
+        },
+        {
+          "text": "France",
+          "offset_start": 0.98,
+          "offset_end": 1.432
+        },
+        {
+          "text": "that",
+          "offset_start": 1.432,
+          "offset_end": 1.734
+        },
+        {
+          "text": "had",
+          "offset_start": 1.734,
+          "offset_end": 1.96
+        },
+        {
+          "text": "scored",
+          "offset_start": 1.96,
+          "offset_end": 2.412
+        },
+        {
+          "text": "freely",
+          "offset_start": 2.412,
+          "offset_end": 2.865
+        }
+      ]
+    },
+    {
+      "at_sec": 2.865,
+      "duration_sec": 1.055,
+      "words": [
+        {
+          "text": "all",
+          "offset_start": 0,
+          "offset_end": 0.226
+        },
+        {
+          "text": "tournament.",
+          "offset_start": 0.226,
+          "offset_end": 1.055
+        }
+      ]
+    },
+    {
+      "at_sec": 3.92,
+      "duration_sec": 2.035,
+      "words": [
+        {
+          "text": "This",
+          "offset_start": 0,
+          "offset_end": 0.302
+        },
+        {
+          "text": "was",
+          "offset_start": 0.302,
+          "offset_end": 0.528
+        },
+        {
+          "text": "a",
+          "offset_start": 0.528,
+          "offset_end": 0.603
+        },
+        {
+          "text": "team",
+          "offset_start": 0.603,
+          "offset_end": 0.905
+        },
+        {
+          "text": "boiling",
+          "offset_start": 0.905,
+          "offset_end": 1.432
+        },
+        {
+          "text": "in",
+          "offset_start": 1.432,
+          "offset_end": 1.583
+        },
+        {
+          "text": "its",
+          "offset_start": 1.583,
+          "offset_end": 1.809
+        },
+        {
+          "text": "own",
+          "offset_start": 1.809,
+          "offset_end": 2.035
+        }
+      ]
+    },
+    {
+      "at_sec": 5.955,
+      "duration_sec": 1.205,
+      "words": [
+        {
+          "text": "frustration.",
+          "offset_start": 0,
+          "offset_end": 0.905
+        }
+      ]
+    }
+  ],
+  "S12": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.988,
+      "words": [
+        {
+          "text": "Paraguay's",
+          "offset_start": 0,
+          "offset_end": 0.764
+        },
+        {
+          "text": "edges",
+          "offset_start": 0.764,
+          "offset_end": 1.147
+        },
+        {
+          "text": "got",
+          "offset_start": 1.147,
+          "offset_end": 1.376
+        },
+        {
+          "text": "sharper.",
+          "offset_start": 1.376,
+          "offset_end": 1.988
+        }
+      ]
+    },
+    {
+      "at_sec": 1.988,
+      "duration_sec": 1.529,
+      "words": [
+        {
+          "text": "Off-the-ball",
+          "offset_start": 0,
+          "offset_end": 0.917
+        },
+        {
+          "text": "strikes.",
+          "offset_start": 0.917,
+          "offset_end": 1.529
+        }
+      ]
+    },
+    {
+      "at_sec": 3.516,
+      "duration_sec": 1.07,
+      "words": [
+        {
+          "text": "Niggling",
+          "offset_start": 0,
+          "offset_end": 0.612
+        },
+        {
+          "text": "fouls.",
+          "offset_start": 0.612,
+          "offset_end": 1.07
+        }
+      ]
+    },
+    {
+      "at_sec": 4.587,
+      "duration_sec": 2.593,
+      "words": [
+        {
+          "text": "Not",
+          "offset_start": 0,
+          "offset_end": 0.229
+        },
+        {
+          "text": "one",
+          "offset_start": 0.229,
+          "offset_end": 0.459
+        },
+        {
+          "text": "yellow",
+          "offset_start": 0.459,
+          "offset_end": 0.917
+        },
+        {
+          "text": "card",
+          "offset_start": 0.917,
+          "offset_end": 1.223
+        },
+        {
+          "text": "shown",
+          "offset_start": 1.223,
+          "offset_end": 1.605
+        },
+        {
+          "text": "all",
+          "offset_start": 1.605,
+          "offset_end": 1.835
+        },
+        {
+          "text": "match.",
+          "offset_start": 1.835,
+          "offset_end": 2.293
+        }
+      ]
+    }
+  ],
+  "S13": [
+    {
+      "at_sec": 0,
+      "duration_sec": 0.66,
+      "words": [
+        {
+          "text": "Then,",
+          "offset_start": 0,
+          "offset_end": 0.62
+        }
+      ]
+    },
+    {
+      "at_sec": 0.66,
+      "duration_sec": 1.38,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.18
+        },
+        {
+          "text": "seventieth",
+          "offset_start": 0.18,
+          "offset_end": 0.7
+        },
+        {
+          "text": "minute.",
+          "offset_start": 0.7,
+          "offset_end": 1.08
+        }
+      ]
+    },
+    {
+      "at_sec": 2.24,
+      "duration_sec": 3.32,
+      "words": [
+        {
+          "text": "Diego",
+          "offset_start": 0,
+          "offset_end": 0.26
+        },
+        {
+          "text": "Gómez",
+          "offset_start": 0.26,
+          "offset_end": 0.86
+        },
+        {
+          "text": "brings",
+          "offset_start": 0.86,
+          "offset_end": 1.22
+        },
+        {
+          "text": "down",
+          "offset_start": 1.22,
+          "offset_end": 1.58
+        },
+        {
+          "text": "Desiré",
+          "offset_start": 1.58,
+          "offset_end": 2.16
+        },
+        {
+          "text": "Doué",
+          "offset_start": 2.16,
+          "offset_end": 2.64
+        },
+        {
+          "text": "inside",
+          "offset_start": 2.64,
+          "offset_end": 3.02
+        },
+        {
+          "text": "the",
+          "offset_start": 3.02,
+          "offset_end": 3.32
+        }
+      ]
+    },
+    {
+      "at_sec": 5.56,
+      "duration_sec": 0.64,
+      "words": [
+        {
+          "text": "box.",
+          "offset_start": 0,
+          "offset_end": 0.34
+        }
+      ]
+    },
+    {
+      "at_sec": 6.4,
+      "duration_sec": 1.82,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.12
+        },
+        {
+          "text": "referee",
+          "offset_start": 0.12,
+          "offset_end": 0.68
+        },
+        {
+          "text": "waves",
+          "offset_start": 0.68,
+          "offset_end": 0.96
+        },
+        {
+          "text": "it",
+          "offset_start": 0.96,
+          "offset_end": 1.16
+        },
+        {
+          "text": "away.",
+          "offset_start": 1.16,
+          "offset_end": 1.52
+        }
+      ]
+    }
+  ],
+  "S14": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.92,
+      "words": [
+        {
+          "text": "VAR",
+          "offset_start": 0,
+          "offset_end": 0.9
+        },
+        {
+          "text": "calls",
+          "offset_start": 0.9,
+          "offset_end": 1.28
+        },
+        {
+          "text": "him",
+          "offset_start": 1.28,
+          "offset_end": 1.36
+        },
+        {
+          "text": "back.",
+          "offset_start": 1.36,
+          "offset_end": 1.72
+        }
+      ]
+    },
+    {
+      "at_sec": 1.92,
+      "duration_sec": 1.52,
+      "words": [
+        {
+          "text": "He",
+          "offset_start": 0,
+          "offset_end": 0.18
+        },
+        {
+          "text": "reviews",
+          "offset_start": 0.18,
+          "offset_end": 0.58
+        },
+        {
+          "text": "it",
+          "offset_start": 0.58,
+          "offset_end": 0.7
+        },
+        {
+          "text": "himself.",
+          "offset_start": 0.7,
+          "offset_end": 1.22
+        }
+      ]
+    },
+    {
+      "at_sec": 3.54,
+      "duration_sec": 1.5,
+      "words": [
+        {
+          "text": "And",
+          "offset_start": 0,
+          "offset_end": 0.12
+        },
+        {
+          "text": "reverses",
+          "offset_start": 0.12,
+          "offset_end": 0.64
+        },
+        {
+          "text": "the",
+          "offset_start": 0.64,
+          "offset_end": 0.84
+        },
+        {
+          "text": "decision.",
+          "offset_start": 0.84,
+          "offset_end": 1.36
+        }
+      ]
+    },
+    {
+      "at_sec": 5.04,
+      "duration_sec": 0.94,
+      "words": [
+        {
+          "text": "Penalty.",
+          "offset_start": 0,
+          "offset_end": 0.64
+        }
+      ]
+    }
+  ],
+  "S15": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.791,
+      "words": [
+        {
+          "text": "Paraguay",
+          "offset_start": 0,
+          "offset_end": 0.62
+        },
+        {
+          "text": "try",
+          "offset_start": 0.62,
+          "offset_end": 0.853
+        },
+        {
+          "text": "everything",
+          "offset_start": 0.853,
+          "offset_end": 1.628
+        },
+        {
+          "text": "they",
+          "offset_start": 1.628,
+          "offset_end": 1.938
+        },
+        {
+          "text": "can",
+          "offset_start": 1.938,
+          "offset_end": 2.171
+        },
+        {
+          "text": "to",
+          "offset_start": 2.171,
+          "offset_end": 2.326
+        },
+        {
+          "text": "put",
+          "offset_start": 2.326,
+          "offset_end": 2.559
+        },
+        {
+          "text": "him",
+          "offset_start": 2.559,
+          "offset_end": 2.791
+        }
+      ]
+    },
+    {
+      "at_sec": 2.791,
+      "duration_sec": 0.31,
+      "words": [
+        {
+          "text": "off.",
+          "offset_start": 0,
+          "offset_end": 0.31
+        }
+      ]
+    },
+    {
+      "at_sec": 3.101,
+      "duration_sec": 1.008,
+      "words": [
+        {
+          "text": "Scuff",
+          "offset_start": 0,
+          "offset_end": 0.388
+        },
+        {
+          "text": "the",
+          "offset_start": 0.388,
+          "offset_end": 0.62
+        },
+        {
+          "text": "spot.",
+          "offset_start": 0.62,
+          "offset_end": 1.008
+        }
+      ]
+    },
+    {
+      "at_sec": 4.109,
+      "duration_sec": 1.008,
+      "words": [
+        {
+          "text": "Slow",
+          "offset_start": 0,
+          "offset_end": 0.31
+        },
+        {
+          "text": "the",
+          "offset_start": 0.31,
+          "offset_end": 0.543
+        },
+        {
+          "text": "clock.",
+          "offset_start": 0.543,
+          "offset_end": 1.008
+        }
+      ]
+    },
+    {
+      "at_sec": 5.117,
+      "duration_sec": 1.463,
+      "words": [
+        {
+          "text": "He's",
+          "offset_start": 0,
+          "offset_end": 0.31
+        },
+        {
+          "text": "faced",
+          "offset_start": 0.31,
+          "offset_end": 0.698
+        },
+        {
+          "text": "worse.",
+          "offset_start": 0.698,
+          "offset_end": 1.163
+        }
+      ]
+    }
+  ],
+  "S16": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.18,
+      "words": [
+        {
+          "text": "He",
+          "offset_start": 0,
+          "offset_end": 0.54
+        },
+        {
+          "text": "sends",
+          "offset_start": 0.54,
+          "offset_end": 0.82
+        },
+        {
+          "text": "Gill",
+          "offset_start": 0.82,
+          "offset_end": 1.06
+        },
+        {
+          "text": "the",
+          "offset_start": 1.06,
+          "offset_end": 1.28
+        },
+        {
+          "text": "wrong",
+          "offset_start": 1.28,
+          "offset_end": 1.52
+        },
+        {
+          "text": "way.",
+          "offset_start": 1.52,
+          "offset_end": 1.88
+        }
+      ]
+    },
+    {
+      "at_sec": 2.18,
+      "duration_sec": 0.92,
+      "words": [
+        {
+          "text": "Bottom",
+          "offset_start": 0,
+          "offset_end": 0.2
+        },
+        {
+          "text": "corner.",
+          "offset_start": 0.2,
+          "offset_end": 0.62
+        }
+      ]
+    },
+    {
+      "at_sec": 3.12,
+      "duration_sec": 0.84,
+      "words": [
+        {
+          "text": "One–nil.",
+          "offset_start": 0,
+          "offset_end": 0.54
+        }
+      ]
+    }
+  ],
+  "S17": [
+    {
+      "at_sec": 0,
+      "duration_sec": 3.6,
+      "words": [
+        {
+          "text": "For",
+          "offset_start": 0,
+          "offset_end": 0.56
+        },
+        {
+          "text": "a",
+          "offset_start": 0.56,
+          "offset_end": 0.82
+        },
+        {
+          "text": "team",
+          "offset_start": 0.82,
+          "offset_end": 0.98
+        },
+        {
+          "text": "built",
+          "offset_start": 0.98,
+          "offset_end": 1.26
+        },
+        {
+          "text": "entirely",
+          "offset_start": 1.26,
+          "offset_end": 2.04
+        },
+        {
+          "text": "around",
+          "offset_start": 2.04,
+          "offset_end": 2.3
+        },
+        {
+          "text": "not",
+          "offset_start": 2.3,
+          "offset_end": 2.6
+        },
+        {
+          "text": "conceding,",
+          "offset_start": 2.6,
+          "offset_end": 3.3
+        }
+      ]
+    },
+    {
+      "at_sec": 3.74,
+      "duration_sec": 1.96,
+      "words": [
+        {
+          "text": "there",
+          "offset_start": 0,
+          "offset_end": 0.04
+        },
+        {
+          "text": "is",
+          "offset_start": 0.04,
+          "offset_end": 0.24
+        },
+        {
+          "text": "no",
+          "offset_start": 0.24,
+          "offset_end": 0.48
+        },
+        {
+          "text": "coming",
+          "offset_start": 0.48,
+          "offset_end": 0.78
+        },
+        {
+          "text": "back",
+          "offset_start": 0.78,
+          "offset_end": 1.14
+        },
+        {
+          "text": "from",
+          "offset_start": 1.14,
+          "offset_end": 1.32
+        },
+        {
+          "text": "that.",
+          "offset_start": 1.32,
+          "offset_end": 1.66
+        }
+      ]
+    }
+  ],
+  "S18": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.92,
+      "words": [
+        {
+          "text": "Deep",
+          "offset_start": 0,
+          "offset_end": 0.66
+        },
+        {
+          "text": "into",
+          "offset_start": 0.66,
+          "offset_end": 0.92
+        },
+        {
+          "text": "stoppage",
+          "offset_start": 0.92,
+          "offset_end": 1.4
+        },
+        {
+          "text": "time,",
+          "offset_start": 1.4,
+          "offset_end": 1.76
+        }
+      ]
+    },
+    {
+      "at_sec": 1.92,
+      "duration_sec": 2.02,
+      "words": [
+        {
+          "text": "Mbappé",
+          "offset_start": 0,
+          "offset_end": 0.5
+        },
+        {
+          "text": "gets",
+          "offset_start": 0.5,
+          "offset_end": 0.72
+        },
+        {
+          "text": "one",
+          "offset_start": 0.72,
+          "offset_end": 0.96
+        },
+        {
+          "text": "more",
+          "offset_start": 0.96,
+          "offset_end": 1.2
+        },
+        {
+          "text": "chance.",
+          "offset_start": 1.2,
+          "offset_end": 1.72
+        }
+      ]
+    },
+    {
+      "at_sec": 4.18,
+      "duration_sec": 1.18,
+      "words": [
+        {
+          "text": "Gill",
+          "offset_start": 0,
+          "offset_end": 0.16
+        },
+        {
+          "text": "saves",
+          "offset_start": 0.16,
+          "offset_end": 0.56
+        },
+        {
+          "text": "it.",
+          "offset_start": 0.56,
+          "offset_end": 0.92
+        }
+      ]
+    },
+    {
+      "at_sec": 5.36,
+      "duration_sec": 2.12,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.14
+        },
+        {
+          "text": "ball",
+          "offset_start": 0.14,
+          "offset_end": 0.42
+        },
+        {
+          "text": "falls",
+          "offset_start": 0.42,
+          "offset_end": 0.74
+        },
+        {
+          "text": "straight",
+          "offset_start": 0.74,
+          "offset_end": 1.02
+        },
+        {
+          "text": "back",
+          "offset_start": 1.02,
+          "offset_end": 1.4
+        },
+        {
+          "text": "to",
+          "offset_start": 1.4,
+          "offset_end": 1.54
+        },
+        {
+          "text": "him.",
+          "offset_start": 1.54,
+          "offset_end": 1.84
+        }
+      ]
+    },
+    {
+      "at_sec": 7.48,
+      "duration_sec": 1.46,
+      "words": [
+        {
+          "text": "Gill",
+          "offset_start": 0,
+          "offset_end": 0.28
+        },
+        {
+          "text": "saves",
+          "offset_start": 0.28,
+          "offset_end": 0.6
+        },
+        {
+          "text": "it",
+          "offset_start": 0.6,
+          "offset_end": 0.82
+        },
+        {
+          "text": "again.",
+          "offset_start": 0.82,
+          "offset_end": 1.16
+        }
+      ]
+    }
+  ],
+  "S19": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.361,
+      "words": [
+        {
+          "text": "At",
+          "offset_start": 0,
+          "offset_end": 0.151
+        },
+        {
+          "text": "the",
+          "offset_start": 0.151,
+          "offset_end": 0.378
+        },
+        {
+          "text": "final",
+          "offset_start": 0.378,
+          "offset_end": 0.756
+        },
+        {
+          "text": "whistle,",
+          "offset_start": 0.756,
+          "offset_end": 1.361
+        }
+      ]
+    },
+    {
+      "at_sec": 1.361,
+      "duration_sec": 1.966,
+      "words": [
+        {
+          "text": "Mbappé",
+          "offset_start": 0,
+          "offset_end": 0.454
+        },
+        {
+          "text": "doesn't",
+          "offset_start": 0.454,
+          "offset_end": 0.983
+        },
+        {
+          "text": "shake",
+          "offset_start": 0.983,
+          "offset_end": 1.361
+        },
+        {
+          "text": "his",
+          "offset_start": 1.361,
+          "offset_end": 1.588
+        },
+        {
+          "text": "hand.",
+          "offset_start": 1.588,
+          "offset_end": 1.966
+        }
+      ]
+    },
+    {
+      "at_sec": 3.327,
+      "duration_sec": 2.647,
+      "words": [
+        {
+          "text": "Some",
+          "offset_start": 0,
+          "offset_end": 0.302
+        },
+        {
+          "text": "losses",
+          "offset_start": 0.302,
+          "offset_end": 0.756
+        },
+        {
+          "text": "still",
+          "offset_start": 0.756,
+          "offset_end": 1.134
+        },
+        {
+          "text": "come",
+          "offset_start": 1.134,
+          "offset_end": 1.437
+        },
+        {
+          "text": "with",
+          "offset_start": 1.437,
+          "offset_end": 1.739
+        },
+        {
+          "text": "respect",
+          "offset_start": 1.739,
+          "offset_end": 2.269
+        },
+        {
+          "text": "owed.",
+          "offset_start": 2.269,
+          "offset_end": 2.647
+        }
+      ]
+    },
+    {
+      "at_sec": 5.974,
+      "duration_sec": 0.605,
+      "words": [
+        {
+          "text": "This",
+          "offset_start": 0,
+          "offset_end": 0.302
+        },
+        {
+          "text": "one,",
+          "offset_start": 0.302,
+          "offset_end": 0.605
+        }
+      ]
+    },
+    {
+      "at_sec": 6.579,
+      "duration_sec": 0.832,
+      "words": [
+        {
+          "text": "apparently,",
+          "offset_start": 0,
+          "offset_end": 0.832
+        }
+      ]
+    },
+    {
+      "at_sec": 7.411,
+      "duration_sec": 0.829,
+      "words": [
+        {
+          "text": "didn't.",
+          "offset_start": 0,
+          "offset_end": 0.529
+        }
+      ]
+    }
+  ],
+  "S20": [
+    {
+      "at_sec": 0,
+      "duration_sec": 1.76,
+      "words": [
+        {
+          "text": "Eleven",
+          "offset_start": 0,
+          "offset_end": 0.68
+        },
+        {
+          "text": "days",
+          "offset_start": 0.68,
+          "offset_end": 1.08
+        },
+        {
+          "text": "ago,",
+          "offset_start": 1.08,
+          "offset_end": 1.6
+        }
+      ]
+    },
+    {
+      "at_sec": 1.76,
+      "duration_sec": 3.06,
+      "words": [
+        {
+          "text": "a",
+          "offset_start": 0,
+          "offset_end": 0.08
+        },
+        {
+          "text": "penalty",
+          "offset_start": 0.08,
+          "offset_end": 0.5
+        },
+        {
+          "text": "made",
+          "offset_start": 0.5,
+          "offset_end": 0.74
+        },
+        {
+          "text": "this",
+          "offset_start": 0.74,
+          "offset_end": 0.98
+        },
+        {
+          "text": "goalkeeper",
+          "offset_start": 0.98,
+          "offset_end": 1.58
+        },
+        {
+          "text": "a",
+          "offset_start": 1.58,
+          "offset_end": 1.8
+        },
+        {
+          "text": "national",
+          "offset_start": 1.8,
+          "offset_end": 2.18
+        },
+        {
+          "text": "symbol.",
+          "offset_start": 2.18,
+          "offset_end": 2.76
+        }
+      ]
+    },
+    {
+      "at_sec": 5.14,
+      "duration_sec": 0.6,
+      "words": [
+        {
+          "text": "Today,",
+          "offset_start": 0,
+          "offset_end": 0.3
+        }
+      ]
+    },
+    {
+      "at_sec": 5.88,
+      "duration_sec": 2.62,
+      "words": [
+        {
+          "text": "a",
+          "offset_start": 0,
+          "offset_end": 0.12
+        },
+        {
+          "text": "different",
+          "offset_start": 0.12,
+          "offset_end": 0.36
+        },
+        {
+          "text": "kind",
+          "offset_start": 0.36,
+          "offset_end": 0.64
+        },
+        {
+          "text": "of",
+          "offset_start": 0.64,
+          "offset_end": 0.74
+        },
+        {
+          "text": "penalty",
+          "offset_start": 0.74,
+          "offset_end": 1.24
+        },
+        {
+          "text": "ended",
+          "offset_start": 1.24,
+          "offset_end": 1.62
+        },
+        {
+          "text": "his",
+          "offset_start": 1.62,
+          "offset_end": 1.8
+        },
+        {
+          "text": "tournament.",
+          "offset_start": 1.8,
+          "offset_end": 2.32
+        }
+      ]
+    }
+  ],
+  "S21": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.1,
+      "words": [
+        {
+          "text": "Not",
+          "offset_start": 0,
+          "offset_end": 0.62
+        },
+        {
+          "text": "a",
+          "offset_start": 0.62,
+          "offset_end": 0.84
+        },
+        {
+          "text": "shootout",
+          "offset_start": 0.84,
+          "offset_end": 1.18
+        },
+        {
+          "text": "this",
+          "offset_start": 1.18,
+          "offset_end": 1.36
+        },
+        {
+          "text": "time.",
+          "offset_start": 1.36,
+          "offset_end": 1.8
+        }
+      ]
+    },
+    {
+      "at_sec": 2.32,
+      "duration_sec": 1.1,
+      "words": [
+        {
+          "text": "Just",
+          "offset_start": 0,
+          "offset_end": 0.22
+        },
+        {
+          "text": "one",
+          "offset_start": 0.22,
+          "offset_end": 0.56
+        },
+        {
+          "text": "kick,",
+          "offset_start": 0.56,
+          "offset_end": 0.84
+        }
+      ]
+    },
+    {
+      "at_sec": 3.42,
+      "duration_sec": 1.3,
+      "words": [
+        {
+          "text": "from",
+          "offset_start": 0,
+          "offset_end": 0.06
+        },
+        {
+          "text": "one",
+          "offset_start": 0.06,
+          "offset_end": 0.22
+        },
+        {
+          "text": "of",
+          "offset_start": 0.22,
+          "offset_end": 0.36
+        },
+        {
+          "text": "the",
+          "offset_start": 0.36,
+          "offset_end": 0.42
+        },
+        {
+          "text": "best",
+          "offset_start": 0.42,
+          "offset_end": 0.62
+        },
+        {
+          "text": "to",
+          "offset_start": 0.62,
+          "offset_end": 0.84
+        },
+        {
+          "text": "ever",
+          "offset_start": 0.84,
+          "offset_end": 1.04
+        },
+        {
+          "text": "take",
+          "offset_start": 1.04,
+          "offset_end": 1.3
+        }
+      ]
+    },
+    {
+      "at_sec": 4.72,
+      "duration_sec": 0.66,
+      "words": [
+        {
+          "text": "one.",
+          "offset_start": 0,
+          "offset_end": 0.36
+        }
+      ]
+    }
+  ],
+  "S22": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.879,
+      "words": [
+        {
+          "text": "It",
+          "offset_start": 0,
+          "offset_end": 0.152
+        },
+        {
+          "text": "doesn't",
+          "offset_start": 0.152,
+          "offset_end": 0.682
+        },
+        {
+          "text": "erase",
+          "offset_start": 0.682,
+          "offset_end": 1.061
+        },
+        {
+          "text": "what",
+          "offset_start": 1.061,
+          "offset_end": 1.364
+        },
+        {
+          "text": "he",
+          "offset_start": 1.364,
+          "offset_end": 1.515
+        },
+        {
+          "text": "did",
+          "offset_start": 1.515,
+          "offset_end": 1.742
+        },
+        {
+          "text": "against",
+          "offset_start": 1.742,
+          "offset_end": 2.273
+        },
+        {
+          "text": "Germany.",
+          "offset_start": 2.273,
+          "offset_end": 2.879
+        }
+      ]
+    },
+    {
+      "at_sec": 2.879,
+      "duration_sec": 0.833,
+      "words": [
+        {
+          "text": "If",
+          "offset_start": 0,
+          "offset_end": 0.152
+        },
+        {
+          "text": "anything,",
+          "offset_start": 0.152,
+          "offset_end": 0.833
+        }
+      ]
+    },
+    {
+      "at_sec": 3.712,
+      "duration_sec": 1.061,
+      "words": [
+        {
+          "text": "it",
+          "offset_start": 0,
+          "offset_end": 0.152
+        },
+        {
+          "text": "confirms",
+          "offset_start": 0.152,
+          "offset_end": 0.758
+        },
+        {
+          "text": "it —",
+          "offset_start": 0.758,
+          "offset_end": 1.061
+        }
+      ]
+    },
+    {
+      "at_sec": 4.773,
+      "duration_sec": 2.273,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.227
+        },
+        {
+          "text": "only",
+          "offset_start": 0.227,
+          "offset_end": 0.53
+        },
+        {
+          "text": "team",
+          "offset_start": 0.53,
+          "offset_end": 0.833
+        },
+        {
+          "text": "that",
+          "offset_start": 0.833,
+          "offset_end": 1.136
+        },
+        {
+          "text": "beat",
+          "offset_start": 1.136,
+          "offset_end": 1.439
+        },
+        {
+          "text": "this",
+          "offset_start": 1.439,
+          "offset_end": 1.742
+        },
+        {
+          "text": "wall",
+          "offset_start": 1.742,
+          "offset_end": 2.045
+        },
+        {
+          "text": "all",
+          "offset_start": 2.045,
+          "offset_end": 2.273
+        }
+      ]
+    },
+    {
+      "at_sec": 7.045,
+      "duration_sec": 2.273,
+      "words": [
+        {
+          "text": "tournament",
+          "offset_start": 0,
+          "offset_end": 0.758
+        },
+        {
+          "text": "was",
+          "offset_start": 0.758,
+          "offset_end": 0.985
+        },
+        {
+          "text": "one",
+          "offset_start": 0.985,
+          "offset_end": 1.212
+        },
+        {
+          "text": "of",
+          "offset_start": 1.212,
+          "offset_end": 1.364
+        },
+        {
+          "text": "the",
+          "offset_start": 1.364,
+          "offset_end": 1.591
+        },
+        {
+          "text": "two",
+          "offset_start": 1.591,
+          "offset_end": 1.818
+        },
+        {
+          "text": "best",
+          "offset_start": 1.818,
+          "offset_end": 2.121
+        },
+        {
+          "text": "in",
+          "offset_start": 2.121,
+          "offset_end": 2.273
+        }
+      ]
+    },
+    {
+      "at_sec": 9.318,
+      "duration_sec": 0.982,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.227
+        },
+        {
+          "text": "world.",
+          "offset_start": 0.227,
+          "offset_end": 0.682
+        }
+      ]
+    }
+  ],
+  "S23": [
+    {
+      "at_sec": 0,
+      "duration_sec": 3.34,
+      "words": [
+        {
+          "text": "Paraguay",
+          "offset_start": 0,
+          "offset_end": 0.86
+        },
+        {
+          "text": "go",
+          "offset_start": 0.86,
+          "offset_end": 1.06
+        },
+        {
+          "text": "home",
+          "offset_start": 1.06,
+          "offset_end": 1.32
+        },
+        {
+          "text": "in",
+          "offset_start": 1.32,
+          "offset_end": 1.52
+        },
+        {
+          "text": "the",
+          "offset_start": 1.52,
+          "offset_end": 1.54
+        },
+        {
+          "text": "round",
+          "offset_start": 1.54,
+          "offset_end": 1.78
+        },
+        {
+          "text": "of",
+          "offset_start": 1.78,
+          "offset_end": 1.96
+        },
+        {
+          "text": "sixteen —",
+          "offset_start": 1.96,
+          "offset_end": 3.34
+        }
+      ]
+    },
+    {
+      "at_sec": 3.34,
+      "duration_sec": 2.18,
+      "words": [
+        {
+          "text": "one",
+          "offset_start": 0,
+          "offset_end": 0.12
+        },
+        {
+          "text": "round",
+          "offset_start": 0.12,
+          "offset_end": 0.46
+        },
+        {
+          "text": "further",
+          "offset_start": 0.46,
+          "offset_end": 0.82
+        },
+        {
+          "text": "than",
+          "offset_start": 0.82,
+          "offset_end": 1.02
+        },
+        {
+          "text": "their",
+          "offset_start": 1.02,
+          "offset_end": 1.24
+        },
+        {
+          "text": "best",
+          "offset_start": 1.24,
+          "offset_end": 1.54
+        },
+        {
+          "text": "World",
+          "offset_start": 1.54,
+          "offset_end": 1.86
+        },
+        {
+          "text": "Cup",
+          "offset_start": 1.86,
+          "offset_end": 2.18
+        }
+      ]
+    },
+    {
+      "at_sec": 5.52,
+      "duration_sec": 1.52,
+      "words": [
+        {
+          "text": "in",
+          "offset_start": 0,
+          "offset_end": 0.22
+        },
+        {
+          "text": "sixteen",
+          "offset_start": 0.22,
+          "offset_end": 0.78
+        },
+        {
+          "text": "years.",
+          "offset_start": 0.78,
+          "offset_end": 1.22
+        }
+      ]
+    }
+  ],
+  "S25": [
+    {
+      "at_sec": 0,
+      "duration_sec": 2.581,
+      "words": [
+        {
+          "text": "If",
+          "offset_start": 0,
+          "offset_end": 0.143
+        },
+        {
+          "text": "you",
+          "offset_start": 0.143,
+          "offset_end": 0.358
+        },
+        {
+          "text": "want",
+          "offset_start": 0.358,
+          "offset_end": 0.645
+        },
+        {
+          "text": "the",
+          "offset_start": 0.645,
+          "offset_end": 0.86
+        },
+        {
+          "text": "stories",
+          "offset_start": 0.86,
+          "offset_end": 1.362
+        },
+        {
+          "text": "the",
+          "offset_start": 1.362,
+          "offset_end": 1.577
+        },
+        {
+          "text": "highlight",
+          "offset_start": 1.577,
+          "offset_end": 2.222
+        },
+        {
+          "text": "reels",
+          "offset_start": 2.222,
+          "offset_end": 2.581
+        }
+      ]
+    },
+    {
+      "at_sec": 2.581,
+      "duration_sec": 0.43,
+      "words": [
+        {
+          "text": "skip —",
+          "offset_start": 0,
+          "offset_end": 0.43
+        }
+      ]
+    },
+    {
+      "at_sec": 3.011,
+      "duration_sec": 1.219,
+      "words": [
+        {
+          "text": "the",
+          "offset_start": 0,
+          "offset_end": 0.215
+        },
+        {
+          "text": "walls",
+          "offset_start": 0.215,
+          "offset_end": 0.574
+        },
+        {
+          "text": "that",
+          "offset_start": 0.574,
+          "offset_end": 0.86
+        },
+        {
+          "text": "hold,",
+          "offset_start": 0.86,
+          "offset_end": 1.219
+        }
+      ]
+    },
+    {
+      "at_sec": 4.23,
+      "duration_sec": 2.007,
+      "words": [
+        {
+          "text": "and",
+          "offset_start": 0,
+          "offset_end": 0.215
+        },
+        {
+          "text": "the",
+          "offset_start": 0.215,
+          "offset_end": 0.43
+        },
+        {
+          "text": "ones",
+          "offset_start": 0.43,
+          "offset_end": 0.717
+        },
+        {
+          "text": "that",
+          "offset_start": 0.717,
+          "offset_end": 1.004
+        },
+        {
+          "text": "finally",
+          "offset_start": 1.004,
+          "offset_end": 1.506
+        },
+        {
+          "text": "don't —",
+          "offset_start": 1.506,
+          "offset_end": 2.007
+        }
+      ]
+    },
+    {
+      "at_sec": 6.237,
+      "duration_sec": 1.219,
+      "words": [
+        {
+          "text": "this",
+          "offset_start": 0,
+          "offset_end": 0.287
+        },
+        {
+          "text": "is",
+          "offset_start": 0.287,
+          "offset_end": 0.43
+        },
+        {
+          "text": "the",
+          "offset_start": 0.43,
+          "offset_end": 0.645
+        },
+        {
+          "text": "channel.",
+          "offset_start": 0.645,
+          "offset_end": 1.219
+        }
+      ]
+    },
+    {
+      "at_sec": 7.456,
+      "duration_sec": 2.164,
+      "words": [
+        {
+          "text": "The",
+          "offset_start": 0,
+          "offset_end": 0.215
+        },
+        {
+          "text": "next",
+          "offset_start": 0.215,
+          "offset_end": 0.502
+        },
+        {
+          "text": "one's",
+          "offset_start": 0.502,
+          "offset_end": 0.86
+        },
+        {
+          "text": "already",
+          "offset_start": 0.86,
+          "offset_end": 1.362
+        },
+        {
+          "text": "coming.",
+          "offset_start": 1.362,
+          "offset_end": 1.864
+        }
+      ]
+    }
+  ]
+}
