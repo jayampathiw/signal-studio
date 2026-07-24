@@ -28,6 +28,9 @@ supabase/.temp/
 __pycache__/
 *.pyc
 *.pyo
+
+# Piper TTS voice models (downloaded, not committed)
+packages/media/piper-voices/
 .venv/
 venv/
 

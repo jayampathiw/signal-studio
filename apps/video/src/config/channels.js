@@ -342,6 +342,40 @@ export const CHANNELS = {
     watermarkFile: 'underdog_archive_standalone_icon.png',
     pageName: 'South American Football Stories',
   },
+
+  // Spanish (Mexico) narration trial for Underdog Archive — see docs/PROJECT-STATUS.md.
+  // es-AR (Daniela) was tried first and judged too flat; swapped to es-MX (Claude) for comparison.
+  // No platforms wired yet: narration accent is still being validated before this goes live.
+  'football/documentary/es-MX': {
+    niche: 'football',
+    style: 'documentary',
+    language: 'es-MX',
+    contentLanguage: 'Spanish (Mexico)',
+    source: 'higgsfield',
+    renderer: 'higgsfield',
+    imageModel: 'nano_banana_2',
+    videoModel: 'seedance_2_0_mini',
+    imageRes: '2k',
+    videoRes: '720p',
+    aspectRatio: '16:9',
+    generateAudio: false,
+    concurrency: 8,
+    formats: {
+      'long_form': {
+        type: 'long_form',
+        generationStrategy: 'reference_pool',
+        clipDurationSec: 15,
+        narration: true,
+        narrationProvider: 'piper',            // es-MX voice — Kokoro has no LatAm Spanish
+        music: true,
+        validation: { look: true, semanticAction: true },
+        description: 'Long-form documentary, Spanish (Mexico) narration trial.',
+      },
+    },
+    platforms: {},
+    watermarkFile: 'underdog_archive_standalone_icon.png',
+    pageName: 'South American Football Stories (ES)',
+  },
 };
 
 export function getChannel(key) {

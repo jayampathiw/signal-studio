@@ -194,6 +194,7 @@ Provisioned end-to-end 2026-06-26. Started from a dashboard **502**; root-caused
 | IG / YT / TikTok publishers | ⬜ | `packages/publishers/{instagram,youtube,tiktok}.js` throw; richer drafts under `apps/video/src/publishers/` |
 | Sports channel | ⬜ | stubbed in `channel-slugs.js` + cron comments |
 | Cartoon channel | ⬜ | stubbed |
+| Underdog Archive — Spanish (Mexico) narration | ✅ voice finalized | `football/documentary/es-MX` channel, `narrationProvider: 'piper'`, voice `es_MX-claude-high` (Kokoro's Spanish is Castilian-only, no LatAm accent). Piper wired as second TTS engine (`packages/media/tts_piper.py`, `piper-tts` in `requirements.txt`). Tried and rejected as too flat: es-AR (`es_AR-daniela-high`), es-MX `ald-medium`. No `platforms`/publishing creds wired yet — that's the next step before this channel can go live. |
 
 ### 7.3 New secrets needed when those go live
 

@@ -5,17 +5,21 @@ import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 
 const execFileAsync = promisify(execFile);
-const ttsScript = resolve(dirname(fileURLToPath(import.meta.url)), 'tts.py');
+const mediaDir = dirname(fileURLToPath(import.meta.url));
+const ttsScript = resolve(mediaDir, 'tts.py');
+const piperScript = resolve(mediaDir, 'tts_piper.py');
 
-// Voice map: country/language code → Kokoro voice ID
+// Voice map: country/language code → Kokoro voice ID, or { engine: 'piper', model } for Piper voices
 const VOICE_MAP = {
   IT: 'if_sara',
   FR: 'ff_siwis',
   EN: 'af_bella',
+  'es-MX': { engine: 'piper', model: 'piper-voices/es_MX-claude-high.onnx' },
 };
 
 /**
- * Synthesise narration text to WAV using Kokoro TTS.
+ * Synthesise narration text to WAV using Kokoro TTS (default) or Piper (for locales
+ * that need a regional accent Kokoro doesn't have).
  * Output is cached — re-runs skip existing files.
  *
  * @param {string} text
@@ -26,7 +30,13 @@ const VOICE_MAP = {
 export async function synthesise(text, outputPath, { voice, country = 'EN', speed = 0.85 } = {}) {
   if (existsSync(outputPath)) return outputPath;
 
-  const resolvedVoice = voice ?? VOICE_MAP[country] ?? VOICE_MAP.EN;
-  await execFileAsync('python3', [ttsScript, text, outputPath, resolvedVoice, String(speed)]);
+  const resolved = voice ?? VOICE_MAP[country] ?? VOICE_MAP.EN;
+
+  if (typeof resolved === 'object' && resolved.engine === 'piper') {
+    const modelPath = resolve(mediaDir, resolved.model);
+    await execFileAsync('python3', [piperScript, text, outputPath, modelPath]);
+  } else {
+    await execFileAsync('python3', [ttsScript, text, outputPath, resolved, String(speed)]);
+  }
   return outputPath;
 }

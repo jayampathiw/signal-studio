@@ -1,0 +1,6 @@
+# Python deps for packages/media/tts.py (Kokoro) and tts_piper.py (Piper).
+# System package also required: espeak-ng (apt/brew) — Kokoro phonemization for non-English voices.
+kokoro
+soundfile
+numpy
+piper-tts
