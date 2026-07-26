@@ -32,12 +32,17 @@ export const W = 1920;
 export const H = 1080;
 export const FPS = 25;
 
-// Pre-scale canvas: 50% overscan gives room for zoom up to 1.45 with motion headroom
-const CANVAS_W = 2880; // W * 1.50
-const CANVAS_H = 1620; // H * 1.50
+// Pre-scale canvas: 50% overscan gives room for zoom up to 1.45 with motion headroom.
+// Derived from the frame's own width/height (not fixed 1920x1080) so portrait
+// (1080x1920 Shorts) gets the same overscan headroom as landscape. At the
+// default W/H this evaluates to exactly 2880x1620 — identical to the old
+// hardcoded constants — so 16:9 output is unaffected.
+function canvasSize(fW, fH) {
+  return { canvasW: Math.round(fW * 1.5), canvasH: Math.round(fH * 1.5) };
+}
 
-function prescale() {
-  return `scale=${CANVAS_W}:${CANVAS_H}:force_original_aspect_ratio=increase:flags=lanczos,crop=${CANVAS_W}:${CANVAS_H}`;
+function prescale(canvasW, canvasH) {
+  return `scale=${canvasW}:${canvasH}:force_original_aspect_ratio=increase:flags=lanczos,crop=${canvasW}:${canvasH}`;
 }
 
 // Real per-frame zoom. `crop`'s w/h expressions do NOT re-evaluate per frame
@@ -50,10 +55,15 @@ function prescale() {
 // window, that reproduces the same zoom effect, but crop's x/y (which DO
 // re-evaluate per frame, already relied on by pan_lr/pan_rl) do all the work
 // instead of its w/h.
-function zoomChain(zExpr, fW, fH) {
+// `cropX` (0..1, default 0.5/center) shifts the horizontal crop window —
+// used for Shorts cut from a 16:9 source where the subject isn't centered
+// in the frame. 0.5 reproduces the exact center-crop expression used before
+// this parameter existed, so default calls are unaffected.
+function zoomChain(zExpr, fW, fH, cropX = 0.5) {
+  const xExpr = cropX === 0.5 ? `(in_w-${fW})/2` : `(in_w-${fW})*${cropX}`;
   return [
     `scale=w='${fW}*(${zExpr})':h='${fH}*(${zExpr})':eval=frame:flags=lanczos`,
-    `crop=w=${fW}:h=${fH}:x='(in_w-${fW})/2':y='(in_h-${fH})/2'`,
+    `crop=w=${fW}:h=${fH}:x='${xExpr}':y='(in_h-${fH})/2'`,
   ].join(',');
 }
 
@@ -68,12 +78,17 @@ function zoomChain(zExpr, fW, fH) {
  * @param {number} [opts.height]
  * @param {string|null} [opts.regrade] — 'warm_amber' | 'cold_blue' | null
  * @param {Array}  [opts.overlays]
+ * @param {number} [opts.cropX] — 0..1 horizontal crop-window offset (0.5 = center, default).
+ *   Only affects push/pull/smash/micro_push/parallax/hold — used when cutting a
+ *   Shorts frame from a 16:9 source whose subject isn't centered.
  * @returns {string} ffmpeg vf filter chain
  */
-export function buildMotionFilter({ motion, durationSec, fps, width, height, regrade, overlays }) {
+export function buildMotionFilter({ motion, durationSec, fps, width, height, regrade, overlays, cropX = 0.5 }) {
   const fW = width ?? W;
   const fH = height ?? H;
   const fFPS = fps ?? FPS;
+  const { canvasW, canvasH } = canvasSize(fW, fH);
+  const textGeometry = resolveTextGeometry(fW, fH);
   // t = PTS in seconds; always increments for looped stills (unlike n which stays 0)
   const T = durationSec.toFixed(6); // total duration clamp
 
@@ -82,7 +97,7 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
 
   switch (motion) {
     // 'static' bypasses the 1.5x overscan+crop every other motion type uses
-    // (see prescale()/CANVAS_W/H above) — every other mode, HOLD included,
+    // (see prescale()/canvasSize() above) — every other mode, HOLD included,
     // permanently crops away the outer ~33% of the source image. Use this
     // only when the full, uncropped frame must be visible (e.g. an
     // end-screen still with its own baked-in layout that can't tolerate
@@ -94,27 +109,27 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     }
     case 'push':
     case 'parallax': {
-      zpFilter = zoomChain(`1+0.22*min(t\\,${T})/${T}`, fW, fH);
+      zpFilter = zoomChain(`1+0.22*min(t\\,${T})/${T}`, fW, fH, cropX);
       break;
     }
     case 'micro_push': {
-      zpFilter = zoomChain(`1+0.12*min(t\\,${T})/${T}`, fW, fH);
+      zpFilter = zoomChain(`1+0.12*min(t\\,${T})/${T}`, fW, fH, cropX);
       break;
     }
     case 'pull': {
-      zpFilter = zoomChain(`1.22-0.22*min(t\\,${T})/${T}`, fW, fH);
+      zpFilter = zoomChain(`1.22-0.22*min(t\\,${T})/${T}`, fW, fH, cropX);
       break;
     }
     case 'smash': {
-      zpFilter = zoomChain(`1+0.40*min(t\\,${T})/${T}`, fW, fH);
+      zpFilter = zoomChain(`1+0.40*min(t\\,${T})/${T}`, fW, fH, cropX);
       break;
     }
     case 'pan_lr': {
       // Constant z=1.20, pan left→right using t
-      const panW = Math.round(CANVAS_W / 1.20);
-      const panH = Math.round(CANVAS_H / 1.20);
-      const maxX = CANVAS_W - panW;
-      const panCY = Math.round((CANVAS_H - panH) / 2);
+      const panW = Math.round(canvasW / 1.20);
+      const panH = Math.round(canvasH / 1.20);
+      const maxX = canvasW - panW;
+      const panCY = Math.round((canvasH - panH) / 2);
       zpFilter = [
         `crop=w=${panW}:h=${panH}:x='${maxX}*min(t\\,${T})/${T}':y=${panCY}`,
         `scale=${fW}:${fH}:flags=lanczos`,
@@ -123,10 +138,10 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     }
     case 'pan_rl': {
       // Constant z=1.20, pan right→left using t
-      const panW = Math.round(CANVAS_W / 1.20);
-      const panH = Math.round(CANVAS_H / 1.20);
-      const maxX = CANVAS_W - panW;
-      const panCY = Math.round((CANVAS_H - panH) / 2);
+      const panW = Math.round(canvasW / 1.20);
+      const panH = Math.round(canvasH / 1.20);
+      const maxX = canvasW - panW;
+      const panCY = Math.round((canvasH - panH) / 2);
       zpFilter = [
         `crop=w=${panW}:h=${panH}:x='${maxX}*(1-min(t\\,${T})/${T})':y=${panCY}`,
         `scale=${fW}:${fH}:flags=lanczos`,
@@ -135,9 +150,10 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     }
     case 'hold':
     default: {
-      // Static center crop — no movement
-      const holdX = Math.round((CANVAS_W - fW) / 2);
-      const holdY = Math.round((CANVAS_H - fH) / 2);
+      // Static crop — no movement. cropX shifts the window horizontally;
+      // default 0.5 reproduces the original always-centered crop exactly.
+      const holdX = Math.round((canvasW - fW) * cropX);
+      const holdY = Math.round((canvasH - fH) / 2);
       zpFilter = [
         `crop=w=${fW}:h=${fH}:x=${holdX}:y=${holdY}`,
         `scale=${fW}:${fH}:flags=lanczos`,
@@ -146,7 +162,7 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     }
   }
 
-  const parts = skipPrescale ? [zpFilter] : [prescale(), zpFilter];
+  const parts = skipPrescale ? [zpFilter] : [prescale(canvasW, canvasH), zpFilter];
 
   if (regrade === 'warm_amber') {
     parts.push('colorbalance=rs=0.1:gs=-0.05:bs=-0.15:rm=0.05:gm=0:bm=-0.1:rh=0.15:gh=0.05:bh=-0.1');
@@ -159,7 +175,7 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
 
   if (overlays?.length) {
     for (const ov of overlays) {
-      const dt = buildDrawtext(ov);
+      const dt = buildDrawtext(ov, textGeometry);
       if (dt) parts.push(dt);
     }
   }
@@ -171,14 +187,29 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
 
 export const CREAM = '0xf2ece1';
 export const AMBER = '0xe8a559';
-const HERO_FONTSIZE = 100;
 const HERO_FADE_IN = 0.4;
-const HERO_DEFAULT_DUR = 3;
-export const CAPTION_FONTSIZE = 80;
 const CAPTION_FADE_IN = 0.2;
-const CAPTION_Y = 'h*0.80'; // fixed lower-third band — same for every scene, never collides with per-scene subject placement
-const REVEAL_FONTSIZE = 64;
 const REVEAL_FADE = 0.15;
+
+// Text sizing/position differs by orientation: portrait (Shorts) frames are
+// narrower, so landscape's lower-third caption band (h*0.80) sits inside the
+// platform UI's reserved chrome (captions, follow button, description) — and
+// fonts tuned for a 1920-wide frame overflow a 1080-wide one. `landscape`
+// values are byte-identical to what this file used before geometry became
+// orientation-aware (HERO_FONTSIZE=100, CAPTION_FONTSIZE=80, CAPTION_Y=h*0.80,
+// REVEAL_FONTSIZE=64), so 16:9 output is unaffected.
+const TEXT_GEOMETRY = {
+  landscape: { heroFontsize: 100, heroDefaultDur: 3, captionFontsize: 80, captionY: 'h*0.80', revealFontsize: 64 },
+  // captionFontsize=110 matches the Wave 1 shot lists' karaoke-caption spec
+  // ("scaled to ~110px, center-lower third") — larger than a first-pass guess
+  // since Shorts captions read at arm's length scroll speed, not seated close.
+  portrait:  { heroFontsize: 72,  heroDefaultDur: 3, captionFontsize: 110, captionY: 'h*0.70', revealFontsize: 48 },
+};
+
+function resolveTextGeometry(fW, fH) {
+  const base = fH > fW ? TEXT_GEOMETRY.portrait : TEXT_GEOMETRY.landscape;
+  return { ...base, frameWidth: fW };
+}
 
 /**
  * Build one or more drawtext filters for a timed overlay.
@@ -192,14 +223,14 @@ const REVEAL_FADE = 0.15;
  *    shape used by project 29 today — rendered byte-for-byte as before, so
  *    existing data/behavior never changes.
  */
-export function buildDrawtext(ov) {
+export function buildDrawtext(ov, geometry = TEXT_GEOMETRY.landscape) {
   if (!ov) return null;
   if (ov.format === 'tiered' && ov.tier === 2) {
-    if (ov.words?.length) return buildCaptionAccent(ov);
-    return ov.text ? buildStandaloneAccent(ov) : null;
+    if (ov.words?.length) return buildCaptionAccent(ov, geometry);
+    return ov.text ? buildStandaloneAccent(ov, geometry) : null;
   }
   if (!ov.text) return null;
-  if (ov.format === 'tiered') return buildHeroCard(ov);
+  if (ov.format === 'tiered') return buildHeroCard(ov, geometry);
   return buildLegacyDrawtext(ov);
 }
 
@@ -225,9 +256,11 @@ function buildLegacyDrawtext({ at_sec, text, style, font_path }) {
 // (cream-before / amber-word / cream-after), each rendered as its own drawtext
 // filter, positioned contiguously via pixel widths measured through fontkit
 // (ffmpeg drawtext can't measure a sibling filter's rendered text at runtime).
-function buildHeroCard({ at_sec, text, amber_word, duration_sec, zone }) {
-  const dur = duration_sec ?? HERO_DEFAULT_DUR;
+function buildHeroCard({ at_sec, text, amber_word, duration_sec, zone, y, fade_in }, geometry) {
+  const dur = duration_sec ?? geometry.heroDefaultDur;
   const placement = resolvePlacement(zone);
+  const yPos = y ?? placement.y;
+  const fadeIn = fade_in ?? HERO_FADE_IN;
 
   let segments = [{ text, color: CREAM }];
   if (amber_word) {
@@ -242,14 +275,31 @@ function buildHeroCard({ at_sec, text, amber_word, duration_sec, zone }) {
     }
   }
 
-  const widths = measureSegments(BEBAS_FONT, HERO_FONTSIZE, segments.map((s) => s.text));
-  const totalWidth = widths.reduce((a, b) => a + b, 0);
+  // Shrink-to-fit safety net (see buildCaptionAccent for the bug this
+  // guards against) — hero-card lines from a reused shotlist are normally
+  // short punchy beats ("GOAL DISALLOWED"), but nothing enforces that for a
+  // Short pulling an unfamiliar scene, so this is defensive, not dead code.
+  const MIN_HERO_FONTSIZE = 32;
+  let heroFontsize = geometry.heroFontsize;
+  let widths = measureSegments(BEBAS_FONT, heroFontsize, segments.map((s) => s.text));
+  let totalWidth = widths.reduce((a, b) => a + b, 0);
+  const maxHeroWidth = geometry.frameWidth * 0.92;
+  if (totalWidth > maxHeroWidth) {
+    const scale = maxHeroWidth / totalWidth;
+    heroFontsize = Math.max(MIN_HERO_FONTSIZE, Math.floor(heroFontsize * scale));
+    const rescale = heroFontsize / geometry.heroFontsize;
+    widths = widths.map((w) => w * rescale);
+    totalWidth = totalWidth * rescale;
+  }
   // Substitute the precomputed group width for `text_w` in the anchor's x expression,
   // since no single filter renders the full multi-segment string.
   const x0Expr = placement.x.replace(/text_w/g, totalWidth.toFixed(2));
 
-  const alphaExpr = at_sec != null
-    ? `if(lt(t-${at_sec}\\,${HERO_FADE_IN})\\,(t-${at_sec})/${HERO_FADE_IN}\\,1)`
+  // fadeIn <= 0 skips the alpha ramp entirely (no :alpha= param) rather than
+  // emitting a (t-at_sec)/0 expression — text just appears instantly at full
+  // opacity the moment its enable window opens.
+  const alphaExpr = at_sec != null && fadeIn > 0
+    ? `if(lt(t-${at_sec}\\,${fadeIn})\\,(t-${at_sec})/${fadeIn}\\,1)`
     : null;
   const enableExpr = at_sec != null
     ? `between(t\\,${at_sec}\\,${(at_sec + dur).toFixed(3)})`
@@ -260,7 +310,7 @@ function buildHeroCard({ at_sec, text, amber_word, duration_sec, zone }) {
     const file = textFilePath(seg.text);
     const x = i === 0 ? x0Expr : `(${x0Expr})+${cumulative.toFixed(2)}`;
     cumulative += widths[i];
-    let params = `textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${HERO_FONTSIZE}:fontcolor=${seg.color}:x='${x}':y='${placement.y}'`;
+    let params = `textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${heroFontsize}:fontcolor=${seg.color}:x='${x}':y='${yPos}'`;
     if (alphaExpr) params += `:alpha='${alphaExpr}'`;
     if (enableExpr) params += `:enable='${enableExpr}'`;
     return `drawtext=${params}`;
@@ -282,12 +332,29 @@ function buildHeroCard({ at_sec, text, amber_word, duration_sec, zone }) {
 // cream layer plus an amber duplicate `enable`d only during that word's own
 // [at_sec+offset_start, at_sec+offset_end] window, so the active word lights
 // up amber exactly as it's spoken while the rest of the phrase stays cream.
-function buildCaptionAccent({ at_sec, duration_sec, words }) {
+function buildCaptionAccent({ at_sec, duration_sec, words }, geometry) {
   const start = at_sec;
   const end = at_sec + duration_sec;
   const texts = words.map((w, i) => (i < words.length - 1 ? `${w.text} ` : w.text));
-  const widths = measureSegments(BEBAS_FONT, CAPTION_FONTSIZE, texts);
-  const totalWidth = widths.reduce((a, b) => a + b, 0);
+
+  // Shrink-to-fit: geometry.captionFontsize is a target size, not a
+  // guarantee — a long caption chunk at 110px (portrait) can exceed the
+  // frame width and overflow both edges (x centers on the full width, so it
+  // doesn't just clip one side). Width scales linearly with fontsize, so one
+  // measurement at the target size is enough to compute the exact scale
+  // factor needed, rather than guessing and re-measuring.
+  const MIN_CAPTION_FONTSIZE = 32;
+  let widths = measureSegments(BEBAS_FONT, geometry.captionFontsize, texts);
+  let totalWidth = widths.reduce((a, b) => a + b, 0);
+  let fontsize = geometry.captionFontsize;
+  const maxWidth = geometry.frameWidth * 0.92;
+  if (totalWidth > maxWidth) {
+    const scale = maxWidth / totalWidth;
+    fontsize = Math.max(MIN_CAPTION_FONTSIZE, Math.floor(fontsize * scale));
+    const rescale = fontsize / geometry.captionFontsize;
+    widths = widths.map((w) => w * rescale);
+    totalWidth = totalWidth * rescale;
+  }
   const x0Expr = `(w-${totalWidth.toFixed(2)})/2`;
 
   const alphaExpr = `if(lt(t-${start}\\,${CAPTION_FADE_IN})\\,(t-${start})/${CAPTION_FADE_IN}\\,1)`;
@@ -299,8 +366,8 @@ function buildCaptionAccent({ at_sec, duration_sec, words }) {
     const file = textFilePath(texts[i]);
     const x = i === 0 ? x0Expr : `(${x0Expr})+${cumulative.toFixed(2)}`;
     cumulative += widths[i];
-    const common = `textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${CAPTION_FONTSIZE}` +
-      `:x='${x}':y='${CAPTION_Y}':borderw=3:bordercolor=black@0.8`;
+    const common = `textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${fontsize}` +
+      `:x='${x}':y='${geometry.captionY}':borderw=3:bordercolor=black@0.8`;
     filters.push(`drawtext=${common}:fontcolor=${CREAM}:alpha='${alphaExpr}':enable='${phraseEnable}'`);
     const wordStart = (start + w.offset_start).toFixed(3);
     const wordEnd = (start + w.offset_end).toFixed(3);
@@ -320,7 +387,7 @@ function buildCaptionAccent({ at_sec, duration_sec, words }) {
 // up alone at 0:08). Only used for a scripted Tier 2 line whose timecode
 // falls outside every generated caption's window for that scene (see
 // assemble-local.mjs's mergeCaptions) — never simultaneous with one.
-function buildStandaloneAccent({ at_sec, duration_sec, text, zone }) {
+function buildStandaloneAccent({ at_sec, duration_sec, text, zone }, geometry) {
   const dur = duration_sec ?? 1;
   const end = at_sec + dur;
   const placement = resolvePlacement(zone);
@@ -329,7 +396,7 @@ function buildStandaloneAccent({ at_sec, duration_sec, text, zone }) {
     `if(lt(t-${at_sec}\\,${REVEAL_FADE})\\,(t-${at_sec})/${REVEAL_FADE}\\,` +
     `if(lt(t\\,${(end - REVEAL_FADE).toFixed(3)})\\,1\\,max(0\\,(${end.toFixed(3)}-t)/${REVEAL_FADE})))`;
   const enableExpr = `between(t\\,${at_sec}\\,${end.toFixed(3)})`;
-  return `drawtext=textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${REVEAL_FONTSIZE}` +
+  return `drawtext=textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${geometry.revealFontsize}` +
     `:fontcolor=${AMBER}:x='${placement.x}':y='${placement.y}':borderw=2:bordercolor=black@0.8` +
     `:alpha='${alphaExpr}':enable='${enableExpr}'`;
 }

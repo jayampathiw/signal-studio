@@ -297,6 +297,65 @@ async function applyLoudnorm(inputPath, workDir) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
+ * Single-bed music mix — one continuous audio-kit bed track under the video's
+ * existing VO, sidechain-ducked, loudnorm'd, muxed back in. Built for Shorts
+ * (assemble-short.mjs): a Short is one continuous clip, not a multi-act
+ * documentary, so it doesn't need buildAudioMix's per-segment audioPlan,
+ * ambience layer, or SFX-event system — just "music bed under VO" per the
+ * Wave 1 shot lists' standing reminder. Reuses this file's existing
+ * loop/duck/loudnorm building blocks rather than a separate implementation.
+ *
+ * @param {object} opts
+ * @param {string} opts.videoPath  — video whose existing audio track IS the VO
+ * @param {string} opts.bedKey     — audio-kit manifest key, e.g. 'tension'
+ * @param {number} [opts.gainDb]   — bed level before ducking (default -20dB)
+ * @param {string} opts.outputPath
+ * @param {string} opts.workDir
+ * @returns {{ loudnormStats: object }}
+ */
+export async function buildSimpleMusicBed({ videoPath, bedKey, gainDb = -20, outputPath, workDir }) {
+  const manifest = loadManifest();
+  if (!manifest[bedKey]) throw new Error(`Audio kit key "${bedKey}" not in manifest`);
+
+  const totalDur = probeDuration(videoPath);
+
+  const bedSrc = join(workDir, `kit_${bedKey}.mp3`);
+  await dl(manifest[bedKey].url, bedSrc);
+
+  const voPath = join(workDir, 'vo_stem.wav');
+  await ff('-y', '-i', videoPath, '-vn',
+    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le', voPath);
+
+  const bedTrimmed = join(workDir, 'bed_trimmed.wav');
+  await loopTrimTo(bedSrc, totalDur, gainDb, bedTrimmed);
+
+  const bedDucked = await duckMusic(bedTrimmed, voPath, workDir);
+
+  const premix = join(workDir, 'premix_simple.wav');
+  await ff(
+    '-y', '-i', bedDucked, '-i', voPath,
+    '-filter_complex', '[0:a][1:a]amix=inputs=2:normalize=0[premix]',
+    '-map', '[premix]',
+    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
+    premix,
+  );
+
+  const { path: masterPath, stats } = await applyLoudnorm(premix, workDir);
+
+  await ff(
+    '-y',
+    '-i', videoPath,
+    '-i', masterPath,
+    '-map', '0:v', '-map', '1:a',
+    '-c:v', 'copy',
+    '-c:a', 'aac', '-b:a', '192k', '-ar', String(AR),
+    outputPath,
+  );
+
+  return { loudnormStats: stats };
+}
+
+/**
  * Build the full 4-layer audio mix and mux it back with the video.
  *
  * @param {object} opts
