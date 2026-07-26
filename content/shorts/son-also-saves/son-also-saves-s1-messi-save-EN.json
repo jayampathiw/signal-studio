@@ -1,0 +1,9 @@
+{
+  "source": "content/longform/son-also-saves",
+  "scenes": [21, 22],
+  "hook": "Messi stepped up to the spot. The son of Egypt's greatest keeper was waiting.",
+  "hook_amber": "was waiting",
+  "still_override": { "22-A": "content/shorts/son-also-saves/vertical-assets/S22-A-vertical.jpg" },
+  "music": "tension",
+  "output": "son-also-saves-s1-messi-save-EN.mp4"
+}

@@ -1,0 +1,9 @@
+{
+  "source": "content/longform/same-coin",
+  "scenes": [12, 13, 14],
+  "hook": "The referee said no penalty. VAR made him watch it again — and everything changed.",
+  "hook_amber": "everything changed",
+  "outro": { "text": "PENALTY.", "duration_sec": 1.5 },
+  "music": "tension",
+  "output": "same-coin-s2-var-penalty-EN.mp4"
+}

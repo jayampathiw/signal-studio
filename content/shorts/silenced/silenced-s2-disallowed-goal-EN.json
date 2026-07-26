@@ -1,0 +1,8 @@
+{
+  "source": "content/longform/silenced-goalkeeper",
+  "scenes": [27, 28, 29, 30],
+  "hook": "One push changed everything about this match.",
+  "hook_amber": "One push",
+  "music": "tension",
+  "output": "silenced-s2-disallowed-goal-EN.mp4"
+}

@@ -13,9 +13,16 @@ import { execFile, execSync } from 'child_process';
 import { promisify } from 'util';
 import { buildMotionFilter, W, H, FPS } from './motion.js';
 import { SERIF_FONT } from './fonts.js';
+import { measureTextWidth } from './text-metrics.js';
 
 const execAsync = promisify(execFile);
 export const AR = 44100;
+
+// Default render format — landscape 16:9 at the pipeline's original
+// resolution. Every builder below accepts an optional `format` override
+// (e.g. `{ width: 1080, height: 1920, fps: FPS }` for Shorts); omitting it
+// reproduces today's output exactly.
+const DEFAULT_FORMAT = { width: W, height: H, fps: FPS };
 
 // Accepts either an http(s) URL (the Supabase-backed pipeline's R2 URLs) or a
 // local file path (the file-driven local assembler's still/VO paths) — same
@@ -62,9 +69,10 @@ export function probeDuration(filePath) {
 // frames at t=0 and t=3), and zoompan is flagged unreliable at the top of
 // motion.js — a plain hold sidesteps both rather than risk a silent no-op
 // animation. Omitting bgImagePath renders byte-identical to before.
-export async function buildTextCard(text, durationSec, out, bgImagePath) {
+export async function buildTextCard(text, durationSec, out, bgImagePath, format = DEFAULT_FORMAT) {
+  const { width: fW, height: fH, fps: fFPS } = format;
   if (bgImagePath) {
-    const vf = `scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},format=yuv420p`;
+    const vf = `scale=${fW}:${fH}:force_original_aspect_ratio=increase,crop=${fW}:${fH},format=yuv420p`;
     await execAsync('ffmpeg', [
       '-y',
       '-loop', '1', '-i', bgImagePath,
@@ -81,10 +89,22 @@ export async function buildTextCard(text, durationSec, out, bgImagePath) {
   // Inside single-quoted FFmpeg filter options, ' must be escaped as '\'' (close, escaped, reopen).
   // Using \' instead wrongly closes the quote — the colon doesn't need escaping inside single quotes.
   const safe = text.replace(/\\/g, '\\\\').replace(/'/g, "'\\''");
-  const dt = `drawtext=text='${safe}':fontfile='${SERIF_FONT}':fontcolor=white:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2`;
+  // Shrink-to-fit: a fixed fontsize=72 overflowed both edges of a 1080px
+  // portrait frame for anything longer than a couple words (ffmpeg's own
+  // x=(w-text_w)/2 centers correctly but doesn't stop text_w from exceeding
+  // w). Pre-measure via fontkit and scale down proportionally if needed —
+  // text width scales linearly with fontsize, so one measurement is enough.
+  const MIN_CARD_FONTSIZE = 32;
+  const BASE_CARD_FONTSIZE = 72;
+  const maxTextWidth = fW * 0.92;
+  const rawWidth = measureTextWidth(SERIF_FONT, BASE_CARD_FONTSIZE, text);
+  const cardFontsize = rawWidth > maxTextWidth
+    ? Math.max(MIN_CARD_FONTSIZE, Math.floor(BASE_CARD_FONTSIZE * maxTextWidth / rawWidth))
+    : BASE_CARD_FONTSIZE;
+  const dt = `drawtext=text='${safe}':fontfile='${SERIF_FONT}':fontcolor=white:fontsize=${cardFontsize}:x=(w-text_w)/2:y=(h-text_h)/2`;
   await execAsync('ffmpeg', [
     '-y',
-    '-f', 'lavfi', '-i', `color=c=black:s=${W}x${H}:r=${FPS}:d=${durationSec}`,
+    '-f', 'lavfi', '-i', `color=c=black:s=${fW}x${fH}:r=${fFPS}:d=${durationSec}`,
     '-f', 'lavfi', '-i', `anullsrc=r=${AR}:cl=stereo`,
     '-vf', `${dt},format=yuv420p`,
     '-t', String(durationSec),
@@ -96,9 +116,12 @@ export async function buildTextCard(text, durationSec, out, bgImagePath) {
 
 // ── Single still cut builder ─────────────────────────────────────────────────
 
-export async function buildCut(imgPath, motion, durationSec, regrade, overlays, out) {
+export async function buildCut(imgPath, motion, durationSec, regrade, overlays, out, format = DEFAULT_FORMAT, cropX = 0.5) {
   const allOverlays = (overlays ?? []).map((o) => ({ ...o, font_path: SERIF_FONT }));
-  const vf = buildMotionFilter({ motion, durationSec, regrade, overlays: allOverlays });
+  const vf = buildMotionFilter({
+    motion, durationSec, regrade, overlays: allOverlays,
+    width: format.width, height: format.height, fps: format.fps, cropX,
+  });
 
   await execAsync('ffmpeg', [
     '-y',
@@ -116,7 +139,7 @@ export async function buildCut(imgPath, motion, durationSec, regrade, overlays, 
 // `noOverlays` replaces the CLI-arg module global the original file used —
 // callers thread through whatever their own --overlays/--no-overlays flag resolved to.
 
-export async function buildStillsScene(stills, clip, voPath, workDir, { noOverlays = false, maxSilentTail = null } = {}) {
+export async function buildStillsScene(stills, clip, voPath, workDir, { noOverlays = false, maxSilentTail = null, format = DEFAULT_FORMAT } = {}) {
   // F4: VO-length reconciliation
   const plannedDur = clip.duration_sec;
   let voDur = 0;
@@ -193,7 +216,7 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
     await download(still.clip_url, imgPath);
 
     const cutPath = join(workDir, `cut_${cutId}.mp4`);
-    await buildCut(imgPath, still.motion ?? 'push', cutDur, still.regrade ?? null, cutOverlays, cutPath);
+    await buildCut(imgPath, still.motion ?? 'push', cutDur, still.regrade ?? null, cutOverlays, cutPath, format, still.crop_x ?? 0.5);
     cutPaths.push({ path: cutPath, transition: still.transition ?? 'cut' });
     cutRelStart += cutDur; // only advance for cuts actually concatenated into the scene
   }

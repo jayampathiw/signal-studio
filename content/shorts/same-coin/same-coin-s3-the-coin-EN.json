@@ -1,0 +1,12 @@
+{
+  "source": "content/longform/same-coin",
+  "scenes": [1, 20, 22],
+  "hook": "A penalty made him a national hero. The next one took it all back.",
+  "hook_amber": "took it all back",
+  "mute": [1],
+  "duration_override": { "1": 4 },
+  "vo_override": { "20": "content/shorts/same-coin/vo-overrides/S20-short.wav" },
+  "still_override": { "22-A": "content/shorts/same-coin/vertical-assets/S22-A-vertical.jpg" },
+  "music": "reflective",
+  "output": "same-coin-s3-the-coin-EN.mp4"
+}

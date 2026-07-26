@@ -59,3 +59,12 @@ npm-debug.log*
 content/longform/*/stills/
 content/longform/*/refs/
 .vercel
+
+# Shorts image-validation scratch copies (duplicates of longform stills, for manual review only)
+content/shorts/_review/
+
+# Shorts rendered output + generated assets — not tracked, same convention as
+# content/longform/*/stills (binaries, regenerable from configs + source stills)
+content/shorts/*/src/*.mp4
+content/shorts/*/vertical-assets/
+content/shorts/*/vo-overrides/

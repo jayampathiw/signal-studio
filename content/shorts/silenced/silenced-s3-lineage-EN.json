@@ -1,0 +1,9 @@
+{
+  "source": "content/longform/silenced-goalkeeper",
+  "scenes": [44, 45, 46],
+  "hook": "Paraguay has been producing goalkeepers like this for 30 years. Here's why.",
+  "hook_amber": "30 years",
+  "still_override": { "45-A": "content/shorts/silenced/vertical-assets/S45-A-vertical.jpg" },
+  "music": "reflective",
+  "output": "silenced-s3-lineage-EN.mp4"
+}
