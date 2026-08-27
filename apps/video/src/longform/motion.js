@@ -32,13 +32,20 @@ export const W = 1920;
 export const H = 1080;
 export const FPS = 25;
 
-// Pre-scale canvas: 50% overscan gives room for zoom up to 1.45 with motion headroom.
-// Derived from the frame's own width/height (not fixed 1920x1080) so portrait
-// (1080x1920 Shorts) gets the same overscan headroom as landscape. At the
-// default W/H this evaluates to exactly 2880x1620 — identical to the old
-// hardcoded constants — so 16:9 output is unaffected.
+// See zoomChain() below for why this exists — quantizing the zoom's per-frame
+// scale target at SS× output resolution (instead of directly at output
+// resolution) eliminates visible integer-pixel-rounding judder in slow zooms.
+const ZOOM_SUPERSAMPLE = 2;
+
+// Pre-scale canvas: overscan gives room for zoom up to 1.45 with motion
+// headroom, at SS× resolution so zoomChain's supersampled scale target never
+// has to upscale beyond this canvas even at t=0 (zoomChain requests up to
+// fW*SS*1.45). Derived from the frame's own width/height (not fixed
+// 1920x1080) so portrait (1080x1920 Shorts) gets the same headroom as
+// landscape.
 function canvasSize(fW, fH) {
-  return { canvasW: Math.round(fW * 1.5), canvasH: Math.round(fH * 1.5) };
+  const factor = 1.5 * ZOOM_SUPERSAMPLE;
+  return { canvasW: Math.round(fW * factor), canvasH: Math.round(fH * factor) };
 }
 
 function prescale(canvasW, canvasH) {
@@ -59,11 +66,25 @@ function prescale(canvasW, canvasH) {
 // used for Shorts cut from a 16:9 source where the subject isn't centered
 // in the frame. 0.5 reproduces the exact center-crop expression used before
 // this parameter existed, so default calls are unaffected.
+//
+// SS (supersample factor, see ZOOM_SUPERSAMPLE above): the previous version
+// quantized the zoom's `scale` target directly at output resolution (fW×fH).
+// For a slow zoom over a long hold, the per-frame size delta is often well
+// under 1 output pixel — most frames round to the identical integer width,
+// then a 1-2px jump lands on whichever frame crosses the next integer
+// boundary. That uneven hold-then-jump pattern is what reads as judder/
+// dragging, not a timing bug (t already increments correctly — verified
+// separately). Quantizing at SS× the output size instead, then downscaling
+// once at the very end, shrinks each rounding step to 1/SS of a final pixel,
+// so the apparent motion is smooth.
 function zoomChain(zExpr, fW, fH, cropX = 0.5) {
-  const xExpr = cropX === 0.5 ? `(in_w-${fW})/2` : `(in_w-${fW})*${cropX}`;
+  const ssW = fW * ZOOM_SUPERSAMPLE;
+  const ssH = fH * ZOOM_SUPERSAMPLE;
+  const xExpr = cropX === 0.5 ? `(in_w-${ssW})/2` : `(in_w-${ssW})*${cropX}`;
   return [
-    `scale=w='${fW}*(${zExpr})':h='${fH}*(${zExpr})':eval=frame:flags=lanczos`,
-    `crop=w=${fW}:h=${fH}:x='${xExpr}':y='(in_h-${fH})/2'`,
+    `scale=w='${ssW}*(${zExpr})':h='${ssH}*(${zExpr})':eval=frame:flags=lanczos`,
+    `crop=w=${ssW}:h=${ssH}:x='${xExpr}':y='(in_h-${ssH})/2'`,
+    `scale=${fW}:${fH}:flags=lanczos`,
   ].join(',');
 }
 
@@ -198,7 +219,7 @@ const REVEAL_FADE = 0.15;
 // values are byte-identical to what this file used before geometry became
 // orientation-aware (HERO_FONTSIZE=100, CAPTION_FONTSIZE=80, CAPTION_Y=h*0.80,
 // REVEAL_FONTSIZE=64), so 16:9 output is unaffected.
-const TEXT_GEOMETRY = {
+export const TEXT_GEOMETRY = {
   landscape: { heroFontsize: 100, heroDefaultDur: 3, captionFontsize: 80, captionY: 'h*0.80', revealFontsize: 64 },
   // captionFontsize=110 matches the Wave 1 shot lists' karaoke-caption spec
   // ("scaled to ~110px, center-lower third") — larger than a first-pass guess

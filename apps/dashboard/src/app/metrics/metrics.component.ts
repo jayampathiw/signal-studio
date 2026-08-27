@@ -20,6 +20,7 @@ const FLAG: Record<string, string> = { FR: '🇫🇷', IT: '🇮🇹', AU: '🇦
         <span style="font-size:10px;color:var(--ink-text-3);letter-spacing:.12em;text-transform:uppercase;">Metrics</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
+        <a routerLink="/longform" style="font-size:11px;font-weight:600;color:#7c5cff;text-decoration:none;padding:4px 10px;border-radius:4px;border:1px solid var(--ink-border);">🎬 Video Channels</a>
         <a routerLink="/articles" style="font-size:11px;font-weight:600;color:var(--ink-text-2);text-decoration:none;padding:4px 10px;border-radius:4px;border:1px solid var(--ink-border);">← Articles</a>
       </div>
     </nav>

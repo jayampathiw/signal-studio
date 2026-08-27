@@ -6,7 +6,29 @@ const RULES = [
   { pattern: /whistle/i, key: 'ref_whistle' },
   { pattern: /drum hit|drum strike|bass drum/i, key: 'drum_hit' },
   { pattern: /musical hit|sharp hit/i, key: 'musical_hit' },
+  // Glove-smack saves have no dedicated kit asset — ball_thud (a physical
+  // impact/thud one-shot) is the closest existing sound, reused here rather
+  // than sourcing a new asset (Pixabay's public API has no audio endpoint).
+  { pattern: /glove.?smack/i, key: 'ball_thud' },
   { pattern: /crowd roar|crowd erupts/i, key: 'crowd_roar' },
+  // Sustained crowd energy/swell/inhale phrasing — no punctual one-shot,
+  // maps to the longer energetic ambience texture instead of a hit.
+  { pattern: /crowd (swell|energy|noise rising)|stadium energy/i, key: 'stadium_crowd_energy' },
+  { pattern: /crowd inhale/i, key: 'crowd_quiet' },
+  // Crowd groan/jeer (a negative reaction) has no matching kit asset either
+  // tonally (crowd_roar/crowd_cheer are both positive) — treated as a noop;
+  // the underlying music bed carries the beat instead of a mismatched SFX.
+  { pattern: /crowd groan|crowd jeer/i, noop: true },
+  // "let it ring out" / natural decay of whatever's already playing — not a
+  // new trigger. Must come before the applause/cheer/clap rules below, or a
+  // ring-out line re-fires a fresh one-shot on top of the sound resolving.
+  { pattern: /ring out|ringing out/i, noop: true },
+  // "none" / "let the card land" / "let the swell resolve" — explicit no-new-SFX
+  // directives (the scene relies on the music bed alone); noop, not unmatched.
+  { pattern: /^none$|let (the )?(card|swell) (land|resolve)/i, noop: true },
+  { pattern: /applause|ovation/i, key: 'crowd_applause' },
+  { pattern: /clap|clapping/i, key: 'crowd_clap' },
+  { pattern: /crowd cheer|cheering(?! roar)/i, key: 'crowd_cheer' },
   { pattern: /celebration.*cut|cut.*celebration/i, key: 'celebration_cut' },
   { pattern: /hum.*cut.*silence|silence.*hum|hum cuts/i, key: 'hum_cut_silence' },
   { pattern: /stadium hum|rising hum|hum/i, key: 'stadium_hum' },
@@ -22,7 +44,11 @@ export function mapAudioCue(rawCue) {
 
   for (const rule of RULES) {
     if (rule.pattern.test(rawCue)) {
-      if (rule.key === null) {
+      if (rule.noop) {
+        // Matched, but deliberately produces nothing — e.g. "let it ring
+        // out" describes the tail of an already-playing sound, not a new
+        // one-shot to trigger.
+      } else if (rule.key === null) {
         sfx.push({ key: 'silence', hold_sec: rule.hold_sec ?? null });
       } else {
         sfx.push({ key: rule.key });

@@ -58,7 +58,8 @@ import { promisify } from 'util';
 import { parseShotlistV2, tcToSec } from '../../src/longform/parse-shotlist-v2.js';
 import { buildStillsScene, buildTextCard, probeDuration } from '../../src/longform/render.js';
 import { buildSimpleMusicBed } from '../../src/longform/audio-mix.js';
-import { FPS } from '../../src/longform/motion.js';
+import { FPS, TEXT_GEOMETRY } from '../../src/longform/motion.js';
+import { splitOversizedCaptions } from '../../src/longform/captions.js';
 import { measureTextWidth } from '../../src/longform/text-metrics.js';
 import { BEBAS_FONT } from '../../src/longform/fonts.js';
 
@@ -179,7 +180,7 @@ function mergeCaptions(sceneN, fromSec) {
   if (NO_CAPTION_SCENES.has(sceneN)) return [];
   const chunks = sceneCaptions[`S${pad2(sceneN)}`];
   if (!chunks?.length) return [];
-  return chunks.map((c) => ({
+  const overlays = chunks.map((c) => ({
     format: 'tiered',
     tier: 2,
     kind: 'caption',
@@ -187,6 +188,15 @@ function mergeCaptions(sceneN, fromSec) {
     duration_sec: c.duration_sec,
     words: c.words.map((w) => ({ text: w.text, offset_start: w.offset_start, offset_end: w.offset_end })),
   }));
+  // These chunks were sized for the source project's LANDSCAPE render —
+  // split (never shrink) any that overflow the narrower portrait frame at
+  // the fixed Shorts caption size, so size stays constant chunk-to-chunk.
+  const maxCaptionWidth = SHORT_FORMAT.width * 0.92;
+  return splitOversizedCaptions(
+    overlays,
+    (text) => measureTextWidth(BEBAS_FONT, TEXT_GEOMETRY.portrait.captionFontsize, text),
+    maxCaptionWidth,
+  );
 }
 
 function findStillFile(sceneN, cut) {

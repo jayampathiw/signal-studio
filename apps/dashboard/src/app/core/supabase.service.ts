@@ -150,6 +150,10 @@ export interface LongformProject {
   audio_plan: any | null;
   seo: { title: string; description: string; hashtags: string[] } | null;
   scenes: ContentItemScene[] | null;
+  clip_type: 'long_form' | 'short';
+  video_slug: string | null;
+  parent_project_id: number | null;
+  shot_list_meta: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
 }
@@ -657,7 +661,7 @@ export class SupabaseService {
   async getLongformProjects(): Promise<LongformProject[]> {
     const { data, error } = await this.client
       .from('content_items')
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, created_at, updated_at')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
       .in('channel_key', LONGFORM_CHANNEL_KEYS)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -667,7 +671,7 @@ export class SupabaseService {
   async getLongformByChannel(channelKey: string): Promise<LongformProject[]> {
     const { data, error } = await this.client
       .from('content_items')
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, created_at, updated_at')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
       .eq('channel_key', channelKey)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -686,7 +690,7 @@ export class SupabaseService {
     const { data, error } = await this.client
       .from('content_items')
       .insert({ channel_key: channelKey, title, status: 'brief' })
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, created_at, updated_at')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
       .single();
     if (error) throw error;
     return data as LongformProject;
@@ -695,7 +699,7 @@ export class SupabaseService {
   async getLongformProject(id: number): Promise<LongformProject | null> {
     const { data, error } = await this.client
       .from('content_items')
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, created_at, updated_at')
+      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
       .eq('id', id)
       .single();
     if (error) throw error;

@@ -16,7 +16,7 @@ interface ChannelSummary {
 const CHANNEL_META: Record<string, { slug: string; pageName: string; logoFile: string; description: string }> = {
   'football/documentary/EN': {
     slug: 'football',
-    pageName: 'South American Football Stories',
+    pageName: 'The Underdog Archives',
     logoFile: 'underdog_archive_standalone_icon.png',
     description: 'Documentary pipeline — stills + narration + Ken Burns',
   },
@@ -35,7 +35,7 @@ const ACTIVE_STATUSES = new Set(['scripting','awaiting_script_approval','seeding
       <div style="display:flex;gap:4px;">
         <a routerLink="/reels"    style="padding:4px 12px;border-radius:6px;font-size:12px;color:#64748b;text-decoration:none;">Reels</a>
         <a routerLink="/articles" style="padding:4px 12px;border-radius:6px;font-size:12px;color:#64748b;text-decoration:none;">Articles</a>
-        <a routerLink="/longform" style="padding:4px 12px;border-radius:6px;font-size:12px;color:#e2e8f0;text-decoration:none;background:#1e1e1e;">Longform</a>
+        <a routerLink="/longform" style="padding:4px 12px;border-radius:6px;font-size:12px;color:#e2e8f0;text-decoration:none;background:#1e1e1e;">Video Channels</a>
       </div>
     </nav>
 

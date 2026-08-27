@@ -39,8 +39,8 @@ interface SceneGroup {
         </button>
         <div style="display:flex;align-items:center;gap:12px;">
           <span style="font-size:12px;color:#475569;">{{ uploadedCount() }} / {{ totalSlots() }} uploaded</span>
-          <!-- View toggle — only shown when expanded -->
-          @if (!collapsed()) {
+          <!-- View toggle — only shown when expanded and browsing the grid/list -->
+          @if (!collapsed() && (project.status !== 'storyboard' || uploadMethod() === 'individual')) {
             <div style="display:flex;border:1px solid #262626;border-radius:6px;overflow:hidden;">
               <button (click)="listView.set(false)"
                       style="padding:4px 10px;border:none;font-size:11px;cursor:pointer;transition:background .15s;"
@@ -68,7 +68,39 @@ interface SceneGroup {
         <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">Loading stills…</div>
       } @else if (scenes().length === 0) {
         <div style="text-align:center;padding:40px;color:#475569;font-size:13px;">No scenes found. Import a shot list first.</div>
-      } @else if (listView()) {
+      } @else if (project.status === 'storyboard' && uploadMethod() === null) {
+
+        <!-- ── METHOD PICKER — pick one, then only that flow is shown ── -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+          <button (click)="uploadMethod.set('individual')"
+                  style="text-align:left;background:#0d0d0d;border:1px dashed #262626;border-radius:10px;padding:18px 20px;cursor:pointer;transition:border-color .15s;">
+            <div style="font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:4px;">🖼️ Upload Still Images</div>
+            <div style="font-size:11px;color:#475569;line-height:1.5;">Browse scene-by-scene and click each slot to upload its image one at a time.</div>
+          </button>
+          <button (click)="uploadMethod.set('filename')"
+                  style="text-align:left;background:#0a1a0a;border:1px dashed #1a3a1a;border-radius:10px;padding:18px 20px;cursor:pointer;transition:border-color .15s;">
+            <div style="font-size:13px;font-weight:600;color:#4ade80;margin-bottom:4px;">📁 Bulk Upload by Filename</div>
+            <div style="font-size:11px;color:#475569;line-height:1.5;">Files named <code style="background:#111;padding:1px 4px;border-radius:3px;">S7-A.jpeg</code> — slot assigned instantly from the filename, no AI needed.</div>
+          </button>
+          <button (click)="uploadMethod.set('automatch')"
+                  style="text-align:left;background:#0a1628;border:1px dashed #1e3a5f;border-radius:10px;padding:18px 20px;cursor:pointer;transition:border-color .15s;">
+            <div style="font-size:13px;font-weight:600;color:#60a5fa;margin-bottom:4px;">⚡ Auto-Match via Claude Vision</div>
+            <div style="font-size:11px;color:#475569;line-height:1.5;">Any filename — Claude Vision looks at each image and assigns it to the correct slot.</div>
+          </button>
+        </div>
+
+      } @else {
+
+      @if (project.status === 'storyboard') {
+        <button (click)="uploadMethod.set(null)"
+                style="display:flex;align-items:center;gap:4px;background:#1a1a1a;border:1px solid #262626;border-radius:6px;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;padding:6px 12px;margin-bottom:14px;">
+          ← Back
+        </button>
+      }
+
+      @if (project.status !== 'storyboard' || uploadMethod() === 'individual') {
+
+      @if (listView()) {
 
         <!-- ── LIST VIEW: prompt text visible, one row per slot ── -->
         <div style="display:flex;flex-direction:column;gap:6px;">
@@ -206,10 +238,14 @@ interface SceneGroup {
 
       }
 
+      } <!-- end individual-upload grid/list -->
+
+      } <!-- end method-chosen @else -->
+
       } <!-- end !collapsed() -->
 
       <!-- ── ACTION PANEL — always visible regardless of collapse/view state ── -->
-      @if (project.status === 'storyboard') {
+      @if (project.status === 'storyboard' && uploadMethod() === 'filename') {
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;">
 
           <!-- Filename-based bulk upload (fast, no AI) -->
@@ -249,6 +285,17 @@ interface SceneGroup {
               </div>
             }
           </div>
+
+          <!-- Upload count summary -->
+          <div style="font-size:12px;color:#475569;">
+            {{ uploadedCount() }} of {{ totalSlots() }} stills uploaded
+            @if (uploadedCount() < totalSlots()) { · {{ totalSlots() - uploadedCount() }} remaining }
+          </div>
+        </div>
+      }
+
+      @if (project.status === 'storyboard' && uploadMethod() === 'automatch') {
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;">
 
           <!-- Auto-match bulk upload (AI Vision fallback) -->
           <div style="background:#0a1628;border:1px dashed #1e3a5f;border-radius:10px;padding:18px 20px;margin-bottom:16px;">
@@ -327,6 +374,7 @@ export class LongformWorkbenchComponent implements OnInit {
   slotState        = signal<Record<string, SlotState>>({});
   collapsed        = signal(false);
   listView         = signal(true);
+  uploadMethod     = signal<'individual' | 'filename' | 'automatch' | null>(null);
   autoMatching     = signal(false);
   matchProgress    = signal<{ current: number; total: number; log: string[] }>({ current: 0, total: 0, log: [] });
   filenameUploading = signal(false);
