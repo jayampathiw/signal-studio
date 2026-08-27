@@ -1,0 +1,52 @@
+[
+  {
+    "word": "Ferran",
+    "start": 0,
+    "end": 0.78
+  },
+  {
+    "word": "Torres",
+    "start": 0.78,
+    "end": 1.18
+  },
+  {
+    "word": "First",
+    "start": 1.18,
+    "end": 1.54
+  },
+  {
+    "word": "Time.",
+    "start": 1.54,
+    "end": 2.14
+  },
+  {
+    "word": "Into",
+    "start": 2.44,
+    "end": 2.52
+  },
+  {
+    "word": "The",
+    "start": 2.52,
+    "end": 2.7
+  },
+  {
+    "word": "Roof",
+    "start": 2.7,
+    "end": 2.94
+  },
+  {
+    "word": "Of",
+    "start": 2.94,
+    "end": 3.12
+  },
+  {
+    "word": "The",
+    "start": 3.12,
+    "end": 3.22
+  },
+  {
+    "word": "Net.",
+    "start": 3.22,
+    "end": 3.54
+  }
+]

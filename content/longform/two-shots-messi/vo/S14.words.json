@@ -1,0 +1,102 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.46
+  },
+  {
+    "word": "Number",
+    "start": 0.46,
+    "end": 0.76
+  },
+  {
+    "word": "One",
+    "start": 0.76,
+    "end": 1.06
+  },
+  {
+    "word": "And",
+    "start": 1.06,
+    "end": 1.26
+  },
+  {
+    "word": "Number",
+    "start": 1.26,
+    "end": 1.48
+  },
+  {
+    "word": "Two",
+    "start": 1.48,
+    "end": 1.82
+  },
+  {
+    "word": "Teams",
+    "start": 1.82,
+    "end": 2.14
+  },
+  {
+    "word": "In",
+    "start": 2.14,
+    "end": 2.42
+  },
+  {
+    "word": "The",
+    "start": 2.42,
+    "end": 2.42
+  },
+  {
+    "word": "World.",
+    "start": 2.42,
+    "end": 2.86
+  },
+  {
+    "word": "Both",
+    "start": 3.34,
+    "end": 3.68
+  },
+  {
+    "word": "Unbeaten.",
+    "start": 3.68,
+    "end": 4.56
+  },
+  {
+    "word": "One",
+    "start": 4.8,
+    "end": 4.98
+  },
+  {
+    "word": "Of",
+    "start": 4.98,
+    "end": 5.06
+  },
+  {
+    "word": "Them",
+    "start": 5.06,
+    "end": 5.2
+  },
+  {
+    "word": "About",
+    "start": 5.2,
+    "end": 5.42
+  },
+  {
+    "word": "To",
+    "start": 5.42,
+    "end": 5.6
+  },
+  {
+    "word": "Stop",
+    "start": 5.6,
+    "end": 5.88
+  },
+  {
+    "word": "Being",
+    "start": 5.88,
+    "end": 6.18
+  },
+  {
+    "word": "Either.",
+    "start": 6.18,
+    "end": 6.58
+  }
+]

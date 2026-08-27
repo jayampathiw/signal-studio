@@ -1,0 +1,82 @@
+[
+  {
+    "word": "Two",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "Shots.",
+    "start": 0.7,
+    "end": 1.12
+  },
+  {
+    "word": "Zero",
+    "start": 1.3,
+    "end": 1.66
+  },
+  {
+    "word": "On",
+    "start": 1.66,
+    "end": 1.94
+  },
+  {
+    "word": "Target.",
+    "start": 1.94,
+    "end": 2.38
+  },
+  {
+    "word": "One",
+    "start": 3.06,
+    "end": 3.26
+  },
+  {
+    "word": "Card",
+    "start": 3.26,
+    "end": 3.58
+  },
+  {
+    "word": "That",
+    "start": 3.58,
+    "end": 3.84
+  },
+  {
+    "word": "Decided",
+    "start": 3.84,
+    "end": 4.22
+  },
+  {
+    "word": "It",
+    "start": 4.22,
+    "end": 4.44
+  },
+  {
+    "word": "Before",
+    "start": 4.44,
+    "end": 4.7
+  },
+  {
+    "word": "The",
+    "start": 4.7,
+    "end": 4.94
+  },
+  {
+    "word": "Final",
+    "start": 4.94,
+    "end": 5.3
+  },
+  {
+    "word": "Whistle",
+    "start": 5.3,
+    "end": 5.66
+  },
+  {
+    "word": "Ever",
+    "start": 5.66,
+    "end": 5.98
+  },
+  {
+    "word": "Could.",
+    "start": 5.98,
+    "end": 6.34
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "word": "In",
+    "start": 0,
+    "end": 0.52
+  },
+  {
+    "word": "The",
+    "start": 0.52,
+    "end": 0.62
+  },
+  {
+    "word": "Center",
+    "start": 0.62,
+    "end": 0.96
+  },
+  {
+    "word": "Circle,",
+    "start": 0.96,
+    "end": 1.46
+  },
+  {
+    "word": "Lionel",
+    "start": 1.94,
+    "end": 2.26
+  },
+  {
+    "word": "Messi",
+    "start": 2.26,
+    "end": 2.54
+  },
+  {
+    "word": "Sits",
+    "start": 2.54,
+    "end": 2.88
+  },
+  {
+    "word": "Down",
+    "start": 2.88,
+    "end": 3.16
+  },
+  {
+    "word": "On",
+    "start": 3.16,
+    "end": 3.34
+  },
+  {
+    "word": "The",
+    "start": 3.34,
+    "end": 3.44
+  },
+  {
+    "word": "Grass…",
+    "start": 3.44,
+    "end": 4
+  }
+]

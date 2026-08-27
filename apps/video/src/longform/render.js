@@ -135,11 +135,60 @@ export async function buildCut(imgPath, motion, durationSec, regrade, overlays, 
   ]);
 }
 
+// Auto cut-split: when a multi-still scene has no explicit start_sec/end_sec,
+// the naive default is a dumb equal-time split across cuts — which routinely
+// lands a boundary mid-sentence, so a cut changes before (or well after) the
+// narration actually gets to describing it, and the image meant to illustrate
+// the *last* part of the VO barely gets any screen time (or gets none — the
+// VO ends before the last cut even starts). son-also-saves fixed this once,
+// by hand, for a single scene (`CUT_SPLIT_OVERRIDES` in assemble-local.mjs).
+// This generalizes that fix: snap each equal-split boundary to the nearest
+// real caption-chunk edge (chunks already break on natural clause pauses —
+// see captions.js), so cuts change at a breath, not mid-word. Falls back to
+// the plain equal-split point if no chunk boundary is close enough to be a
+// sane substitute (keeps every cut from collapsing toward one edge).
+function computeAutoSplitDurations(sceneDur, numStills, chunks) {
+  const equalSlice = sceneDur / numStills;
+  if (!Array.isArray(chunks) || !chunks.length || numStills < 2) {
+    return Array(numStills).fill(equalSlice);
+  }
+
+  const candidates = [];
+  for (const c of chunks) {
+    candidates.push(c.at_sec);
+    candidates.push(c.at_sec + c.duration_sec);
+  }
+  candidates.sort((a, b) => a - b);
+
+  const minCutDur = Math.min(1.5, equalSlice * 0.4);
+  const maxDrift = equalSlice * 0.6; // don't snap so far it eats a neighboring cut's time
+  const boundaries = [];
+  let prev = 0;
+  for (let k = 1; k < numStills; k++) {
+    const target = equalSlice * k;
+    let best = target;
+    let bestDist = Infinity;
+    for (const c of candidates) {
+      if (c <= prev + minCutDur || c >= sceneDur - minCutDur * (numStills - k)) continue;
+      const d = Math.abs(c - target);
+      if (d < bestDist) { bestDist = d; best = c; }
+    }
+    if (bestDist > maxDrift) best = target;
+    boundaries.push(Math.max(prev + minCutDur, Number(best.toFixed(3))));
+    prev = boundaries[boundaries.length - 1];
+  }
+
+  const edges = [0, ...boundaries, sceneDur];
+  return edges.slice(1).map((end, i) => end - edges[i]);
+}
+
 // ── Multi-cut scene builder (v2 path) ─────────────────────────────────────────
 // `noOverlays` replaces the CLI-arg module global the original file used —
 // callers thread through whatever their own --overlays/--no-overlays flag resolved to.
+// `clip.captionChunks` (optional) enables auto cut-split (see above) — omit it
+// (existing callers don't pass it) to keep the old equal-split behavior byte-identical.
 
-export async function buildStillsScene(stills, clip, voPath, workDir, { noOverlays = false, maxSilentTail = null, format = DEFAULT_FORMAT } = {}) {
+export async function buildStillsScene(stills, clip, voPath, workDir, { noOverlays = false, maxSilentTail = null, format = DEFAULT_FORMAT, onSceneDur = null } = {}) {
   // F4: VO-length reconciliation
   const plannedDur = clip.duration_sec;
   let voDur = 0;
@@ -161,11 +210,20 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
     }
   }
 
+  if (onSceneDur) onSceneDur(sceneDur);
   const scale = sceneDur / plannedDur;
   const overlays = (noOverlays || !Array.isArray(clip.overlays)) ? [] : clip.overlays;
   const n = String(clip.scene_n).padStart(2, '0');
 
   // Build each cut
+  const hasExplicitSplit = stills.some((s) => s.start_sec != null && s.end_sec != null);
+  const autoSplitDurations = (!hasExplicitSplit && stills.length > 1 && Array.isArray(clip.captionChunks))
+    ? computeAutoSplitDurations(sceneDur, stills.length, clip.captionChunks)
+    : null;
+  if (autoSplitDurations) {
+    console.log(`    [auto-split] S${clip.scene_n}: ${autoSplitDurations.map((d) => d.toFixed(1)).join('s / ')}s`);
+  }
+
   const cutPaths = [];
   let cutRelStart = 0; // running sum of previous cuts' real (post-scale) durations within this scene
   for (let i = 0; i < stills.length; i++) {
@@ -182,6 +240,8 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
       const relStart = rawStart - (stills[0].start_sec ?? rawStart);
       const relEnd   = rawEnd   - (stills[0].start_sec ?? rawStart);
       cutDur = (relEnd - relStart) * scale;
+    } else if (autoSplitDurations) {
+      cutDur = autoSplitDurations[i];
     } else {
       // Equal split across cuts
       cutDur = sceneDur / stills.length;

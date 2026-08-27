@@ -1,0 +1,83 @@
+{
+  "output": "silenced-s1-tah-miss-EN-v3.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S01-A.jpg",
+      "motion": "hold",
+      "vo": "Germany hadn't lost a World Cup penalty shootout in fifty years.",
+      "target_duration_sec": 4.8,
+      "hook": { "amber_word": "fifty years" }
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S37-A.jpg",
+      "motion": "push",
+      "crop_x": 0.5,
+      "vo": "Nine kicks in. Score level.",
+      "target_duration_sec": 2.8
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S31-A.jpg",
+      "motion": "micro_push",
+      "crop_x": 0.5,
+      "vo": "And the next man up isn't even supposed to be here.",
+      "target_duration_sec": 4.9
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S30-A.jpg",
+      "motion": "pan_lr",
+      "crop_x": 0.5,
+      "vo": "The same man whose own goal, an hour earlier,",
+      "target_duration_sec": 4.1
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S30-A.jpg",
+      "motion": "micro_push",
+      "crop_x": 0.5,
+      "vo": "got wiped off the board.",
+      "target_duration_sec": 2.4
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S37-A.jpg",
+      "motion": "smash",
+      "crop_x": 0.35,
+      "vo": "Jonathan Tah — carrying the whole tournament on one kick.",
+      "target_duration_sec": 4.1
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S38-A.jpg",
+      "motion": "pull",
+      "vo_parts": ["He strikes it—", "—over the bar."],
+      "pause_sec": 1,
+      "target_duration_sec": 4.2
+    },
+    {
+      "end_card_v2": true,
+      "title": "Silenced",
+      "subtitle": "Full documentary on the channel",
+      "vo": "Twenty-one shots faced. One miss decided it.",
+      "target_duration_sec": 5.0
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "stadium_hum", "gain_db": -36 },
+    "bed": {
+      "key": "tension",
+      "gain_db": -20,
+      "start_scene": 1,
+      "end_scene": 6,
+      "fade_in_sec": 1,
+      "resume_gain_db": -16,
+      "resume_fade_in_sec": 1.5
+    },
+    "heartbeat": {
+      "key": "heartbeat",
+      "gain_db": -20,
+      "start_scene": 2,
+      "start_offset_sec": 1,
+      "end_scene": 6,
+      "fade_in_sec": 1.5
+    },
+    "hit": { "key": "musical_hit", "gain_db": -6 }
+  }
+}

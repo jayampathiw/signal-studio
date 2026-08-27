@@ -1,0 +1,57 @@
+{
+  "output": "son-also-saves-s3-father-son-EN-REWRITE.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/son-also-saves/stills/S07-A.jpg",
+      "motion": "hold",
+      "vo": "His father made the world notice Egypt's goalkeepers. In 1990.",
+      "target_duration_sec": 4.6
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S07-A.jpg",
+      "motion": "push",
+      "crop_x": 0.3,
+      "vo": "Thirty-six years later, his son faced Messi.",
+      "target_duration_sec": 3.4
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S34-A.jpg",
+      "motion": "micro_push",
+      "vo": "For thirty-six years, Ahmed Shobeir was the only Egyptian goalkeeper who mattered.",
+      "target_duration_sec": 4.8
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S34-A.jpg",
+      "motion": "pull",
+      "crop_x": 0.6,
+      "vo": "His son stepped onto the same stage.",
+      "target_duration_sec": 3.0
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S35-A.jpg",
+      "motion": "hold",
+      "vo": "Before the tournament, Ahmed had one message for his son. Just one word.",
+      "target_duration_sec": 4.8
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Son Also Saves",
+      "subtitle": "Full documentary on the channel",
+      "vo": "Enjoy.",
+      "target_duration_sec": 3.5
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "reflective", "gain_db": -30 },
+    "bed": {
+      "key": "somber",
+      "gain_db": -22,
+      "start_scene": 0,
+      "end_scene": 4,
+      "fade_in_sec": 1.5,
+      "resume_gain_db": -22,
+      "resume_fade_in_sec": 2
+    }
+  }
+}

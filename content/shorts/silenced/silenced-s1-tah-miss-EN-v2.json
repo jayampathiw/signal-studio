@@ -17,22 +17,21 @@
       "target_duration_sec": 3
     },
     {
-      "image": "content/longform/silenced-goalkeeper/stills/S37-A.jpg",
-      "motion": "smash",
-      "crop_x": 0.35,
+      "image": "content/longform/silenced-goalkeeper/stills/S31-A.jpg",
+      "motion": "micro_push",
       "vo": "And the next man up isn't even supposed to be here.",
       "target_duration_sec": 4
     },
     {
-      "image": "content/longform/silenced-goalkeeper/stills/S37-A.jpg",
-      "motion": "micro_push",
-      "crop_x": 0.65,
+      "image": "content/longform/silenced-goalkeeper/stills/S30-A.jpg",
+      "motion": "pan_lr",
       "vo": "The same man whose own goal, an hour earlier, got wiped off the board.",
       "target_duration_sec": 4
     },
     {
       "image": "content/longform/silenced-goalkeeper/stills/S37-A.jpg",
-      "motion": "pan_lr",
+      "motion": "smash",
+      "crop_x": 0.35,
       "vo": "Jonathan Tah — carrying the whole tournament on one kick.",
       "target_duration_sec": 4
     },

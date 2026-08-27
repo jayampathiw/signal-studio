@@ -1,0 +1,72 @@
+[
+  {
+    "word": "July",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "19th.",
+    "start": 0.7,
+    "end": 1.98
+  },
+  {
+    "word": "Metlife",
+    "start": 2.02,
+    "end": 2.56
+  },
+  {
+    "word": "Stadium.",
+    "start": 2.56,
+    "end": 2.98
+  },
+  {
+    "word": "The",
+    "start": 3.52,
+    "end": 3.62
+  },
+  {
+    "word": "Champions",
+    "start": 3.62,
+    "end": 4.04
+  },
+  {
+    "word": "Of",
+    "start": 4.04,
+    "end": 4.34
+  },
+  {
+    "word": "South",
+    "start": 4.34,
+    "end": 4.58
+  },
+  {
+    "word": "America",
+    "start": 4.58,
+    "end": 5.1
+  },
+  {
+    "word": "Against",
+    "start": 5.1,
+    "end": 5.52
+  },
+  {
+    "word": "The",
+    "start": 5.52,
+    "end": 5.74
+  },
+  {
+    "word": "Champions",
+    "start": 5.74,
+    "end": 6.24
+  },
+  {
+    "word": "Of",
+    "start": 6.24,
+    "end": 6.64
+  },
+  {
+    "word": "Europe.",
+    "start": 6.64,
+    "end": 6.98
+  }
+]

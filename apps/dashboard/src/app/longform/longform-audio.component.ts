@@ -9,6 +9,10 @@ const TRACKS = [
   { value: 'drone',      label: 'Drone — minimal ambient',  color: '#4c1d95' },
   { value: 'release',    label: 'Release — triumph swell',  color: '#065f46' },
   { value: 'reflective', label: 'Reflective — warm piano',  color: '#0e7490' },
+  { value: 'tragic_loss',       label: 'Tragic loss — heavier than somber',       color: '#312e81' },
+  { value: 'epic_dramatic',     label: 'Epic dramatic — bigger than tension',     color: '#9a3412' },
+  { value: 'ethereal_mystery',  label: 'Ethereal mystery — ambient/uncertain',    color: '#155e75' },
+  { value: 'piano_sad_solo',    label: 'Piano sad solo — reversal/injustice',     color: '#701a75' },
 ];
 
 const TRACK_COLOR: Record<string, string> = Object.fromEntries(TRACKS.map(t => [t.value, t.color]));

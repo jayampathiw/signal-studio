@@ -1,0 +1,17 @@
+{
+  "1": "silence",
+  "2": "silence", "3": "tension",
+  "4": "reflective", "5": "tension", "6": "tension", "7": "tension", "8": "tension", "9": "tension",
+  "10": "drone", "11": "drone", "12": {"track": "drone", "gain_db": -25},
+  "13": "epic_dramatic", "14": "epic_dramatic", "15": "tension", "16": "tension", "17": "tension",
+  "18": "drone", "19": "drone", "20": "hum_only",
+  "21": "tension", "22": "tension", "23": "drone", "24": "tension", "25": "tension",
+  "26": {"track": "drone", "gain_db": -25},
+  "27": "tension", "28": "tension", "29": "tension", "30": "drone", "31": "tension",
+  "32": {"track": "release", "gain_db": -15}, "33": {"track": "release", "gain_db": -20},
+  "34": "silence", "35": "drone",
+  "36": "tragic_loss", "37": "tragic_loss", "38": "piano_sad_solo", "39": "piano_sad_solo",
+  "40": "reflective", "41": "ethereal_mystery", "42": "ethereal_mystery",
+  "43": "piano_sad_solo", "44": "piano_sad_solo",
+  "45": {"track": "epic_dramatic", "gain_db": -20}, "46": {"track": "epic_dramatic", "gain_db": -20}
+}

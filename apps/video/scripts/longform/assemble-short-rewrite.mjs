@@ -28,8 +28,8 @@ import { synthesise } from '@signal-studio/media/tts';
 import { generateWordTimestamps } from '@signal-studio/media/subtitles';
 import { buildStillsScene, probeDuration } from '../../src/longform/render.js';
 import { loadManifest } from '../../src/longform/audio-mix.js';
-import { chunkCaptions } from '../../src/longform/captions.js';
-import { FPS } from '../../src/longform/motion.js';
+import { chunkCaptions, splitOversizedCaptions } from '../../src/longform/captions.js';
+import { FPS, TEXT_GEOMETRY } from '../../src/longform/motion.js';
 import { SERIF_FONT, BEBAS_FONT } from '../../src/longform/fonts.js';
 import { measureTextWidth } from '../../src/longform/text-metrics.js';
 
@@ -61,12 +61,68 @@ function titleCase(text) {
   return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Hook sentences (~50-70 chars) don't fit on one line at a readable size in
+// a 1080px frame — buildHeroCard has no multi-line support, so left as a
+// single overlay it fell back to its own shrink-to-fit safety net, which
+// (found reviewing silenced-s1-tah-miss-EN-v3) rescales to a size that's a
+// function of text width ÷ budget only — completely independent of the
+// starting fontsize, so it rendered a long hook as a single tiny line no
+// matter what base size was configured. Wrapping into multiple full-size
+// lines (matching assemble-short.mjs's existing wrapHookText technique)
+// fixes this at the cause instead of just tuning the shrink further.
+const HOOK_FONTSIZE = 72;
+const HOOK_LINE_HEIGHT = Math.round(HOOK_FONTSIZE * 1.2);
+const HOOK_Y_START = Math.round(SHORT_FORMAT.height * 0.07);
+const HOOK_MAX_WIDTH = SHORT_FORMAT.width * 0.88;
+
+function wrapHookText(text, fontsize, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let current = [];
+  for (const word of words) {
+    const trial = [...current, word].join(' ');
+    if (measureTextWidth(BEBAS_FONT, fontsize, trial) > maxWidth && current.length) {
+      lines.push(current.join(' '));
+      current = [word];
+    } else {
+      current.push(word);
+    }
+  }
+  if (current.length) lines.push(current.join(' '));
+  return lines;
+}
+
 function buildHookOverlay(text, amberWord, atSec, durationSec) {
-  return { format: 'tiered', text, amber_word: amberWord ?? null, at_sec: atSec, duration_sec: durationSec, zone: 'upper center', fade_in: 0 };
+  const lines = wrapHookText(text, HOOK_FONTSIZE, HOOK_MAX_WIDTH);
+  return lines.map((line, i) => ({
+    format: 'tiered',
+    text: line,
+    amber_word: amberWord && line.includes(amberWord) ? amberWord : null,
+    at_sec: atSec,
+    duration_sec: durationSec,
+    zone: 'upper center',
+    y: String(HOOK_Y_START + i * HOOK_LINE_HEIGHT),
+    fade_in: 0,
+  }));
+}
+
+// Kokoro (English model) mangles a handful of accented non-English names it
+// reads correctly-spelled ("Mbappé", "Pelé") — reviewed Wave 1 audio caught
+// this. Fix is TTS-only: swap in a plain-ASCII phonetic respelling right
+// before synthesis, while captions/hooks keep the real, correctly-accented
+// spelling (chunkCaptions pairs script tokens to Whisper timestamps by word
+// COUNT, not text match, so a respelled word Whisper hears differently still
+// aligns fine as long as it's one word in, one word out).
+const TTS_PRONUNCIATION_FIXES = [
+  [/\bMbapp[eé]\b/gi, 'Mbappay'],
+  [/\bPel[eé]\b/gi, 'Pelay'],
+];
+function phoneticizeForTTS(text) {
+  return TTS_PRONUNCIATION_FIXES.reduce((t, [re, sub]) => t.replace(re, sub), text);
 }
 
 async function synthScene(text, outPath) {
-  await synthesise(text, outPath, { voice });
+  await synthesise(phoneticizeForTTS(text), outPath, { voice });
   return outPath;
 }
 
@@ -80,7 +136,7 @@ async function synthPausedScene(parts, pauseSec, outPath, workDir, idx) {
   const partPaths = [];
   for (let i = 0; i < parts.length; i++) {
     const p = join(workDir, `part_${idx}_${i}.wav`);
-    await synthesise(parts[i], p, { voice });
+    await synthesise(phoneticizeForTTS(parts[i]), p, { voice });
     partPaths.push(p);
   }
   const part1Dur = probeDuration(partPaths[0]);
@@ -102,7 +158,7 @@ async function synthPausedScene(parts, pauseSec, outPath, workDir, idx) {
     outPath,
   ]);
 
-  const part2Words = await generateWordTimestamps(partPaths[1], join(workDir, `part2_words_${idx}.json`), titleCase(parts[1]));
+  const part2Words = await generateWordTimestamps(partPaths[1], join(workDir, `part2_words_${idx}.json`), titleCase(phoneticizeForTTS(parts[1])));
   const lastWord = part2Words[part2Words.length - 1];
   const part2StartInFull = part1Dur + pauseSec;
   const hitOffsetInScene = lastWord ? part2StartInFull + lastWord.start : part2StartInFull;
@@ -151,13 +207,21 @@ async function buildEndCardV2(title, subtitle, durationSec, outPath, format) {
 
 function pad(n) { return n.toFixed(3); }
 
+// Manifest entries are normally remote R2 URLs (fine for ffmpeg -i as-is);
+// a locally-supplied track (e.g. content/New folder/...) is a repo-relative
+// path instead, which only resolves correctly if this script's cwd happens
+// to be REPO_ROOT — resolve explicitly so it works regardless of cwd.
+function resolveManifestSource(url) {
+  return /^https?:\/\//.test(url) ? url : resolve(REPO_ROOT, url);
+}
+
 async function buildLayerTrack({ key, manifest, totalDur, startSec, endSec, gainDb, fadeInSec = 0, fadeOutSec = 0, workDir, tag }) {
   const activeDur = endSec - startSec;
   if (activeDur <= 0) return null;
   if (!manifest[key]) throw new Error(`Audio kit key "${key}" not in manifest`);
   const active = join(workDir, `layer_${tag}_active.wav`);
   await execAsync('ffmpeg', [
-    '-y', '-stream_loop', '-1', '-i', manifest[key].url,
+    '-y', '-stream_loop', '-1', '-i', resolveManifestSource(manifest[key].url),
     '-t', String(activeDur),
     '-af', [
       `volume=${gainDb}dB`,
@@ -182,7 +246,7 @@ async function buildLayerTrack({ key, manifest, totalDur, startSec, endSec, gain
 async function buildOneShotTrack({ key, manifest, totalDur, atSec, gainDb, workDir, tag }) {
   const out = join(workDir, `layer_${tag}.wav`);
   await execAsync('ffmpeg', [
-    '-y', '-i', manifest[key].url,
+    '-y', '-i', resolveManifestSource(manifest[key].url),
     '-af', `volume=${gainDb}dB,adelay=${Math.round(atSec * 1000)}|${Math.round(atSec * 1000)},apad,atrim=0:${pad(totalDur)}`,
     '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
     out,
@@ -206,9 +270,12 @@ async function applySoundDesign({ videoPath, soundDesign, sceneMeta, totalDur, o
   if (soundDesign.bed) {
     const b = soundDesign.bed;
     const startSec = sceneMeta[b.start_scene].startSec;
-    const endSec = sceneMeta[b.end_scene].pauseStartInScene != null
+    // Omitting end_scene means "never cuts" — the bed just runs to the end
+    // of the video (a continuous build/swell with no hard cut), used by
+    // clips whose peak resolves rather than snaps to silence.
+    const endSec = b.end_scene == null ? totalDur : (sceneMeta[b.end_scene].pauseStartInScene != null
       ? sceneMeta[b.end_scene].startSec + sceneMeta[b.end_scene].pauseStartInScene
-      : sceneMeta[b.end_scene].startSec;
+      : sceneMeta[b.end_scene].startSec);
     layers.push(await buildLayerTrack({
       key: b.key, manifest, totalDur, startSec, endSec,
       gainDb: b.gain_db ?? -20, fadeInSec: b.fade_in_sec ?? 1, workDir, tag: 'bed_rise',
@@ -318,10 +385,25 @@ async function main() {
       process.stdout.write(`Scene ${n} [end card v2] "${scene.title}" / "${scene.subtitle}" … `);
       let dur = scene.target_duration_sec;
       let voPath = null;
-      if (scene.vo) {
+      let pauseStartInScene, hitOffsetInScene;
+      if (scene.vo_parts) {
+        // Supports a hit synced to a word spoken OVER the end card itself
+        // (e.g. Same Coin S2: "Penalty." lands on the card, not the prior
+        // scene) — reuses the same pause+hit-detection engine as regular
+        // scenes, just muxed onto the card video instead of a photo cut.
+        voPath = join(workDir, `vo_card_${n}.wav`);
+        const res = await synthPausedScene(scene.vo_parts, scene.pause_sec ?? 1, voPath, workDir, `card_${n}`);
+        pauseStartInScene = res.pauseStartInScene;
+        hitOffsetInScene = res.hitOffsetInScene;
+        dur = Math.max(scene.target_duration_sec, probeDuration(voPath) + 0.4);
+      } else if (scene.vo) {
         voPath = join(workDir, `vo_card_${n}.wav`);
         await synthScene(scene.vo, voPath);
         dur = Math.max(scene.target_duration_sec, probeDuration(voPath) + 0.4);
+        // hit_on_start: for a scene whose VO IS the hit word ("Penalty."),
+        // there's no pause to detect a hit off of — the hit just lands the
+        // instant speech starts.
+        if (scene.hit_on_start) hitOffsetInScene = 0;
       }
       const cardPath = join(workDir, `card_${n}.mp4`);
       await buildEndCardV2(scene.title, scene.subtitle, dur, cardPath, SHORT_FORMAT);
@@ -332,13 +414,29 @@ async function main() {
         finalCardPath = withVo;
       }
       scenePaths.push(finalCardPath);
-      sceneMeta.push({ startSec: cursor, duration: dur });
+      sceneMeta.push({ startSec: cursor, duration: dur, pauseStartInScene, pauseEndInScene: pauseStartInScene != null ? pauseStartInScene + (scene.pause_sec ?? 1) : undefined, hitOffsetInScene });
       cursor += dur;
       console.log(`done (${dur.toFixed(2)}s)`);
       continue;
     }
 
     process.stdout.write(`Scene ${n} … `);
+
+    // Silent (music-only) scene — no vo/vo_parts at all. No auto-stretch is
+    // possible without VO to measure against, so target_duration_sec is used
+    // as-is; buildStillsScene already accepts a null voPath (silent track).
+    if (!scene.vo && !scene.vo_parts) {
+      const clip = { scene_n: i + 1, duration_sec: scene.target_duration_sec, overlays: [], from_sec: 0 };
+      const stills = [{ cut: 'A', clip_url: resolve(REPO_ROOT, scene.image), motion: scene.motion ?? 'push', regrade: scene.regrade ?? null, crop_x: scene.crop_x ?? 0.5 }];
+      const out = await buildStillsScene(stills, clip, null, workDir, { format: SHORT_FORMAT });
+      const dur = probeDuration(out);
+      scenePaths.push(out);
+      sceneMeta.push({ startSec: cursor, duration: dur });
+      cursor += dur;
+      console.log(`done (${dur.toFixed(2)}s, silent)`);
+      continue;
+    }
+
     let voPath, fullText, pauseStartInScene, hitOffsetInScene;
     if (scene.vo_parts) {
       fullText = scene.vo_parts.join(' ');
@@ -354,9 +452,9 @@ async function main() {
 
     let overlays = [];
     if (scene.hook) {
-      overlays = [buildHookOverlay(fullText, scene.hook.amber_word, 0, Math.min(3, scene.target_duration_sec))];
+      overlays = buildHookOverlay(fullText, scene.hook.amber_word, 0, Math.min(3, scene.target_duration_sec));
     } else {
-      const words = await generateWordTimestamps(voPath, join(workDir, `words_${n}.json`), titleCase(fullText));
+      const words = await generateWordTimestamps(voPath, join(workDir, `words_${n}.json`), titleCase(phoneticizeForTTS(fullText)));
       const chunks = chunkCaptions(fullText, words);
       overlays = chunks.map((c) => ({
         format: 'tiered',
@@ -365,10 +463,27 @@ async function main() {
         duration_sec: Number((c.end - c.start).toFixed(3)),
         words: c.words.map((w) => ({ text: w.text, offset_start: Number((w.start - c.start).toFixed(3)), offset_end: Number((w.end - c.start).toFixed(3)) })),
       }));
+      // Split (never shrink) any chunk that would overflow the frame at the
+      // fixed portrait caption size — keeps caption size visibly constant
+      // across every scene instead of wobbling per chunk length.
+      const maxCaptionWidth = SHORT_FORMAT.width * 0.92;
+      overlays = splitOversizedCaptions(
+        overlays,
+        (text) => measureTextWidth(BEBAS_FONT, TEXT_GEOMETRY.portrait.captionFontsize, text),
+        maxCaptionWidth,
+      );
     }
 
     const clip = { scene_n: i + 1, duration_sec: scene.target_duration_sec, overlays, from_sec: 0 };
+    // scene.image2 cuts to a second still partway through the scene (equal
+    // split — buildStillsScene handles the divide) — used for vo_parts
+    // scenes that need a distinct image for the second half of the line
+    // (e.g. "Goal disallowed." on one still, "One push. One whistle." on
+    // another), instead of holding one image across the whole beat.
     const stills = [{ cut: 'A', clip_url: resolve(REPO_ROOT, scene.image), motion: scene.motion ?? 'push', regrade: scene.regrade ?? null, crop_x: scene.crop_x ?? 0.5 }];
+    if (scene.image2) {
+      stills.push({ cut: 'B', clip_url: resolve(REPO_ROOT, scene.image2), motion: scene.motion2 ?? 'push', regrade: scene.regrade2 ?? null, crop_x: scene.crop_x2 ?? 0.5 });
+    }
     const out = await buildStillsScene(stills, clip, voPath, workDir, { format: SHORT_FORMAT });
     const dur = probeDuration(out);
     scenePaths.push(out);
@@ -407,7 +522,7 @@ async function main() {
     finalPath = mixedPath;
   }
 
-  const outPath = values.output ? resolve(REPO_ROOT, values.output) : join(dirname(configPath), '..', 'src', config.output);
+  const outPath = values.output ? resolve(REPO_ROOT, values.output) : join(dirname(configPath), 'src', config.output);
   mkdirSync(dirname(outPath), { recursive: true });
   await execAsync('ffmpeg', ['-y', '-i', finalPath, '-c', 'copy', outPath]);
   console.log(`\nWrote ${outPath}`);

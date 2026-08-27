@@ -1,0 +1,72 @@
+[
+  {
+    "word": "One",
+    "start": 0,
+    "end": 0.64
+  },
+  {
+    "word": "Goal",
+    "start": 0.64,
+    "end": 1.04
+  },
+  {
+    "word": "Conceded",
+    "start": 1.04,
+    "end": 1.5
+  },
+  {
+    "word": "In",
+    "start": 1.5,
+    "end": 1.68
+  },
+  {
+    "word": "The",
+    "start": 1.68,
+    "end": 1.82
+  },
+  {
+    "word": "Entire",
+    "start": 1.82,
+    "end": 2.26
+  },
+  {
+    "word": "Tournament.",
+    "start": 2.26,
+    "end": 2.82
+  },
+  {
+    "word": "And",
+    "start": 3.34,
+    "end": 3.5
+  },
+  {
+    "word": "Now",
+    "start": 3.5,
+    "end": 3.76
+  },
+  {
+    "word": "They",
+    "start": 3.76,
+    "end": 3.94
+  },
+  {
+    "word": "Were",
+    "start": 3.94,
+    "end": 4.14
+  },
+  {
+    "word": "One",
+    "start": 4.14,
+    "end": 4.42
+  },
+  {
+    "word": "Match",
+    "start": 4.42,
+    "end": 4.7
+  },
+  {
+    "word": "Away.",
+    "start": 4.7,
+    "end": 5.1
+  }
+]

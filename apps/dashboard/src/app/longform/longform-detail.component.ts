@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { LongformProject, SupabaseService } from '../core/supabase.service';
@@ -6,6 +6,7 @@ import { LongformWorkbenchComponent } from './longform-workbench.component';
 import { LongformScriptComponent } from './longform-script.component';
 import { LongformFinalReviewComponent } from './longform-final-review.component';
 import { LongformAudioComponent } from './longform-audio.component';
+import { ShortsSoundDesignComponent } from './shorts-sound-design.component';
 
 type Stage = {
   key: string;
@@ -48,7 +49,7 @@ function stageIndex(status: string) {
 @Component({
   selector: 'app-longform-detail',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent, LongformAudioComponent],
+  imports: [DatePipe, DecimalPipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent, LongformAudioComponent, ShortsSoundDesignComponent],
   template: `
     <!-- Navbar -->
     <nav style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;">
@@ -105,11 +106,24 @@ function stageIndex(status: string) {
         <!-- Back link + title -->
         <div style="margin-bottom:24px;">
           <a [routerLink]="backLink()" style="font-size:12px;color:#475569;text-decoration:none;">← Back to videos</a>
-          <h1 style="margin:8px 0 4px;font-size:22px;font-weight:700;color:#e2e8f0;">
-            {{ project()!.title ?? 'Untitled Project #' + project()!.id }}
-          </h1>
+          <div style="display:flex;align-items:center;gap:10px;margin:8px 0 4px;">
+            <h1 style="margin:0;font-size:22px;font-weight:700;color:#e2e8f0;">
+              {{ project()!.title ?? 'Untitled Project #' + project()!.id }}
+            </h1>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;"
+                  [style.color]="project()!.clip_type === 'short' ? '#f59e0b' : '#60a5fa'"
+                  [style.background]="project()!.clip_type === 'short' ? 'rgba(245,158,11,.12)' : 'rgba(96,165,250,.12)'">
+              {{ project()!.clip_type === 'short' ? '⚡ Short' : '🎬 Long-form' }}
+            </span>
+          </div>
           <div style="font-size:12px;color:#475569;">
-            #{{ project()!.id }} · {{ project()!.channel_key }} · created {{ project()!.created_at | date:'dd MMM yyyy' }}
+            #{{ project()!.id }}
+            @if (project()!.video_slug) { · {{ project()!.video_slug }} }
+            · {{ project()!.channel_key }} · created {{ project()!.created_at | date:'dd MMM yyyy' }}
+            @if (project()!.clip_type === 'short' && project()!.parent_project_id) {
+              · Short of
+              <a [routerLink]="['/longform/video', project()!.parent_project_id]" style="color:#60a5fa;text-decoration:none;">#{{ project()!.parent_project_id }}</a>
+            }
           </div>
         </div>
 
@@ -155,12 +169,19 @@ function stageIndex(status: string) {
 
               <!-- Storyboard: advance to Gate 3 once stills are uploaded -->
               @if (activeStage.key === 'storyboard') {
+                @let stillsRemaining = (workbenchRef?.totalSlots() ?? 0) - (workbenchRef?.uploadedCount() ?? 0);
                 <button (click)="advanceToStills()"
-                        [disabled]="advancing()"
+                        [disabled]="advancing() || stillsRemaining > 0"
                         style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
-                        [style.opacity]="advancing() ? '0.5' : '1'">
-                  {{ advancing() ? 'Advancing…' : 'Advance to Gate 3 — Stills Review →' }}
+                        [style.opacity]="advancing() || stillsRemaining > 0 ? '0.5' : '1'"
+                        [style.cursor]="stillsRemaining > 0 ? 'not-allowed' : 'pointer'">
+                  {{ advancing() ? 'Advancing…' : 'Next →' }}
                 </button>
+                @if (stillsRemaining > 0) {
+                  <div style="margin-top:6px;font-size:11px;color:#64748b;">
+                    Upload {{ stillsRemaining }} more still{{ stillsRemaining === 1 ? '' : 's' }} before advancing.
+                  </div>
+                }
               }
 
               <!-- Shot list upload (brief stage only) -->
@@ -299,8 +320,14 @@ function stageIndex(status: string) {
             </div>
           }
         }
-        <!-- Audio plan editor (always shown) -->
-        <app-longform-audio [project]="project()!" />
+        <!-- Audio plan editor (long-form only — audio_plan segments) -->
+        @if (project()!.clip_type !== 'short') {
+          <app-longform-audio [project]="project()!" />
+        }
+        <!-- Sound design view (Shorts only — read-only, shot_list_meta.sound_design) -->
+        @if (project()!.clip_type === 'short') {
+          <app-shorts-sound-design [project]="project()!" />
+        }
       }
     </div>
     <style>
@@ -317,6 +344,8 @@ function stageIndex(status: string) {
   `,
 })
 export class LongformDetailComponent implements OnInit, OnDestroy {
+  @ViewChild(LongformWorkbenchComponent) workbenchRef?: LongformWorkbenchComponent;
+
   project    = signal<LongformProject | null>(null);
   loading    = signal(true);
   error      = signal<string | null>(null);

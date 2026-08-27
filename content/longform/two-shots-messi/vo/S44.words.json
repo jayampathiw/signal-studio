@@ -1,0 +1,92 @@
+[
+  {
+    "word": "Messi",
+    "start": 0,
+    "end": 0.72
+  },
+  {
+    "word": "Doesn't",
+    "start": 0.72,
+    "end": 1
+  },
+  {
+    "word": "Get",
+    "start": 1,
+    "end": 1.22
+  },
+  {
+    "word": "To",
+    "start": 1.22,
+    "end": 1.34
+  },
+  {
+    "word": "Choose",
+    "start": 1.34,
+    "end": 1.62
+  },
+  {
+    "word": "How",
+    "start": 1.62,
+    "end": 1.84
+  },
+  {
+    "word": "His",
+    "start": 1.84,
+    "end": 2.08
+  },
+  {
+    "word": "Story",
+    "start": 2.08,
+    "end": 2.34
+  },
+  {
+    "word": "With",
+    "start": 2.34,
+    "end": 2.56
+  },
+  {
+    "word": "This",
+    "start": 2.56,
+    "end": 2.76
+  },
+  {
+    "word": "Team",
+    "start": 2.76,
+    "end": 3.08
+  },
+  {
+    "word": "Ends.",
+    "start": 3.08,
+    "end": 3.6
+  },
+  {
+    "word": "Tonight,",
+    "start": 4.22,
+    "end": 4.5
+  },
+  {
+    "word": "For",
+    "start": 4.84,
+    "end": 4.96
+  },
+  {
+    "word": "Once,",
+    "start": 4.96,
+    "end": 5.32
+  },
+  {
+    "word": "Neither",
+    "start": 5.54,
+    "end": 5.68
+  },
+  {
+    "word": "Did",
+    "start": 5.68,
+    "end": 6.02
+  },
+  {
+    "word": "Argentina.",
+    "start": 6.02,
+    "end": 6.54
+  }
+]

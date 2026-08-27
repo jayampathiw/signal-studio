@@ -1,0 +1,70 @@
+{
+  "output": "silenced-s2-disallowed-goal-EN-v2.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/shorts/silenced/vertical-assets/s2-01-celebrating.jpg",
+      "motion": "hold",
+      "vo": "Germany's players were already celebrating a World Cup winner.",
+      "target_duration_sec": 4.5
+    },
+    {
+      "image": "content/shorts/silenced/vertical-assets/s2-02-about-to-be-taken.jpg",
+      "motion": "micro_push",
+      "vo": "The goal was about to get taken away.",
+      "target_duration_sec": 3.2
+    },
+    {
+      "image": "content/shorts/silenced/vertical-assets/s2-03-corner-header.jpg",
+      "motion": "pan_lr",
+      "vo": "The 102nd minute. A corner. A header. The bench erupts.",
+      "target_duration_sec": 4.5
+    },
+    {
+      "image": "content/shorts/silenced/vertical-assets/s2-04-flag-review.jpg",
+      "motion": "push",
+      "vo": "Then — the flags. A review.",
+      "target_duration_sec": 2.6
+    },
+    {
+      "image": "content/shorts/silenced/vertical-assets/s2-05-the-shove.jpg",
+      "motion": "smash",
+      "vo": "Before the header, a defender had shoved the goalkeeper to the ground.",
+      "target_duration_sec": 4.8
+    },
+    {
+      "image": "content/shorts/silenced/vertical-assets/s2-06-goal-disallowed.jpg",
+      "motion": "hold",
+      "vo_parts": ["Goal disallowed.", "One push. One whistle."],
+      "pause_sec": 1,
+      "target_duration_sec": 4.5
+    },
+    {
+      "end_card_v2": true,
+      "title": "Silenced",
+      "subtitle": "Full documentary on the channel",
+      "vo": "What happened next still shocked the world.",
+      "target_duration_sec": 4.5
+    }
+  ],
+  "sound_design": {
+    "bed": {
+      "key": "piano_sad_solo",
+      "gain_db": -24,
+      "start_scene": 1,
+      "end_scene": 5,
+      "fade_in_sec": 1.5,
+      "resume_gain_db": -20,
+      "resume_fade_in_sec": 1.5
+    },
+    "heartbeat": {
+      "key": "heartbeat",
+      "gain_db": -20,
+      "start_scene": 4,
+      "start_offset_sec": 0,
+      "end_scene": 5,
+      "fade_in_sec": 1
+    },
+    "hit": { "key": "ref_whistle", "gain_db": -4 }
+  }
+}

@@ -1,20 +1,23 @@
 # Audio Kit — Source List & Download Instructions
 
-Save each file into this folder (`content/audio-kit/`) with the **exact filename** shown.
+Save each file with the **exact filename** shown, into the matching subfolder:
+- Music beds → `content/audio-kit/beds/`
+- Ambience + SFX one-shots → `content/audio-kit/sfx/`
+
 All files must be CC0 / royalty-free. Suggested sources below — use the exact search terms.
 
 After downloading, run:
 ```
 node apps/video/scripts/longform/import-audio-kit.mjs
 ```
-Then verify all 15 files are on R2:
+Then verify all 23 files are on R2:
 ```
 node apps/video/scripts/longform/import-audio-kit.mjs --check
 ```
 
 ---
 
-## Music Beds (5 files)
+## Music Beds — save to `beds/` (9 files)
 
 | Filename | Description | Suggested search |
 |---|---|---|
@@ -23,10 +26,14 @@ node apps/video/scripts/longform/import-audio-kit.mjs --check
 | `drone.mp3` | Low minimal drone — near-silence, sparse, weight. 2-3 min. | Pixabay: "dark ambient drone suspense" |
 | `release.mp3` | Emotional release/triumph — rising, warm, earned. 1-2 min. | Pixabay: "cinematic triumphant orchestral emotional" |
 | `reflective.mp3` | Reflective/hopeful — gentle piano or acoustic. 2-3 min. | Pixabay: "reflective piano orchestral cinematic" |
+| `piano_sad_solo.mp3` | Solo piano, sad/somber — reversal/injustice beats (Shorts-specific, e.g. Silenced S2). | Pixabay: "sad solo piano instrumental" |
+| `tragic_loss.mp3` | Gutting, specific loss — heavier than `somber`. | Pixabay: "cinematic dramatic orchestra terrible loss" |
+| `epic_dramatic.mp3` | Big, bombastic dramatic orchestral — bigger than `tension`/`release`. | Pixabay: "epic dramatic orchestra" |
+| `ethereal_mystery.mp3` | Ambient/mysterious atmosphere — distinct from `drone`/`reflective`. | Pixabay: "ambient mysterious atmosphere" |
 
 ---
 
-## Ambience (1 file)
+## Ambience — save to `sfx/` (1 file)
 
 | Filename | Description | Suggested search |
 |---|---|---|
@@ -34,7 +41,7 @@ node apps/video/scripts/longform/import-audio-kit.mjs --check
 
 ---
 
-## SFX One-Shots (9 files)
+## SFX One-Shots — save to `sfx/` (13 files)
 
 | Filename | Description | Suggested search |
 |---|---|---|
@@ -47,6 +54,10 @@ node apps/video/scripts/longform/import-audio-kit.mjs --check
 | `heartbeat.mp3` | Single heartbeat thud (< 1s) | Freesound: "heartbeat single thud" |
 | `crowd_quiet.mp3` | Hushed held-breath stadium murmur (< 3s) | Freesound: "crowd hushed murmur tense" |
 | `ball_thud.mp3` | Ball hitting woodwork or heavy thud (< 1s) | Freesound: "football hit post thud" |
+| `crowd_clap.mp3` | Short audience clapping burst (< 15s) | Freesound/Pixabay: "audience clapping" |
+| `crowd_applause.mp3` | Sustained applause/ovation (< 30s) | Freesound/Pixabay: "applause ovation" |
+| `crowd_cheer.mp3` | Sustained crowd cheer — lighter energy than `crowd_roar` (< 10s) | Freesound/Pixabay: "crowd cheers" |
+| `stadium_crowd_energy.mp3` | Energetic live stadium crowd texture, longer than `stadium_hum` (< 20s) | Freesound/Pixabay: "live stadium crowd cheering" |
 
 ---
 

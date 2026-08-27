@@ -118,5 +118,69 @@
     "sample_rate": 48000,
     "channels": 1,
     "desc": "Ball hitting woodwork or turf thud"
+  },
+  "piano_sad_solo": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/piano_sad_solo.mp3",
+    "kind": "bed",
+    "duration": 44.225281,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Solo piano, sad/somber — reversal/injustice beats (Silenced S2)"
+  },
+  "crowd_clap": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/crowd_clap.mp3",
+    "kind": "sfx",
+    "duration": 12.094688,
+    "sample_rate": 44100,
+    "channels": 1,
+    "desc": "Short audience clapping burst (< 15s)"
+  },
+  "crowd_applause": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/crowd_applause.mp3",
+    "kind": "sfx",
+    "duration": 26.174688,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Sustained applause/ovation (< 30s)"
+  },
+  "crowd_cheer": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/crowd_cheer.mp3",
+    "kind": "sfx",
+    "duration": 8.045688,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Sustained crowd cheer — lighter energy than crowd_roar"
+  },
+  "stadium_crowd_energy": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/stadium_crowd_energy.mp3",
+    "kind": "sfx",
+    "duration": 17.496,
+    "sample_rate": 48000,
+    "channels": 2,
+    "desc": "Energetic live stadium crowd texture, longer than stadium_hum"
+  },
+  "tragic_loss": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/tragic_loss.mp3",
+    "kind": "bed",
+    "duration": 120.032625,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Gutting, specific loss — heavier than somber"
+  },
+  "epic_dramatic": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/epic_dramatic.mp3",
+    "kind": "bed",
+    "duration": 113.031813,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Big, bombastic dramatic orchestral — bigger than tension/release"
+  },
+  "ethereal_mystery": {
+    "url": "https://pub-04c93fd5cf6f45528d97b1bbfe60706a.r2.dev/audio-kit/ethereal_mystery.mp3",
+    "kind": "bed",
+    "duration": 827.036719,
+    "sample_rate": 44100,
+    "channels": 2,
+    "desc": "Ambient/mysterious atmosphere — distinct from drone/reflective"
   }
 }

@@ -1,0 +1,59 @@
+{
+  "output": "same-coin-s2-var-penalty-EN-REWRITE.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/same-coin/stills/S15-A.jpg",
+      "motion": "hold",
+      "vo": "The referee waved the penalty away.",
+      "target_duration_sec": 3.0
+    },
+    {
+      "image": "content/longform/same-coin/stills/S13-A.jpg",
+      "motion": "push",
+      "crop_x": 0.3,
+      "vo": "VAR made him look again.",
+      "target_duration_sec": 2.4
+    },
+    {
+      "image": "content/longform/same-coin/stills/S12-A.jpg",
+      "motion": "pan_lr",
+      "vo": "Paraguay's edges had gotten sharper all match long.",
+      "target_duration_sec": 3.6
+    },
+    {
+      "image": "content/longform/same-coin/stills/S13-A.jpg",
+      "motion": "smash",
+      "crop_x": 0.7,
+      "vo": "Then, the seventieth minute. A defender brings down France's man in the box.",
+      "target_duration_sec": 5.0
+    },
+    {
+      "image": "content/longform/same-coin/stills/S14-A.jpg",
+      "motion": "hold",
+      "vo": "He reviews it himself. And reverses the decision.",
+      "target_duration_sec": 3.8
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Same Coin",
+      "subtitle": "Full documentary on the channel",
+      "vo": "Penalty.",
+      "hit_on_start": true,
+      "target_duration_sec": 4.5
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "drone", "gain_db": -32 },
+    "bed": {
+      "key": "tension",
+      "gain_db": -20,
+      "start_scene": 1,
+      "end_scene": 4,
+      "fade_in_sec": 1,
+      "resume_gain_db": -16,
+      "resume_fade_in_sec": 0.4
+    },
+    "hit": { "key": "musical_hit", "gain_db": -5 }
+  }
+}

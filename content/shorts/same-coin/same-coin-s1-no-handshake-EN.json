@@ -1,0 +1,59 @@
+{
+  "output": "same-coin-s1-no-handshake-EN.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s1-no-handshake-01-double-save-stack.jpg",
+      "motion": "hold",
+      "vo": "He saved Mbappe's penalty rebound. Twice. In stoppage time.",
+      "target_duration_sec": 4,
+      "hook": { "amber_word": "Twice" }
+    },
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s1-no-handshake-02-vs-france-distance.jpg",
+      "motion": "push",
+      "vo": "Mbappe still walked off without shaking his hand.",
+      "target_duration_sec": 4
+    },
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s1-no-handshake-03-first-save-france.jpg",
+      "motion": "pan_lr",
+      "vo": "Deep into stoppage time, Mbappe gets one more chance. Gill saves it. The ball falls straight back to him.",
+      "target_duration_sec": 7
+    },
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s1-no-handshake-04-smash-second-save.jpg",
+      "motion": "smash",
+      "vo_parts": ["Gill saves it", "again."],
+      "pause_sec": 0.4,
+      "target_duration_sec": 6
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Same Coin",
+      "subtitle": "Full documentary on the channel",
+      "vo": "Some losses still come with respect owed. This one didn't — but that's not the whole story.",
+      "target_duration_sec": 3
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "stadium_hum", "gain_db": -36 },
+    "bed": {
+      "key": "piano_sad_solo",
+      "gain_db": -20,
+      "start_scene": 0,
+      "end_scene": 3,
+      "fade_in_sec": 1,
+      "resume_gain_db": -16,
+      "resume_fade_in_sec": 1.5
+    },
+    "heartbeat": {
+      "key": "heartbeat",
+      "gain_db": -20,
+      "start_scene": 2,
+      "end_scene": 3,
+      "fade_in_sec": 1.5
+    },
+    "hit": { "key": "musical_hit", "gain_db": -6 }
+  }
+}

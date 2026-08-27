@@ -76,6 +76,50 @@ function tokenizeScript(voText) {
   return tokens;
 }
 
+// Splits any caption chunk that would render wider than maxWidth at a FIXED
+// fontsize into multiple sub-chunks instead. Exists because motion.js's
+// buildCaptionAccent used to shrink the font per-chunk to make an overlong
+// chunk fit — which made caption size visibly inconsistent chunk-to-chunk
+// across a video (short lines huge, long lines tiny). Splitting instead of
+// shrinking keeps one constant size everywhere; the trade is more (shorter)
+// caption chunks rather than a size wobble.
+//
+// @param {Array} overlays — chunk objects shaped like chunkCaptions' mapped
+//   render format: { at_sec, duration_sec, words: [{text, offset_start, offset_end}] }
+// @param {(text: string) => number} measureWidth — returns rendered pixel width
+// @param {number} maxWidth
+export function splitOversizedCaptions(overlays, measureWidth, maxWidth) {
+  const out = [];
+  for (const chunk of overlays) {
+    const texts = chunk.words.map((w) => w.text);
+    const joined = (i, j) => texts.slice(i, j).join(' ');
+    if (measureWidth(joined(0, texts.length)) <= maxWidth) {
+      out.push(chunk);
+      continue;
+    }
+    // Greedily pack words into sub-lines that each fit maxWidth.
+    let start = 0;
+    while (start < chunk.words.length) {
+      let end = start + 1;
+      while (end < chunk.words.length && measureWidth(joined(start, end + 1)) <= maxWidth) end++;
+      const sub = chunk.words.slice(start, end);
+      const firstOffset = sub[0].offset_start;
+      out.push({
+        ...chunk,
+        at_sec: Number((chunk.at_sec + firstOffset).toFixed(3)),
+        duration_sec: Number((sub[sub.length - 1].offset_end - firstOffset).toFixed(3)),
+        words: sub.map((w) => ({
+          text: w.text,
+          offset_start: Number((w.offset_start - firstOffset).toFixed(3)),
+          offset_end: Number((w.offset_end - firstOffset).toFixed(3)),
+        })),
+      });
+      start = end;
+    }
+  }
+  return out;
+}
+
 export function chunkCaptions(voText, words, { maxWords = 8, tailPad = 0.3 } = {}) {
   if (!voText || !words?.length) return [];
   const tokens = tokenizeScript(voText);

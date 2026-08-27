@@ -1,0 +1,50 @@
+{
+  "output": "son-also-saves-s1-messi-save-EN-REWRITE.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/son-also-saves/stills/S21-A.jpg",
+      "motion": "hold",
+      "vo": "Messi stepped up to the penalty spot.",
+      "target_duration_sec": 3.0
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S20-A.jpg",
+      "motion": "push",
+      "vo": "The son of Egypt's greatest-ever goalkeeper was waiting for him.",
+      "target_duration_sec": 4.6
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S21-A.jpg",
+      "motion": "smash",
+      "crop_x": 0.7,
+      "vo": "Shobeir dives left. He reads it. He stops it.",
+      "target_duration_sec": 3.8
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/S22-A-vertical.jpg",
+      "motion": "hold",
+      "vo": "His second penalty save of the tournament.",
+      "target_duration_sec": 3.2
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Son Also Saves",
+      "subtitle": "Full documentary on the channel",
+      "vo": "Two saves. One tournament. Same goalkeeper.",
+      "target_duration_sec": 3.8
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "stadium_hum", "gain_db": -32 },
+    "bed": {
+      "key": "reflective",
+      "gain_db": -18,
+      "start_scene": 1,
+      "end_scene": 3,
+      "fade_in_sec": 1,
+      "resume_gain_db": -16,
+      "resume_fade_in_sec": 1
+    }
+  }
+}

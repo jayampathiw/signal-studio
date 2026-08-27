@@ -1,0 +1,65 @@
+{
+  "output": "son-also-saves-s1-messi-save-EN-v2.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s1-messi-01-peak-dive.jpg",
+      "motion": "hold",
+      "vo": "Egypt's goalkeeper just saved a penalty from Lionel Messi.",
+      "target_duration_sec": 4,
+      "hook": { "amber_word": "Lionel Messi" }
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s1-messi-02-abstract-bar.jpg",
+      "motion": "push",
+      "vo": "It was his second penalty save of the tournament. He'd already denied Iran's Taremi in the group stage.",
+      "target_duration_sec": 4
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s1-messi-03-horizontal-dive.jpg",
+      "motion": "push",
+      "vo_parts": ["Shobeir dives left. He reads it.", "He stops it."],
+      "pause_sec": 0.3,
+      "target_duration_sec": 6
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s1-messi-04-dual-save-argentina.jpg",
+      "motion": "pan_lr",
+      "vo": "Minutes later, he denies Mac Allister. Then Alvarez, point-blank.",
+      "target_duration_sec": 6
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s1-messi-05-halftime-still.jpg",
+      "motion": "hold",
+      "vo": "Egypt go into half-time still leading the reigning world champions.",
+      "target_duration_sec": 5
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Son Also Saves",
+      "subtitle": "Full documentary on the channel",
+      "vo": "What happens in the second half is the part nobody saw coming.",
+      "target_duration_sec": 3
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "stadium_hum", "gain_db": -36 },
+    "bed": {
+      "key": "tension",
+      "gain_db": -20,
+      "start_scene": 1,
+      "end_scene": 2,
+      "fade_in_sec": 1,
+      "resume_gain_db": -16,
+      "resume_fade_in_sec": 1.5
+    },
+    "heartbeat": {
+      "key": "heartbeat",
+      "gain_db": -20,
+      "start_scene": 2,
+      "end_scene": 2,
+      "fade_in_sec": 1.5
+    },
+    "hit": { "key": "musical_hit", "gain_db": -6 }
+  }
+}

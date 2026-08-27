@@ -1,0 +1,66 @@
+{
+  "output": "son-also-saves-s2-collapse-EN-REWRITE.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/son-also-saves/stills/S26-A.jpg",
+      "motion": "hold",
+      "vo": "Argentina had never come back from 2-0 down at a World Cup.",
+      "target_duration_sec": 4.6
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S26-A.jpg",
+      "motion": "push",
+      "crop_x": 0.3,
+      "vo": "Not once. And Egypt led by two with eleven minutes left.",
+      "target_duration_sec": 4.2
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S27-A.jpg",
+      "motion": "micro_push",
+      "vo": "Seventy-ninth minute. Cristian Romero heads in.",
+      "target_duration_sec": 3.2
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S28-A.jpg",
+      "motion": "smash",
+      "vo": "Eighty-third minute. Messi — off the crossbar.",
+      "target_duration_sec": 3.4
+    },
+    {
+      "image": "content/longform/son-also-saves/stills/S30-A.jpg",
+      "motion": "hold",
+      "vo_parts": ["Ninety-two minutes. Enzo Fernandez. A header into the far corner.", "Three-two."],
+      "pause_sec": 0.6,
+      "target_duration_sec": 4.8
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Son Also Saves",
+      "subtitle": "Full documentary on the channel",
+      "vo": "Argentina.",
+      "target_duration_sec": 3.0
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "crowd_roar", "gain_db": -28 },
+    "bed": {
+      "key": "tension",
+      "gain_db": -18,
+      "start_scene": 1,
+      "end_scene": 4,
+      "fade_in_sec": 1,
+      "resume_gain_db": -12,
+      "resume_fade_in_sec": 0.3
+    },
+    "heartbeat": {
+      "key": "heartbeat",
+      "gain_db": -16,
+      "start_scene": 3,
+      "start_offset_sec": 0,
+      "end_scene": 4,
+      "fade_in_sec": 0.6
+    },
+    "hit": { "key": "celebration_cut", "gain_db": -3 }
+  }
+}

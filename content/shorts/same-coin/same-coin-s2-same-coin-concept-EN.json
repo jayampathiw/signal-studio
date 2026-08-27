@@ -1,0 +1,47 @@
+{
+  "output": "same-coin-s2-same-coin-concept-EN.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s2-concept-01-rear-save.jpg",
+      "motion": "hold",
+      "vo": "Imagine one penalty making you a national hero.",
+      "target_duration_sec": 5,
+      "hook": { "amber_word": "national hero" }
+    },
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s2-concept-02-dive-transition.jpg",
+      "motion": "push",
+      "vo": "And another one taking it all away in the same tournament.",
+      "target_duration_sec": 5
+    },
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s2-concept-03-split-dive-concede.jpg",
+      "motion": "micro_push",
+      "vo": "Same goalkeeper. Same weapon. Opposite result.",
+      "target_duration_sec": 6
+    },
+    {
+      "image": "content/shorts/same-coin/vertical-assets/s2-concept-04-lineage-three.jpg",
+      "motion": "pull",
+      "vo": "It doesn't erase what he did against Germany. If anything, it confirms it.",
+      "target_duration_sec": 6
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Same Coin",
+      "subtitle": "Full documentary on the channel",
+      "vo": "There's a reason this loss doesn't cancel out what he did to Germany.",
+      "target_duration_sec": 3
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "stadium_hum", "gain_db": -36 },
+    "bed": {
+      "key": "reflective",
+      "gain_db": -20,
+      "start_scene": 1,
+      "fade_in_sec": 1
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "ambience": "stadium_hum",
+  "ambience_ranges": [
+    [
+      13.725,
+      155.825
+    ],
+    [
+      163.55,
+      275.075
+    ],
+    [
+      283.075,
+      372.275
+    ]
+  ],
+  "segments": [
+    {
+      "from_sec": 0,
+      "to_sec": 13.725,
+      "track": "silence",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 13.725,
+      "to_sec": 18.725,
+      "track": "tension",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 18.725,
+      "to_sec": 28.875,
+      "track": "reflective",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 28.875,
+      "to_sec": 67.975,
+      "track": "tension",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 67.975,
+      "to_sec": 84.825,
+      "track": "drone",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 84.825,
+      "to_sec": 92.2,
+      "track": "drone",
+      "gain_db": -25
+    },
+    {
+      "from_sec": 92.2,
+      "to_sec": 110.27499999999999,
+      "track": "epic_dramatic",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 110.275,
+      "to_sec": 136.39999999999998,
+      "track": "tension",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 136.4,
+      "to_sec": 155.825,
+      "track": "drone",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 155.825,
+      "to_sec": 163.55,
+      "track": "hum_only",
+      "gain_db": -35
+    },
+    {
+      "from_sec": 163.55,
+      "to_sec": 181.575,
+      "track": "tension",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 181.575,
+      "to_sec": 192.175,
+      "track": "drone",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 192.175,
+      "to_sec": 210.42499999999998,
+      "track": "tension",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 210.425,
+      "to_sec": 217.975,
+      "track": "drone",
+      "gain_db": -25
+    },
+    {
+      "from_sec": 217.975,
+      "to_sec": 241.725,
+      "track": "tension",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 241.725,
+      "to_sec": 250.525,
+      "track": "drone",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 250.525,
+      "to_sec": 259.725,
+      "track": "tension",
+      "gain_db": -22
+    },
+    {
+      "from_sec": 259.725,
+      "to_sec": 265.425,
+      "track": "release",
+      "gain_db": -15
+    },
+    {
+      "from_sec": 265.425,
+      "to_sec": 275.075,
+      "track": "release",
+      "gain_db": -20
+    },
+    {
+      "from_sec": 275.075,
+      "to_sec": 283.075,
+      "track": "silence",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 283.075,
+      "to_sec": 292.85,
+      "track": "drone",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 292.85,
+      "to_sec": 305.95,
+      "track": "tragic_loss",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 305.95,
+      "to_sec": 316.675,
+      "track": "piano_sad_solo",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 316.675,
+      "to_sec": 328.55,
+      "track": "reflective",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 328.55,
+      "to_sec": 344.475,
+      "track": "ethereal_mystery",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 344.475,
+      "to_sec": 361.625,
+      "track": "piano_sad_solo",
+      "gain_db": -24
+    },
+    {
+      "from_sec": 361.625,
+      "to_sec": 372.275,
+      "track": "epic_dramatic",
+      "gain_db": -20
+    }
+  ]
+}

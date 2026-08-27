@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: item, error: fetchErr } = await db
     .from('content_items')
-    .select('id, status, channel_key')
+    .select('id, status, channel_key, clip_type')
     .eq('id', project_id)
     .single();
 
@@ -89,6 +89,19 @@ Deno.serve(async (req: Request) => {
     'User-Agent': 'signal-studio-longform',
   };
 
+  // longform.yml (in the public reel-pipeline trigger repo) only declares
+  // project_id/stage/assemble_flags as workflow_dispatch inputs — adding a
+  // new declared input here would 422 until that repo's workflow is updated
+  // to match. assemble_flags is already forwarded verbatim to the render
+  // script, so clip_type rides along through that instead: the cloud-side
+  // assembler can branch on --clip-type=short once it exists (not built yet
+  // — Shorts still render via the local assemble-short-rewrite.mjs CLI path).
+  const isShort = item.clip_type === 'short';
+  const wantsAssemble = stage === 'assemble' || stage === 'tts_assemble';
+  const mergedAssembleFlags = isShort && wantsAssemble && !/--clip-type=/.test(assemble_flags ?? '')
+    ? [assemble_flags, '--clip-type=short'].filter(Boolean).join(' ')
+    : assemble_flags;
+
   const dispatchRes = await fetch(
     `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${GITHUB_WORKFLOW}/dispatches`,
     {
@@ -96,7 +109,7 @@ Deno.serve(async (req: Request) => {
       headers: ghHeaders,
       body: JSON.stringify({
         ref: 'main',
-        inputs: { project_id: String(project_id), stage, ...(assemble_flags ? { assemble_flags } : {}) },
+        inputs: { project_id: String(project_id), stage, ...(mergedAssembleFlags ? { assemble_flags: mergedAssembleFlags } : {}) },
       }),
     },
   );
@@ -120,5 +133,5 @@ Deno.serve(async (req: Request) => {
     runUrl = runs.workflow_runs?.[0]?.html_url ?? null;
   }
 
-  return json({ dispatched: true, stage, previous_status: item.status, running_status: transition.running, runUrl });
+  return json({ dispatched: true, stage, clip_type: item.clip_type, previous_status: item.status, running_status: transition.running, runUrl });
 });

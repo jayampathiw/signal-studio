@@ -1,0 +1,64 @@
+{
+  "output": "silenced-s3-lineage-EN-REWRITE.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S05-A.jpg",
+      "motion": "hold",
+      "vo": "Paraguay has never produced a Pelé. Or a Maradona. Or a Messi.",
+      "target_duration_sec": 5.0
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S07-A.jpg",
+      "motion": "push",
+      "vo": "But for thirty years, it's quietly built something rarer.",
+      "target_duration_sec": 3.6
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S08-A.jpg",
+      "motion": "micro_push",
+      "vo": "His name was Chilavert.",
+      "target_duration_sec": 2.4
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S10-A.jpg",
+      "motion": "push",
+      "vo": "After him, Villar carried Paraguay.",
+      "target_duration_sec": 2.8
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S11-A.jpg",
+      "motion": "pull",
+      "vo": "They lost that day.",
+      "target_duration_sec": 2.2
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S13-A.jpg",
+      "motion": "push",
+      "vo": "Tonight, a new name joins that line: Orlando Gill.",
+      "target_duration_sec": 3.4
+    },
+    {
+      "image": "content/shorts/silenced/vertical-assets/S45-A-vertical.jpg",
+      "motion": "hold",
+      "vo": "Chilavert did it with a snarl. Villar did it in 2010. Tonight, Gill did it against Germany.",
+      "target_duration_sec": 6.2
+    },
+    {
+      "end_card_v2": true,
+      "title": "Silenced",
+      "subtitle": "Full documentary on the channel",
+      "vo": "Twenty-one shots faced. One miss decided it.",
+      "target_duration_sec": 4.8
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "reflective", "gain_db": -28 },
+    "bed": {
+      "key": "reflective",
+      "gain_db": -18,
+      "start_scene": 1,
+      "fade_in_sec": 2
+    }
+  }
+}

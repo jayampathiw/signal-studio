@@ -31,6 +31,7 @@ const COUNTRY_NAMES: Record<string, string> = { FR: 'France', IT: 'Italy', AU: '
         <a routerLink="/upload" style="font-size:11px;font-weight:600;color:var(--ink-standard);text-decoration:none;padding:3px 8px;border-radius:4px;background:rgba(0,204,112,.1);letter-spacing:.05em;">⬆ Upload</a>
         <a routerLink="/reels" style="font-size:11px;font-weight:600;color:var(--ink-text-2);text-decoration:none;padding:3px 8px;border-radius:4px;background:var(--ink-raised);letter-spacing:.05em;">▶ Reels</a>
         <a routerLink="/on-this-day" style="font-size:11px;font-weight:600;color:#b47828;text-decoration:none;padding:3px 8px;border-radius:4px;background:rgba(180,120,40,0.12);letter-spacing:.05em;">📅 On This Day</a>
+        <a routerLink="/longform" style="font-size:11px;font-weight:600;color:#7c5cff;text-decoration:none;padding:3px 8px;border-radius:4px;background:rgba(124,92,255,0.12);letter-spacing:.05em;">🎬 Video Channels</a>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span class="hidden sm:inline" style="font-size:11px;color:var(--ink-text-3);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ userEmail() }}</span>

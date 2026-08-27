@@ -1,0 +1,62 @@
+[
+  {
+    "word": "Spain",
+    "start": 0,
+    "end": 0.72
+  },
+  {
+    "word": "Didn",
+    "start": 0.72,
+    "end": 0.94
+  },
+  {
+    "word": "'T",
+    "start": 0.94,
+    "end": 1.02
+  },
+  {
+    "word": "Survive",
+    "start": 1.02,
+    "end": 1.48
+  },
+  {
+    "word": "Matches.",
+    "start": 1.48,
+    "end": 2.12
+  },
+  {
+    "word": "Spain",
+    "start": 2.36,
+    "end": 2.4
+  },
+  {
+    "word": "Erased",
+    "start": 2.4,
+    "end": 2.82
+  },
+  {
+    "word": "Them.",
+    "start": 2.82,
+    "end": 3.4
+  },
+  {
+    "word": "Austria.",
+    "start": 3.8,
+    "end": 4.04
+  },
+  {
+    "word": "Portugal.",
+    "start": 4.38,
+    "end": 4.68
+  },
+  {
+    "word": "Belgium.",
+    "start": 4.96,
+    "end": 5.16
+  },
+  {
+    "word": "France.",
+    "start": 5.5,
+    "end": 5.78
+  }
+]

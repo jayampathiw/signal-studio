@@ -12,7 +12,7 @@
 
 import { parseArgs } from 'util';
 import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'fs';
-import { join, resolve, dirname } from 'path';
+import { join, resolve, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 import { execFile } from 'child_process';
@@ -126,14 +126,20 @@ function pad2(n) { return String(n).padStart(2, '0'); }
 // Manual cut-split overrides, scene-relative seconds within the PLANNED
 // (unstretched) scene duration, one entry per cut boundary (stills.length-1
 // entries). render.js's default equal-split ignores where dialogue actually
-// breaks; S02's VO stretched the scene to 16.9s and the default 50/50 split
-// landed cut A's boundary right at 8.45s — exactly where the caption "is
-// standing eleven metres away" (8.44s-10.74s) starts, so it got included but
-// displayed for ~10ms before the cut to B swallowed it. Pushing the boundary
-// to 11s (of the 15s planned duration) keeps that whole line inside cut A.
-const CUT_SPLIT_OVERRIDES = {
-  2: [11],
+// breaks; son-also-saves' S02 VO stretched the scene to 16.9s and the default
+// 50/50 split landed cut A's boundary right at 8.45s — exactly where the
+// caption "is standing eleven metres away" (8.44s-10.74s) starts, so it got
+// included but displayed for ~10ms before the cut to B swallowed it. Pushing
+// the boundary to 11s (of the 15s planned duration) keeps that whole line
+// inside cut A. Keyed by project dir name (not global) — a bare `{2: [...]}`
+// silently corrupted every other project's own scene 2 with whatever
+// scene-relative second happened to equal *its* different scene 2 length,
+// collapsing a cut to zero duration (found via two-shots-messi's S02).
+const CUT_SPLIT_OVERRIDES_BY_PROJECT = {
+  'son-also-saves': { 2: [11] },
 };
+const CUT_SPLIT_OVERRIDES = CUT_SPLIT_OVERRIDES_BY_PROJECT[basename(projectDir)] ?? {};
+const ENABLE_AUTO_CUT_SPLIT = basename(projectDir) !== 'son-also-saves';
 
 function findStillFile(sceneN, cut) {
   const base = `S${pad2(sceneN)}-${cut}`;
@@ -173,6 +179,17 @@ async function main() {
   mkdirSync(workDir, { recursive: true });
   console.log(`Working dir: ${workDir}\n`);
 
+  // Real per-scene durations (post VO-stretch/tighten), keyed "S{n}" -> seconds.
+  // The audio mixer (mix-audio-local.mjs) needs these, not the shotlist's
+  // static planned duration_sec, to place SFX/bed segments at the right
+  // offsets — a scene tightened from 13s down to 7s throws off every later
+  // scene's absolute start time if the mixer assumes the planned duration.
+  // Persisted (merged, not overwritten) so partial --scenes runs accumulate.
+  const sceneDurationsPath = join(projectDir, 'scene-durations.json');
+  const sceneDurations = existsSync(sceneDurationsPath)
+    ? JSON.parse(readFileSync(sceneDurationsPath, 'utf-8'))
+    : {};
+
   try {
     const scenePaths = [];
 
@@ -186,7 +203,10 @@ async function main() {
       // header line — several scenes in this shotlist (S13, S17, S32) carry
       // that flag but DO have a real generated still to animate.
       if (!scene.stills?.length) {
-        const cardText = scene.overlays?.find((o) => o.tier === 1)?.text ?? 'SILENCED';
+        // No project-specific fallback here — a bare title-card scene with no
+        // tier-1 overlay (e.g. a blank end-screen plate) should render blank,
+        // not silently borrow another project's title text.
+        const cardText = scene.overlays?.find((o) => o.tier === 1)?.text ?? '';
         // Title cards have no 🖼️ line in the shotlist (so parser gives them zero
         // stills), but some carry an optional background image by convention —
         // reuse the same S{n}-A file lookup; falls back to plain black if absent.
@@ -195,6 +215,7 @@ async function main() {
         const out = join(workDir, `scene_${n}.mp4`);
         await buildTextCard(cardText, scene.duration_sec, out, bgImagePath);
         scenePaths.push(out);
+        sceneDurations[`S${n}`] = scene.duration_sec; // text cards never stretch/tighten
         console.log('done');
         continue;
       }
@@ -232,6 +253,11 @@ async function main() {
         duration_sec: scene.duration_sec,
         overlays: mergeCaptions(scene.scene_n, fromSec, scene.overlays ?? []),
         from_sec: fromSec,
+        // Enables render.js's auto cut-split (snaps equal-split boundaries to
+        // real caption-chunk edges instead of a dumb time-based split).
+        // Withheld for son-also-saves so its already-locked/delivered render
+        // stays reproducible byte-for-byte if it's ever re-rendered.
+        captionChunks: ENABLE_AUTO_CUT_SPLIT ? (sceneCaptions[`S${n}`] ?? null) : null,
       };
 
       process.stdout.write(`  ${label} [${stillRows.length} cut(s)] … `);
@@ -240,11 +266,13 @@ async function main() {
         clip,
         voPath,
         workDir,
-        { noOverlays: false, maxSilentTail },
+        { noOverlays: false, maxSilentTail, onSceneDur: (d) => { sceneDurations[`S${n}`] = d; } },
       );
       scenePaths.push(out);
       console.log('done' + (voPath ? '' : ' (no VO — silent)'));
     }
+
+    writeFileSync(sceneDurationsPath, JSON.stringify(sceneDurations, null, 2));
 
     if (!scenePaths.length) throw new Error('No scenes rendered');
 

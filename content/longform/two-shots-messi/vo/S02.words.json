@@ -1,0 +1,62 @@
+[
+  {
+    "word": "Neither",
+    "start": 0,
+    "end": 0.62
+  },
+  {
+    "word": "Found",
+    "start": 0.62,
+    "end": 0.98
+  },
+  {
+    "word": "The",
+    "start": 0.98,
+    "end": 1.18
+  },
+  {
+    "word": "Target.",
+    "start": 1.18,
+    "end": 1.54
+  },
+  {
+    "word": "Not",
+    "start": 2.06,
+    "end": 2.26
+  },
+  {
+    "word": "Once,",
+    "start": 2.26,
+    "end": 2.56
+  },
+  {
+    "word": "In",
+    "start": 2.78,
+    "end": 2.78
+  },
+  {
+    "word": "A",
+    "start": 2.78,
+    "end": 2.92
+  },
+  {
+    "word": "Hundred",
+    "start": 2.92,
+    "end": 3.16
+  },
+  {
+    "word": "And",
+    "start": 3.16,
+    "end": 3.4
+  },
+  {
+    "word": "Twenty",
+    "start": 3.4,
+    "end": 3.68
+  },
+  {
+    "word": "Minutes.",
+    "start": 3.68,
+    "end": 4.12
+  }
+]

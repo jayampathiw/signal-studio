@@ -17,6 +17,7 @@ import { promisify } from 'util';
 const execAsync = promisify(execFile);
 const AR = 44100;
 const AC = 2;
+const SFX_GAIN_DB = -14;
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
 const MANIFEST_PATH = resolve(REPO_ROOT, 'content/audio-kit/manifest.json');
 
@@ -183,8 +184,13 @@ async function buildSfxStem(clips, kitPaths, totalDur, workDir) {
   if (!events.length) return null;
 
   // adelay: mix all one-shots into one stem using amix + adelay
+  // SFX_GAIN_DB: one-shot kit assets (crowd roar, whistle, musical hits, …) are
+  // stock sources normalized close to 0dBFS on their own — with no attenuation
+  // here they came in far louder than the (already quiet, ducked) music/VO,
+  // burying narration under every cue. Flat -14dB brings them in line with
+  // the rest of the mix; loudnorm's TP ceiling still catches any transient peak.
   const inputs = events.flatMap((e) => ['-i', kitPaths[e.key]]);
-  const delays = events.map((_, i) => `[${i}:a]adelay=${events[i].absMs}|${events[i].absMs}[d${i}]`);
+  const delays = events.map((_, i) => `[${i}:a]adelay=${events[i].absMs}|${events[i].absMs},volume=${SFX_GAIN_DB}dB[d${i}]`);
   const mixed = events.map((_, i) => `[d${i}]`).join('') + `amix=inputs=${events.length}:normalize=0[sfx]`;
 
   const sfxOut = join(workDir, 'sfx_stem.wav');
@@ -236,7 +242,9 @@ async function applySilenceGates(clips, inputPath, workDir, suffix) {
 }
 
 // Duck music using the VO as a sidechain compressor.
-// When VO is above threshold, music ducks ~6dB.
+// When VO is above threshold, music ducks ~15-18dB — deep enough that
+// narration is never competing with the bed (a 4:1/~6dB dip left the bed
+// audibly fighting the VO whenever a scene's gain_db ran anywhere near -20).
 async function duckMusic(musicPath, voPath, workDir) {
   const out = join(workDir, 'music_ducked.wav');
   await ff(
@@ -244,9 +252,9 @@ async function duckMusic(musicPath, voPath, workDir) {
     '-i', musicPath,  // 0: music (the signal to compress)
     '-i', voPath,     // 1: VO (the sidechain)
     '-filter_complex',
-    // threshold ~-38dBFS, ratio=4 → ~6dB dip under normal VO levels
-    // attack=5ms (fast enough to catch speech onset), release=200ms (natural decay)
-    '[0:a][1:a]sidechaincompress=threshold=0.013:ratio=4:attack=5:release=200:knee=8[out]',
+    // threshold ~-38dBFS, ratio=10 → ~15-18dB dip under normal VO levels
+    // attack=5ms (fast enough to catch speech onset), release=300ms (natural decay, avoids audible pumping)
+    '[0:a][1:a]sidechaincompress=threshold=0.013:ratio=10:attack=5:release=300:knee=8[out]',
     '-map', '[out]',
     '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
     out,

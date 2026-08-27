@@ -1,0 +1,67 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.52
+  },
+  {
+    "word": "Team",
+    "start": 0.52,
+    "end": 0.82
+  },
+  {
+    "word": "That",
+    "start": 0.82,
+    "end": 1.08
+  },
+  {
+    "word": "Survived",
+    "start": 1.08,
+    "end": 1.66
+  },
+  {
+    "word": "Everything",
+    "start": 1.66,
+    "end": 2.2
+  },
+  {
+    "word": "Just",
+    "start": 2.2,
+    "end": 2.68
+  },
+  {
+    "word": "Handed",
+    "start": 2.68,
+    "end": 3.12
+  },
+  {
+    "word": "Spain",
+    "start": 3.12,
+    "end": 3.46
+  },
+  {
+    "word": "Thirty",
+    "start": 3.46,
+    "end": 3.92
+  },
+  {
+    "word": "Minutes",
+    "start": 3.92,
+    "end": 4.3
+  },
+  {
+    "word": "Against",
+    "start": 4.3,
+    "end": 4.58
+  },
+  {
+    "word": "Ten",
+    "start": 4.58,
+    "end": 4.96
+  },
+  {
+    "word": "Men.",
+    "start": 4.96,
+    "end": 5.3
+  }
+]

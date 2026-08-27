@@ -1,0 +1,97 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.5
+  },
+  {
+    "word": "Second",
+    "start": 0.5,
+    "end": 0.78
+  },
+  {
+    "word": "Half",
+    "start": 0.78,
+    "end": 1.08
+  },
+  {
+    "word": "Turns",
+    "start": 1.08,
+    "end": 1.36
+  },
+  {
+    "word": "Ugly.",
+    "start": 1.36,
+    "end": 2.14
+  },
+  {
+    "word": "Paredes",
+    "start": 2.62,
+    "end": 3
+  },
+  {
+    "word": "Shoves",
+    "start": 3,
+    "end": 3.2
+  },
+  {
+    "word": "Rodri",
+    "start": 3.2,
+    "end": 3.6
+  },
+  {
+    "word": "To",
+    "start": 3.6,
+    "end": 3.72
+  },
+  {
+    "word": "The",
+    "start": 3.72,
+    "end": 3.88
+  },
+  {
+    "word": "Turf,",
+    "start": 3.88,
+    "end": 4.3
+  },
+  {
+    "word": "Both",
+    "start": 4.44,
+    "end": 4.66
+  },
+  {
+    "word": "Benches",
+    "start": 4.66,
+    "end": 5.12
+  },
+  {
+    "word": "Boil,",
+    "start": 5.12,
+    "end": 5.66
+  },
+  {
+    "word": "And",
+    "start": 5.92,
+    "end": 5.98
+  },
+  {
+    "word": "The",
+    "start": 5.98,
+    "end": 6.16
+  },
+  {
+    "word": "Yellow",
+    "start": 6.16,
+    "end": 6.4
+  },
+  {
+    "word": "Cards",
+    "start": 6.4,
+    "end": 6.8
+  },
+  {
+    "word": "Begin.",
+    "start": 6.8,
+    "end": 7.3
+  }
+]

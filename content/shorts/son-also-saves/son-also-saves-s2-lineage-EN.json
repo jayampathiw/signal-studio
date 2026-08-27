@@ -1,0 +1,54 @@
+{
+  "output": "son-also-saves-s2-lineage-EN.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s2-lineage-01-vintage-silhouette.jpg",
+      "motion": "hold",
+      "vo": "For thirty-six years, one man was the only Egyptian goalkeeper anyone remembered.",
+      "target_duration_sec": 4,
+      "hook": { "amber_word": "thirty-six years" }
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s2-lineage-02-modern-step-forward.jpg",
+      "motion": "push",
+      "vo": "Then his son walked onto the same stage — with four matches to prove he belonged there.",
+      "target_duration_sec": 5
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s2-lineage-03-vintage-father.jpg",
+      "motion": "micro_push",
+      "vo": "In nineteen ninety, Ahmed Shobeir was the only Egyptian goalkeeper the world had ever noticed.",
+      "target_duration_sec": 6
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s2-lineage-04-modern-ready.jpg",
+      "motion": "push",
+      "vo": "In twenty twenty-six, his son stepped onto the same stage.",
+      "target_duration_sec": 6
+    },
+    {
+      "image": "content/shorts/son-also-saves/vertical-assets/s2-lineage-05-close-portrait.jpg",
+      "motion": "hold",
+      "vo": "Before the tournament, Ahmed had one message for his son. Just one word.",
+      "target_duration_sec": 4
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Son Also Saves",
+      "subtitle": "Full documentary on the channel",
+      "vo": "There's a reason that one word explains everything Mostafa did next.",
+      "target_duration_sec": 3
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "stadium_hum", "gain_db": -36 },
+    "bed": {
+      "key": "reflective",
+      "gain_db": -20,
+      "start_scene": 1,
+      "end_scene": 4,
+      "fade_in_sec": 1
+    }
+  }
+}

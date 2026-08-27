@@ -1,0 +1,107 @@
+[
+  {
+    "word": "At",
+    "start": 0,
+    "end": 0.52
+  },
+  {
+    "word": "The",
+    "start": 0.52,
+    "end": 0.7
+  },
+  {
+    "word": "Other",
+    "start": 0.7,
+    "end": 0.88
+  },
+  {
+    "word": "End,",
+    "start": 0.88,
+    "end": 1.18
+  },
+  {
+    "word": "Emiliano",
+    "start": 1.44,
+    "end": 1.9
+  },
+  {
+    "word": "MartíNez",
+    "start": 1.9,
+    "end": 2.56
+  },
+  {
+    "word": "Is",
+    "start": 2.56,
+    "end": 2.88
+  },
+  {
+    "word": "Already",
+    "start": 2.88,
+    "end": 3.14
+  },
+  {
+    "word": "Busy",
+    "start": 3.14,
+    "end": 3.86
+  },
+  {
+    "word": "—",
+    "start": 3.86,
+    "end": 4.12
+  },
+  {
+    "word": "Save",
+    "start": 4.12,
+    "end": 4.4
+  },
+  {
+    "word": "After",
+    "start": 4.4,
+    "end": 4.84
+  },
+  {
+    "word": "Save,",
+    "start": 4.84,
+    "end": 5.3
+  },
+  {
+    "word": "With",
+    "start": 5.78,
+    "end": 5.9
+  },
+  {
+    "word": "A",
+    "start": 5.9,
+    "end": 6.02
+  },
+  {
+    "word": "Broken",
+    "start": 6.02,
+    "end": 6.34
+  },
+  {
+    "word": "Finger",
+    "start": 6.34,
+    "end": 6.76
+  },
+  {
+    "word": "Taped",
+    "start": 6.76,
+    "end": 7.26
+  },
+  {
+    "word": "Inside",
+    "start": 7.26,
+    "end": 7.62
+  },
+  {
+    "word": "His",
+    "start": 7.62,
+    "end": 7.9
+  },
+  {
+    "word": "Glove.",
+    "start": 7.9,
+    "end": 8.3
+  }
+]

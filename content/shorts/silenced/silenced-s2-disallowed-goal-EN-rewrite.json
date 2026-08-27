@@ -1,0 +1,73 @@
+{
+  "output": "silenced-s2-disallowed-goal-EN-REWRITE.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S27-A.jpg",
+      "motion": "hold",
+      "vo": "Germany's players were already celebrating a World Cup winner.",
+      "target_duration_sec": 4.5
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S24-A.jpg",
+      "motion": "micro_push",
+      "crop_x": 0.5,
+      "vo": "The goal was about to get taken away.",
+      "target_duration_sec": 3.2
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S26-A.jpg",
+      "motion": "pan_lr",
+      "vo": "The 102nd minute. A corner. A header. The bench erupts.",
+      "target_duration_sec": 4.5
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S28-A.jpg",
+      "motion": "push",
+      "vo": "Then — the flags. A review.",
+      "target_duration_sec": 2.6
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S29-A.jpg",
+      "motion": "smash",
+      "vo": "Before the header, a defender had shoved the goalkeeper to the ground.",
+      "target_duration_sec": 4.8
+    },
+    {
+      "image": "content/longform/silenced-goalkeeper/stills/S30-A.jpg",
+      "motion": "hold",
+      "image2": "content/shorts/silenced/vertical-assets/whistle-disallowed-goal.jpg",
+      "motion2": "micro_push",
+      "vo_parts": ["Goal disallowed.", "One push. One whistle."],
+      "pause_sec": 1,
+      "target_duration_sec": 4.5
+    },
+    {
+      "end_card_v2": true,
+      "title": "Silenced",
+      "subtitle": "Full documentary on the channel",
+      "vo": "What happened next still shocked the world.",
+      "target_duration_sec": 4.5
+    }
+  ],
+  "sound_design": {
+    "bed": {
+      "key": "piano_sad_solo",
+      "gain_db": -22,
+      "start_scene": 1,
+      "end_scene": 5,
+      "fade_in_sec": 1.5,
+      "resume_gain_db": -18,
+      "resume_fade_in_sec": 1.5
+    },
+    "heartbeat": {
+      "key": "heartbeat",
+      "gain_db": -18,
+      "start_scene": 4,
+      "start_offset_sec": 0,
+      "end_scene": 5,
+      "fade_in_sec": 1
+    },
+    "hit": { "key": "ref_whistle", "gain_db": -4 }
+  }
+}

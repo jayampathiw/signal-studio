@@ -25,7 +25,10 @@ interface EditableArticle {
           <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:18px;letter-spacing:.06em;color:var(--ink-text);">SIGNAL</span>
           <span style="font-size:10px;color:var(--ink-text-3);letter-spacing:.12em;text-transform:uppercase;">Upload</span>
         </div>
-        <a routerLink="/articles" class="btn-ink" style="height:30px;font-size:12px;padding:0 12px;text-decoration:none;">← Articles</a>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <a routerLink="/longform" class="btn-ink" style="height:30px;font-size:12px;padding:0 12px;text-decoration:none;">🎬 Video Channels</a>
+          <a routerLink="/articles" class="btn-ink" style="height:30px;font-size:12px;padding:0 12px;text-decoration:none;">← Articles</a>
+        </div>
       </nav>
 
       <div style="max-width:760px;margin:0 auto;padding:24px 16px 64px;">

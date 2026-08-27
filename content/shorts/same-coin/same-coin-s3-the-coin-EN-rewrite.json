@@ -1,0 +1,51 @@
+{
+  "output": "same-coin-s3-the-coin-EN-REWRITE.mp4",
+  "voice": "am_adam",
+  "scenes": [
+    {
+      "image": "content/longform/same-coin/stills/S20-A.jpg",
+      "motion": "hold",
+      "vo": "A penalty made this goalkeeper a national hero.",
+      "target_duration_sec": 3.6
+    },
+    {
+      "image": "content/longform/same-coin/stills/S17-A.jpg",
+      "motion": "push",
+      "vo": "The next one took it all back.",
+      "target_duration_sec": 2.6
+    },
+    {
+      "image": "content/longform/same-coin/stills/S01-A.jpg",
+      "motion": "hold",
+      "target_duration_sec": 3.0
+    },
+    {
+      "image": "content/longform/same-coin/stills/S20-A.jpg",
+      "motion": "micro_push",
+      "crop_x": 0.7,
+      "vo": "One penalty made him a symbol. The next one ended his tournament.",
+      "target_duration_sec": 4.6
+    },
+    {
+      "image": "content/shorts/same-coin/vertical-assets/S22-A-vertical.jpg",
+      "motion": "hold",
+      "vo": "It doesn't erase what he did against Germany. It confirms it.",
+      "target_duration_sec": 4.6
+    },
+    {
+      "end_card_v2": true,
+      "title": "The Same Coin",
+      "subtitle": "Full documentary on the channel",
+      "target_duration_sec": 3.5
+    }
+  ],
+  "sound_design": {
+    "hum": { "key": "reflective", "gain_db": -28 },
+    "bed": {
+      "key": "reflective",
+      "gain_db": -18,
+      "start_scene": 0,
+      "fade_in_sec": 0.5
+    }
+  }
+}

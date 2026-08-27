@@ -1,0 +1,87 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "Eighty",
+    "start": 0.56,
+    "end": 0.92
+  },
+  {
+    "word": "-Second",
+    "start": 0.92,
+    "end": 1.26
+  },
+  {
+    "word": "Minute.",
+    "start": 1.26,
+    "end": 1.8
+  },
+  {
+    "word": "Enzo",
+    "start": 2.24,
+    "end": 2.52
+  },
+  {
+    "word": "Fernández",
+    "start": 2.52,
+    "end": 3.26
+  },
+  {
+    "word": "Goes",
+    "start": 3.26,
+    "end": 3.54
+  },
+  {
+    "word": "Into",
+    "start": 3.54,
+    "end": 3.74
+  },
+  {
+    "word": "The",
+    "start": 3.74,
+    "end": 3.92
+  },
+  {
+    "word": "Book",
+    "start": 3.92,
+    "end": 4.18
+  },
+  {
+    "word": "—",
+    "start": 4.18,
+    "end": 4.34
+  },
+  {
+    "word": "Not",
+    "start": 4.34,
+    "end": 4.44
+  },
+  {
+    "word": "For",
+    "start": 4.44,
+    "end": 4.66
+  },
+  {
+    "word": "A",
+    "start": 4.66,
+    "end": 4.78
+  },
+  {
+    "word": "Tackle.",
+    "start": 4.78,
+    "end": 5.24
+  },
+  {
+    "word": "For",
+    "start": 5.4,
+    "end": 5.62
+  },
+  {
+    "word": "Arguing.",
+    "start": 5.62,
+    "end": 6.18
+  }
+]
