@@ -1,5 +1,7 @@
 import { Composition } from 'remotion';
 import { NewsCard } from './compositions/NewsCard';
+import { CaseFile, totalCaseFileFrames, type CaseFileProps } from './compositions/case-file/CaseFile';
+import { CarouselSlide } from './compositions/carousel/CarouselSlide';
 
 // Register all Remotion compositions here.
 // Each composition corresponds to one content format / template.
@@ -17,6 +19,54 @@ export const RemotionRoot: React.FC = () => (
         source: 'Source Name',
         imageUrl: '',
         watermarkUrl: '',
+      }}
+    />
+    <Composition
+      id="CaseFile"
+      component={CaseFile}
+      fps={30}
+      width={1920}
+      height={1080}
+      // Episode length varies per case — derive total frames from the scenes
+      // passed in at render time instead of a fixed durationInFrames.
+      calculateMetadata={async ({ props }) => ({
+        durationInFrames: totalCaseFileFrames((props as CaseFileProps).scenes ?? [], 30, (props as CaseFileProps).caseMeta?.showOutro ?? true),
+      })}
+      defaultProps={{
+        caseMeta: null,
+        watermarkUrl: '',
+        scenes: [],
+      } satisfies CaseFileProps}
+    />
+    <Composition
+      id="CaseFileVertical"
+      component={CaseFile}
+      fps={30}
+      width={1080}
+      height={1920}
+      calculateMetadata={async ({ props }) => ({
+        durationInFrames: totalCaseFileFrames((props as CaseFileProps).scenes ?? [], 30, (props as CaseFileProps).caseMeta?.showOutro ?? true),
+      })}
+      defaultProps={{
+        caseMeta: null,
+        watermarkUrl: '',
+        scenes: [],
+      } satisfies CaseFileProps}
+    />
+    <Composition
+      id="CarouselSlide"
+      component={CarouselSlide}
+      durationInFrames={1}
+      fps={30}
+      width={1080}
+      height={1350}
+      defaultProps={{
+        slideNumber: 1,
+        totalSlides: 7,
+        headline: 'Placeholder headline',
+        body: '',
+        watermarkUrl: '',
+        showFolder: false,
       }}
     />
     {/* Add: DocumentaryScene, ReelTemplate, etc. as built */}

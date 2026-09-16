@@ -1,4 +1,5 @@
 import { AbsoluteFill, Img, useVideoConfig, interpolate, useCurrentFrame } from 'remotion';
+import { resolveAsset } from './resolve-asset';
 
 type Props = {
   headline: string;
@@ -19,7 +20,7 @@ export const NewsCard: React.FC<Props> = ({ headline, source, imageUrl, watermar
   return (
     <AbsoluteFill style={{ backgroundColor: '#000', opacity }}>
       {imageUrl && (
-        <Img src={imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <Img src={resolveAsset(imageUrl)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       )}
       <AbsoluteFill style={{
         background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%)',
@@ -35,7 +36,7 @@ export const NewsCard: React.FC<Props> = ({ headline, source, imageUrl, watermar
       </AbsoluteFill>
       {watermarkUrl && (
         <Img
-          src={watermarkUrl}
+          src={resolveAsset(watermarkUrl)}
           style={{ position: 'absolute', bottom: 40, right: 40, width: 120, opacity: 0.7 }}
         />
       )}
