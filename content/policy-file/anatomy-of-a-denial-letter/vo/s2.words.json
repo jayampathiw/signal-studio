@@ -1,0 +1,122 @@
+[
+  {
+    "word": "Every",
+    "start": 0,
+    "end": 0.72
+  },
+  {
+    "word": "denial",
+    "start": 0.72,
+    "end": 1.08
+  },
+  {
+    "word": "letter",
+    "start": 1.08,
+    "end": 1.48
+  },
+  {
+    "word": "has",
+    "start": 1.48,
+    "end": 1.74
+  },
+  {
+    "word": "to",
+    "start": 1.74,
+    "end": 1.88
+  },
+  {
+    "word": "state",
+    "start": 1.88,
+    "end": 2.16
+  },
+  {
+    "word": "a",
+    "start": 2.16,
+    "end": 2.38
+  },
+  {
+    "word": "reason,",
+    "start": 2.38,
+    "end": 2.82
+  },
+  {
+    "word": "usually",
+    "start": 3.16,
+    "end": 3.38
+  },
+  {
+    "word": "a",
+    "start": 3.38,
+    "end": 3.68
+  },
+  {
+    "word": "specific",
+    "start": 3.68,
+    "end": 4.06
+  },
+  {
+    "word": "code",
+    "start": 4.06,
+    "end": 4.4
+  },
+  {
+    "word": "like",
+    "start": 4.4,
+    "end": 4.66
+  },
+  {
+    "word": "this",
+    "start": 4.66,
+    "end": 4.92
+  },
+  {
+    "word": "one.",
+    "start": 4.92,
+    "end": 5.24
+  },
+  {
+    "word": "That",
+    "start": 5.62,
+    "end": 5.8
+  },
+  {
+    "word": "code",
+    "start": 5.8,
+    "end": 6.18
+  },
+  {
+    "word": "is",
+    "start": 6.18,
+    "end": 6.4
+  },
+  {
+    "word": "what",
+    "start": 6.4,
+    "end": 6.56
+  },
+  {
+    "word": "your",
+    "start": 6.56,
+    "end": 6.78
+  },
+  {
+    "word": "reference",
+    "start": 6.78,
+    "end": 7.08
+  },
+  {
+    "word": "when",
+    "start": 7.08,
+    "end": 7.36
+  },
+  {
+    "word": "you",
+    "start": 7.36,
+    "end": 7.52
+  },
+  {
+    "word": "appeal.",
+    "start": 7.52,
+    "end": 7.8
+  }
+]

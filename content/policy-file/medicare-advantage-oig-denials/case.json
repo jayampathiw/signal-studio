@@ -1,0 +1,66 @@
+{
+  "caseId": "medicare-advantage-oig-denials",
+  "channelKey": "policy-file/data-viz/EN",
+  "title": "95% of Medicare Advantage Denials Get Overturned — When Anyone Appeals",
+  "description": "A June 2026 HHS Office of Inspector General review of skilled nursing facility admissions found Medicare Advantage organizations overturned 95% of appealed denials — but only 18% of denials were ever appealed in the first place.",
+  "sourceCitation": "Source: HHS OIG report OEI-09-24-00331, June 2026 (oig.hhs.gov). Educational content only — not legal or financial advice. AI-generated narration.",
+  "showOutro": false,
+  "hideSourceOnScreen": true,
+  "scenes": [
+    {
+      "id": "s1",
+      "captionText": "95% of denials that get appealed... get overturned.",
+      "narrationText": "Ninety-five percent of Medicare Advantage denials that get appealed... get overturned.",
+      "visual": { "kind": "counter", "value": 95, "suffix": "%", "label": "of appealed Medicare Advantage denials were overturned" }
+    },
+    {
+      "id": "s2",
+      "imagePath": "snf-report-highlights.png",
+      "captionText": "HHS OIG report, June 2026 — 95% of appealed denials overturned.",
+      "narrationText": "This comes from a federal watchdog report released in June 2026, looking at skilled nursing facility admissions. When people appealed, 95% of those denials were overturned. But here's the catch: only about one in five people actually appealed.",
+      "zoomTo": { "x": 0.03, "y": 0.45, "width": 0.28, "height": 0.16 },
+      "highlight": { "x": 0.055, "y": 0.465, "width": 0.21, "height": 0.13, "fromFraction": 0.55, "toFraction": 0.8 }
+    },
+    {
+      "id": "s3",
+      "captionText": "Most people never appeal at all.",
+      "narrationText": "Most denials aren't really final. They're a prompt to appeal — and most people never do.",
+      "visual": {
+        "kind": "barChart",
+        "bars": [
+          { "label": "Denials Appealed", "value": 18 },
+          { "label": "Overturned When Appealed", "value": 95 }
+        ],
+        "maxValue": 100,
+        "unit": "%"
+      }
+    },
+    {
+      "id": "s4",
+      "captionText": "The appeal window closes fast.",
+      "narrationText": "The reason so few people appeal is timing. Most plans give you only a matter of days after a hospital or skilled nursing stay ends to file — the deadline is often noon the day before your coverage ends.",
+      "visual": {
+        "kind": "mechanism",
+        "bars": [
+          { "label": "Denials Appealed", "value": 18 },
+          { "label": "Overturned When Appealed", "value": 95 }
+        ],
+        "barUnit": "%",
+        "barMax": 100,
+        "timeline": { "startLabel": "Notice given", "deadlineLabel": "Deadline: noon, day before care ends", "deadlineFraction": 0.85 }
+      }
+    },
+    {
+      "id": "s5",
+      "captionText": "Ask for your appeal deadline in writing.",
+      "narrationText": "If a parent or spouse just had a skilled nursing or rehab stay denied, don't assume it's final. Ask for the appeal deadline in writing today.",
+      "holdExtraSecs": 1.5,
+      "visual": {
+        "kind": "resolution",
+        "counterValue": 95,
+        "counterSuffix": "%",
+        "timeline": { "startLabel": "Notice given", "deadlineLabel": "Deadline: noon, day before care ends", "deadlineFraction": 0.85 }
+      }
+    }
+  ]
+}

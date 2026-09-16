@@ -1,0 +1,42 @@
+{
+  "caseId": "iul-refund-pacific-life",
+  "title": "Pacific Life's $58.3 Million IUL Settlement (TEST RENDER)",
+  "description": "IUL policyholders were promised market-tied growth with a guaranteed floor — but a $58.3M settlement against Pacific Life, finalized May 2026, shows how illustrated projections can diverge from what a policy actually pays out.",
+  "sourceCitation": "TEST RENDER — sourcing pending (Stage 2 / CourtListener). Documents shown are fabricated test assets, not real evidence.",
+  "scenes": [
+    {
+      "id": "s1",
+      "durationSecs": 5,
+      "captionText": "Pacific Life just paid $58.3 million. Here's why.",
+      "narrationText": "Pacific Life just paid $58.3 million because of what's written inside your policy illustration."
+    },
+    {
+      "id": "s2",
+      "durationSecs": 15,
+      "imagePath": "test-settlement-doc.png",
+      "captionText": "$58.3M settlement — finalized May 2026",
+      "narrationText": "This settlement was finalized in May 2026, and it's not the only one — multiple carriers are facing similar suits right now.",
+      "highlight": { "x": 0.06, "y": 0.283, "width": 0.55, "height": 0.035, "fromSec": 3, "toSec": 5 }
+    },
+    {
+      "id": "s3",
+      "durationSecs": 25,
+      "captionText": "Market-tied growth. A guaranteed floor. That's the pitch.",
+      "narrationText": "IUL — indexed universal life insurance — is sold with a promise: your cash value grows tied to the market, with a guaranteed floor so you never lose money. What isn't always explained clearly is how illustrated projections differ from what actually accumulates."
+    },
+    {
+      "id": "s4",
+      "durationSecs": 30,
+      "imagePath": "test-illustration-doc.png",
+      "captionText": "The assumption behind the projection",
+      "narrationText": "The gap comes from a specific assumption buried in the illustration — the projected crediting rate used to generate the 'example' numbers agents show at the point of sale.",
+      "highlight": { "x": 0.065, "y": 0.258, "width": 0.815, "height": 0.032, "fromSec": 3, "toSec": 5 }
+    },
+    {
+      "id": "s5",
+      "durationSecs": 12,
+      "captionText": "Check your policy illustration today.",
+      "narrationText": "If you hold an IUL policy, pull your original illustration and compare the projected column to your actual statement. If you're a Pacific Life policyholder, the settlement claims process is worth checking."
+    }
+  ]
+}

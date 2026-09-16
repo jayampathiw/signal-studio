@@ -1,0 +1,137 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.52
+  },
+  {
+    "word": "one",
+    "start": 0.52,
+    "end": 0.76
+  },
+  {
+    "word": "thing",
+    "start": 0.76,
+    "end": 1.06
+  },
+  {
+    "word": "that",
+    "start": 1.06,
+    "end": 1.32
+  },
+  {
+    "word": "defeats",
+    "start": 1.32,
+    "end": 1.66
+  },
+  {
+    "word": "it,",
+    "start": 1.66,
+    "end": 1.98
+  },
+  {
+    "word": "a",
+    "start": 2.34,
+    "end": 2.38
+  },
+  {
+    "word": "family",
+    "start": 2.38,
+    "end": 2.7
+  },
+  {
+    "word": "verification",
+    "start": 2.7,
+    "end": 3.32
+  },
+  {
+    "word": "phrase",
+    "start": 3.32,
+    "end": 3.9
+  },
+  {
+    "word": "the",
+    "start": 3.9,
+    "end": 4.2
+  },
+  {
+    "word": "caller",
+    "start": 4.2,
+    "end": 4.48
+  },
+  {
+    "word": "can't",
+    "start": 4.48,
+    "end": 4.9
+  },
+  {
+    "word": "know.",
+    "start": 4.9,
+    "end": 5.28
+  },
+  {
+    "word": "Something",
+    "start": 5.66,
+    "end": 5.96
+  },
+  {
+    "word": "you",
+    "start": 5.96,
+    "end": 6.24
+  },
+  {
+    "word": "agree",
+    "start": 6.24,
+    "end": 6.52
+  },
+  {
+    "word": "on",
+    "start": 6.52,
+    "end": 6.76
+  },
+  {
+    "word": "ahead",
+    "start": 6.76,
+    "end": 6.92
+  },
+  {
+    "word": "of",
+    "start": 6.92,
+    "end": 7.14
+  },
+  {
+    "word": "time,",
+    "start": 7.14,
+    "end": 7.58
+  },
+  {
+    "word": "not",
+    "start": 7.86,
+    "end": 7.98
+  },
+  {
+    "word": "something",
+    "start": 7.98,
+    "end": 8.32
+  },
+  {
+    "word": "posted",
+    "start": 8.32,
+    "end": 8.74
+  },
+  {
+    "word": "on",
+    "start": 8.74,
+    "end": 9.12
+  },
+  {
+    "word": "social",
+    "start": 9.12,
+    "end": 9.4
+  },
+  {
+    "word": "media.",
+    "start": 9.4,
+    "end": 9.76
+  }
+]

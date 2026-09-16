@@ -1,0 +1,192 @@
+[
+  {
+    "word": "Your",
+    "start": 0,
+    "end": 0.58
+  },
+  {
+    "word": "deadline",
+    "start": 0.58,
+    "end": 1
+  },
+  {
+    "word": "depends",
+    "start": 1,
+    "end": 1.44
+  },
+  {
+    "word": "on",
+    "start": 1.44,
+    "end": 1.72
+  },
+  {
+    "word": "where",
+    "start": 1.72,
+    "end": 1.84
+  },
+  {
+    "word": "you",
+    "start": 1.84,
+    "end": 2.06
+  },
+  {
+    "word": "live.",
+    "start": 2.06,
+    "end": 2.44
+  },
+  {
+    "word": "In",
+    "start": 2.96,
+    "end": 3.1
+  },
+  {
+    "word": "California,",
+    "start": 3.1,
+    "end": 3.58
+  },
+  {
+    "word": "health",
+    "start": 4.26,
+    "end": 4.38
+  },
+  {
+    "word": "insurers",
+    "start": 4.38,
+    "end": 4.78
+  },
+  {
+    "word": "must",
+    "start": 4.78,
+    "end": 5.14
+  },
+  {
+    "word": "decide",
+    "start": 5.14,
+    "end": 5.62
+  },
+  {
+    "word": "your",
+    "start": 5.62,
+    "end": 5.9
+  },
+  {
+    "word": "internal",
+    "start": 5.9,
+    "end": 6.3
+  },
+  {
+    "word": "appeal",
+    "start": 6.3,
+    "end": 6.8
+  },
+  {
+    "word": "within",
+    "start": 6.8,
+    "end": 7.12
+  },
+  {
+    "word": "thirty",
+    "start": 7.12,
+    "end": 7.52
+  },
+  {
+    "word": "days",
+    "start": 7.52,
+    "end": 8.02
+  },
+  {
+    "word": "—",
+    "start": 8.02,
+    "end": 8.36
+  },
+  {
+    "word": "five",
+    "start": 8.36,
+    "end": 8.72
+  },
+  {
+    "word": "for",
+    "start": 8.72,
+    "end": 8.98
+  },
+  {
+    "word": "urgent",
+    "start": 8.98,
+    "end": 9.3
+  },
+  {
+    "word": "cases",
+    "start": 9.3,
+    "end": 9.84
+  },
+  {
+    "word": "—",
+    "start": 9.84,
+    "end": 10.26
+  },
+  {
+    "word": "and",
+    "start": 10.26,
+    "end": 10.46
+  },
+  {
+    "word": "you",
+    "start": 10.46,
+    "end": 10.54
+  },
+  {
+    "word": "have",
+    "start": 10.54,
+    "end": 10.72
+  },
+  {
+    "word": "the",
+    "start": 10.72,
+    "end": 10.9
+  },
+  {
+    "word": "right",
+    "start": 10.9,
+    "end": 11.12
+  },
+  {
+    "word": "to",
+    "start": 11.12,
+    "end": 11.34
+  },
+  {
+    "word": "an",
+    "start": 11.34,
+    "end": 11.56
+  },
+  {
+    "word": "independent",
+    "start": 11.56,
+    "end": 11.96
+  },
+  {
+    "word": "medical",
+    "start": 11.96,
+    "end": 12.5
+  },
+  {
+    "word": "review",
+    "start": 12.5,
+    "end": 12.96
+  },
+  {
+    "word": "if",
+    "start": 12.96,
+    "end": 13.2
+  },
+  {
+    "word": "that",
+    "start": 13.2,
+    "end": 13.46
+  },
+  {
+    "word": "fails.",
+    "start": 13.46,
+    "end": 13.8
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "caseId": "anatomy-of-a-denial-letter",
+  "channelKey": "policy-file/case-file/EN",
+  "specimen": true,
+  "title": "Anatomy of a Denial Letter (Specimen)",
+  "description": "A line-by-line walkthrough of the three sections every insurance denial letter is required to include — the denial code, the policy provision cited, and your right to appeal — using a labeled specimen template, not a real case.",
+  "sourceCitation": "SPECIMEN — illustrative template, not a real case. Not financial or legal advice. AI-generated narration.",
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "test-denial-letter.png",
+      "captionText": "Here's what a denial letter is actually telling you.",
+      "narrationText": "This is a specimen denial letter, not a real case, but it's structured just like the real ones. Here's what each part actually means."
+    },
+    {
+      "id": "s2",
+      "imagePath": "test-denial-letter.png",
+      "captionText": "Every denial starts with a reason code.",
+      "narrationText": "Every denial letter has to state a reason, usually a specific code like this one. That code is what you'll reference when you appeal.",
+      "zoomTo": { "x": 0.05, "y": 0.24, "width": 0.62, "height": 0.09 },
+      "highlight": { "x": 0.067, "y": 0.278, "width": 0.575, "height": 0.028, "fromFraction": 0.4, "toFraction": 0.65 }
+    },
+    {
+      "id": "s3",
+      "imagePath": "test-denial-letter.png",
+      "captionText": "The letter cites the specific policy language.",
+      "narrationText": "Below that, the letter has to cite the exact policy provision the insurer says supports the denial. The specific clause, not just a general reason.",
+      "zoomTo": { "x": 0.05, "y": 0.375, "width": 0.83, "height": 0.09 },
+      "highlight": { "x": 0.067, "y": 0.41, "width": 0.75, "height": 0.028, "fromFraction": 0.4, "toFraction": 0.65 }
+    },
+    {
+      "id": "s4",
+      "imagePath": "test-denial-letter.png",
+      "captionText": "Every denial letter must tell you how to appeal.",
+      "narrationText": "By law, the letter also has to explain your right to appeal, even when that explanation is buried in dense language near the bottom. That's the part most people skip past, and it's the part that matters most.",
+      "zoomTo": { "x": 0.05, "y": 0.51, "width": 0.85, "height": 0.13 }
+    },
+    {
+      "id": "s5",
+      "imagePath": "test-denial-letter.png",
+      "captionText": "Read every section — especially the appeal rights.",
+      "narrationText": "If you get a denial letter, read all three of these sections: the reason code, the policy language they're citing, and your appeal rights. That's what tells you whether the denial can be challenged.",
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "holdExtraSecs": 1.5
+    }
+  ]
+}

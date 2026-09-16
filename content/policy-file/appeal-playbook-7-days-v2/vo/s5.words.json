@@ -1,0 +1,167 @@
+[
+  {
+    "word": "Step",
+    "start": 0,
+    "end": 0.62
+  },
+  {
+    "word": "three,",
+    "start": 0.62,
+    "end": 1
+  },
+  {
+    "word": "request",
+    "start": 1.26,
+    "end": 1.48
+  },
+  {
+    "word": "your",
+    "start": 1.48,
+    "end": 1.74
+  },
+  {
+    "word": "claim",
+    "start": 1.74,
+    "end": 1.92
+  },
+  {
+    "word": "file.",
+    "start": 1.92,
+    "end": 2.34
+  },
+  {
+    "word": "It's",
+    "start": 2.66,
+    "end": 2.76
+  },
+  {
+    "word": "free.",
+    "start": 2.76,
+    "end": 3.04
+  },
+  {
+    "word": "You",
+    "start": 3.62,
+    "end": 3.76
+  },
+  {
+    "word": "have",
+    "start": 3.76,
+    "end": 3.94
+  },
+  {
+    "word": "the",
+    "start": 3.94,
+    "end": 4.1
+  },
+  {
+    "word": "legal",
+    "start": 4.1,
+    "end": 4.32
+  },
+  {
+    "word": "right",
+    "start": 4.32,
+    "end": 4.56
+  },
+  {
+    "word": "to",
+    "start": 4.56,
+    "end": 4.8
+  },
+  {
+    "word": "everything",
+    "start": 4.8,
+    "end": 5.14
+  },
+  {
+    "word": "the",
+    "start": 5.14,
+    "end": 5.4
+  },
+  {
+    "word": "insurer",
+    "start": 5.4,
+    "end": 5.82
+  },
+  {
+    "word": "used",
+    "start": 5.82,
+    "end": 6.12
+  },
+  {
+    "word": "to",
+    "start": 6.12,
+    "end": 6.36
+  },
+  {
+    "word": "deny",
+    "start": 6.36,
+    "end": 6.6
+  },
+  {
+    "word": "you,",
+    "start": 6.6,
+    "end": 7.12
+  },
+  {
+    "word": "reviewer",
+    "start": 7.24,
+    "end": 7.6
+  },
+  {
+    "word": "notes,",
+    "start": 7.6,
+    "end": 7.92
+  },
+  {
+    "word": "internal",
+    "start": 8.24,
+    "end": 8.46
+  },
+  {
+    "word": "guidelines,",
+    "start": 8.46,
+    "end": 9
+  },
+  {
+    "word": "who",
+    "start": 9.36,
+    "end": 9.42
+  },
+  {
+    "word": "actually",
+    "start": 9.42,
+    "end": 9.78
+  },
+  {
+    "word": "reviewed",
+    "start": 9.78,
+    "end": 10.08
+  },
+  {
+    "word": "your",
+    "start": 10.08,
+    "end": 10.36
+  },
+  {
+    "word": "claim.",
+    "start": 10.36,
+    "end": 10.66
+  },
+  {
+    "word": "Almost",
+    "start": 11.24,
+    "end": 11.42
+  },
+  {
+    "word": "nobody",
+    "start": 11.42,
+    "end": 11.86
+  },
+  {
+    "word": "asks.",
+    "start": 11.86,
+    "end": 12.38
+  }
+]

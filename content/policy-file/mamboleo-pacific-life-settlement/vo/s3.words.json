@@ -1,0 +1,317 @@
+[
+  {
+    "word": "When",
+    "start": 0,
+    "end": 0.5
+  },
+  {
+    "word": "she",
+    "start": 0.5,
+    "end": 0.72
+  },
+  {
+    "word": "signed",
+    "start": 0.72,
+    "end": 0.94
+  },
+  {
+    "word": "up",
+    "start": 0.94,
+    "end": 1.18
+  },
+  {
+    "word": "for",
+    "start": 1.18,
+    "end": 1.32
+  },
+  {
+    "word": "a",
+    "start": 1.32,
+    "end": 1.36
+  },
+  {
+    "word": "Pacific",
+    "start": 1.36,
+    "end": 1.68
+  },
+  {
+    "word": "Life",
+    "start": 1.68,
+    "end": 2.06
+  },
+  {
+    "word": "-PDX",
+    "start": 2.06,
+    "end": 3.02
+  },
+  {
+    "word": "policy",
+    "start": 3.02,
+    "end": 3.6
+  },
+  {
+    "word": "in",
+    "start": 3.6,
+    "end": 3.92
+  },
+  {
+    "word": "2019,",
+    "start": 3.92,
+    "end": 4.58
+  },
+  {
+    "word": "this",
+    "start": 5.06,
+    "end": 5.26
+  },
+  {
+    "word": "is",
+    "start": 5.26,
+    "end": 5.44
+  },
+  {
+    "word": "the",
+    "start": 5.44,
+    "end": 5.58
+  },
+  {
+    "word": "illustration",
+    "start": 5.58,
+    "end": 6.04
+  },
+  {
+    "word": "she",
+    "start": 6.04,
+    "end": 6.38
+  },
+  {
+    "word": "was",
+    "start": 6.38,
+    "end": 6.62
+  },
+  {
+    "word": "shown.",
+    "start": 6.62,
+    "end": 6.94
+  },
+  {
+    "word": "By",
+    "start": 7.48,
+    "end": 7.68
+  },
+  {
+    "word": "year",
+    "start": 7.68,
+    "end": 7.9
+  },
+  {
+    "word": "twenty,",
+    "start": 7.9,
+    "end": 8.34
+  },
+  {
+    "word": "at",
+    "start": 8.64,
+    "end": 8.72
+  },
+  {
+    "word": "an",
+    "start": 8.72,
+    "end": 8.86
+  },
+  {
+    "word": "assumed",
+    "start": 8.86,
+    "end": 9.22
+  },
+  {
+    "word": "rate",
+    "start": 9.22,
+    "end": 9.5
+  },
+  {
+    "word": "of",
+    "start": 9.5,
+    "end": 9.72
+  },
+  {
+    "word": "seven",
+    "start": 9.72,
+    "end": 10
+  },
+  {
+    "word": "-point",
+    "start": 10,
+    "end": 10.28
+  },
+  {
+    "word": "-one",
+    "start": 10.28,
+    "end": 10.44
+  },
+  {
+    "word": "percent,",
+    "start": 10.44,
+    "end": 10.94
+  },
+  {
+    "word": "her",
+    "start": 11.18,
+    "end": 11.28
+  },
+  {
+    "word": "policy",
+    "start": 11.28,
+    "end": 11.66
+  },
+  {
+    "word": "was",
+    "start": 11.66,
+    "end": 11.88
+  },
+  {
+    "word": "projected",
+    "start": 11.88,
+    "end": 12.3
+  },
+  {
+    "word": "to",
+    "start": 12.3,
+    "end": 12.54
+  },
+  {
+    "word": "be",
+    "start": 12.54,
+    "end": 12.72
+  },
+  {
+    "word": "worth",
+    "start": 12.72,
+    "end": 12.96
+  },
+  {
+    "word": "four",
+    "start": 12.96,
+    "end": 13.24
+  },
+  {
+    "word": "hundred",
+    "start": 13.24,
+    "end": 13.64
+  },
+  {
+    "word": "eighteen",
+    "start": 13.64,
+    "end": 14.08
+  },
+  {
+    "word": "thousand,",
+    "start": 14.08,
+    "end": 14.66
+  },
+  {
+    "word": "one",
+    "start": 15.12,
+    "end": 15.12
+  },
+  {
+    "word": "hundred",
+    "start": 15.12,
+    "end": 15.42
+  },
+  {
+    "word": "forty",
+    "start": 15.42,
+    "end": 15.76
+  },
+  {
+    "word": "-one",
+    "start": 15.76,
+    "end": 16
+  },
+  {
+    "word": "dollars.",
+    "start": 16,
+    "end": 16.58
+  },
+  {
+    "word": "Insurance",
+    "start": 17.28,
+    "end": 17.48
+  },
+  {
+    "word": "illustrations",
+    "start": 17.48,
+    "end": 18.16
+  },
+  {
+    "word": "aren't",
+    "start": 18.16,
+    "end": 18.6
+  },
+  {
+    "word": "guarantees,",
+    "start": 18.6,
+    "end": 19.1
+  },
+  {
+    "word": "but",
+    "start": 19.74,
+    "end": 19.88
+  },
+  {
+    "word": "they're",
+    "start": 19.88,
+    "end": 20.12
+  },
+  {
+    "word": "supposed",
+    "start": 20.12,
+    "end": 20.42
+  },
+  {
+    "word": "to",
+    "start": 20.42,
+    "end": 20.54
+  },
+  {
+    "word": "be",
+    "start": 20.54,
+    "end": 20.78
+  },
+  {
+    "word": "a",
+    "start": 20.78,
+    "end": 20.88
+  },
+  {
+    "word": "reasonable",
+    "start": 20.88,
+    "end": 21.26
+  },
+  {
+    "word": "picture",
+    "start": 21.26,
+    "end": 21.8
+  },
+  {
+    "word": "of",
+    "start": 21.8,
+    "end": 22.02
+  },
+  {
+    "word": "what",
+    "start": 22.02,
+    "end": 22.18
+  },
+  {
+    "word": "you're",
+    "start": 22.18,
+    "end": 22.44
+  },
+  {
+    "word": "buying.",
+    "start": 22.44,
+    "end": 22.66
+  }
+]

@@ -1,0 +1,54 @@
+{
+  "caseId": "iul-refund-pacific-life-v2",
+  "title": "Pacific Life's $58.3 Million IUL Settlement (TEST RENDER)",
+  "description": "IUL policyholders were promised market-tied growth with a guaranteed floor — but a $58.3M settlement against Pacific Life, finalized May 2026, shows how illustrated projections can diverge from what a policy actually pays out.",
+  "sourceCitation": "TEST RENDER — fictional documents, not real evidence. Not financial advice. Sourcing pending (Stage 2 / CourtListener).",
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "test-settlement-doc.png",
+      "captionText": "They paid millions. Here's the document that proves it.",
+      "narrationText": "This settlement document is real. And it's not the only one.",
+      "zoomFrom": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 }
+    },
+    {
+      "id": "s2",
+      "imagePath": "test-settlement-doc.png",
+      "captionText": "$XX.X million. One sentence buried in the filing.",
+      "narrationText": "Right here — the exact number. This is what a policyholder actually recovered, and it's written in plain language most people never read.",
+      "zoomTo": { "x": 0.05, "y": 0.2667, "width": 0.5833, "height": 0.0667 },
+      "highlight": { "x": 0.0667, "y": 0.2867, "width": 0.5167, "height": 0.025, "fromFraction": 0.5, "toFraction": 0.75 }
+    },
+    {
+      "id": "s3a",
+      "imagePath": "test-settlement-doc.png",
+      "captionText": "But the real question isn't the settlement. It's how the gap happened.",
+      "narrationText": "The settlement is the outcome. This is the input — the actual illustration page handed to policyholders at the point of sale.",
+      "zoomTo": { "x": 0.05, "y": 0.18, "width": 0.8333, "height": 0.1333 }
+    },
+    {
+      "id": "s3b",
+      "imagePath": "test-illustration-doc.png",
+      "durationSecs": 2,
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 }
+    },
+    {
+      "id": "s4",
+      "imagePath": "test-illustration-doc.png",
+      "captionText": "This one assumption drove the entire gap.",
+      "narrationText": "This line — the assumed crediting rate — is the number that made the projection look nothing like reality. Change this one input, and the whole illustration falls apart.",
+      "zoomTo": { "x": 0.05, "y": 0.2333, "width": 0.9, "height": 0.0933 },
+      "highlight": { "x": 0.0667, "y": 0.2547, "width": 0.8667, "height": 0.0307, "fromFraction": 0.5, "toFraction": 0.75 }
+    },
+    {
+      "id": "s5",
+      "imagePath": "test-illustration-doc.png",
+      "captionText": "Check your own illustration for this same line.",
+      "narrationText": "If you hold a policy like this, pull your original illustration and find this same assumption. It's usually on the first page of numbers.",
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "highlight": { "x": 0.0667, "y": 0.2547, "width": 0.8667, "height": 0.0307, "opacity": 0.3, "fromFraction": 0, "toFraction": 0.05 },
+      "holdExtraSecs": 1.5
+    }
+  ]
+}

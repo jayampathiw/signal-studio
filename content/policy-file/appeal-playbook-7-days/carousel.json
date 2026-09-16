@@ -1,0 +1,35 @@
+{
+  "caseId": "appeal-playbook-7-days",
+  "channelKey": "policy-file/case-file/EN",
+  "postCaption": "Educational content only, not legal or financial advice. Appeal deadlines vary by policy type and state — always confirm your specific plan's terms before relying on any timeline shown here.",
+  "slides": [
+    {
+      "showFolder": true,
+      "headline": "Denied? Here's exactly what to do in the first 7 days."
+    },
+    {
+      "headline": "Step 1: Request the denial letter in writing.",
+      "body": "Verbal denials aren't enough — you need the written reason code to appeal effectively."
+    },
+    {
+      "headline": "Step 2: Find the denial reason code.",
+      "body": "Every denial letter includes a specific code. This tells you exactly what to challenge."
+    },
+    {
+      "headline": "Step 3: Know your appeal deadline.",
+      "body": "⚠ Deadline varies by state and plan type. Check your denial letter, or your state Department of Insurance, before relying on any timeline."
+    },
+    {
+      "headline": "Step 4: Write your appeal.",
+      "body": "Reference the specific denial code from Step 2. State your case in plain, factual language."
+    },
+    {
+      "headline": "Step 5: Escalate if denied again.",
+      "body": "If your appeal is denied, your state's Department of Insurance can review the case."
+    },
+    {
+      "showFolder": true,
+      "headline": "Save this before you need it."
+    }
+  ]
+}

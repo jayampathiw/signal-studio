@@ -5,6 +5,7 @@
   "main": "src/render.ts",
   "devDependencies": {
     "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "4.0.481",
     "@remotion/renderer": "^4.0.0",
     "remotion": "^4.0.0",
     "typescript": "^5.0.0",
@@ -17,6 +18,6 @@
     "@signal-studio/types": "*"
   },
   "scripts": {
-    "studio": "npx remotion studio src/Root.tsx"
+    "studio": "npx remotion studio src/index.ts"
   }
 }

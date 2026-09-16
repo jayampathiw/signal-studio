@@ -1,0 +1,132 @@
+[
+  {
+    "word": "If",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "a",
+    "start": 0.56,
+    "end": 0.78
+  },
+  {
+    "word": "parent",
+    "start": 0.78,
+    "end": 0.96
+  },
+  {
+    "word": "or",
+    "start": 0.96,
+    "end": 1.22
+  },
+  {
+    "word": "spouse",
+    "start": 1.22,
+    "end": 1.52
+  },
+  {
+    "word": "just",
+    "start": 1.52,
+    "end": 1.76
+  },
+  {
+    "word": "had",
+    "start": 1.76,
+    "end": 1.94
+  },
+  {
+    "word": "a",
+    "start": 1.94,
+    "end": 2.06
+  },
+  {
+    "word": "skilled",
+    "start": 2.06,
+    "end": 2.3
+  },
+  {
+    "word": "nursing",
+    "start": 2.3,
+    "end": 2.68
+  },
+  {
+    "word": "or",
+    "start": 2.68,
+    "end": 3.04
+  },
+  {
+    "word": "rehab",
+    "start": 3.04,
+    "end": 3.36
+  },
+  {
+    "word": "stay",
+    "start": 3.36,
+    "end": 3.74
+  },
+  {
+    "word": "denied,",
+    "start": 3.74,
+    "end": 4.26
+  },
+  {
+    "word": "don't",
+    "start": 4.7,
+    "end": 4.84
+  },
+  {
+    "word": "assume",
+    "start": 4.84,
+    "end": 5.08
+  },
+  {
+    "word": "it's",
+    "start": 5.08,
+    "end": 5.4
+  },
+  {
+    "word": "final.",
+    "start": 5.4,
+    "end": 5.7
+  },
+  {
+    "word": "Ask",
+    "start": 6.28,
+    "end": 6.48
+  },
+  {
+    "word": "for",
+    "start": 6.48,
+    "end": 6.72
+  },
+  {
+    "word": "the",
+    "start": 6.72,
+    "end": 6.82
+  },
+  {
+    "word": "appeal",
+    "start": 6.82,
+    "end": 7.24
+  },
+  {
+    "word": "deadline",
+    "start": 7.24,
+    "end": 7.72
+  },
+  {
+    "word": "in",
+    "start": 7.72,
+    "end": 8.04
+  },
+  {
+    "word": "writing",
+    "start": 8.04,
+    "end": 8.26
+  },
+  {
+    "word": "today.",
+    "start": 8.26,
+    "end": 8.72
+  }
+]

@@ -1,0 +1,995 @@
+      
+      
+     DATA BRIEF 
+     June 2026 | OEI-09-24-00331 
+     Medicare Advantage Organizations 
+     Overturned Nearly All Appealed 
+     Prior Authorization Denials for 
+     Skilled Nursing Facility Admission, 
+     Raising Concerns About Initial 
+     Denials 
+      
+      
+                             OIG.HHS.GOV 
+          
+         June 2026 | OEI-09-24-00331 
+         Medicare Advantage Organizations Overturned Nearly All 
+         Appealed Prior Authorization Denials for Skilled Nursing Facility 
+         Admission, Raising Concerns About Initial Denials 
+         Why OIG Did This Review 
+         •   Previous OIG work raised concerns that Medicare Advantage organizations’ (MAOs’) use of prior 
+             authorization can in some cases result in denials and delays in access to needed care for enrollees.  MAOs 
+             that inappropriately deny care are not delivering the full value that taxpayers pay them to provide. 
+         •   OIG identified denials of prior authorization requests for post-acute care after a hospital stay as a 
+             particular area of concern.  This report highlights new analyses of denial and overturn rates of requests for 
+             admission to skilled nursing facilities (SNFs), which provide short-term skilled nursing and/or therapy 
+             services to help patients recovering from an illness, injury, or surgery.   
+         What OIG Found 
+                                    •    In June 2024, the 19 MAOs in this review collectively denied 12 percent of 
+                                    requests for SNF admission.  MAO denial rates ranged from 23 percent to 0.4 percent. 
+                                    •    Enrollees and their providers appealed 18 percent of SNF denials.  When SNF 
+                                    denials were appealed, MAOs overturned 95 percent in favor of the enrollee.  The 
+                                    extremely high overturn rate indicates that some enrollees were initially denied 
+                                    medically necessary care and raises concerns about denials that were not appealed.  
+             •   The MAO contractor naviHealth processed half of all requests for SNF admission and denied 14 percent 
+                 of them—a higher denial rate than MAOs that processed requests internally (11 percent) and other 
+                 contractors (9 percent).  MAOs later overturned 97 percent of SNF denials issued by naviHealth when 
+                 enrollees appealed.  This raises concerns about whether contractors are receiving appropriate training 
+                 and oversight from MAOs.  NaviHealth is a subsidiary of the MAO United Health Group, Inc. 
+             •   MAOs and their contractors denied requests for SNF-level care from nursing home residents 40 
+                 percent of the time, a much higher rate than requests from all other enrollees (11 percent).  
+         What OIG Recommends 
+             To identify and respond to concerning patterns of prior authorization denials, CMS should regularly collect 
+             request-level prior authorization data that include service type and contractor information (see our 
+             companion report, OEI-09-24-00330).  Further, CMS should: (1) take action to address any breakdowns in 
+             the initial reviews of SNF admission requests that are driving the extremely high overturn rate of SNF 
+             admission denials, (2) assess reasons for variation in SNF denial rates across MAOs and contractors and 
+             take action as appropriate, and (3) assess reasons for the differences in SNF denial rates between nursing 
+             homes and non-nursing home residents and take action as warranted.  CMS did not explicitly concur or 
+             nonconcur with our three recommendations.  
+                                                                        
+         
+        Primer: Medicare Advantage and Post-Acute Care  
+        Medicare Advantage  
+        People who are eligible for benefits under original Medicare may choose to receive their Medicare coverage 
+        through Medicare Advantage plans administered by Medicare Advantage organizations (MAOs).  In 2024, 
+        54 percent of people with Medicare (32.8 million people) were enrolled in Medicare Advantage, and the 
+                                                                                           1, 2  
+        Centers for Medicare & Medicaid Services (CMS) paid MAOs an estimated $494 billion.    
+                                                                                          3
+        Medicare Advantage plans must cover at least the same services as original Medicare.   MAOs are expected to 
+        implement critical program controls to avoid unnecessary costs and ensure program integrity while at the 
+        same time ensuring that enrollees can get necessary and appropriate care.  To do that, MAOs may impose 
+        additional administrative requirements, such as requiring prior authorization before certain services can be 
+        provided.  For example, MAOs may require prior authorization for services with a history of improper 
+                                                                                    4
+        payments in original Medicare, such as requests for skilled nursing facility care.    
+        Under Medicare Advantage’s payment model, MAOs are paid a risk-adjusted, capitated payment each month 
+                                                                                 5
+        for each enrollee regardless of the number of services the enrollee receives.   A central concern about 
+        capitated payment models is the potential incentive for insurers to deny enrollees’ access to services in an 
+        attempt to increase profits.  Inappropriate denials of care can have serious impacts for enrollees’ health, and 
+        MAOs that inappropriately deny care are not delivering the full value that taxpayers pay them to provide.  
+        Facility-Based Post-Acute Care for Medicare Advantage Enrollees 
+        Post-acute care facilities provide medical, therapeutic, and rehabilitative care to patients, typically after a 
+        qualifying stay in a general acute-care hospital, to help patients regain the ability to return to their home or 
+                          6
+        community setting.   For patients who need post-acute care, the hospital care team typically helps to identify 
+        which post-acute care setting is appropriate for them.  After considering patient needs and preferences, the 
+                                                                     7
+        hospital submits a request for admission to the selected facility.   The post-acute care facility then conducts its 
+        own assessment to determine whether the patient meets its admission criteria.  Post-acute care facilities 
+                                               8                                      9
+        include long-term care hospitals (LTCHs),  inpatient rehabilitation facilities (IRFs),  and skilled nursing facilities 
+              10, 11
+        (SNFs).         
+            Long-term care hospitals             Inpatient rehabilitation            Skilled nursing facilities 
+            (LTCHs) provide acute care to        facilities (IRFs) provide           (SNFs) provide short-term 
+            patients who need hospital-          intensive therapy and medical       skilled nursing or therapy 
+            level care for extended              services in a hospital              services to patients for 
+            periods of time.  LTCHs              environment to patients with        rehabilitation following 
+            provide specialized services         complex nursing, medical            inpatient hospital stays, such 
+            such as respiratory therapy,         management, and                     as for joint replacement or 
+                                                                    
+            head trauma treatment, and           rehabilitative needs.               stroke. 
+            pain management.                                                          
+        If a post-acute care facility approves a patient for admission, and the patient’s MAO requires prior 
+        authorization for post-acute care, then the facility or the hospital care team must request authorization for 
+        the post-acute care stay from the MAO.  The MAO reviews prior authorization requests to determine whether 
+        to approve or deny the request; this review can occur internally in the MAO or the MAO may contract with 
+        another company to conduct the review.12  If the MAO or its contractor denies the request for post-acute care, 
+                                                                           13
+        the patient or their care team can appeal the denial back to the MAO.  
+                                                               
+         
+        Nursing Homes and Skilled Nursing Care 
+        Nursing homes typically operate as both skilled nursing facilities (SNFs), where they provide short-term skilled 
+        care following a hospitalization, and as nursing facilities, where they provide lower intensity routine nursing 
+        care (often referred to as “custodial care”) for individuals with functional and/or cognitive impairments.  
+        Medicare pays for short-term SNF care after a hospitalization for enrollees who require skilled nursing care 
+        and meet other Medicare coverage requirements (as described above).  Medicare does not pay for room and 
+        board services, routine nursing care, or assistance with activities of daily living for nursing facility residents 
+        (i.e., those staying longer than 100 days).  Those services are largely covered by Medicaid, other private 
+        insurance plans, or residents’ out-of-pocket payments.  Nursing home residents sometimes shift back and 
+        forth between receiving short-term SNF-level care following a hospital stay, and once discharged from that 
+                                                      14
+        care, receiving less intensive long-term care.  
+        Related Work 
+        This report is part of a body of work that the Office of Inspector General (OIG) has conducted related to 
+        denials of care in managed care programs.  This report also has a companion report, OEI-09-24-00330, which 
+        analyzes MAO data on prior authorization requests for LTCH and IRF stays.  In future work, OIG will conduct an 
+        in-depth review of a sample of case files to examine MAOs’ processes for reviewing prior authorization 
+        requests for post-acute care. 
+        In a 2022 report, OIG physician reviewers found that among the prior authorization requests (for all service 
+                                                                             15
+        types) that MAOs denied, 13 percent met Medicare coverage rules.   In other words, these services likely 
+        would have been approved if the patients had been enrolled in original Medicare rather than in Medicare 
+        Advantage.  One of the prominent service types that was denied even though the requests met Medicare 
+        coverage rules was requests for post-acute care.  Denying requests that meet Medicare coverage rules may 
+        prevent or delay enrollees from receiving medically necessary care and can burden providers. 
+        In a 2018 report, OIG found that when enrollees and providers appealed denied requests between 2014 and 
+                                                                                                           16
+        2016, MAOs overturned about 75 percent of their own prior authorization and payment denials.   This 
+        indicates that at least some of these denials were inappropriate or could have been avoided, given that 
+        ultimately the plans agreed to authorize the medically necessary services and make the payments.  OIG also 
+        found that CMS cited more than half of audited Medicare Advantage contracts in 2015 for inappropriately 
+        denying prior authorization and payment requests.  
+        OIG has also conducted work related to denials of care and payment in Medicaid managed care and Medicare 
+               17, 18, 19, 20 
+        Part D.      
+        How OIG Did This Review 
+        To calculate denial and appeal rates for SNF admission requests, we collected data from the 19 largest MAO 
+        parent companies by enrollment about the prior authorization requests that they or their contractors 
+        processed in June 2024.  To resolve any discrepancies in the data and to better understand the trends in our 
+        analysis, we followed up in writing with select MAOs.  We also interviewed patient advocacy and industry 
+        organizations to hear their perspectives.  The analysis in this report provides important insights about prior 
+        authorization patterns across companies and indicates opportunities for followup and potential action, but we 
+        cannot determine from this data analysis alone whether or how many of these denials were inappropriate. 
+        The 19 MAOs in this study had 29.3 million people enrolled in their Medicare Advantage contracts in June 
+        2024, which represented 86 percent of enrollment in the Medicare Advantage program at that time (see 
+        Appendix A).  
+                                                                   
+               
+              FINDINGS 
+                       Overall, MAOs denied 12 percent of requests for SNF 
+                       admission; denial rates ranged from 23 percent to 0.4 percent 
+                                   In June 2024, the 19 MAOs in this review denied around 13,500 of 109,400 requests 
+                                   for SNF admission (12 percent).  Denial rates for SNF admission requests varied 
+                                   among the 19 MAOs with some MAOs denying requests at much higher rates than 
+                                   their peers (see Appendix B for MAO request volume and denial rates).   
+              Exhibit 1: Humana Inc.; CVS Health Corporation; and UnitedHealth Group, Inc., received the 
+              most requests for SNF admission and had three of the five highest denial rates 
+              Source: OIG analysis of June 2024 SNF prior authorization data for MAOs that received at least 50 SNF requests. 
+              Note: CVS Health Corporation is the parent company of Aetna. 
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                      Findings | 1 
+               
+                                   The three largest MAOs by enrollment (UnitedHealth Group, Inc.; Humana Inc.; and 
+                                   CVS Health Corporation) received three-quarters of the SNF requests and denied 
+                                   them at some of the highest rates.  Nearly 20 million people were enrolled in plans 
+                                                                         21
+                                   operated by these 3 companies.   (See Appendix A for information on MAO 
+                                   enrollment.)  In addition to the three largest MAOs, some of the smaller MAOs also 
+                                   had higher denial rates, but they reviewed far fewer SNF cases.  For example, Molina 
+                                   Healthcare, Inc., denied 23 percent of requests for SNF admission—nearly double the 
+                                   overall SNF denial rate.   
+                                   Although no specific denial rate is expected or correct, the wide variation in MAO 
+                                   denial rates for SNF requests is concerning because it is unclear why some MAOs had 
+                                   denial rates that were much higher than their peers.  Extremely high or low denial 
+                                   rates may indicate differences in MAO policies or performance, such as how they 
+                                   interpret or apply coverage criteria.  In future work, OIG will conduct an in-depth 
+                                   review of a sample of case files to examine MAOs’ processes for reviewing prior 
+                                                                                      22
+                                   authorization requests for post-acute care.  
+                                   Denial rates for SNF admission were higher among for-profit MAO 
+                                   contracts than nonprofit MAO contracts  
+                                   Differences in denial rates between for-profit and nonprofit MAO contracts suggest 
+                                   that financial incentives may be partially driving higher denial rates among some 
+                                   MAOs (see Appendix E for details).  MAOs can operate for-profit contracts only, 
+                                   nonprofit contracts only, or both types of contracts.  The MAO with the highest SNF 
+                                   denial rate, Molina Healthcare, Inc., operated only for-profit contracts at the time of 
+                                   our review, as did the three largest MAOs.  (See Appendix A for the number of for-
+                                   profit and nonprofit contracts operated by each MAO.)     
+                                   Exhibit 2: For-profit MAO contracts denied SNF admission requests at a 
+                                   higher rate than nonprofit contracts  
+                                   Source: OIG analysis of June 2024 MAO SNF prior authorization data and 2024 contract tax status from 
+                                   CMS’s Health Plan Management System. 
+                                   MAOs have a financial incentive to deny SNF-level care and instead approve a lower 
+                                   level of care, such as home health services or outpatient therapy.  Although 
+                                   information about what MAOs pay to different types of providers is not available, 
+                                   payment amounts in original Medicare can provide helpful context for the relative 
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                      Findings | 2 
+            
+                            cost of care in each setting.  The average cost of a SNF stay in original Medicare in 
+                                                                                                    23, 24
+                            2023 was $16,000, while average home health care costs were only $6,000.         
+                  MAOs overturned nearly all denials for SNF admission when 
+                  enrollees appealed, indicating that some enrollees were 
+                  initially denied medically necessary care  
+                            The appeals process is an important safeguard to help ensure that patients have 
+            18% of SNF      access to needed services.  Enrollees and providers appealed around one-fifth of 
+            denials were    requests for SNF admission that MAOs denied in June 2024 (approximately 2,400 of 
+            appealed        13,500 denials).  For the 82 percent of denials that were not appealed, the patient 
+                            may have requested a lower level of care (e.g., home health), paid for SNF-level care 
+                            out of pocket, or gone without post-acute care. 
+                            Among the denials of SNF admission that enrollees appealed, the 19 MAOs in this 
+                            study overturned 95 percent in favor of the enrollee (2,313 of 2,445 appeals).  The 
+                            high overall overturn rate was driven largely by the MAO UnitedHealth Group, Inc., 
+                            which received 42 percent of the SNF appeal requests and overturned them 99.7 
+                            percent of the time.  In addition to UnitedHealth Group, Inc., all of the MAOs that 
+                            received at least 50 appeals had extremely high overturn rates (see Appendix B for 
+                            overturn rates by MAO).   
+           Exhibit 3: Overturn rates for denials of SNF admission were extremely high across MAOs that 
+           received at least 50 appeals 
+           Source: OIG analysis of June 2024 SNF appeals data for MAOs that received at least 50 appeals. 
+                            Among MAOs with at least 50 SNF appeals, the overturn rate ranged from nearly 91 
+                            percent for BCBS of Michigan Mutual Insurance Co. to 100 percent for Elevance 
+                            Health, Inc.  Among the smaller MAOs that did not receive at least 50 SNF appeals 
+                            each, the combined overturn rate was only 59.5 percent.   
+                            This analysis provides important insights about overturn patterns across companies 
+                            and indicates opportunities for followup and potential action, but we cannot 
+            
+           MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+           for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                Findings | 3 
+             
+                               determine from this data analysis alone whether or how many of these denials were 
+                               inappropriate.  However, the extremely high overturn rate of appealed SNF 
+                               admission denials raises concerns that more initial SNF requests should have been 
+                               approved rather than denied because the MAO ultimately determined the requested 
+                               care was medically necessary.  Although overturned denials mean that the enrollee 
+                               was eventually approved to receive the requested care, each overturned denial 
+                               represents a case in which the patient or their provider had to file an appeal to 
+                               access SNF services that were medically necessary and covered by Medicare.  This 
+                               extra step may add unnecessary complexity and administrative burden for enrollees, 
+                               providers, and MAOs, and may have delayed enrollee access to SNF care.  
+                    Enrollees who appealed SNF denials typically received a 
+                    decision 6 days after their initial request, with some waiting 
+                    much longer  
+                               For enrollees who appealed prior authorization denials for SNF admission, the typical 
+                               (i.e., median) wait time from the initial request date to the appeal decision date was 
+                               6 days.  Many enrollees waited longer to receive a final appeal decision—17 percent 
+                               of SNF appeals took 10 days or longer.  In contrast, when MAOs approved the initial 
+                               request for SNF admission, they typically approved the request on the same day that 
+                               the request was made, enabling a much faster discharge from the hospital.   
+                    Exhibit 4: Enrollees who appealed SNF admission denials typically waited 6 days to 
+                    receive a final decision 
+                    Source: OIG analysis of MAO SNF appeals data for June 2024 denials.  The timeline shows the median number of 
+                    days between each step for denials that were appealed.   
+                               Enrollees who are requesting post-acute care, including those appealing denials, are 
+                               usually receiving care in an acute-care hospital while they wait for the MAO’s 
+                               decision.  Other research has shown that Medicare Advantage enrollees stay in the 
+                               hospital longer than enrollees with original Medicare before being discharged to a 
+                                   25
+                               SNF.   Unnecessary or “avoidable” days spent in a hospital can mean a significant 
+                                                                                               26, 27
+                               financial cost to hospitals that is not separately reimbursable.      Delayed 
+                               discharges can also negatively affect patients’ psychological and social well-being and 
+                                                                                                                     28
+                               contribute to feelings of uncertainty and stress about their recovery and prognosis.   
+             
+            MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+            for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                        Findings | 4 
+               
+                       The MAO contractor naviHealth denied SNF requests at a 
+                       higher rate than MAOs that processed requests internally; 
+                       many of these denials were later overturned by MAOs 
+                                   MAOs can choose to process SNF requests internally or can hire contractors to 
+                                                                        29
+                                   process the requests for them.   Across the 19 MAOs in our review in June 2024, 
+                                   68 percent of SNF requests were processed by contractors and 32 percent were 
+                                   processed by MAOs internally.   
+                                   The MAO contractor naviHealth denied one in seven requests for 
+                                   SNF admission 
+                                                                                                                               30
+                                   The contractor naviHealth (a subsidiary of the MAO UnitedHealth Group, Inc. ) 
+                                   processed half of all requests for SNF admission among the 19 MAOs in June 2024.  
+                                   Most of the SNF requests that naviHealth reviewed (63 percent) were for 
+                                   UnitedHealth Group, Inc., but naviHealth also processed requests for BCBS of 
+                                   Michigan Mutual Insurance Co., Highmark Health, and Humana Inc.   
+                                   Exhibit 5: The MAO contractor naviHealth denied requests for SNF admission 
+                                   at a higher rate than other contractors and MAOs that processed requests 
+                                   internally  
+                                   Source: OIG analysis of June 2024 MAO SNF prior authorization data. 
+                                   NaviHealth denied 14 percent of requests for SNF admission, a higher rate than 
+                                   requests that were reviewed internally by MAOs (11 percent) or reviewed by other 
+                                   MAO contractors (9 percent) (see Appendix C).  As found in our companion report, 
+                                   naviHealth also denied requests for admission to LTCHs and IRFs at higher rates than 
+                                                                      31
+                                   MAOs and other contractors.   Variation in denial rates between contractors and 
+                                   MAOs that review requests internally raise concerns about whether the contractors 
+                                   are receiving appropriate training, guidance, and oversight from MAOs on how to 
+                                   assess requests. 
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                      Findings | 5 
+               
+                                   MAOs overturned SNF requests denied by all contractors, 
+                                   including naviHealth, at high rates upon appeal  
+                                   Although many MAOs used contractors to review initial prior authorization requests, 
+                                   they reviewed any appeals internally.  SNF denials issued by both naviHealth and 
+                                   other contractors were overturned at higher rates on appeal than denials that MAOs 
+                                   reviewed internally.   
+                                   Exhibit 6: SNF denials issued by MAO contractors were more likely to be 
+                                   overturned upon appeal than denials issued by MAOs 
+                                   Source: OIG analysis of June 2024 MAO SNF appeals data. 
+                                   Higher overturn rates of denials issued by contractors could indicate differences in 
+                                   policies or procedures between the parent company and its contractor or differences 
+                                   in interpretation of CMS coverage rules.   
+                       Nursing home residents were more likely than other enrollees 
+                       to be denied admission to SNF-level care 
+                                   MAOs denied 40 percent of requests for SNF admission for people who lived in 
+                                   nursing homes around the time of their request (i.e., “long-stay” residents with more 
+                                                                           32
+                                   than 100 days in a nursing home)  but denied only 11 percent of all other requests.  
+                                   Nursing home residents submitted around 3 percent of requests for SNF admission to 
+                                   the 19 MAOs in June 2024 (approximately 3,200 out of 109,400 requests).  We 
+                                   examined denial rates by other enrollee characteristics but noted smaller differences 
+                                   (see Appendix D).   
+                                   Exhibit 7: Nursing home residents were more likely than other enrollees to 
+                                   be denied admission to SNF-level care 
+                                   Source: OIG analysis of June 2024 MAO SNF prior authorization data and 2024 data on enrollee 
+                                   nursing home stays from the Minimum Data Set. 
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                      Findings | 6 
+               
+                                   MAOs indicated that for enrollees who are denied SNF-level care, including nursing 
+                                   home residents, the MAO may authorize less costly intermittent skilled nursing 
+                                                                                         33
+                                   services and/or outpatient therapies instead.   As shown in Exhibit 8, the care 
+                                   requirements for patients in SNFs are more frequent than for patients in long-term 
+                                   nursing facility care.  MAOs pay for the full cost of care for patients in SNFs.  For 
+                                   patients in long-term nursing facilities, MAOs pay for outpatient health care services 
+                                   only; they do not pay for room and board or other routine, non-skilled care. 
+              Exhibit 8: Care requirements are more intensive—and MAO costs are higher—for short-term 
+              SNF care than for long-term nursing facility care 
+              Source: OIG analysis of CMS coverage rules for long-term care and SNFs. 
+                                   MAOs offered explanations for why nursing home residents may be less likely than 
+                                   other enrollees to meet SNF coverage rules  
+                                   When asked what factors might cause the SNF admission denial rate to be higher for 
+                                   nursing home residents than for other enrollees, some MAOs reported that nursing 
+                                   home residents are less likely to meet the admission criteria for daily SNF-level care 
+                                                                                                                                   34
+                                   because they already have some intermittent skilled therapy supports available.   
+                                   Other MAOs stated that nursing home residents may have a more complex medical 
+                                   history than enrollees who are able to live elsewhere, including more severe or 
+                                   compounded physical or cognitive functional impairments.  MAOs stated that a 
+                                   complex medical history, regardless of where the enrollee resides, may diminish the 
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                      Findings | 7 
+               
+                                   enrollee’s ability to meaningfully participate in daily skilled therapies in a SNF, and 
+                                   thus may lead to a higher denial rate. 
+                                   Patient advocates and nursing home industry organizations stated that an 
+                                   enrollee’s place of residence should not affect whether they meet criteria for SNF 
+                                   admission 
+                                   When asked about the difference in denial rates between nursing home residents 
+                                   and other enrollees, representatives from patient advocacy and nursing home 
+                                   industry groups told OIG that, in their view, an enrollee’s place of residence should 
+                                   not affect whether they meet the criteria for admission to a SNF.  One representative 
+                                   stated that long-term custodial care in a nursing facility, even with outpatient 
+                                   therapies (e.g., physical therapy) or intermittent skilled nursing care, is not a clinically 
+                                   equivalent substitute for the care management and daily therapy and/or daily skilled 
+                                   nursing that is provided as part of SNF-level care.  Another representative stated that 
+                                   skilled clinicians can adapt therapies for people with physical or cognitive functional 
+                                   impairments such as dementia, and that SNFs report that people with those 
+                                   impairments still benefit from those therapies.   
+                      The MAO contractor naviHealth denied SNF requests for nursing home residents at a 
+                          higher rate than MAOs that processed requests internally or other contractors 
+                   In August 2025, OIG reached out to five of the largest MAOs to request additional information 
+                   about their reviews of SNF admission requests from nursing home residents.  All of the MAOs 
+                   reported that they use the same Medicare coverage rules to review all SNF requests.  However, 
+                   three of the MAOs reported that their contractor naviHealth had supplemental guidance for 
+                   reviewers on how to review requests for nursing home residents.  The guidance instructed 
+                   reviewers to consider the reasons that the enrollee lives in a nursing facility.  According to the 
+                   guidance, those reasons frequently impact a patient’s ability to meaningfully participate in daily 
+                   skilled therapy.  Our analysis showed that in June 2024, naviHealth denied SNF requests for 
+                   nursing home residents at a higher rate than other contractors or MAOs that processed requests 
+                   internally.   
+                   Source: OIG analysis of June 2024 MAO SNF prior authorization data and 2024 data from the Minimum Data Set.  
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                      Findings | 8 
+               
+              CONCLUSION AND RECOMMENDATIONS 
+                                   More than half of people with Medicare were enrolled in Medicare Advantage in 
+                                   2024, and MAOs received an estimated $494 billion to cover at least the same 
+                                   services as original Medicare for these enrollees.  MAOs are expected to implement 
+                                   critical program controls to avoid unnecessary costs and ensure program integrity 
+                                   while at the same time ensuring that enrollees can get necessary and appropriate 
+                                   care.  However, our findings show patterns of denial and appeal outcomes for SNF-
+                                   level care that raise concerns.  
+                                   The high concentration of enrollees in a few large MAOs, and the use of contractors 
+                                   to process prior authorization requests, means that the policies and performance of a 
+                                   few companies can impact care for millions of people.  Overall, MAOs denied 12 
+                                   percent of requests for SNF admission in June 2024 (approximately 13,500 of 109,400 
+                                   requests).  However, across MAOs, people living in nursing homes were denied SNF-
+                                   level care 40 percent of the time.  When enrollees appealed (18 percent of SNF 
+                                   denials), MAOs nearly always overturned the denial, particularly among the larger 
+                                   MAOs and MAO contractors.  The high overturn rates raise concerns that some 
+                                   enrollees may have been inappropriately denied access to SNF-level care at their first 
+                                   request.  These findings warrant further scrutiny from CMS.   
+                                   As enrollment in Medicare Advantage continues to grow, so does the urgency and 
+                                   importance of ensuring that MAOs are delivering on the value that the Federal 
+                                   Government pays them to provide.  Given OIG’s body of work that has raised 
+                                   concerns about enrollee access to care in Medicare Advantage, CMS should collect 
+                                   more comprehensive data to efficiently and effectively identify MAOs with 
+                                                                                                              35
+                                   problematic patterns of denials and take action as appropriate.   In our companion 
+                                   report, OEI 09-24-00330, we made a recommendation that is also relevant to 
+                                   addressing the issues raised in this report.  Specifically, we recommended that CMS: 
+                                                 Regularly collect request-level prior authorization data that include 
+                                                                                                                   36
+                                                 standardized service type and contractor information.    
+                                   This will enable analysis of prior authorization data by service type, such as the 
+                                   analysis that we conducted in this report.   
+                                   Based on the findings of this report, we further recommend that CMS: 
+                       Take action to address any breakdowns in the initial reviews 
+                       of SNF admission requests that are driving the extremely high 
+                       overturn rate of SNF admission denials 
+                                   Given the extremely high overturn rate of SNF denials when enrollees appeal, CMS 
+                                   should engage with MAOs to identify the reasons for the high overturn rate and take 
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331           Conclusion and Recommendations | 9 
+               
+                                   corrective action as appropriate.  High overturn rates when enrollees appeal could 
+                                   indicate problems with the MAO’s or contractor’s initial review process, such as 
+                                   misinterpretation or misapplication of CMS coverage rules.  High overturn rates could 
+                                   also indicate that providers are not submitting all needed documentation at the first 
+                                   request and are adding documentation with appeal submissions.  Whatever the 
+                                   reasons for the high overturn rates, action is needed to ensure that MAOs and 
+                                   contractors have the documentation and processes that they need to make the 
+                                   correct decision at the initial request and that enrollees receive needed services 
+                                   without the delay and added burden for all parties of going through the appeals 
+                                   process.  
+                       Assess the reasons for variation in SNF denial rates across 
+                       MAOs and contractors and take action as appropriate  
+                                   CMS should identify the reasons for the variation in prior authorization denials for 
+                                   SNF admission and, if needed, take appropriate steps to address the differences.  
+                                   Variation in denial rates could indicate differences in program integrity efforts or 
+                                   misinterpretation or misapplication of CMS coverage rules.  Extremely high denial 
+                                   rates may indicate inappropriate denials.   
+                                   For example, CMS could engage with the MAOs that we identified with high denial 
+                                   rates for SNF admission to determine whether they are meeting program 
+                                   requirements and take corrective action as appropriate.  CMS could also engage with 
+                                   MAOs that employ contractors with high denial rates to determine whether the 
+                                   contractors are receiving appropriate training, guidance, and oversight from MAOs to 
+                                   comply with Medicare coverage rules. 
+                       Assess reasons for the differences in SNF denial rates between 
+                       nursing home residents and other enrollees and take action as 
+                       warranted 
+                                   CMS should examine the reasons why MAOs are denying access to SNF-level care for 
+                                   nursing home residents at nearly four times the rate of nonresidents and, if needed, 
+                                   take appropriate steps to address the difference.  To do this, CMS could conduct 
+                                   targeted case file reviews or focus groups with MAOs and SNFs.  CMS should take 
+                                   appropriate steps to clarify for MAOs, SNFs, hospitals, and Medicare Advantage 
+                                   enrollees whether and how nursing home residency affects an enrollee’s ability to 
+                                   meet coverage criteria for SNF admission.     
+               
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331          Conclusion and Recommendations | 10 
+               
+              AGENCY COMMENTS AND OIG RESPONSE 
+                                   CMS did not explicitly concur or nonconcur with our three recommendations.  CMS 
+                                   stated that it uses several oversight tools, including annual audits, to ensure that the 
+                                   Medicare Advantage program provides adequate health care access to enrollees.   
+                                   Regarding our first recommendation—to take action to address any breakdowns in 
+                                   the initial reviews of SNF admission requests that are driving the extremely high 
+                                   overturn rate of SNF admission denials—CMS stated that, through its annual audits, 
+                                   it will continue to evaluate whether MAOs applied clinical criteria in accordance with 
+                                   CMS rules and appropriately adjudicated prior authorization determinations.  
+                                   However, CMS did not indicate whether and how it would target SNF denials in 
+                                   future audits or other oversight efforts.  We ask that CMS include any specific plans 
+                                   or actions to address breakdowns in the initial reviews of SNF admission requests in 
+                                   its Final Management Decision. 
+                                   Regarding our second recommendation—to assess the reasons for variation in SNF 
+                                   denial rates across MAOs and contractors and take action as appropriate—CMS 
+                                   stated that it has launched a Medicare Advantage data collection pilot.  Plans that 
+                                   have volunteered to join the pilot will report service-level prior authorization data, 
+                                   and CMS will analyze the data, including denial rates by service type and third-party 
+                                   vendors (i.e., contractors).  However, it is unclear how CMS could recalculate SNF 
+                                   denial rates across MAOs and contractors through the data collection pilot because it 
+                                   does not include the data needed to conduct such analyses (i.e., standardized service 
+                                   type data on requests for SNF admissions and contractor names).  In its Final 
+                                   Management Decision, we ask that CMS specify what steps it has taken or is planning 
+                                   to assess the reasons for variation in SNF denial rates across MAOs and contractors 
+                                   that we identified in this report.   
+                                   Regarding our third recommendation—to assess reasons for the differences in SNF 
+                                   denial rates between nursing home residents and other enrollees and take action as 
+                                   warranted—CMS stated that it can target denials of SNF services as part of its 
+                                   program audits and would consider our findings when deciding next steps.  However, 
+                                   CMS did not indicate whether and how it would target SNF denials for nursing home 
+                                   residents in future audits or other oversight efforts.  We ask that CMS include any 
+                                   specific plans or actions to assess reasons for these different SNF denial rates in its 
+                                   Final Management Decision. 
+                                   For the full text of CMS’s comments, see Appendix F. 
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331        Agency Comments and OIG Response | 11 
+              
+             METHODOLOGY 
+                                MAO Selection 
+                                To select the MAOs for this review, we used CMS Part C (i.e., Medicare Advantage) 
+                                enrollment data to identify the largest MAO parent companies by enrollment.  We 
+                                selected the 19 parent companies that had at least 200,000 people enrolled in any 
+                                Medicare Advantage contract in June 2024.  These 19 parent companies operated 
+                                contracts in 55 States and territories and covered 29.3 million people (see Appendix 
+                                A).  The companies covered approximately 86 percent of total Medicare Advantage 
+                                enrollment in June 2024. 
+                                Data Collection 
+                                From each of the 19 selected MAOs, we collected a list of all prior authorization 
+                                requests for admission to SNFs that the MAOs or their contractors processed during 
+                                June 2024.  For each prior authorization request, the MAOs provided detailed 
+                                information, including:  
+                                    •    Enrollee identification numbers for enrollees who requested the service 
+                                    •    An open text description of the service requested 
+                                    •    A service type label (SNF) 
+                                    •    The outcome of the initial request (approved or denied) 
+                                    •    The name of the MAO contractor that processed the request (if applicable) 
+                                    •    Whether the request was appealed and the appeal outcome 
+                                    •    Key dates (e.g., date of request, initial decision, appeal) 
+                                Where appropriate, we followed up with MAOs to resolve discrepancies in the 
+                                submitted data. 
+                                In addition to collecting data from MAOs, we also analyzed data from the Medicare 
+                                Enrollment Database, CMS’s Health Plan Management System, and CMS’s Minimum 
+                                Data Set. 
+                                Analysis 
+                                Denial rates.  We calculated the number and rate at which the selected MAOs denied 
+                                prior authorization requests for SNF admission in June 2024 (see Appendix B).  First, 
+                                we summed all denials of requests for SNF admission across the 19 MAOs.  To 
+                                calculate the denial rate, we divided the total number of denials by the total number 
+                                                                                                                           37
+                                of prior authorization decisions that MAOs issued for SNF admission in June 2024.   
+             MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+             for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                       Methodology | 12 
+               
+                                   We also calculated these rates by MAO to examine the distribution of rates across 
+                                   MAOs and to identify MAOs with particularly high rates.  For the overall and MAO-
+                                   level analyses, we included both requests processed internally by the MAOs and 
+                                   requests submitted to the MAOs that were processed by their contractor(s), if 
+                                   applicable (see Appendix B). 
+                                   Tax status.  To examine denial rates by tax status for each setting, we used data from 
+                                   CMS’s Health Plan Management system to categorize contracts as for-profit or 
+                                   nonprofit/not-for-profit and then determined differences in denial rates (see 
+                                   Appendix E).  
+                                   Appeals.  To calculate the appeal rate, we divided the total number of appeals by the 
+                                   total number of initial denials issued across all MAOs.  To calculate the overturn 
+                                   rates, we summed the total number of approved appeal decisions and divided by the 
+                                   total number of approved or denied appeal decisions.  We calculated overturn rates 
+                                   by MAO for MAOs that processed at least 50 appeals (see Appendix B). 
+                                   Timelines.  To examine the typical timelines for requests, we used the following date 
+                                   fields: initial request date, initial request decision date, appeal date (if applicable), 
+                                   and appeal decision date (if applicable).  Because outliers can affect the average 
+                                   (mean), we used the median (middle) number of days to represent the typical wait 
+                                   time between dates.   
+                                   MAO contractors.  To examine the denial and appeal outcome rates by MAO 
+                                   contractor, we calculated the rates by contractor across any MAO that they 
+                                   processed requests for.  We compared the contractor rates with the rates for 
+                                   requests that were processed internally by MAOs (see Appendix C).    
+                                   Nursing home resident analysis.  To examine the SNF admission denial rate for 
+                                   nursing homes residents, we used 2024 Minimum Data Set assessment data for the 
+                                   enrollees in our population.  We followed the methods described in CMS’s MDS 3.0 
+                                   Quality Measures User’s Manual to group assessments into episodes and to identify 
+                                                                38
+                                   nursing home residents.   We identified nursing home residents as those with a 
+                                   “long-stay” episode (i.e., where the cumulative length of time in the facility for that 
+                                   episode was 101 or more days).  To account for patients who may have left the 
+                                   nursing homes for extended hospitalization, we included patients with long-stays 
+                                   that ended up to 2 months before our June 2024 timeframe (i.e., long-stays that 
+                                   ended after April 1, 2024).  We calculated denial rates for enrollees who were 
+                                   classified as long-stay and compared that rate to the denial rate for all other 
+                                   enrollees (see Appendix D). 
+                                   To better understand the difference in denial rates for nursing home residents 
+                                   compared to other enrollees, we followed up in writing with five of the larger MAOs.  
+                                   To hear perspectives from patient advocacy and industry organizations, we 
+                                   interviewed representatives from the Center for Medicare Advocacy, LeadingAge, 
+                                   and the American Healthcare Association. 
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                               Methodology | 13 
+               
+                                   Dual eligibility analysis.  To examine the SNF admission denial rate by dually eligible 
+                                   enrollees and Medicare Advantage-only enrollees, we used data from the Medicare 
+                                   Enrollment Database to categorize enrollees by whether they were dually eligible for 
+                                   Medicare and Medicaid.  We then determined differences in denial rates by dually 
+                                   eligible and not dually eligible (i.e., Medicare Advantage-only) (see Appendix D).  See 
+                                   our companion report, OEI-09-24-00330, for differences in rates for LTCH and IRF 
+                                   admission requests by enrollee characteristics. 
+                                   Limitations 
+                                   This report analyzed data provided by the selected MAOs.  We followed up with 
+                                   MAOs to resolve discrepancies in the submitted data, but we did not review medical 
+                                   records to independently verify the accuracy of the data.  
+                                   We also analyzed Medicare data and Minimum Data Set data on nursing home 
+                                   residents.  We did not independently verify the accuracy of these data for this study.  
+                       Standards 
+                                   We conducted this study in accordance with the Quality Standards for Inspection and 
+                                   Evaluation issued in 2020 by the Council of the Inspectors General on Integrity and 
+                                   Efficiency.  
+                                    
+                                    
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                               Methodology | 14 
+            APPENDICES 
+            Appendix A: Enrollment in the Sampled MAOs, June 2024 
+            The 19 MAOs included in this review enrolled between 219,000 and 9.5 million people in June 2024.  
+            Service areas for these MAOs covered all 50 States, the District of Columbia, and 4 territories (Guam, 
+            the Northern Mariana Islands, Puerto Rico, and the U.S. Virgin Islands). 
+                                                                Number of States        Number of       Number of 
+            MAO Parent Organization              Enrollment   and/or Territories in     Nonprofit        For-Profit 
+                                                                     Service Area        Contracts        Contracts 
+            UnitedHealth Group, Inc.              9,489,175                    55                0              64 
+            Humana Inc.                           6,167,833                    55                0              42 
+            CVS Health Corporation                4,275,902                    55                0              41 
+            Elevance Health, Inc.                 2,029,692                    55                1              41 
+            Kaiser Foundation Health              1,908,557                     9                7               1 
+            Plan, Inc. 
+            Centene Corporation                   1,140,398                    37                1              85 
+            BCBS of Michigan Mutual Ins.            709,396                    55                2               4 
+            Co. 
+            The Cigna Group                         593,784                    55                0              14 
+            Highmark Health                         421,249                    55                7               0 
+            GuideWell Mutual Holding                333,565                    52                1               5 
+            Corporation 
+            Healthfirst, Inc.                       297,333                    51                3               1 
+            MHH Healthcare, L.P.                    290,618                     2                0               2 
+            SCAN Group                              277,975                     5                6               0 
+            Molina Healthcare, Inc.                 253,749                    16                0              18 
+            Corewell Health                         249,561                    51                3               0 
+            Aware Integrated, Inc.                  227,548                    55                2               0 
+            Health Care Service                     224,292                    55                4               5 
+            Corporation 
+            Devoted Health, Inc.                    223,423                    13                0              24 
+            UPMC Health System                      219,213                    54                2               2 
+            Total                                29,333,263                     -              39              349 
+            Source: OIG analysis of CMS Medicare Advantage contract and enrollment data for June 2024. 
+            MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+            for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                 Appendix A | 15 
+                Appendix B: Volumes and Rates of SNF Prior Authorization 
+                Requests and Appeals by MAO, June 2024 
+                MAO                                      Initial           Initial           Denial          Appeals            Appeals          Overturn 
+                                                   Approvals             Denials               Rate      Overturned              Upheld               Rate 
+                Aware Integrated, Inc.                     620                 28              4.3%                   1                 0                  - 
+                BCBS of Michigan                         2,336                241              9.4%                 68                  7           90.7% 
+                Mutual Ins. Co. 
+                Centene Corporation                      2,459                291            10.6%                  33                  2                  - 
+                The Cigna Group                          2,466                239              8.8%                 48                  2           96.0% 
+                Corewell Health                            658                 27              3.9%                   0                 0                  - 
+                CVS Health Corporation                 13,938              2,170             13.5%                 375                  7           98.2% 
+                Devoted Health, Inc.                       793                 99            11.1%                    6                24                  - 
+                Elevance Health, Inc.                    6,475                786            10.8%                  93                  0            100% 
+                GuideWell Mutual                           553                 30              5.1%                   6                 1                  - 
+                Holding Corporation 
+                Health Care Service                        695                 50              6.7%                   2                 0                  - 
+                Corporation 
+                Healthfirst, Inc.                          723                 25              3.3%                   3                 0                  - 
+                Highmark Health                          1,754                168              8.7%                 12                  6                  - 
+                Humana Inc.                            22,880              3,570             13.5%                 619                 53           92.1% 
+                Kaiser Foundation                        1,298                212            14.0%                  17                 22                  - 
+                Health Plan, Inc. 
+                MHH Healthcare, L.P.                       241                   1             0.4%                   0                 0                  - 
+                Molina Healthcare, Inc.                    453                138            23.4%                    8                 5                  - 
+                SCAN Group                                 253                   4             1.6%                   0                 0                  - 
+                UnitedHealth Group,                    36,124              5,362             12.9%              1,022                   3           99.7% 
+                Inc. 
+                UPMC Health System                       1,210                 17              1.4%                   0                 0                  - 
+                Total                                  95,929             13,458             12.3%              2,313                132            94.6% 
+                Source: OIG analysis of June 2024 MAO SNF prior authorization data. 
+                Note: SNF prior authorization denial rates were calculated only for MAOs that received at least 50 SNF requests; overturn 
+                rates were calculated only for MAOs that received at least 50 SNF appeals. 
+                MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+                for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                                Appendix B | 16 
+                Appendix C: Volumes and Rates of SNF Prior Authorization 
+                Requests and Appeals by Contractor, June 2024 
+                                                             Initial           Initial         Denial         Appeals          Appeals         Overturn 
+                Reviewing Entity                        Approvals            Denials             Rate  Overturned            Upheld by               Rate 
+                                                                                                             by MAOs              MAOs 
+                naviHealth                                  47,285             7,891            14.3%            1,520                 53          96.6% 
+                MAOs – internal                             31,345             3,867            11.0%               565                73          88.6% 
+                Other contractors                           17,299             1,700             8.9%               228                 6          97.4% 
+                (excluding naviHealth) 
+                                          Carelon             4,822              707            12.8%                91                 0         100.0% 
+                                     CareCentrix              1,786              216            10.8%                36                 3                 - 
+                                          EviCore             3,131              279             8.2%                50                 2          96.2% 
+                                        WellMed               4,041              287             6.6%                44                 0                 - 
+                Contractors not listed above                  3,519              211             5.7%                  7                1                 - 
+                Source: OIG analysis of June 2024 SNF prior authorization data. 
+                Note: Overturn rates were calculated only for reviewing entities that received at least 50 SNF appeals.
+                MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+                for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                                Appendix C | 17 
+            Appendix D: Volumes and Rates of SNF Prior Authorization 
+            Requests and Appeals by Enrollee Characteristics, June 2024 
+             Enrollee Characteristic                                        Initial         Initial          Denial 
+                                                                       Approvals          Denials              Rate 
+             Nursing home residents                                         1,965           1,283             39.5% 
+             All other enrollees                                           93,964          12,175             11.5% 
+             Enrollees eligible for both Medicare and Medicaid             31,810           5,912             15.7% 
+             (“dually eligible”) 
+             Medicare Advantage-only enrollees                           64,119             7,546             10.5% 
+            Dually eligible enrollees were more likely to be denied SNF admission than enrollees who 
+             were not dually eligible, even after accounting for nursing home residency status 
+            Source: OIG analysis of June 2024 SNF prior authorization and appeals data, enrollee demographic data from the Medicare 
+             Enrollment database, and 2024 data on enrollee nursing home stays from the Minimum Data Set.
+            MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+             for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                       Appendix D | 18 
+              Appendix E: Volumes and Rates of SNF Prior Authorization 
+              Requests and Appeals by MAO Contract Profit Status, June 2024 
+              MAO Contract Profit Status                                            Initial          Initial            Denial 
+                                                                               Approvals            Denials               Rate 
+              For-profit contracts                                                87,310            12,689               12.7% 
+              Nonprofit/Not-for-profit                                              8,619               769               8.2% 
+              Source: OIG analysis of June 2024 MAO SNF prior authorization data and 2024 contract tax status from CMS’s Health Plan 
+              Management System.
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                 Appendix E | 19 
+              Appendix F: Agency Comments 
+                       CMS’s official comments begin on the next page. 
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                 Appendix F | 20 
+              DATE:              May 4, 2026 
+              TO:               Megan Tinker 
+                                Chief of Staff 
+              FROM:             Dr. Mehmet Oz 
+                                Administrator 
+                                Centers for Medicare & Medicaid Services 
+              SUBJECT:  Office of Inspector General (OIG) Draft Report: Medicare Advantage Organizations 
+                                Overturned Nearly All Appealed Prior Authorization Denials for Skilled Nursing Facility 
+                                Admission, Raising Concerns About Initial Denials, OEI-09-24-00331 
+              The Centers for Medicare & Medicaid Services (CMS) appreciates the opportunity to review and 
+              comment on the Office of Inspector General’s (OIG) draft report. CMS is committed to program 
+              integrity and its enforcement and oversight of the Medicare Advantage (MA) program.  
+              MA plans are Medicare-approved managed care plans offered by Medicare Advantage Organizations 
+              (MAOs), which are private companies, as an alternative to Original Medicare. MAOs must generally 
+              cover the same benefits as Original Medicare, such as stays in Skilled Nursing Facilities (SNF). 
+              However, as part of the managed care structure, MAOs may apply internal coverage policies that are no 
+              more restrictive than original Medicare’s national and local coverage criteria that are based on current 
+              evidence in widely used treatment guidelines or clinical literature to make medical necessity 
+              determinations, as permitted in 42 C.F.R. § 422.101(b)(6).  
+              For Medicare basic benefits, MAOs must make medical necessity determinations in accordance with all 
+              medical necessity determination requirements, outlined at 42 C.F.R. § 422.101(c)(1); based on the 
+              circumstances of each specific individual, including the patient’s medical history, physician 
+              recommendations, and clinical notes; and in line with all fully established Traditional Medicare 
+              coverage criteria. This includes established criteria in applicable Medicare statutes, regulations, National 
+              Coverage Determinations (NCDs) or Local Coverage Determinations (LCDs).  
+              CMS uses several oversight tools to ensure that the MA program provides adequate health care access to 
+              enrollees. For example, as part of its oversight strategy, CMS conducts audits of a subset of MAOs each 
+              year to assess compliance with the terms of their contracts with CMS, in particular the requirements 
+              associated with access to medical services, drugs, and other enrollee protections required by Medicare. 
+              The audit program operates on a continuous, rotating basis to promote broad coverage over time; 
+              therefore, the MAOs selected for audit may vary annually, and not all MAOs are audited in a given year. 
+              This approach allows CMS to be responsive and direct its audits to areas of identified concern, such as 
+              service types with a high rate of denial. As designed, these audits extend beyond data analysis by 
+              evaluating whether MAOs applied clinical criteria in accordance with CMS rules and appropriately 
+              adjudicated those determinations. In cases where denied claims are overturned on appeal, CMS notes the 
+              initial denial may still have been warranted if it stemmed from incomplete documentation that was 
+               MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+               for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                                        Appendix F | 21
+              subsequently provided during the appeal. Following an audit, CMS notifies the plan of identified 
+              noncompliance, such as when the plan’s denial of coverage does not align with CMS rules and may 
+              prevent enrollees from accessing care. MAOs are then required to submit corrective action plans when 
+              remediation is necessary to strengthen internal controls, prevent recurrence of noncompliance, and/or 
+              address any impact to enrollees. Further, plans that are found to have significant or repeated violations 
+              may be subject to penalties, such as Civil Monetary Penalties and intermediate sanctions (suspension of 
+              payment, enrollment, and/or marketing activities). In recent years, CMS has increased the transparency 
+              of noncompliance with CMS requirements by publishing Compliance and Enforcement actions on the 
+              CMS.gov website1 and developing a publicly available annual report with business practices MAOs can 
+              adopt to continue improving performance. 
+              Recently, CMS has developed a data collection pilot called the Service Level Data Collection for Initial 
+              Determination and Appeals.2 CMS implemented this new data collection in February 2026 and will 
+              collect all service-level determinations, including prior authorization information across all settings, 
+              including SNFs. Pilot plans will report whether a third-party vendor participated, in any capacity, in the 
+              determination review or decision-making related to determination reviews and decision-making 
+              processes (which include prior authorization requests). This data will permit CMS to analyze the 
+              relationship between denial rates and whether a third-party vendor was involved with the plans 
+              participating in the pilot. This data will also allow CMS to identify and analyze prior authorization 
+              decisions by service type for pilot participants and whether there was vendor involvement. 
+              OIG's recommendations and CMS's responses are below. 
+              OIG Recommendation 
+              CMS should take action to address any breakdowns in the initial reviews of SNF admission requests that 
+              are driving the extremely high overturn rate of SNF admission denials. 
+              CMS Response 
+              As mentioned above, CMS’s broad oversight strategy includes auditing a varying selection of MAOs each 
+              year to assess their compliance with contract terms, particularly regarding access to medical services, 
+              drugs, and other enrollee protections required by Medicare. During these audits, CMS will continue to 
+              evaluate whether MAOs applied clinical criteria in accordance with CMS rules and appropriately 
+              adjudicated those determinations. CMS will also continue requiring MAOs to submit corrective action 
+              plans when remediation is necessary to strengthen internal controls, prevent recurrence of noncompliance, 
+              and/or address any impact to enrollees. 
+              OIG Recommendation 
+              CMS should assess the reasons for variation in SNF denial rates across MAOs and contractors and take 
+              action as appropriate. 
+              CMS Response 
+              As mentioned above, CMS has launched a data collection pilot, in which MA plans volunteered to join. 
+              Among other data, pilot participants will be reporting service-level prior authorization data, including 
+              service types, across all settings. Pilot participants will also report information related to whether a third-
+              party vendor was involved in the determination review and decision-making process. CMS will analyze 
+              1
+                Please see: https://www.cms.gov/medicare/audits-compliance/part-c-d/part-c-and-part-d-enforcement-actions 
+              2
+                Please see December HPMS memo here: https://www.cms.gov/about-cms/information-systems/hpms/hpms-memos-
+              archive-weekly/hpms-memos-wk-3-december-15-19. 
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                                        Appendix F | 22
+              pilot denial rates by a number of characteristics, including by service and involvement of a third-party 
+              vendor. CMS looks forward to gathering lessons learned from conducting this pilot, which will inform 
+              our next steps. 
+              OIG Recommendation 
+              CMS should assess reasons for the differences in SNF denial rates between nursing home residents and 
+              other enrollees and take action as warranted. 
+              CMS Response 
+              Under the Part C audit framework, CMS can already target denials of SNF services for review. CMS will 
+              consider these findings when deciding next steps if audits confirm any link between denial rates and 
+              enrollee setting.  
+              CMS thanks OIG for their efforts on this issue and looks forward to working with OIG on this and other 
+              issues in the future. 
+               MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+               for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                                        Appendix F | 23
+              ENDNOTES 
+              1 
+               Meredith Freed et al., “Medicare Advantage in 2024: Enrollment Update and Key Trends” (Aug. 8, 2024).  
+              Accessed on Dec. 1, 2025. 
+              2
+                MedPAC, Report to the Congress: Medicare Payment Policy, Chapter 11: The Medicare Advantage program: 
+              Status report, March 2025.  Accessed on Oct. 20, 2025. 
+              3 
+               At a minimum, MAOs must cover the same services as in original Medicare, although they may also offer 
+              supplemental benefits.  42 CFR §§ 422.101(a) and (b); 422.102.  MAOs are not responsible for paying hospice 
+              care costs for beneficiaries; original Medicare pays these costs.
+              4
+                HHS, 2024 Medicare Fee-for-Service Supplemental Improper Payment Data.  Accessed on Aug. 18, 2025. 
+              5
+                5 CFR § 422.304. 
+              6 
+               American Hospital Association, “Fact Sheet: Post-acute Care” (July 2019).  Accessed on Dec. 1, 2025.   
+              7 
+               OIG interviews with post-acute care providers, industry groups, and hospitals, 2024.   
+              8
+                CMS, “What are Long-Term Care Hospitals?” (June 2019).  Accessed on Dec. 1, 2025. 
+              9
+                CMS, “Inpatient Rehabilitation Hospitals & Inpatient Rehabilitation Units” (November 2025).  Accessed on Jan. 
+              6, 2026. 
+              10 
+                MedPAC, Report to the Congress: Medicare Payment Policy, Chapter 8: Skilled nursing facility services, March 
+              2018.  Accessed on Jan. 6, 2026. 
+              11 Although there are some circumstances in which a patient may receive care at an LTCH, IRF, or SNF without a 
+              preceding acute-care hospital stay, for the purposes of this study, we refer to these facilities collectively as 
+              “post-acute care facilities.” 
+              12 MAOs are responsible for complying with coverage requirements even if they contract with another company 
+              to conduct reviews.  42 CFR § 422.504(i)(1). 
+              13 42 CFR § 422.578. 
+              14 MedPAC, Report to the Congress: Medicare and the Health Care Delivery System, Chapter 5: Medicare 
+              beneficiaries in nursing homes, June 2025.  Accessed on Dec. 1, 2025. 
+              15 OIG, Some Medicare Advantage Organization Denials of Prior Authorization Requests Raise Concerns About 
+              Beneficiary Access to Medically Necessary Care (OEI-09-18-00260), Apr. 27, 2022. 
+              16 OIG, Medicare Advantage Appeal Outcomes and Audit Findings Raise Concerns About Service and Payment 
+              Denials (OEI-09-16-00410), Sept. 25, 2018. 
+              17 
+                OIG, High Rates of Prior Authorization Denials by Some Plans and Limited State Oversight Raise Concerns About 
+              Access to Care in Medicaid Managed Care (OEI-09-19-00350), July 17, 2023. 
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                    Endnotes |24
+              18 OIG, Keystone First Should Improve Its Procedures for Reviewing Service Requests That Require Prior 
+              Authorization (A-03-20-00201), Dec. 20, 2022. 
+              19 OIG, New York Did Not Ensure That a Managed Care Organization Complied With Requirements for Denying 
+              Prior Authorization Requests (A-02-21-01016), Sept. 18, 2023. 
+              20 OIG, Some Medicare Part D Beneficiaries Face Avoidable Extra Steps That Can Delay or Prevent Access to 
+              Prescribed Drugs (OEI-09-16-00411), Sept. 19, 2019.  
+              21 CMS, Medicare Advantage and Part D Enrollment Data, Monthly Enrollment by Contract, June 2024.  Accessed 
+              on Jan. 30, 2025. 
+              22 OIG, Medicare Advantage Organization’s Use of Prior Authorization for Post-Acute Care, OEI-09-24-00332, 
+              expected to be issued in FY 2027. 
+              23 MedPAC, Report to the Congress: Medicare Payment Policy, Chapter 6: Skilled nursing facility services, March 
+              2025, p. 8.  Accessed on Dec. 1, 2025.  Original Medicare paid $25 billion for 1,583,000 SNF stays in 2023, for an 
+              approximate average of $16,000 per stay. 
+              24 MedPAC, Report to the Congress: Medicare Payment Policy, Chapter 7: Home health care services, March 
+              2025, p. 10.  Accessed on Dec. 1, 2025. 
+              25 NORC at the University of Chicago, Analysis of Hospital Discharges to PAC Settings Among Medicare 
+              Beneficiaries, June 2025.  Accessed on July 11, 2025.  
+              26 A survey of hospitalists found that post-acute care issues, including rejections of placements, was the most 
+              common cause of delays in care that would likely lead to additional days in the hospital (i.e., “avoidable days”).  
+              See Sajan Patel, Sasha Morduchowicz, and Nader Najafi, “Avoidable Days: Identifying and Quantifying Delays in 
+              Inpatient Care,” Journal of Hospital Medicine (May 2017).  Accessed on Dec. 15, 2025. 
+              27 Testimony of David Basel, Vice President of Clinical Quality and Population Health Officer, Avera, before the 
+              United States House of Representatives Committee on Ways and Means Subcommittee on Health and 
+              Subcommittee on Oversight, Medicare Advantage: Past Lessons, Present Insights, Future Opportunities (July 22, 
+              2025).  Accessed on Dec. 1, 2025.  
+              28 Kanishk Aggarwal et al., “Exploring the Ramifications of Delayed Hospital Discharges: Impacts on Patients, 
+              Physicians, and Healthcare Systems,” Cureus, vol. 16, no. 5 (May 28, 2024).  Accessed on Dec. 15, 2025. 
+              29 For the purposes of this report, we refer to any entity that performs tasks on behalf of an MAO as an “MAO 
+              contractor.”  These entities may include “first tier” entities, which enter into a written arrangement with an 
+              MAO to provide administrative services or health care services; “downstream” entities, which enter into an 
+              arrangement below the level of the arrangement between an MAO and a first tier entity; and “related” entities, 
+              which are related to the MAO by common ownership or control and perform some of the MA organization’s 
+              functions under contract or delegation.  The MAO is responsible for assuring that its contractors and any 
+              downstream contractors have the information necessary to know how to comply with the requirements under 
+              the Medicare Advantage program.  CMS, Medicare Managed Care Manual, Chapter 11: Medicare Advantage 
+              Application Procedures and Contract Requirements, Apr. 25, 2007.  Accessed on Dec. 1, 2025.  
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                    Endnotes |25
+              30 UnitedHealth Group, Inc., reported that “naviHealth is an indirect wholly owned subsidiary of UnitedHealth 
+              Group . . . naviHealth is a first tier downstream contractor and delegate of various UnitedHealthcare entities and 
+              also an affiliated entity through common indirect ownership by UnitedHealth Group.” 
+              31 OIG, The Three Largest Medicare Advantage Organizations Denied Requests for Long-Term Acute Care and 
+              Inpatient Rehabilitation at Some of the Highest Rates, OEI-09-24-00330, June 11, 2026. 
+              32 For the purposes of this report, we defined “nursing home residents” as those who had a nursing home 
+              episode of at least 101 cumulative days in a nursing facility that started before their SNF admission request and 
+              ended any time after April 1, 2024.  This aligns with the definition of “long-stay” episodes in CMS’s MDS 3.0 
+              Quality Measures User’s Manual, Version 17.  Accessed on Dec. 1, 2025. 
+              33 MAOs may cover intermittent skilled nursing services and/or outpatient therapy in a provider’s office, a long-
+              term care nursing facility, or in a patient’s home through home health services.   
+              34 In order to meet the coverage criteria for admission to a SNF, enrollees must, among other requirements, 
+              need daily skilled care (e.g., as intravenous fluids/medications or physical therapy), that is provided by or under 
+              the supervision of skilled nursing or therapy staff, to improve or maintain the enrollee’s current condition or to 
+              prevent or delay it from getting worse.  CMS, “Skilled nursing facility care.”  Accessed on Sept. 30, 2025. 
+              35 At the time of our review, CMS did not regularly collect detailed, request-level prior authorization data from 
+              all MAOs.  In December 2025, CMS solicited MAOs to volunteer for a prior authorization data collection pilot and 
+              published the draft requirements for the data that it will be collecting.  The prior authorization data that CMS 
+              plans to collect do not include a standardized service type variable for all service types or the name of the 
+              contractor that processed the request (if applicable).  CMS, Service Level Data Collection for Initial 
+              Determinations and Appeals - Pilot Participation, Dec.16, 2025.  Available at: https://www.cms.gov/about-
+              cms/information-systems/hpms/hpms-memos-archive-weekly/hpms-memos-wk-3-december-15-19. 
+              36 OIG, The Three Largest Medicare Advantage Organizations Denied Requests for Long-Term Acute Care and 
+              Inpatient Rehabilitation at Some of the Highest Rates, OEI-09-24-00330, June 11, 2026. 
+              37 
+                We asked MAOs to report data based on the date that the initial request decisions were issued.  This means, 
+              for example, that a request that an MAO received at the end of June but had not yet issued a decision for by 
+              June 30, 2024, would not be included in our data.  Similarly, decisions issued by MAOs at the beginning of June 
+              2024 may include decisions for requests that were received in May. 
+              38 CMS, MDS 3.0 Quality Measures User’s Manual, Version 17.0, Chapters 1 and 4, January 2025.  Accessed on 
+              Dec. 1, 2025. 
+              MAOs Overturned Nearly All Appealed Prior Authorization Denials  
+              for SNF Admission, Raising Concerns About Initial Denials, OEI-09-24-00331                                    Endnotes |26
+    Report Fraud, Waste, 
+    and Abuse 
+    OIG Hotline Operations accepts tips and complaints from all sources about 
+    potential fraud, waste, abuse, and mismanagement in HHS programs.  Hotline 
+    tips are incredibly valuable, and we appreciate your efforts to help us stamp 
+    out fraud, waste, and abuse. 
+                    TIPS.HHS.GOV 
+                    Phone: 1-800-447-8477 
+                    TTY: 1-800-377-4950  
+    Who Can Report? 
+    Anyone who suspects fraud, waste, and abuse should report their concerns 
+    to the OIG Hotline.  OIG addresses complaints about misconduct and 
+    mismanagement in HHS programs, fraudulent claims submitted to Federal 
+    health care programs such as Medicare, abuse or neglect in nursing homes, 
+    and many more.  Learn more about complaints OIG investigates. 
+    How Does It Help? 
+    Every complaint helps OIG carry out its mission of overseeing HHS programs 
+    and protecting the individuals they serve.  By reporting your concerns to the 
+    OIG Hotline, you help us safeguard taxpayer dollars and ensure the success of 
+    our oversight efforts. 
+    Who Is Protected? 
+    Anyone may request confidentiality.  The Privacy Act, the Inspector General 
+    Act of 1978, and other applicable laws protect complainants.  The Inspector 
+    General Act states that the Inspector General shall not disclose the identity of 
+    an HHS employee who reports an allegation or provides information without 
+    the employee’s consent, unless the Inspector General determines that 
+    disclosure is unavoidable during the investigation.  By law, Federal employees 
+    may not take or threaten to take a personnel action because of 
+    whistleblowing or the exercise of a lawful appeal, complaint, or grievance 
+    right.  Non-HHS employees who report allegations may also specifically 
+    request confidentiality. 
+                                                              1 
+              Stay In Touch  
+              Follow HHS-OIG for up to date news and publications.  
+                                                                                                OIGatHHS  
+                                    HHS Office of Inspector General  
+              Subscribe To Our Newsletter 
+                                                                                                                                       
+              OIG.HHS.GOV 
+                                                                         
+               
+              Contact Us  
+              For specific contact information, please  visit us online.  
+              U.S. Department of Health  and  Human Services  
+              Office of  Inspector General  
+              Public Affairs  
+              330 Independence Ave., SW  
+              Washington, DC 20201  
+              Email:  Public.Affairs@oig.hhs.gov  
+               
+               
+                                                                                                                                                                                                                   1  

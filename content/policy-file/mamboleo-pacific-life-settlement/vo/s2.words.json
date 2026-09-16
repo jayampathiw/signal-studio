@@ -1,0 +1,117 @@
+[
+  {
+    "word": "Case",
+    "start": 0,
+    "end": 0.72
+  },
+  {
+    "word": "file",
+    "start": 0.72,
+    "end": 1.04
+  },
+  {
+    "word": "zero",
+    "start": 1.04,
+    "end": 1.34
+  },
+  {
+    "word": "-zero",
+    "start": 1.34,
+    "end": 1.58
+  },
+  {
+    "word": "-two.",
+    "start": 1.58,
+    "end": 2.08
+  },
+  {
+    "word": "Pacific",
+    "start": 2.28,
+    "end": 2.48
+  },
+  {
+    "word": "Life",
+    "start": 2.48,
+    "end": 2.84
+  },
+  {
+    "word": "Insurance.",
+    "start": 2.84,
+    "end": 3.28
+  },
+  {
+    "word": "A",
+    "start": 3.98,
+    "end": 4.08
+  },
+  {
+    "word": "fifty",
+    "start": 4.08,
+    "end": 4.3
+  },
+  {
+    "word": "-eight",
+    "start": 4.3,
+    "end": 4.54
+  },
+  {
+    "word": "-point",
+    "start": 4.54,
+    "end": 4.82
+  },
+  {
+    "word": "-three",
+    "start": 4.82,
+    "end": 5.06
+  },
+  {
+    "word": "million",
+    "start": 5.06,
+    "end": 5.44
+  },
+  {
+    "word": "dollar",
+    "start": 5.44,
+    "end": 5.84
+  },
+  {
+    "word": "settlement.",
+    "start": 5.84,
+    "end": 6.3
+  },
+  {
+    "word": "Court",
+    "start": 6.6,
+    "end": 6.8
+  },
+  {
+    "word": "-approved.",
+    "start": 6.8,
+    "end": 7.4
+  },
+  {
+    "word": "Being",
+    "start": 7.6,
+    "end": 7.86
+  },
+  {
+    "word": "paid",
+    "start": 7.86,
+    "end": 8.12
+  },
+  {
+    "word": "out",
+    "start": 8.12,
+    "end": 8.4
+  },
+  {
+    "word": "right",
+    "start": 8.4,
+    "end": 8.62
+  },
+  {
+    "word": "now.",
+    "start": 8.62,
+    "end": 8.98
+  }
+]

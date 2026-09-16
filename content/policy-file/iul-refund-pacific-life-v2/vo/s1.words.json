@@ -1,0 +1,57 @@
+[
+  {
+    "word": "This",
+    "start": 0,
+    "end": 0.66
+  },
+  {
+    "word": "settlement",
+    "start": 0.66,
+    "end": 1
+  },
+  {
+    "word": "document",
+    "start": 1,
+    "end": 1.44
+  },
+  {
+    "word": "is",
+    "start": 1.44,
+    "end": 1.82
+  },
+  {
+    "word": "real,",
+    "start": 1.82,
+    "end": 2.12
+  },
+  {
+    "word": "and",
+    "start": 2.52,
+    "end": 2.54
+  },
+  {
+    "word": "it's",
+    "start": 2.54,
+    "end": 2.82
+  },
+  {
+    "word": "not",
+    "start": 2.82,
+    "end": 3
+  },
+  {
+    "word": "the",
+    "start": 3,
+    "end": 3.28
+  },
+  {
+    "word": "only",
+    "start": 3.28,
+    "end": 3.48
+  },
+  {
+    "word": "one.",
+    "start": 3.48,
+    "end": 3.82
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "word": "Step",
+    "start": 0,
+    "end": 0.68
+  },
+  {
+    "word": "one,",
+    "start": 0.68,
+    "end": 1.04
+  },
+  {
+    "word": "find",
+    "start": 1.3,
+    "end": 1.56
+  },
+  {
+    "word": "the",
+    "start": 1.56,
+    "end": 1.8
+  },
+  {
+    "word": "exact",
+    "start": 1.8,
+    "end": 2.12
+  },
+  {
+    "word": "reason,",
+    "start": 2.12,
+    "end": 2.5
+  },
+  {
+    "word": "not",
+    "start": 2.62,
+    "end": 2.74
+  },
+  {
+    "word": "the",
+    "start": 2.74,
+    "end": 2.98
+  },
+  {
+    "word": "summary.",
+    "start": 2.98,
+    "end": 3.3
+  },
+  {
+    "word": "Insurers",
+    "start": 3.96,
+    "end": 4.3
+  },
+  {
+    "word": "deny",
+    "start": 4.3,
+    "end": 4.7
+  },
+  {
+    "word": "for",
+    "start": 4.7,
+    "end": 4.98
+  },
+  {
+    "word": "one",
+    "start": 4.98,
+    "end": 5.26
+  },
+  {
+    "word": "narrow",
+    "start": 5.26,
+    "end": 5.52
+  },
+  {
+    "word": "line,",
+    "start": 5.52,
+    "end": 5.96
+  },
+  {
+    "word": "not",
+    "start": 6.22,
+    "end": 6.44
+  },
+  {
+    "word": "medically",
+    "start": 6.44,
+    "end": 6.84
+  },
+  {
+    "word": "necessary,",
+    "start": 6.84,
+    "end": 7.44
+  },
+  {
+    "word": "pre",
+    "start": 7.92,
+    "end": 8.04
+  },
+  {
+    "word": "-existing",
+    "start": 8.04,
+    "end": 8.42
+  },
+  {
+    "word": "condition",
+    "start": 8.42,
+    "end": 9.06
+  },
+  {
+    "word": "—",
+    "start": 9.06,
+    "end": 9.38
+  },
+  {
+    "word": "missing",
+    "start": 9.38,
+    "end": 9.66
+  },
+  {
+    "word": "documentation.",
+    "start": 9.66,
+    "end": 10.3
+  }
+]

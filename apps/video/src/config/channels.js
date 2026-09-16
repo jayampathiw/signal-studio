@@ -306,6 +306,48 @@ export const CHANNELS = {
     pageName: 'Vivere in Italia',
   },
 
+  // ── The Policy File — investigative case-file documentary ────────────────
+  // Real sourced/redacted documents, not Pexels footage or AI-generated frames.
+  // No fetchers — content is manually sourced per case, not fetched/generated.
+  // Rendered via the CaseFile Remotion composition (packages/render/remotion),
+  // not the FFmpeg stills pipeline the football/culture channels use.
+  'policy-file/case-file/EN': {
+    niche: 'policy-file',
+    style: 'case-file',
+    language: 'EN',
+    contentLanguage: 'English',
+    renderer: 'remotion',
+    narrationProvider: 'kokoro',
+    voice: 'am_michael',
+    voiceSpeed: 1.15, // Kokoro default (0.85) read too slow for this channel's pace — round 1 review feedback
+    aspectRatio: '16:9',
+    platforms: {
+      facebook: { enabled: true, envKey: 'POLICY_FILE' },
+    },
+    watermarkFile: 'PolicyFile_Watermark.svg',
+    pageName: 'The Policy File',
+  },
+
+  // Short-form data-visualization companion format — same brand/case-file loader
+  // (assemble-case.mjs reads `channelKey` from case.json), vertical for Reels/Shorts
+  // placement instead of the documentary format's native-Facebook 16:9 long-form.
+  'policy-file/data-viz/EN': {
+    niche: 'policy-file',
+    style: 'data-viz',
+    language: 'EN',
+    contentLanguage: 'English',
+    renderer: 'remotion',
+    narrationProvider: 'kokoro',
+    voice: 'am_michael',
+    voiceSpeed: 1.15,
+    aspectRatio: '9:16',
+    platforms: {
+      facebook: { enabled: true, envKey: 'POLICY_FILE' },
+    },
+    watermarkFile: 'PolicyFile_Watermark.svg',
+    pageName: 'The Policy File',
+  },
+
   // ── South American Football & Diaspora Stories — long-form documentary ─────
   // Parallel long-form pipeline (docs/long-form-pipeline-plan.md). Input is a
   // structured shot list; clips generated 8-wide with shared reference images.

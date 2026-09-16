@@ -1,0 +1,82 @@
+[
+  {
+    "word": "Thirty",
+    "start": 0,
+    "end": 0.66
+  },
+  {
+    "word": "-three",
+    "start": 0.66,
+    "end": 0.98
+  },
+  {
+    "word": "million",
+    "start": 0.98,
+    "end": 1.4
+  },
+  {
+    "word": "goes",
+    "start": 1.4,
+    "end": 1.86
+  },
+  {
+    "word": "directly",
+    "start": 1.86,
+    "end": 2.3
+  },
+  {
+    "word": "into",
+    "start": 2.3,
+    "end": 2.62
+  },
+  {
+    "word": "the",
+    "start": 2.62,
+    "end": 2.8
+  },
+  {
+    "word": "accounts",
+    "start": 2.8,
+    "end": 3.08
+  },
+  {
+    "word": "of",
+    "start": 3.08,
+    "end": 3.36
+  },
+  {
+    "word": "policyholders",
+    "start": 3.36,
+    "end": 4.1
+  },
+  {
+    "word": "whose",
+    "start": 4.1,
+    "end": 4.76
+  },
+  {
+    "word": "PDX",
+    "start": 4.76,
+    "end": 5.44
+  },
+  {
+    "word": "policies",
+    "start": 5.44,
+    "end": 5.9
+  },
+  {
+    "word": "are",
+    "start": 5.9,
+    "end": 6.22
+  },
+  {
+    "word": "still",
+    "start": 6.22,
+    "end": 6.46
+  },
+  {
+    "word": "active.",
+    "start": 6.46,
+    "end": 6.84
+  }
+]

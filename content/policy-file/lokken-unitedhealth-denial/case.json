@@ -1,0 +1,209 @@
+{
+  "caseId": "lokken-unitedhealth-denial",
+  "title": "Anatomy of a Denial Letter — Estate of Lokken v. UnitedHealth Group",
+  "description": "A 91-year-old man's own physical therapist documented he could barely move. The algorithm that decided his care cut it off anyway. Sourced from the filed federal class-action complaint, Estate of Gene B. Lokken v. UnitedHealth Group, Case No. 0:23-cv-03514 (D. Minn.).",
+  "sourceCitation": "Estate of Gene B. Lokken, et al. v. UnitedHealth Group, Inc., et al., Case No. 0:23-cv-03514, U.S. District Court, District of Minnesota, filed 11/14/2023. This is an active lawsuit — the allegations described have not been proven in court. All quoted language is sourced directly from the filed Class Action Complaint, a public court record. This video uses AI-generated narration. Educational content only, not legal or medical advice.",
+  "channelKey": "policy-file/data-viz/EN",
+  "showOutro": true,
+  "documents": {
+    "caption.png": {
+      "pdf": "sources/complaint.pdf",
+      "page": 1,
+      "anchor": "UNITED STATES DISTRICT COURT"
+    },
+    "denial-notice.png": {
+      "pdf": "sources/complaint.pdf",
+      "page": 15,
+      "anchor": "not medically necessary"
+    },
+    "pt-notes.png": {
+      "pdf": "sources/complaint.pdf",
+      "page": 16,
+      "anchor": "Neuromuscular"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "denial-notice.png",
+      "narrationText": "He fell. He broke his leg and his ankle. He was 91 years old. Thirteen days into physical therapy, this is the letter he got.",
+      "zoomFrom": {
+        "x": 0.08,
+        "y": 0.3,
+        "width": 0.55,
+        "height": 0.14
+      },
+      "zoomTo": {
+        "x": 0.08,
+        "y": 0.3,
+        "width": 0.55,
+        "height": 0.14
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "not medically necessary"
+          },
+          "fromFraction": 0.65,
+          "toFraction": 1.0,
+          "x": 0.2119,
+          "y": 0.7696,
+          "width": 0.208,
+          "height": 0.0214
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "imagePath": "caption.png",
+      "narrationText": "Case file zero-zero-four. UnitedHealth Group. A real federal lawsuit. Filed by a real family.",
+      "zoomTo": {
+        "x": 0.1,
+        "y": 0.06,
+        "width": 0.8,
+        "height": 0.3
+      }
+    },
+    {
+      "id": "s3a",
+      "imagePath": "denial-notice.png",
+      "narrationText": "This is the actual language from his denial notice, quoted word for word in the federal complaint. \"More inpatient days at the skilled nursing facility are not medically necessary.",
+      "zoomFrom": {
+        "x": 0.06,
+        "y": 0.28,
+        "width": 0.80,
+        "height": 0.16
+      },
+      "zoomTo": {
+        "x": 0.06,
+        "y": 0.28,
+        "width": 0.80,
+        "height": 0.16
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "not medically necessary"
+          },
+          "fromFraction": 0.35,
+          "toFraction": 1.0,
+          "x": 0.2119,
+          "y": 0.7696,
+          "width": 0.208,
+          "height": 0.0214
+        }
+      ]
+    },
+    {
+      "id": "s3b",
+      "imagePath": "denial-notice.png",
+      "narrationText": "A safe discharge plan has been recommended.\" That's it. That's the entire stated reason. No explanation of what changed. No reference to his actual condition.",
+      "zoomFrom": {
+        "x": 0.06,
+        "y": 0.28,
+        "width": 0.80,
+        "height": 0.16
+      },
+      "zoomTo": {
+        "x": 0.06,
+        "y": 0.28,
+        "width": 0.80,
+        "height": 0.16
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "A safe discharge plan has been recommended"
+          },
+          "fromFraction": 0.0,
+          "toFraction": 0.25,
+          "x": 0.4264,
+          "y": 0.7696,
+          "width": 0.3918,
+          "height": 0.0214
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "imagePath": "pt-notes.png",
+      "narrationText": "Here's what his own physical therapist wrote in his chart, the same week: \"Neuromuscular: decreased movement and mobility. Musculoskeletal: paralysis, weakness.\" One document says he was ready to go home. The other says he could barely move. According to the lawsuit, both were true — but only one of them was written by a person who ever saw him.",
+      "zoomFrom": {
+        "x": 0.06,
+        "y": 0.22,
+        "width": 0.90,
+        "height": 0.09
+      },
+      "zoomTo": {
+        "x": 0.06,
+        "y": 0.22,
+        "width": 0.90,
+        "height": 0.09
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "Neuromuscular: Decreased movement/mobility"
+          },
+          "fromFraction": 0.15,
+          "toFraction": 0.45,
+          "x": 0.125,
+          "y": 0.2411,
+          "width": 0.4107,
+          "height": 0.0214
+        },
+        {
+          "find": {
+            "text": "Musculoskeletal: Paralysis/Weakness"
+          },
+          "fromFraction": 0.45,
+          "toFraction": 0.75,
+          "x": 0.5439,
+          "y": 0.2411,
+          "width": 0.3248,
+          "height": 0.0214
+        }
+      ]
+    },
+    {
+      "id": "s5a",
+      "durationSecs": 4,
+      "narrationText": "The lawsuit alleges the actual decision-maker wasn't a doctor. It was an algorithm called nH Predict — built by a UnitedHealth subsidiary, comparing him against a database of six million other patients to estimate how much care he \"should\" need.",
+      "visual": {
+        "kind": "counter",
+        "value": 6,
+        "suffix": " MILLION",
+        "label": "PATIENT RECORDS THE ALGORITHM COMPARED HIM AGAINST"
+      }
+    },
+    {
+      "id": "s5b",
+      "durationSecs": 4,
+      "narrationText": "According to the complaint, roughly ninety percent of denials like his are overturned on appeal. That's not a rounding error. That's a machine getting it wrong nine times out of ten — and still being used to make the first call.",
+      "visual": {
+        "kind": "counter",
+        "value": 90,
+        "suffix": "%",
+        "label": "OF DENIALS LIKE HIS ARE OVERTURNED ON APPEAL"
+      }
+    },
+    {
+      "id": "s6",
+      "durationSecs": 4,
+      "narrationText": "His family appealed. Twice. According to the complaint, coverage was never reinstated. They paid twelve to fourteen thousand dollars a month, out of pocket, to keep him in care. Mr. Lokken remained in that facility until he passed away in July 2023. This lawsuit is still active — nothing here has been decided by a court yet.",
+      "visual": {
+        "kind": "pointerCard",
+        "text": "$12,000–$14,000 / MONTH,\nOUT OF POCKET."
+      }
+    },
+    {
+      "id": "s7",
+      "durationSecs": 4,
+      "narrationText": "If your own denial letter reads like a form response — a short, generic phrase with no specific detail about your case — that's worth noticing. You have the right to ask, in writing, whose clinical judgment made the decision, and what records they actually reviewed.",
+      "visual": {
+        "kind": "pointerCard",
+        "text": "Ask in writing: \"What clinical record\nwas reviewed, and by whom?\""
+      }
+    }
+  ]
+}

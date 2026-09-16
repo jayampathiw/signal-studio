@@ -1,0 +1,62 @@
+[
+  {
+    "word": "Ninety",
+    "start": 0,
+    "end": 0.82
+  },
+  {
+    "word": "-five",
+    "start": 0.82,
+    "end": 1.04
+  },
+  {
+    "word": "percent",
+    "start": 1.04,
+    "end": 1.4
+  },
+  {
+    "word": "of",
+    "start": 1.4,
+    "end": 1.62
+  },
+  {
+    "word": "Medicare",
+    "start": 1.62,
+    "end": 1.92
+  },
+  {
+    "word": "Advantage",
+    "start": 1.92,
+    "end": 2.48
+  },
+  {
+    "word": "denials",
+    "start": 2.48,
+    "end": 2.92
+  },
+  {
+    "word": "that",
+    "start": 2.92,
+    "end": 3.16
+  },
+  {
+    "word": "get",
+    "start": 3.16,
+    "end": 3.3
+  },
+  {
+    "word": "appealed...",
+    "start": 3.3,
+    "end": 4.28
+  },
+  {
+    "word": "get",
+    "start": 4.28,
+    "end": 4.38
+  },
+  {
+    "word": "overturned.",
+    "start": 4.38,
+    "end": 5.24
+  }
+]

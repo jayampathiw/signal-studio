@@ -1,0 +1,102 @@
+[
+  {
+    "word": "The",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "court",
+    "start": 0.54,
+    "end": 0.74
+  },
+  {
+    "word": "gave",
+    "start": 0.74,
+    "end": 1.04
+  },
+  {
+    "word": "final",
+    "start": 1.04,
+    "end": 1.4
+  },
+  {
+    "word": "approval",
+    "start": 1.4,
+    "end": 1.84
+  },
+  {
+    "word": "in",
+    "start": 1.84,
+    "end": 2.14
+  },
+  {
+    "word": "May.",
+    "start": 2.14,
+    "end": 2.5
+  },
+  {
+    "word": "The",
+    "start": 2.84,
+    "end": 3
+  },
+  {
+    "word": "money",
+    "start": 3,
+    "end": 3.26
+  },
+  {
+    "word": "is",
+    "start": 3.26,
+    "end": 3.54
+  },
+  {
+    "word": "scheduled",
+    "start": 3.54,
+    "end": 3.84
+  },
+  {
+    "word": "to",
+    "start": 3.84,
+    "end": 4.12
+  },
+  {
+    "word": "be",
+    "start": 4.12,
+    "end": 4.24
+  },
+  {
+    "word": "distributed",
+    "start": 4.24,
+    "end": 4.7
+  },
+  {
+    "word": "by",
+    "start": 4.7,
+    "end": 5.08
+  },
+  {
+    "word": "September",
+    "start": 5.08,
+    "end": 5.48
+  },
+  {
+    "word": "eleventh",
+    "start": 5.48,
+    "end": 6.1
+  },
+  {
+    "word": "—",
+    "start": 6.1,
+    "end": 6.36
+  },
+  {
+    "word": "this",
+    "start": 6.36,
+    "end": 6.54
+  },
+  {
+    "word": "month.",
+    "start": 6.54,
+    "end": 6.86
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "word": "Step",
+    "start": 0,
+    "end": 0.64
+  },
+  {
+    "word": "four,",
+    "start": 0.64,
+    "end": 1.02
+  },
+  {
+    "word": "match",
+    "start": 1.24,
+    "end": 1.44
+  },
+  {
+    "word": "their",
+    "start": 1.44,
+    "end": 1.74
+  },
+  {
+    "word": "language,",
+    "start": 1.74,
+    "end": 2.18
+  },
+  {
+    "word": "sentence",
+    "start": 2.54,
+    "end": 2.72
+  },
+  {
+    "word": "for",
+    "start": 2.72,
+    "end": 3.02
+  },
+  {
+    "word": "sentence.",
+    "start": 3.02,
+    "end": 3.48
+  },
+  {
+    "word": "If",
+    "start": 4.02,
+    "end": 4.1
+  },
+  {
+    "word": "they",
+    "start": 4.1,
+    "end": 4.32
+  },
+  {
+    "word": "said",
+    "start": 4.32,
+    "end": 4.56
+  },
+  {
+    "word": "not",
+    "start": 4.56,
+    "end": 4.9
+  },
+  {
+    "word": "medically",
+    "start": 4.9,
+    "end": 5.28
+  },
+  {
+    "word": "necessary,",
+    "start": 5.28,
+    "end": 5.88
+  },
+  {
+    "word": "get",
+    "start": 6.28,
+    "end": 6.42
+  },
+  {
+    "word": "your",
+    "start": 6.42,
+    "end": 6.6
+  },
+  {
+    "word": "doctor",
+    "start": 6.6,
+    "end": 6.86
+  },
+  {
+    "word": "to",
+    "start": 6.86,
+    "end": 7.16
+  },
+  {
+    "word": "address",
+    "start": 7.16,
+    "end": 7.46
+  },
+  {
+    "word": "medical",
+    "start": 7.46,
+    "end": 7.8
+  },
+  {
+    "word": "necessity",
+    "start": 7.8,
+    "end": 8.26
+  },
+  {
+    "word": "directly.",
+    "start": 8.26,
+    "end": 8.8
+  },
+  {
+    "word": "If",
+    "start": 9.38,
+    "end": 9.6
+  },
+  {
+    "word": "they",
+    "start": 9.6,
+    "end": 9.82
+  },
+  {
+    "word": "said,",
+    "start": 9.82,
+    "end": 10.18
+  },
+  {
+    "word": "wear",
+    "start": 10.28,
+    "end": 10.5
+  },
+  {
+    "word": "and",
+    "start": 10.5,
+    "end": 10.74
+  },
+  {
+    "word": "tear,",
+    "start": 10.74,
+    "end": 11.2
+  },
+  {
+    "word": "get",
+    "start": 11.5,
+    "end": 11.56
+  },
+  {
+    "word": "an",
+    "start": 11.56,
+    "end": 11.72
+  },
+  {
+    "word": "inspection",
+    "start": 11.72,
+    "end": 12.16
+  },
+  {
+    "word": "addressing",
+    "start": 12.16,
+    "end": 12.7
+  },
+  {
+    "word": "sudden",
+    "start": 12.7,
+    "end": 13.16
+  },
+  {
+    "word": "versus",
+    "start": 13.16,
+    "end": 13.52
+  },
+  {
+    "word": "gradual",
+    "start": 13.52,
+    "end": 14.06
+  },
+  {
+    "word": "damage.",
+    "start": 14.06,
+    "end": 14.56
+  }
+]

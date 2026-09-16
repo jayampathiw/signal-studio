@@ -1,0 +1,266 @@
+{
+  "caseId": "annuity-surrender-fees",
+  "title": "The Annuity Trap That Never Went Away — Surrender Fee Traps",
+  "description": "Not one lawsuit — a decade-long documented pattern. Over $130M in real settlements against annuity insurers for surrender-charge practices, plus what California law requires insurers to disclose on the cover page, right now.",
+  "sourceCitation": "Vaccarino v. Midland National Life Insurance Co., No. 2:11-cv-05858, C.D. Cal. ($31M settlement). In re Midland National Life Insurance Co. Annuity Sales Practices Litigation, D. Iowa ($80M settlement, final approval 2012, 70,000+ seniors). National Western Life Insurance Co. ($21M RICO settlement). All companies deny wrongdoing where settlements did not include an admission of liability. California Insurance Code § 10127.13. Two 2025 consumer comments quoted anonymously (public individuals, not litigants). This video uses AI-generated narration. Educational content only, not financial or legal advice.",
+  "channelKey": "policy-file/case-file/EN",
+  "showOutro": true,
+  "documents": {
+    "case-intro.png": {
+      "pdf": "sources/case-intro.pdf",
+      "page": 1,
+      "anchor": "CASE FILE"
+    },
+    "consumer-comment-a.png": {
+      "pdf": "sources/consumer-comment-a.pdf",
+      "page": 1,
+      "anchor": "surrender fees"
+    },
+    "consumer-comment-b.png": {
+      "pdf": "sources/consumer-comment-b.pdf",
+      "page": 1,
+      "anchor": "tricked"
+    },
+    "consumer-comment-c.png": {
+      "pdf": "sources/consumer-comment-c.pdf",
+      "page": 1,
+      "anchor": "poor vehicle"
+    },
+    "settlements.png": {
+      "pdf": "sources/settlements.pdf",
+      "page": 1,
+      "anchor": "DOCUMENTED SETTLEMENTS"
+    },
+    "cover-page.png": {
+      "pdf": "sources/cover-page.pdf",
+      "page": 1,
+      "anchor": "SURRENDER CHARGES APPLY"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "consumer-comment-a.png",
+      "narrationText": "In 2025, someone wrote this online: \"The stock market had returns of twenty-five percent each year. I received about one and a half to two and a half percent — and the surrender fees to get out are horrendous.\" This isn't a new complaint. It's the same one people have been making for over a decade.",
+      "zoomFrom": {
+        "x": 0.06,
+        "y": 0.2,
+        "width": 0.88,
+        "height": 0.3
+      },
+      "zoomTo": {
+        "x": 0.06,
+        "y": 0.2,
+        "width": 0.88,
+        "height": 0.3
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "surrender fees"
+          },
+          "fromFraction": 0.72,
+          "toFraction": 0.92,
+          "x": 0.2502,
+          "y": 0.4112,
+          "width": 0.1922,
+          "height": 0.0341
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "imagePath": "case-intro.png",
+      "narrationText": "Case file zero-zero-five. Not one lawsuit this time — a pattern that's cost insurers over a hundred million dollars in settlements, and it's still happening.",
+      "zoomTo": {
+        "x": 0.1,
+        "y": 0.2,
+        "width": 0.8,
+        "height": 0.32
+      }
+    },
+    {
+      "id": "s3",
+      "durationSecs": 8,
+      "narrationText": "A surrender charge is the penalty for taking your own money out of an annuity too early. It can run as high as twenty-five percent of your principal, and it can last ten years or more — sometimes past the buyer's own life expectancy.",
+      "visual": {
+        "kind": "barChart",
+        "bars": [
+          {
+            "label": "YEAR 1",
+            "value": 25
+          },
+          {
+            "label": "YEAR 3",
+            "value": 18
+          },
+          {
+            "label": "YEAR 5",
+            "value": 12
+          },
+          {
+            "label": "YEAR 7",
+            "value": 6
+          },
+          {
+            "label": "YEAR 10",
+            "value": 0
+          }
+        ],
+        "maxValue": 25,
+        "unit": "%"
+      }
+    },
+    {
+      "id": "s4",
+      "imagePath": "settlements.png",
+      "narrationText": "These are real settlements. Thirty-one million dollars from Midland National, over deferred annuities the lawsuit alleged were marketed with false bonus promises. Eighty million dollars, benefiting more than seventy thousand seniors, in a separate Midland case alleging the company sold annuities that wouldn't mature until after buyers' life expectancy. Twenty-one million from National Western, in a case alleging annuities were aggressively marketed to elderly clients with, quote, \"huge surrender penalties.\" These cases are years old. The product design that caused them hasn't gone away.",
+      "zoomFrom": {
+        "x": 0.06,
+        "y": 0.09,
+        "width": 0.88,
+        "height": 0.42
+      },
+      "zoomTo": {
+        "x": 0.06,
+        "y": 0.09,
+        "width": 0.88,
+        "height": 0.42
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "$31,000,000"
+          },
+          "fromFraction": 0.05,
+          "toFraction": 0.35,
+          "x": 0.3005,
+          "y": 0.2331,
+          "width": 0.1768,
+          "height": 0.0316
+        },
+        {
+          "find": {
+            "text": "$80,000,000"
+          },
+          "fromFraction": 0.35,
+          "toFraction": 0.65,
+          "x": 0.3005,
+          "y": 0.348,
+          "width": 0.1768,
+          "height": 0.0316
+        },
+        {
+          "find": {
+            "text": "$21,000,000"
+          },
+          "fromFraction": 0.65,
+          "toFraction": 0.9,
+          "x": 0.3005,
+          "y": 0.4629,
+          "width": 0.1768,
+          "height": 0.0316
+        }
+      ]
+    },
+    {
+      "id": "s5a",
+      "imagePath": "consumer-comment-b.png",
+      "narrationText": "These two comments are from 2025 — about current products, not the ones in those old settlements. One buyer described being \"tricked\" about growth projections.",
+      "zoomFrom": {
+        "x": 0.06,
+        "y": 0.2,
+        "width": 0.88,
+        "height": 0.2
+      },
+      "zoomTo": {
+        "x": 0.06,
+        "y": 0.2,
+        "width": 0.88,
+        "height": 0.2
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "tricked"
+          },
+          "fromFraction": 0.3,
+          "toFraction": 0.9,
+          "x": 0.4019,
+          "y": 0.2395,
+          "width": 0.095,
+          "height": 0.0341
+        }
+      ]
+    },
+    {
+      "id": "s5b",
+      "imagePath": "consumer-comment-c.png",
+      "narrationText": "Another called their annuity \"a poor vehicle\" for retirement savings, years after purchase. The names are different. The pattern isn't.",
+      "zoomFrom": {
+        "x": 0.06,
+        "y": 0.2,
+        "width": 0.88,
+        "height": 0.2
+      },
+      "zoomTo": {
+        "x": 0.06,
+        "y": 0.2,
+        "width": 0.88,
+        "height": 0.2
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "poor vehicle"
+          },
+          "fromFraction": 0.2,
+          "toFraction": 0.8,
+          "x": 0.4909,
+          "y": 0.2395,
+          "width": 0.1667,
+          "height": 0.0341
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "imagePath": "cover-page.png",
+      "narrationText": "Here's what's actually true, right now, if you're in California: state law requires every annuity contract to disclose its surrender charge, in bold twelve-point print, on the cover page or policy jacket. Not buried in page forty. On the cover.",
+      "zoomFrom": {
+        "x": 0.08,
+        "y": 0.28,
+        "width": 0.84,
+        "height": 0.2
+      },
+      "zoomTo": {
+        "x": 0.08,
+        "y": 0.28,
+        "width": 0.84,
+        "height": 0.2
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "SURRENDER CHARGES APPLY"
+          },
+          "fromFraction": 0.4,
+          "toFraction": 1.0,
+          "x": 0.1678,
+          "y": 0.3407,
+          "width": 0.3028,
+          "height": 0.0242
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "durationSecs": 8,
+      "narrationText": "If you already own an annuity, find that disclosure box. Know your exact surrender percentage and exactly when it ends. If you're being sold one, ask that question before you sign, not after.",
+      "visual": {
+        "kind": "pointerCard",
+        "text": "Find the surrender charge box on your policy's cover page or first page.\n\nAsk your agent, in writing: \"What is my surrender charge today, and when does it reach zero?\""
+      }
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "caseId": "mamboleo-pacific-life-settlement",
+  "title": "The $58 Million Retirement Policy — Pacific Life PDX / Mamboleo Settlement",
+  "description": "A $58.3 million class-action settlement against Pacific Life Insurance Co. shows how a real policyholder's projected retirement value dropped from $418,141 to $364,351 after a single undisclosed \"Performance Factor\" was applied — while her actual account value fell to $2,848 after $17,000 in premiums.",
+  "sourceCitation": "Mamboleo v. Pacific Life Insurance Co., No. 30-2021-01208045-CU-BT-CXC, Orange County Superior Court. Figures sourced directly from the Class Action Complaint (filed 6/29/2021) and the Class Action Settlement Agreement, both public court records. This video uses AI-generated narration. Educational content only, not financial or legal advice.",
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "annual-statements.png",
+      "narrationText": "She paid seventeen thousand dollars into a retirement policy. Two years later, she had two thousand, eight hundred and forty-eight dollars left. This is her actual policy file.",
+      "zoomTo": { "x": 0.05, "y": 0.50, "width": 0.90, "height": 0.36 },
+      "highlight": { "x": 0.1818, "y": 0.8182, "width": 0.0829, "height": 0.0310, "fromFraction": 0.55, "toFraction": 1.0 }
+    },
+    {
+      "id": "s2",
+      "imagePath": "case-caption.png",
+      "narrationText": "Case file zero-zero-two. Pacific Life Insurance. A fifty-eight-point-three million dollar settlement. Court-approved. Being paid out right now.",
+      "zoomTo": { "x": 0.06, "y": 0.475, "width": 0.88, "height": 0.227 },
+      "highlight": { "x": 0.1043, "y": 0.6645, "width": 0.3503, "height": 0.0174, "fromFraction": 0.15, "toFraction": 0.45 }
+    },
+    {
+      "id": "s3",
+      "imagePath": "illustration-comparison.png",
+      "narrationText": "When she signed up for a Pacific Life \"PDX\" policy in 2019, this is the illustration she was shown. By year twenty, at an assumed rate of seven-point-one percent, her policy was projected to be worth four hundred eighteen thousand, one hundred forty-one dollars. Insurance illustrations aren't guarantees. But they're supposed to be a reasonable picture of what you're buying.",
+      "zoomTo": { "x": 0.06, "y": 0.066, "width": 0.88, "height": 0.157 },
+      "highlight": { "x": 0.2380, "y": 0.1475, "width": 0.0856, "height": 0.0215, "fromFraction": 0.25, "toFraction": 0.55 }
+    },
+    {
+      "id": "s4",
+      "imagePath": "illustration-comparison.png",
+      "narrationText": "Two years later, she asked Pacific Life for an updated illustration on the exact same policy. The assumed rate had barely moved — down to six-point-six-six percent. Just a six percent change. But the projected payout didn't drop six percent. It dropped thirteen percent — more than double what the rate change alone would explain.",
+      "zoomTo": { "x": 0.06, "y": 0.190, "width": 0.88, "height": 0.132 },
+      "highlight": { "x": 0.422, "y": 0.262, "width": 0.107, "height": 0.025, "fromFraction": 0.05, "toFraction": 0.35 }
+    },
+    {
+      "id": "s5a",
+      "imagePath": "annual-statements.png",
+      "narrationText": "Here's her actual account history. Year one: she paid nine thousand, two hundred dollars in premiums. Pacific Life deducted seven thousand, six hundred fifty-three dollars in policy charges. She was left with one thousand, five hundred fifty dollars.",
+      "zoomTo": { "x": 0.05, "y": 0.5165, "width": 0.90, "height": 0.170 },
+      "highlight": { "x": 0.1604, "y": 0.6446, "width": 0.0856, "height": 0.0248, "fromFraction": 0.65, "toFraction": 1.0 }
+    },
+    {
+      "id": "s5b",
+      "imagePath": "annual-statements.png",
+      "narrationText": "Year two: she paid another seven thousand, eight hundred dollars. Pacific Life deducted six thousand, six hundred eight dollars. Her account value: two thousand, eight hundred forty-eight dollars.",
+      "zoomTo": { "x": 0.05, "y": 0.6694, "width": 0.90, "height": 0.182 },
+      "highlight": { "x": 0.1818, "y": 0.8182, "width": 0.0829, "height": 0.0310, "fromFraction": 0.55, "toFraction": 1.0 }
+    },
+    {
+      "id": "s5c",
+      "imagePath": "annual-statements.png",
+      "narrationText": "Seventeen thousand dollars paid in. Twenty-eight hundred dollars left. That's not a bad year in the market. That's the policy working exactly as designed.",
+      "zoomTo": { "x": 0.05, "y": 0.50, "width": 0.90, "height": 0.36 }
+    },
+    {
+      "id": "s6a",
+      "imagePath": "nature-of-action.png",
+      "narrationText": "According to the lawsuit, the reason for the gap was something called the \"Performance Factor\" — an internal multiplier Pacific Life applied to the illustrated interest rate, starting in year three of the policy.",
+      "zoomTo": { "x": 0.06, "y": 0.09, "width": 0.88, "height": 0.285 },
+      "highlight": { "x": 0.080, "y": 0.331, "width": 0.856, "height": 0.024, "fromFraction": 0.3, "toFraction": 0.65 }
+    },
+    {
+      "id": "s6b",
+      "imagePath": "performance-factor-announcement.png",
+      "narrationText": "Pacific Life's own press release bragged about it. The first two Performance Factors it ever calculated were two-point-four-six and four-point-one-eight. At the company's advertised ten percent cap rate, that meant illustrations could show effective returns as high as twenty-four point six percent — or even forty-one point eight percent. The only number Pacific Life actually guaranteed? One-point-zero. No multiplier at all.",
+      "zoomTo": { "x": 0.10, "y": 0.145, "width": 0.80, "height": 0.186 },
+      "highlight": { "x": 0.139, "y": 0.289, "width": 0.695, "height": 0.042, "fromFraction": 0.4, "toFraction": 0.75 }
+    },
+    {
+      "id": "s6c",
+      "imagePath": "cap-rate-cuts.png",
+      "narrationText": "And the whole projection depended on Pacific Life earning a fifty percent profit on its own options trades — every single year, for thirty to fifty years. Four of its competitors — MetLife, New York Life, Northwestern Mutual, and OneAmerica — told regulators in writing that assumption was unreasonable. Within three years, Pacific Life cut its cap rate twice. Illustrated performance across the board dropped more than thirty-five percent.",
+      "zoomTo": { "x": 0.06, "y": 0.428, "width": 0.88, "height": 0.438 },
+      "highlight": { "x": 0.7727, "y": 0.8587, "width": 0.0417, "height": 0.0207, "fromFraction": 0.75, "toFraction": 1.0 }
+    },
+    {
+      "id": "s7a",
+      "imagePath": "settlement-common-fund.png",
+      "narrationText": "Pacific Life still denies doing anything wrong. But a court disagreed enough to approve fifty-eight-point-three million dollars. Thirty-three million goes directly into the accounts of policyholders whose PDX policies are still active.",
+      "zoomTo": { "x": 0.08, "y": 0.081, "width": 0.84, "height": 0.208 },
+      "highlight": { "x": 0.3762, "y": 0.1219, "width": 0.1094, "height": 0.0198, "fromFraction": 0.35, "toFraction": 0.7 }
+    },
+    {
+      "id": "s7b",
+      "imagePath": "term-life-relief.png",
+      "narrationText": "Up to twenty-five million goes to free term life insurance for anyone whose policy already lapsed or was surrendered.",
+      "zoomTo": { "x": 0.08, "y": 0.736, "width": 0.84, "height": 0.173 },
+      "highlight": { "x": 0.4509, "y": 0.7562, "width": 0.0961, "height": 0.0198, "fromFraction": 0.05, "toFraction": 0.35 }
+    },
+    {
+      "id": "s7c",
+      "imagePath": "term-life-relief.png",
+      "narrationText": "If you've ever wondered whether an insurance company is even allowed to do this — a judge just answered that question.",
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 }
+    },
+    {
+      "id": "s7d",
+      "imagePath": "term-life-relief.png",
+      "narrationText": "The court gave final approval in May. The money is scheduled to be distributed by September eleventh — this month.",
+      "zoomTo": { "x": 0.08, "y": 0.736, "width": 0.84, "height": 0.173 }
+    },
+    {
+      "id": "s7e",
+      "imagePath": "settlement-common-fund.png",
+      "narrationText": "Pacific Life still denies doing anything wrong. A court disagreed enough to approve fifty-eight million dollars.",
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 }
+    },
+    {
+      "id": "s8",
+      "imagePath": "term-life-relief.png",
+      "narrationText": "If you own a Pacific Life PDX policy bought in California between 2016 and 2019 — not PDX 2 — check your mail or email for a settlement notice. Contact Kroll Settlement Administration if you're not sure. If you own any indexed universal life policy — any company — ask directly, in writing: what is my policy's performance factor, multiplier, or bonus rate, and what is the guaranteed minimum? If they can't answer clearly, that's information you're entitled to. This isn't a reason to panic about every policy. It's a reason to read the actual illustration — not just the pitch.",
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 }
+    }
+  ]
+}

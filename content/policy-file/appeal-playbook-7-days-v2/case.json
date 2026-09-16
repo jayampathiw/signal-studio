@@ -1,0 +1,204 @@
+{
+  "caseId": "appeal-playbook-7-days-v2",
+  "title": "Denied? Do These 5 Things in the First 7 Days — The Appeal Playbook",
+  "description": "Most people who get an insurance denial never appeal at all. The exact 5-step process to protect your appeal rights, plus the real appeal letter template regulators publish — federal ERISA deadline, California IMR rights, and Florida's 2022 reform deadlines, all verified.",
+  "sourceCitation": "180-day federal appeal window for employer health/disability plans: U.S. Department of Labor, 29 CFR § 2560.503-1. California health insurance internal appeal timeline and Independent Medical Review right. Florida property insurance deadlines under Fla. Stat. §§ 627.70131 and 627.70132 (2022 reform legislation). NAIC official sample appeal letter template. This video uses AI-generated narration. Educational content only, not legal or insurance advice.",
+  "channelKey": "policy-file/case-file/EN",
+  "showOutro": true,
+  "documents": {
+    "denial-letter.png": {
+      "pdf": "sources/generic-denial-letter.pdf",
+      "page": 1,
+      "anchor": "The reason for this determination is"
+    },
+    "naic-letter.png": {
+      "pdf": "sources/naic-appeal-letter.pdf",
+      "page": 1,
+      "anchor": "To Whom It May Concern"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "denial-letter.png",
+      "narrationText": "Most people who get denied never appeal at all. Insurance companies know that. Here's exactly what to do in the first seven days, before your window closes.",
+      "zoomFrom": {
+        "x": 0.1,
+        "y": 0.34,
+        "width": 0.7,
+        "height": 0.1
+      },
+      "zoomTo": {
+        "x": 0.1,
+        "y": 0.34,
+        "width": 0.7,
+        "height": 0.1
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "The reason for this determination is"
+          },
+          "fromFraction": 0.55,
+          "toFraction": 1.0,
+          "x": 0.1155,
+          "y": 0.353,
+          "width": 0.3925,
+          "height": 0.0227
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "imagePath": "denial-letter.png",
+      "narrationText": "Case file zero-zero-three. Not one company this time — the actual rulebook. Five real steps, and the real letter template nobody shows you.",
+      "zoomTo": {
+        "x": 0.08,
+        "y": 0.06,
+        "width": 0.84,
+        "height": 0.22
+      }
+    },
+    {
+      "id": "s3",
+      "imagePath": "denial-letter.png",
+      "narrationText": "Step one: find the exact reason, not the summary. Insurers deny for one narrow line — \"not medically necessary,\" \"pre-existing condition,\" \"missing documentation.\" Your appeal has to answer that exact sentence, not the general idea of your claim.",
+      "zoomFrom": {
+        "x": 0.1,
+        "y": 0.36,
+        "width": 0.75,
+        "height": 0.06
+      },
+      "zoomTo": {
+        "x": 0.1,
+        "y": 0.36,
+        "width": 0.75,
+        "height": 0.06
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "not medically necessary"
+          },
+          "fromFraction": 0.25,
+          "toFraction": 0.55,
+          "x": 0.439,
+          "y": 0.3805,
+          "width": 0.2298,
+          "height": 0.0191
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "durationSecs": 4,
+      "narrationText": "Step two: know your deadline today, not later. For most employer health and disability plans, federal law gives you one hundred eighty days to file an internal appeal. Some plans set a shorter window — it's written right on your denial notice.",
+      "visual": {
+        "kind": "counter",
+        "value": 180,
+        "suffix": " DAYS",
+        "label": "TO FILE A FEDERAL APPEAL — EMPLOYER HEALTH & DISABILITY PLANS (29 CFR § 2560.503-1)"
+      }
+    },
+    {
+      "id": "s5",
+      "durationSecs": 4,
+      "narrationText": "Step three: request your claim file. It's free. You have the legal right to everything the insurer used to deny you — reviewer notes, internal guidelines, who actually reviewed your claim. Almost nobody asks.",
+      "visual": {
+        "kind": "pointerCard",
+        "text": "Your claim file is FREE to request.\nReviewer notes. Internal guidelines.\nWho actually reviewed your claim."
+      }
+    },
+    {
+      "id": "s6",
+      "durationSecs": 4,
+      "narrationText": "Step four: match their language, sentence for sentence. If they said \"not medically necessary,\" get your doctor to address medical necessity directly. If they said \"wear and tear,\" get an inspection addressing sudden versus gradual damage.",
+      "visual": {
+        "kind": "pointerCard",
+        "text": "Match their exact words.\n\"Not medically necessary\" → medical necessity.\n\"Wear and tear\" → sudden vs. gradual damage."
+      }
+    },
+    {
+      "id": "s7a",
+      "imagePath": "naic-letter.png",
+      "narrationText": "Step five: put it in writing, always — phone calls disappear. And here's the letter nobody shows you: this is the National Association of Insurance Commissioners' own published template.",
+      "zoomFrom": {
+        "x": 0.1,
+        "y": 0.24,
+        "width": 0.8,
+        "height": 0.1
+      },
+      "zoomTo": {
+        "x": 0.1,
+        "y": 0.24,
+        "width": 0.8,
+        "height": 0.1
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "I am writing to request a review of your denial"
+          },
+          "fromFraction": 0.5,
+          "toFraction": 1.0,
+          "x": 0.1155,
+          "y": 0.2657,
+          "width": 0.5111,
+          "height": 0.0207
+        }
+      ]
+    },
+    {
+      "id": "s7b",
+      "imagePath": "naic-letter.png",
+      "narrationText": "Not a law firm's marketing page. The actual regulator's format.",
+      "zoomFrom": {
+        "x": 0.1,
+        "y": 0.24,
+        "width": 0.8,
+        "height": 0.14
+      },
+      "zoomTo": {
+        "x": 0.1,
+        "y": 0.24,
+        "width": 0.8,
+        "height": 0.14
+      },
+      "highlights": [
+        {
+          "find": {
+            "text": "The reason for denial was listed as"
+          },
+          "fromFraction": 0.0,
+          "toFraction": 0.4,
+          "x": 0.1155,
+          "y": 0.3478,
+          "width": 0.3817,
+          "height": 0.0207
+        }
+      ]
+    },
+    {
+      "id": "s8a",
+      "durationSecs": 4,
+      "narrationText": "Your deadline depends on where you live. In California, health insurers must decide your internal appeal within thirty days — five for urgent cases — and you have the right to an independent medical review if that fails.",
+      "visual": {
+        "kind": "counter",
+        "value": 30,
+        "suffix": " DAYS",
+        "label": "CALIFORNIA INTERNAL APPEAL DECISION — PLUS THE RIGHT TO INDEPENDENT MEDICAL REVIEW"
+      }
+    },
+    {
+      "id": "s8b",
+      "durationSecs": 4,
+      "narrationText": "In Florida, property insurers must pay or deny your claim within sixty days, and you have one year from the date of loss to file. Both of those Florida rules date to 2022 reform legislation — still current law, still catch people off guard.",
+      "visual": {
+        "kind": "counter",
+        "value": 60,
+        "suffix": " DAYS",
+        "label": "FLORIDA PAY-OR-DENY DEADLINE — 1 YEAR TO FILE FROM DATE OF LOSS (2022 REFORM LAW)"
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "caseId": "mamboleo-pacific-life-settlement-reel",
+  "title": "The $58 Million Retirement Policy — Reel Cut",
+  "description": "A $58.3 million class-action settlement against Pacific Life Insurance Co. — a real policyholder paid $17,000 into a retirement policy and was left with $2,848.",
+  "sourceCitation": "Mamboleo v. Pacific Life Insurance Co., No. 30-2021-01208045-CU-BT-CXC, Orange County Superior Court. Figures sourced directly from the Class Action Complaint (filed 6/29/2021) and the Class Action Settlement Agreement, both public court records. This video uses AI-generated narration. Educational content only, not financial or legal advice.",
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "annual-statements.png",
+      "narrationText": "She paid seventeen thousand dollars into a retirement policy. Two years later, she had two thousand, eight hundred and forty-eight dollars left. This is her actual policy file.",
+      "zoomTo": { "x": 0.05, "y": 0.50, "width": 0.90, "height": 0.36 },
+      "highlight": { "x": 0.1818, "y": 0.8182, "width": 0.0829, "height": 0.0310, "fromFraction": 0.55, "toFraction": 1.0 }
+    },
+    {
+      "id": "s3",
+      "imagePath": "illustration-comparison.png",
+      "narrationText": "When she signed up for a Pacific Life \"PDX\" policy in 2019, this is the illustration she was shown. By year twenty, at an assumed rate of seven-point-one percent, her policy was projected to be worth four hundred eighteen thousand, one hundred forty-one dollars.",
+      "zoomTo": { "x": 0.06, "y": 0.066, "width": 0.88, "height": 0.157 },
+      "highlight": { "x": 0.2380, "y": 0.1475, "width": 0.0856, "height": 0.0215, "fromFraction": 0.25, "toFraction": 0.65 }
+    },
+    {
+      "id": "s5a",
+      "imagePath": "annual-statements.png",
+      "narrationText": "Here's her actual account history. Year one: she paid nine thousand, two hundred dollars in premiums. Pacific Life deducted seven thousand, six hundred fifty-three dollars in policy charges. She was left with one thousand, five hundred fifty dollars.",
+      "zoomTo": { "x": 0.05, "y": 0.5165, "width": 0.90, "height": 0.170 },
+      "highlight": { "x": 0.1604, "y": 0.6446, "width": 0.0856, "height": 0.0248, "fromFraction": 0.65, "toFraction": 1.0 }
+    },
+    {
+      "id": "s5b",
+      "imagePath": "annual-statements.png",
+      "narrationText": "Year two: she paid another seven thousand, eight hundred dollars. Pacific Life deducted six thousand, six hundred eight dollars. Her account value: two thousand, eight hundred forty-eight dollars.",
+      "zoomTo": { "x": 0.05, "y": 0.6694, "width": 0.90, "height": 0.182 },
+      "highlight": { "x": 0.1818, "y": 0.8182, "width": 0.0829, "height": 0.0310, "fromFraction": 0.55, "toFraction": 1.0 }
+    },
+    {
+      "id": "s5c",
+      "imagePath": "annual-statements.png",
+      "narrationText": "Seventeen thousand dollars paid in. Twenty-eight hundred dollars left. That's not a bad year in the market. That's the policy working exactly as designed.",
+      "zoomTo": { "x": 0.05, "y": 0.50, "width": 0.90, "height": 0.36 }
+    },
+    {
+      "id": "s8",
+      "imagePath": "illustration-comparison.png",
+      "narrationText": "If you own a Pacific Life PDX policy bought in California between 2016 and 2019 — not PDX 2 — check your mail or email for a settlement notice. Contact Kroll Settlement Administration if you're not sure.",
+      "zoomTo": { "x": 0, "y": 0, "width": 1, "height": 1 }
+    }
+  ]
+}

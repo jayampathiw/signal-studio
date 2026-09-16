@@ -1,0 +1,102 @@
+[
+  {
+    "word": "Up",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "to",
+    "start": 0.56,
+    "end": 0.78
+  },
+  {
+    "word": "twenty",
+    "start": 0.78,
+    "end": 1.06
+  },
+  {
+    "word": "-five",
+    "start": 1.06,
+    "end": 1.32
+  },
+  {
+    "word": "million",
+    "start": 1.32,
+    "end": 1.64
+  },
+  {
+    "word": "goes",
+    "start": 1.64,
+    "end": 2.04
+  },
+  {
+    "word": "to",
+    "start": 2.04,
+    "end": 2.32
+  },
+  {
+    "word": "free",
+    "start": 2.32,
+    "end": 2.5
+  },
+  {
+    "word": "term",
+    "start": 2.5,
+    "end": 2.8
+  },
+  {
+    "word": "life",
+    "start": 2.8,
+    "end": 3.14
+  },
+  {
+    "word": "insurance",
+    "start": 3.14,
+    "end": 3.56
+  },
+  {
+    "word": "for",
+    "start": 3.56,
+    "end": 4.18
+  },
+  {
+    "word": "anyone",
+    "start": 4.18,
+    "end": 4.54
+  },
+  {
+    "word": "whose",
+    "start": 4.54,
+    "end": 4.88
+  },
+  {
+    "word": "policy",
+    "start": 4.88,
+    "end": 5.3
+  },
+  {
+    "word": "already",
+    "start": 5.3,
+    "end": 5.76
+  },
+  {
+    "word": "lapsed",
+    "start": 5.76,
+    "end": 6.48
+  },
+  {
+    "word": "or",
+    "start": 6.48,
+    "end": 6.64
+  },
+  {
+    "word": "was",
+    "start": 6.64,
+    "end": 6.82
+  },
+  {
+    "word": "surrendered.",
+    "start": 6.82,
+    "end": 7.14
+  }
+]

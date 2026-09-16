@@ -1,0 +1,82 @@
+[
+  {
+    "word": "Case",
+    "start": 0,
+    "end": 0.68
+  },
+  {
+    "word": "file",
+    "start": 0.68,
+    "end": 1.08
+  },
+  {
+    "word": "zero",
+    "start": 1.08,
+    "end": 1.36
+  },
+  {
+    "word": "-zero",
+    "start": 1.36,
+    "end": 1.64
+  },
+  {
+    "word": "-four.",
+    "start": 1.64,
+    "end": 2.18
+  },
+  {
+    "word": "UnitedHealth",
+    "start": 2.36,
+    "end": 2.98
+  },
+  {
+    "word": "Group.",
+    "start": 2.98,
+    "end": 3.32
+  },
+  {
+    "word": "A",
+    "start": 3.76,
+    "end": 3.88
+  },
+  {
+    "word": "real",
+    "start": 3.88,
+    "end": 4.04
+  },
+  {
+    "word": "federal",
+    "start": 4.04,
+    "end": 4.48
+  },
+  {
+    "word": "lawsuit.",
+    "start": 4.48,
+    "end": 5
+  },
+  {
+    "word": "Filed",
+    "start": 5.26,
+    "end": 5.52
+  },
+  {
+    "word": "by",
+    "start": 5.52,
+    "end": 5.78
+  },
+  {
+    "word": "a",
+    "start": 5.78,
+    "end": 5.9
+  },
+  {
+    "word": "real",
+    "start": 5.9,
+    "end": 6.14
+  },
+  {
+    "word": "family.",
+    "start": 6.14,
+    "end": 6.56
+  }
+]

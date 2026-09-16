@@ -1,0 +1,52 @@
+[
+  {
+    "word": "Set",
+    "start": 0,
+    "end": 0.54
+  },
+  {
+    "word": "up",
+    "start": 0.54,
+    "end": 0.76
+  },
+  {
+    "word": "your",
+    "start": 0.76,
+    "end": 0.84
+  },
+  {
+    "word": "family's",
+    "start": 0.84,
+    "end": 1.28
+  },
+  {
+    "word": "phrase",
+    "start": 1.28,
+    "end": 1.46
+  },
+  {
+    "word": "today,",
+    "start": 1.46,
+    "end": 2.02
+  },
+  {
+    "word": "before",
+    "start": 2.26,
+    "end": 2.4
+  },
+  {
+    "word": "you",
+    "start": 2.4,
+    "end": 2.64
+  },
+  {
+    "word": "need",
+    "start": 2.64,
+    "end": 2.8
+  },
+  {
+    "word": "it.",
+    "start": 2.8,
+    "end": 3.24
+  }
+]

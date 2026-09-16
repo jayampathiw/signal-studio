@@ -1,0 +1,132 @@
+[
+  {
+    "word": "Case",
+    "start": 0,
+    "end": 0.72
+  },
+  {
+    "word": "file",
+    "start": 0.72,
+    "end": 1.06
+  },
+  {
+    "word": "zero",
+    "start": 1.06,
+    "end": 1.4
+  },
+  {
+    "word": "-zero",
+    "start": 1.4,
+    "end": 1.72
+  },
+  {
+    "word": "-five.",
+    "start": 1.72,
+    "end": 2.2
+  },
+  {
+    "word": "Not",
+    "start": 2.6,
+    "end": 2.72
+  },
+  {
+    "word": "one",
+    "start": 2.72,
+    "end": 3
+  },
+  {
+    "word": "lawsuit",
+    "start": 3,
+    "end": 3.34
+  },
+  {
+    "word": "this",
+    "start": 3.34,
+    "end": 3.64
+  },
+  {
+    "word": "time,",
+    "start": 3.64,
+    "end": 4.06
+  },
+  {
+    "word": "a",
+    "start": 4.46,
+    "end": 4.54
+  },
+  {
+    "word": "pattern",
+    "start": 4.54,
+    "end": 4.84
+  },
+  {
+    "word": "that's",
+    "start": 4.84,
+    "end": 5.24
+  },
+  {
+    "word": "cost",
+    "start": 5.24,
+    "end": 5.5
+  },
+  {
+    "word": "insurers",
+    "start": 5.5,
+    "end": 6.08
+  },
+  {
+    "word": "over",
+    "start": 6.08,
+    "end": 6.56
+  },
+  {
+    "word": "a",
+    "start": 6.56,
+    "end": 6.56
+  },
+  {
+    "word": "hundred",
+    "start": 6.56,
+    "end": 6.88
+  },
+  {
+    "word": "million",
+    "start": 6.88,
+    "end": 7.32
+  },
+  {
+    "word": "dollars",
+    "start": 7.32,
+    "end": 7.76
+  },
+  {
+    "word": "in",
+    "start": 7.76,
+    "end": 8.06
+  },
+  {
+    "word": "settlements,",
+    "start": 8.06,
+    "end": 8.52
+  },
+  {
+    "word": "and",
+    "start": 9,
+    "end": 9.12
+  },
+  {
+    "word": "it's",
+    "start": 9.12,
+    "end": 9.28
+  },
+  {
+    "word": "still",
+    "start": 9.28,
+    "end": 9.52
+  },
+  {
+    "word": "happening.",
+    "start": 9.52,
+    "end": 9.82
+  }
+]

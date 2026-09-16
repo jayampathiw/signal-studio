@@ -1,0 +1,147 @@
+[
+  {
+    "word": "Year",
+    "start": 0,
+    "end": 0.64
+  },
+  {
+    "word": "two,",
+    "start": 0.64,
+    "end": 1.02
+  },
+  {
+    "word": "she",
+    "start": 1.34,
+    "end": 1.44
+  },
+  {
+    "word": "paid",
+    "start": 1.44,
+    "end": 1.66
+  },
+  {
+    "word": "another",
+    "start": 1.66,
+    "end": 2
+  },
+  {
+    "word": "seven",
+    "start": 2,
+    "end": 2.36
+  },
+  {
+    "word": "thousand,",
+    "start": 2.36,
+    "end": 2.88
+  },
+  {
+    "word": "eight",
+    "start": 2.98,
+    "end": 3.14
+  },
+  {
+    "word": "hundred",
+    "start": 3.14,
+    "end": 3.5
+  },
+  {
+    "word": "dollars.",
+    "start": 3.5,
+    "end": 4.1
+  },
+  {
+    "word": "Pacific",
+    "start": 4.62,
+    "end": 4.84
+  },
+  {
+    "word": "Life",
+    "start": 4.84,
+    "end": 5.24
+  },
+  {
+    "word": "deducted",
+    "start": 5.24,
+    "end": 5.8
+  },
+  {
+    "word": "six",
+    "start": 5.8,
+    "end": 5.98
+  },
+  {
+    "word": "thousand,",
+    "start": 5.98,
+    "end": 6.5
+  },
+  {
+    "word": "six",
+    "start": 6.64,
+    "end": 6.84
+  },
+  {
+    "word": "hundred",
+    "start": 6.84,
+    "end": 7.18
+  },
+  {
+    "word": "eight",
+    "start": 7.18,
+    "end": 7.34
+  },
+  {
+    "word": "dollars.",
+    "start": 7.34,
+    "end": 7.86
+  },
+  {
+    "word": "Her",
+    "start": 8.36,
+    "end": 8.46
+  },
+  {
+    "word": "account",
+    "start": 8.46,
+    "end": 8.78
+  },
+  {
+    "word": "value,",
+    "start": 8.78,
+    "end": 9.3
+  },
+  {
+    "word": "two",
+    "start": 9.6,
+    "end": 9.86
+  },
+  {
+    "word": "thousand,",
+    "start": 9.86,
+    "end": 10.3
+  },
+  {
+    "word": "eight",
+    "start": 10.58,
+    "end": 10.68
+  },
+  {
+    "word": "hundred",
+    "start": 10.68,
+    "end": 10.94
+  },
+  {
+    "word": "forty",
+    "start": 10.94,
+    "end": 11.28
+  },
+  {
+    "word": "-eight",
+    "start": 11.28,
+    "end": 11.48
+  },
+  {
+    "word": "dollars.",
+    "start": 11.48,
+    "end": 11.92
+  }
+]

@@ -1,0 +1,112 @@
+[
+  {
+    "word": "Right",
+    "start": 0,
+    "end": 0.62
+  },
+  {
+    "word": "here,",
+    "start": 0.62,
+    "end": 1
+  },
+  {
+    "word": "the",
+    "start": 1.12,
+    "end": 1.3
+  },
+  {
+    "word": "exact",
+    "start": 1.3,
+    "end": 1.58
+  },
+  {
+    "word": "number.",
+    "start": 1.58,
+    "end": 2.06
+  },
+  {
+    "word": "This",
+    "start": 2.48,
+    "end": 2.66
+  },
+  {
+    "word": "is",
+    "start": 2.66,
+    "end": 2.9
+  },
+  {
+    "word": "what",
+    "start": 2.9,
+    "end": 3.02
+  },
+  {
+    "word": "a",
+    "start": 3.02,
+    "end": 3.24
+  },
+  {
+    "word": "policyholder",
+    "start": 3.24,
+    "end": 3.9
+  },
+  {
+    "word": "actually",
+    "start": 3.9,
+    "end": 4.32
+  },
+  {
+    "word": "recovered,",
+    "start": 4.32,
+    "end": 4.84
+  },
+  {
+    "word": "and",
+    "start": 5.34,
+    "end": 5.44
+  },
+  {
+    "word": "it's",
+    "start": 5.44,
+    "end": 5.62
+  },
+  {
+    "word": "written",
+    "start": 5.62,
+    "end": 5.82
+  },
+  {
+    "word": "in",
+    "start": 5.82,
+    "end": 6.1
+  },
+  {
+    "word": "plain",
+    "start": 6.1,
+    "end": 6.38
+  },
+  {
+    "word": "language",
+    "start": 6.38,
+    "end": 6.8
+  },
+  {
+    "word": "most",
+    "start": 6.8,
+    "end": 7.08
+  },
+  {
+    "word": "people",
+    "start": 7.08,
+    "end": 7.48
+  },
+  {
+    "word": "never",
+    "start": 7.48,
+    "end": 7.78
+  },
+  {
+    "word": "read.",
+    "start": 7.78,
+    "end": 8.1
+  }
+]

@@ -1,0 +1,352 @@
+[
+  {
+    "word": "Pacific",
+    "start": 0,
+    "end": 0.7
+  },
+  {
+    "word": "Life's",
+    "start": 0.7,
+    "end": 1.22
+  },
+  {
+    "word": "own",
+    "start": 1.22,
+    "end": 1.38
+  },
+  {
+    "word": "press",
+    "start": 1.38,
+    "end": 1.62
+  },
+  {
+    "word": "release",
+    "start": 1.62,
+    "end": 2.02
+  },
+  {
+    "word": "bragged",
+    "start": 2.02,
+    "end": 2.42
+  },
+  {
+    "word": "about",
+    "start": 2.42,
+    "end": 2.7
+  },
+  {
+    "word": "it.",
+    "start": 2.7,
+    "end": 3.08
+  },
+  {
+    "word": "The",
+    "start": 3.38,
+    "end": 3.4
+  },
+  {
+    "word": "first",
+    "start": 3.4,
+    "end": 3.66
+  },
+  {
+    "word": "two",
+    "start": 3.66,
+    "end": 3.88
+  },
+  {
+    "word": "Performance",
+    "start": 3.88,
+    "end": 4.32
+  },
+  {
+    "word": "Factors",
+    "start": 4.32,
+    "end": 4.82
+  },
+  {
+    "word": "it",
+    "start": 4.82,
+    "end": 5
+  },
+  {
+    "word": "ever",
+    "start": 5,
+    "end": 5.28
+  },
+  {
+    "word": "calculated",
+    "start": 5.28,
+    "end": 5.68
+  },
+  {
+    "word": "were",
+    "start": 5.68,
+    "end": 6.16
+  },
+  {
+    "word": "two",
+    "start": 6.16,
+    "end": 6.4
+  },
+  {
+    "word": "-point",
+    "start": 6.4,
+    "end": 6.64
+  },
+  {
+    "word": "-four",
+    "start": 6.64,
+    "end": 6.86
+  },
+  {
+    "word": "-six",
+    "start": 6.86,
+    "end": 7.08
+  },
+  {
+    "word": "and",
+    "start": 7.08,
+    "end": 7.3
+  },
+  {
+    "word": "four",
+    "start": 7.3,
+    "end": 7.56
+  },
+  {
+    "word": "-point",
+    "start": 7.56,
+    "end": 7.76
+  },
+  {
+    "word": "-one",
+    "start": 7.76,
+    "end": 8
+  },
+  {
+    "word": "-eight.",
+    "start": 8,
+    "end": 8.38
+  },
+  {
+    "word": "At",
+    "start": 8.58,
+    "end": 8.76
+  },
+  {
+    "word": "the",
+    "start": 8.76,
+    "end": 8.84
+  },
+  {
+    "word": "company's",
+    "start": 8.84,
+    "end": 9.4
+  },
+  {
+    "word": "advertised",
+    "start": 9.4,
+    "end": 9.74
+  },
+  {
+    "word": "ten",
+    "start": 9.74,
+    "end": 10.26
+  },
+  {
+    "word": "percent",
+    "start": 10.26,
+    "end": 10.58
+  },
+  {
+    "word": "cap",
+    "start": 10.58,
+    "end": 10.88
+  },
+  {
+    "word": "rate,",
+    "start": 10.88,
+    "end": 11.18
+  },
+  {
+    "word": "that",
+    "start": 11.48,
+    "end": 11.58
+  },
+  {
+    "word": "meant",
+    "start": 11.58,
+    "end": 11.78
+  },
+  {
+    "word": "illustrations",
+    "start": 11.78,
+    "end": 12.3
+  },
+  {
+    "word": "could",
+    "start": 12.3,
+    "end": 12.74
+  },
+  {
+    "word": "show",
+    "start": 12.74,
+    "end": 12.98
+  },
+  {
+    "word": "effective",
+    "start": 12.98,
+    "end": 13.38
+  },
+  {
+    "word": "returns",
+    "start": 13.38,
+    "end": 13.92
+  },
+  {
+    "word": "as",
+    "start": 13.92,
+    "end": 14.2
+  },
+  {
+    "word": "high",
+    "start": 14.2,
+    "end": 14.46
+  },
+  {
+    "word": "as",
+    "start": 14.46,
+    "end": 14.7
+  },
+  {
+    "word": "twenty",
+    "start": 14.7,
+    "end": 14.98
+  },
+  {
+    "word": "-four",
+    "start": 14.98,
+    "end": 15.16
+  },
+  {
+    "word": "point",
+    "start": 15.16,
+    "end": 15.48
+  },
+  {
+    "word": "six",
+    "start": 15.48,
+    "end": 15.7
+  },
+  {
+    "word": "percent,",
+    "start": 15.7,
+    "end": 16.3
+  },
+  {
+    "word": "or",
+    "start": 16.58,
+    "end": 16.72
+  },
+  {
+    "word": "even",
+    "start": 16.72,
+    "end": 17.06
+  },
+  {
+    "word": "forty",
+    "start": 17.06,
+    "end": 17.34
+  },
+  {
+    "word": "-one",
+    "start": 17.34,
+    "end": 17.56
+  },
+  {
+    "word": "point",
+    "start": 17.56,
+    "end": 17.84
+  },
+  {
+    "word": "eight",
+    "start": 17.84,
+    "end": 18.04
+  },
+  {
+    "word": "percent.",
+    "start": 18.04,
+    "end": 18.56
+  },
+  {
+    "word": "The",
+    "start": 19.02,
+    "end": 19.26
+  },
+  {
+    "word": "only",
+    "start": 19.26,
+    "end": 19.46
+  },
+  {
+    "word": "number",
+    "start": 19.46,
+    "end": 19.72
+  },
+  {
+    "word": "Pacific",
+    "start": 19.72,
+    "end": 20.12
+  },
+  {
+    "word": "Life",
+    "start": 20.12,
+    "end": 20.46
+  },
+  {
+    "word": "actually",
+    "start": 20.46,
+    "end": 20.92
+  },
+  {
+    "word": "guaranteed.",
+    "start": 20.92,
+    "end": 21.46
+  },
+  {
+    "word": "One",
+    "start": 22.02,
+    "end": 22.26
+  },
+  {
+    "word": "-point",
+    "start": 22.26,
+    "end": 22.46
+  },
+  {
+    "word": "-zero.",
+    "start": 22.46,
+    "end": 22.82
+  },
+  {
+    "word": "No",
+    "start": 23.26,
+    "end": 23.44
+  },
+  {
+    "word": "multiplier",
+    "start": 23.44,
+    "end": 23.98
+  },
+  {
+    "word": "at",
+    "start": 23.98,
+    "end": 24.32
+  },
+  {
+    "word": "all.",
+    "start": 24.32,
+    "end": 24.56
+  }
+]

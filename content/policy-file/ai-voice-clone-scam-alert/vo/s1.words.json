@@ -1,0 +1,77 @@
+[
+  {
+    "word": "Your",
+    "start": 0,
+    "end": 0.56
+  },
+  {
+    "word": "grandchild's",
+    "start": 0.56,
+    "end": 1.3
+  },
+  {
+    "word": "voice",
+    "start": 1.3,
+    "end": 1.52
+  },
+  {
+    "word": "can",
+    "start": 1.52,
+    "end": 1.68
+  },
+  {
+    "word": "be",
+    "start": 1.68,
+    "end": 1.9
+  },
+  {
+    "word": "cloned",
+    "start": 1.9,
+    "end": 2.18
+  },
+  {
+    "word": "in",
+    "start": 2.18,
+    "end": 2.4
+  },
+  {
+    "word": "three",
+    "start": 2.4,
+    "end": 2.62
+  },
+  {
+    "word": "seconds.",
+    "start": 2.62,
+    "end": 3.1
+  },
+  {
+    "word": "Here's",
+    "start": 3.52,
+    "end": 3.72
+  },
+  {
+    "word": "how",
+    "start": 3.72,
+    "end": 3.88
+  },
+  {
+    "word": "the",
+    "start": 3.88,
+    "end": 4.08
+  },
+  {
+    "word": "scam",
+    "start": 4.08,
+    "end": 4.4
+  },
+  {
+    "word": "actually",
+    "start": 4.4,
+    "end": 4.88
+  },
+  {
+    "word": "works.",
+    "start": 4.88,
+    "end": 5.14
+  }
+]

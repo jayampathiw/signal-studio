@@ -1,0 +1,57 @@
+{
+  "caseId": "ai-voice-clone-scam-alert",
+  "channelKey": "policy-file/data-viz/EN",
+  "title": "The AI Voice Clone Scam Targeting Grandparents",
+  "description": "AI voice-cloning tools can now recreate a family member's voice from a few seconds of audio. The FBI's 2025 Internet Crime Report tracked AI-enabled fraud as its own category for the first time — $893 million in losses, 40% of it hitting people over 60. Here's the one thing that defeats the scam.",
+  "sourceCitation": "Source: FBI 2025 Internet Crime Report (IC3), released April 2026. Educational content only — not legal or financial advice. AI-generated narration. Stock footage via Pexels.",
+  "scenes": [
+    {
+      "id": "s1",
+      "imagePath": "phone-elderly.mp4",
+      "captionText": "Your grandchild's voice can be cloned in 3 seconds.",
+      "narrationText": "Your grandchild's voice can be cloned in three seconds. Here's how the scam actually works."
+    },
+    {
+      "id": "s2",
+      "captionText": "$893M in AI-enabled fraud losses in 2025 (FBI).",
+      "narrationText": "The FBI's 2025 Internet Crime Report tracked AI-enabled fraud as its own category for the first time — nearly nine hundred million dollars in losses in a single year, and forty percent of that hit people over sixty.",
+      "visual": { "kind": "counter", "value": 893, "prefix": "$", "suffix": "M", "label": "in AI-enabled fraud losses in 2025 — FBI IC3 Report" }
+    },
+    {
+      "id": "s3",
+      "imagePath": "smartphone-closeup.mp4",
+      "waveformOverlay": true,
+      "captionText": "Built from a few seconds of audio.",
+      "narrationText": "The scam call is built from just a few seconds of audio, often pulled from a social media video, run through free voice-cloning tools."
+    },
+    {
+      "id": "s4",
+      "captionText": "One phrase they can't fake.",
+      "narrationText": "The one thing that defeats it: a family verification phrase the caller can't know. Something you agree on ahead of time, not something posted on social media.",
+      "visual": {
+        "kind": "speechBubbles",
+        "leftLabel": "CALLER SAYS",
+        "leftText": "\"It's me... I need help.\"",
+        "rightLabel": "YOUR FAMILY PHRASE",
+        "rightText": "\"Blue umbrella\"",
+        "rightHighlighted": true,
+        "matched": false
+      }
+    },
+    {
+      "id": "s5",
+      "captionText": "Pick a family verification phrase today.",
+      "narrationText": "Set up your family's phrase today, before you need it.",
+      "holdExtraSecs": 1.5,
+      "visual": {
+        "kind": "speechBubbles",
+        "leftLabel": "CALLER SAYS",
+        "leftText": "\"It's me... I need help.\"",
+        "rightLabel": "YOUR FAMILY PHRASE",
+        "rightText": "\"Blue umbrella\"",
+        "rightHighlighted": true,
+        "matched": true
+      }
+    }
+  ]
+}
