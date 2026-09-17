@@ -9,6 +9,6 @@
     "./timeline": "./timeline.js"
   },
   "dependencies": {
-    "@signal-studio/types": "*"
+    "@signal-studio/types": "workspace:*"
   }
 }

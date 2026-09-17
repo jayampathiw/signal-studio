@@ -14,8 +14,8 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@signal-studio/render-core": "*",
-    "@signal-studio/types": "*"
+    "@signal-studio/render-core": "workspace:*",
+    "@signal-studio/types": "workspace:*"
   },
   "scripts": {
     "studio": "npx remotion studio src/index.ts"
