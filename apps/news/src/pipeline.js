@@ -96,4 +96,11 @@ async function run() {
   console.log('\n✅ Pipeline complete:', new Date().toISOString());
 }
 
-run();
+run().then(() => {
+  // @supabase/supabase-js's client leaves an open handle (its internal
+  // Realtime keep-alive) that Node never naturally clears — without this the
+  // process hangs indefinitely after finishing real work (confirmed: a CI
+  // run sat idle from "Pipeline complete" until its job timeout killed it,
+  // 14 minutes later, having done nothing in between).
+  process.exit(0);
+});

@@ -71,7 +71,12 @@ export function detectAndAnnotateClusters(articles) {
   }
 
   for (const [, members] of clusters) {
-    const clusterId = articles[members[0]].title?.slice(0, 40) ?? `cluster-${members[0]}`;
+    // cluster_id is a bigint DB column (apps/dashboard's own type declares
+    // `cluster_id: number | null`) — must stay numeric. members[0] (the
+    // first member's index in this batch) is already a stable-enough id for
+    // grouping same-run duplicates; a title-derived string here fails every
+    // insert with "invalid input syntax for type bigint".
+    const clusterId = members[0];
     const clusterSize = members.length;
     for (const idx of members) {
       articles[idx].cluster_id = clusterId;
