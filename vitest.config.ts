@@ -7,10 +7,13 @@ import { defineConfig } from 'vitest/config';
 // the root `test` script; vitest would "pass" those files with 0 tests
 // found (they don't call vitest's own test()), which is silent and
 // misleading, so they're excluded here rather than double-run.
+// scripts/golden/*.test.ts (P0.1) follows the same node:test convention —
+// excluded for the same reason and run explicitly by the root `test` script
+// instead (`node --experimental-strip-types --test scripts/golden/*.test.ts`).
 export default defineConfig({
   test: {
     include: ['{apps,scripts}/**/*.{test,spec}.{js,ts}'],
-    exclude: ['**/node_modules/**', 'apps/dashboard/**', 'projects/**'],
+    exclude: ['**/node_modules/**', 'apps/dashboard/**', 'projects/**', 'scripts/golden/**'],
     environment: 'node',
     // No package in vitest's own scope has a test yet (dashboard uses
     // ng test; everything else uses node:test) — becomes real once

@@ -81,3 +81,9 @@ projects/**/qa/
 projects/**/stills/
 projects/**/refs/
 projects/assemblex-factory/pilot/public/staged/
+
+# P0.1 golden references — the .mp4s are real production-adjacent media (same
+# reason content/ moved out in P0.4); only golden.json is committed. R2 isn't
+# configured yet (see docs/refactor/refactor-plan.md P0.1), so the .mp4s stay
+# local-only for now instead of being uploaded to golden/ in R2.
+golden/**/*.mp4

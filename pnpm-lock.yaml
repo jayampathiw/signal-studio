@@ -29,6 +29,9 @@ importers:
       prettier:
         specifier: ^3.9.7
         version: 3.9.7
+      sharp:
+        specifier: ^0.33.5
+        version: 0.33.5
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -279,6 +282,9 @@ importers:
 
   packages/render/remotion:
     dependencies:
+      '@remotion/bundler':
+        specifier: 4.0.525
+        version: 4.0.525(@swc/helpers@0.5.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@signal-studio/render-core':
         specifier: workspace:*
         version: link:../core
@@ -7362,7 +7368,7 @@ snapshots:
       '@remotion/timeline-utils': 4.0.525(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@rspack/core': 1.7.11(@swc/helpers@0.5.23)
       '@rspack/plugin-react-refresh': 1.6.1(react-refresh@0.18.0)
-      css-loader: 7.1.4(@rspack/core@1.7.11)(webpack@5.105.0(esbuild@0.28.1))
+      css-loader: 7.1.4(@rspack/core@1.7.11(@swc/helpers@0.5.23))(webpack@5.105.0(esbuild@0.28.1))
       esbuild: 0.28.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -8847,7 +8853,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  css-loader@7.1.4(@rspack/core@1.7.11)(webpack@5.105.0(esbuild@0.28.1)):
+  css-loader@7.1.4(@rspack/core@1.7.11(@swc/helpers@0.5.23))(webpack@5.105.0(esbuild@0.28.1)):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.28)
       postcss: 8.5.28
@@ -9681,7 +9687,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.20.3
+      '@types/node': 26.6.1
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
