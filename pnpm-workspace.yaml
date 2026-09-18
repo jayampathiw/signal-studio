@@ -1,5 +1,4 @@
 packages:
-  - 'apps/news'
   - 'apps/video'
   - 'apps/dashboard'
   - 'projects/assemblex-factory/pilot'

@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "apps/news",
     "apps/video",
     "apps/dashboard",
     "projects/assemblex-factory/pilot",
@@ -23,11 +22,6 @@
     "packages/providers"
   ],
   "scripts": {
-    "news": "node apps/news/src/pipeline.js",
-    "recompute-scores": "node apps/news/src/scripts/recompute-scores.js",
-    "scrape-metrics": "node apps/news/src/scrapers/post-metrics.js",
-    "google-trends": "node apps/news/src/scrapers/google-trends.js",
-    "trending-pages": "node apps/news/src/scrapers/trending-pages.js",
     "video": "node apps/video/src/pipeline.js",
     "evals": "node evals/run.js",
     "bootstrap": "node scripts/bootstrap.js",

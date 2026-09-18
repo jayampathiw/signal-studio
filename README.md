@@ -4,8 +4,9 @@ Multi-channel AI content publishing platform. Produces news articles (text + edi
 
 ## Structure
 
+apps/news/ moved to the private signal-studio-workspace repo (P0.5 of the engine refactor); it's no longer here.
+
 ```
-apps/news/          News article pipeline — RSS/NewsAPI → Claude captions → fal.ai images → Facebook
 apps/video/         Video pipeline — stock/AI-image/documentary → FFmpeg or Remotion → all platforms
 apps/dashboard/     Angular review dashboard (Vercel)
 

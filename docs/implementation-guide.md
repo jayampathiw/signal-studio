@@ -2,6 +2,7 @@
 
 > **Audience:** Any developer joining or working on Signal Studio.
 > **Last analysed:** 2026-06-26 against `main`.
+> **Stale as of 2026-09-18 (P0.5):** `apps/news` moved to the private `signal-studio-workspace` repo. Every `apps/news/...` path below refers to that repo now, not this one. See `docs/refactor/refactor-plan.md`'s P0.5 entry for the real current architecture (this doc hasn't been re-walked section by section for it).
 > **Companion docs:** `docs/PROJECT-STATUS.md` (progress tracker), `docs/cloud-automation-workflow.md`, `docs/video-generation-flow.md`, `docs/higgsfield-models.md`, `CLAUDE.md`. Index: `docs/README.md`.
 
 This guide is the single onboarding reference. It explains _what the system does_, _how the pieces fit_, _where everything lives_, and _how to run, extend, and debug it_.

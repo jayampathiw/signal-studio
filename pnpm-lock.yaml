@@ -118,39 +118,6 @@ importers:
         specifier: ^4.0.8
         version: 4.1.11(@types/node@26.6.1)(esbuild@0.28.1)(jiti@2.7.0)(jsdom@28.1.0)(sass@1.97.3)(terser@5.51.2)
 
-  apps/news:
-    dependencies:
-      '@anthropic-ai/sdk':
-        specifier: ^0.30.0
-        version: 0.30.1
-      '@signal-studio/ai':
-        specifier: workspace:*
-        version: link:../../packages/ai
-      '@signal-studio/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@signal-studio/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-      '@signal-studio/publishers':
-        specifier: workspace:*
-        version: link:../../packages/publishers
-      '@signal-studio/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      axios:
-        specifier: ^1.7.0
-        version: 1.20.0
-      form-data:
-        specifier: ^4.0.0
-        version: 4.0.6
-      rss-parser:
-        specifier: ^3.13.0
-        version: 3.13.0
-      sharp:
-        specifier: ^0.33.0
-        version: 0.33.5
-
   apps/video:
     dependencies:
       '@anthropic-ai/sdk':
@@ -598,9 +565,6 @@ packages:
       '@angular/core': 21.2.23
       '@angular/platform-browser': 21.2.23
       rxjs: ^6.5.3 || ^7.4.0
-
-  '@anthropic-ai/sdk@0.30.1':
-    resolution: {integrity: sha512-nuKvp7wOIz6BFei8WrTdhmSsx5mwnArYyJgh4+vYu3V4J0Ltb8Xm3odPm51n1aSI0XxNCrDl7O88cxCtUdAkaw==}
 
   '@anthropic-ai/sdk@0.35.0':
     resolution: {integrity: sha512-JxVuNIRLjcXZbDW/rJa3vSIoYB5c0wgIQUPsjueeqli9OJyCJpInj0UlvKSSk6R2oCYyg0y2M0H8n8Wyt0l1IA==}
@@ -3474,9 +3438,6 @@ packages:
     resolution: {integrity: sha512-nGXts5znJzmWPu+mIE9izCOzdg63oJca2mDzGWWTth7sr4aCToKcoyFVBQwN75Ij5Pf6p510EwkTqViTRzDV+w==}
     engines: {node: '>=10.13.0'}
 
-  entities@2.2.0:
-    resolution: {integrity: sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==}
-
   entities@4.5.0:
     resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
     engines: {node: '>=0.12'}
@@ -5050,9 +5011,6 @@ packages:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
     engines: {node: '>= 18'}
 
-  rss-parser@3.13.0:
-    resolution: {integrity: sha512-7jWUBV5yGN3rqMMj7CZufl/291QAhvrrGpDNE4k/02ZchL0npisiYYqULF71jCEKoIiHvK/Q2e6IkDwPziT7+w==}
-
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
@@ -5073,10 +5031,6 @@ packages:
     resolution: {integrity: sha512-fDz1zJpd5GycprAbu4Q2PV/RprsRtKC/0z82z0JLgdytmcq0+ujJbJ/09bPGDxCLkKY3Np5cRAOcWiVkLXJURg==}
     engines: {node: '>=14.0.0'}
     hasBin: true
-
-  sax@1.6.1:
-    resolution: {integrity: sha512-42tBVwLWnaQvW5zc4HbZrTuWccECCZfBi92FDuwtqxasH+JbPB3/FOKb1m222K42R4WxuxzzMsTswfzgtSu64Q==}
-    engines: {node: '>=11.0.0'}
 
   saxes@6.0.0:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
@@ -5769,14 +5723,6 @@ packages:
     resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
     engines: {node: '>=18'}
 
-  xml2js@0.5.0:
-    resolution: {integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==}
-    engines: {node: '>=4.0.0'}
-
-  xmlbuilder@11.0.1:
-    resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}
-    engines: {node: '>=4.0'}
-
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
@@ -6117,18 +6063,6 @@ snapshots:
       '@angular/platform-browser': 21.2.23(@angular/animations@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2)))(@angular/common@21.2.23(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.23(@angular/compiler@21.2.23)(rxjs@7.8.2))
       rxjs: 7.8.2
       tslib: 2.8.1
-
-  '@anthropic-ai/sdk@0.30.1':
-    dependencies:
-      '@types/node': 18.19.130
-      '@types/node-fetch': 2.6.13
-      abort-controller: 3.0.0
-      agentkeepalive: 4.6.0
-      form-data-encoder: 1.7.2
-      formdata-node: 4.4.1
-      node-fetch: 2.7.0
-    transitivePeerDependencies:
-      - encoding
 
   '@anthropic-ai/sdk@0.35.0':
     dependencies:
@@ -9012,8 +8946,6 @@ snapshots:
       graceful-fs: 4.2.11
       tapable: 2.3.3
 
-  entities@2.2.0: {}
-
   entities@4.5.0: {}
 
   entities@6.0.1: {}
@@ -10714,11 +10646,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  rss-parser@3.13.0:
-    dependencies:
-      entities: 2.2.0
-      xml2js: 0.5.0
-
   run-parallel@1.2.0:
     dependencies:
       queue-microtask: 1.2.3
@@ -10740,8 +10667,6 @@ snapshots:
       source-map-js: 1.2.1
     optionalDependencies:
       '@parcel/watcher': 2.6.0
-
-  sax@1.6.1: {}
 
   saxes@6.0.0:
     dependencies:
@@ -11451,13 +11376,6 @@ snapshots:
   ws@8.21.0: {}
 
   xml-name-validator@5.0.0: {}
-
-  xml2js@0.5.0:
-    dependencies:
-      sax: 1.6.1
-      xmlbuilder: 11.0.1
-
-  xmlbuilder@11.0.1: {}
 
   xmlchars@2.2.0: {}
 

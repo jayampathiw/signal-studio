@@ -2,26 +2,27 @@
 
 ## What this is
 
-Monorepo for a multi-channel AI content publishing platform. Consolidated from `facebook-news-pipeline` and `reels-pipeline`. It produces two kinds of content from one codebase + one database: **news posts** (`apps/news`) and **AI-generated reels** (`apps/video` + `.claude` skills), reviewed via the **dashboard** (`apps/dashboard`).
+Monorepo for a multi-channel AI content publishing platform. Consolidated from `facebook-news-pipeline` and `reels-pipeline`. It produces two kinds of content: **AI-generated reels** (`apps/video` + `.claude` skills, here) and **news posts** (`apps/news`, moved to the private `signal-studio-workspace` repo in P0.5 of the engine refactor — see `docs/refactor/refactor-plan.md`), reviewed via the **dashboard** (`apps/dashboard`, here). Both still share one database.
 
 **Full onboarding reference:** `docs/implementation-guide.md` — read it for architecture, data flow, schema, and workflows. This file is the quick operating guide.
 
 ## Trigger repos vs. implementation (important)
 
-This repo is **self-contained** — all real logic lives here. Two **public** GitHub repos exist only as free-runner automation triggers, not implementation:
+Video logic is **self-contained here**; news logic moved to `signal-studio-workspace` in P0.5. Two **public** GitHub repos exist only as free-runner automation triggers, not implementation:
 
 - `reel-pipeline` (public) — hosts `generate.yml`; on dispatch it checks out _this_ repo via a deploy key and runs `claude --print "run wild-eye-reel for id=N"`. The video generation logic it executes is all here (`.claude/skills`, `apps/video`).
-- `facebook-news-pipeline` (public) — legacy origin of the news pipeline; the live news automation now runs from this repo's own `.github/workflows/fetch-news.yml`.
+- `facebook-news-pipeline` (public) — the actual live news trigger (hourly cron in `fetch.yml` + 3 other scheduled workflows). As of P0.5 it dual-checkouts both `signal-studio-workspace` (`apps/news` + its own `package.json`, at `workspace/`) and this repo (for `packages/{ai,config,database,publishers,types}`, pinned to `ref: refactor`, at `workspace/engine/`). This repo's own `.github/workflows/fetch-news.yml` was dead (`workflow_dispatch`-only) even before P0.5 and has been deleted.
 
-Public repos are used because GitHub Actions minutes are free/unlimited on them; the private logic stays here and is pulled in at runtime.
+Public repos are used because GitHub Actions minutes are free/unlimited on them; the private logic is pulled in at runtime.
 
 ## Apps
 
-| App       | Path              | What it does                                                      |
-| --------- | ----------------- | ----------------------------------------------------------------- |
-| news      | `apps/news/`      | RSS/NewsAPI → Claude captions → fal.ai images → Facebook (FR, IT) |
-| video     | `apps/video/`     | Stock/AI-image scenes → FFmpeg or Remotion → MP4 → all platforms  |
-| dashboard | `apps/dashboard/` | Angular review UI (Vercel)                                        |
+| App       | Path              | What it does                                                     |
+| --------- | ----------------- | ---------------------------------------------------------------- |
+| video     | `apps/video/`     | Stock/AI-image scenes → FFmpeg or Remotion → MP4 → all platforms |
+| dashboard | `apps/dashboard/` | Angular review UI (Vercel)                                       |
+
+`news` (RSS/NewsAPI → Claude captions → fal.ai images → Facebook FR/IT) lives in `signal-studio-workspace/apps/news` now — see that repo, not here.
 
 ## Shared packages
 
@@ -78,11 +79,11 @@ Deno functions in `supabase/functions/*` called by the dashboard. Key ones: `exp
 
 ## Runtime modes
 
-| Mode              | Where                            | How                                                                   |
-| ----------------- | -------------------------------- | --------------------------------------------------------------------- |
-| Interactive       | claude.ai / Claude Code          | MCP servers; run `.claude` skills by hand                             |
-| Automated (news)  | GitHub Actions (this repo)       | `.github/workflows/fetch-news.yml`, cron 30m → `npm run news`         |
-| Automated (video) | GitHub Actions (`reel-pipeline`) | dispatch → checkout this repo → `claude --print` runs `wild-eye-reel` |
+| Mode              | Where                                     | How                                                                                |
+| ----------------- | ----------------------------------------- | ---------------------------------------------------------------------------------- |
+| Interactive       | claude.ai / Claude Code                   | MCP servers; run `.claude` skills by hand                                          |
+| Automated (news)  | GitHub Actions (`facebook-news-pipeline`) | hourly cron → dual-checkout `signal-studio-workspace` + this repo → `npm run news` |
+| Automated (video) | GitHub Actions (`reel-pipeline`)          | dispatch → checkout this repo → `claude --print` runs `wild-eye-reel`              |
 
 ## Facebook API
 

@@ -2,7 +2,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * The engine's own Supabase client — a distinct **dev** project from the
- * legacy `nnxtvbolhuvihlpwppbj` one apps/news/apps/video use (per P1.5,
+ * legacy `nnxtvbolhuvihlpwppbj` one apps/video (here) and apps/news (now in
+ * signal-studio-workspace, P0.5) use (per P1.5,
  * prod stays untouched until P4). Reads ENGINE_SUPABASE_URL/
  * ENGINE_SUPABASE_SERVICE_ROLE_KEY rather than the existing SUPABASE_URL/
  * SUPABASE_SERVICE_ROLE_KEY to avoid any chance of a repo pointing at the
