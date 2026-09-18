@@ -603,17 +603,19 @@ Goal: one Mode C post rendered `_fb` + `_ig` with no manual editing; published ~
   - [x] Added `scripts/hooks/fix-on-save.mjs` as the PostToolUse hook on Write/Edit: `prettier --write` on any formattable file, `eslint --fix` on JS/TS, reading `tool_input.file_path` from stdin JSON (same convention the old safe-language-lint hook used); never blocks the tool call
   - [~] Verified via manual invocation (fed synthetic stdin JSON to `fix-on-save.mjs` directly) — confirmed it correctly reformats a real file and the file still works after. **Did not verify live in-session**: hooks load at Claude Code session start, and `.claude/settings.json` was edited mid-session, so the old hook config was still active for the rest of this session. Confirming the live PostToolUse fire needs a fresh session — first Edit in the next session is the real check
   - [x] Confirmed the PreToolUse fix live: a plain `Bash` call in this same session, right after creating `env-check.js`, ran with no hook error (previously every single one did)
-- [ ] **P0.4 Content out of git**
-  - [ ] Create `signal-studio-workspace` repo (private, empty) on GitHub
-  - [ ] `git mv` nothing — instead copy `content/`, `assets/music/`, `assets/logos/` into the workspace repo under `projects/<brand>/…` (map: `content/longform/*`, `content/shorts/*` → `underdog-archive`; `content/policy-file/*` → `policy-file`; `content/audio-kit` → `underdog-archive/audio-kit`)
-  - [ ] In the engine: delete those folders; keep `assets/fonts/` (engine needs fonts) — move brand logos out, keep a generic placeholder logo for `examples/`
-  - [ ] Fix every script that hard-codes `content/…` or `assets/logos/…` to take `--dir`/`--watermark` (they mostly already do); grep-guard: `rg "content/(longform|shorts|policy-file)" apps packages` returns nothing
-  - [ ] Engine repo size check: `git count-objects -vH` < 20 MB after a fresh clone
-- [ ] **P0.5 Freeze news**
-  - [ ] Copy `apps/news/` + `.github/workflows/fetch-news.yml` + news edge functions list into the workspace repo
-  - [ ] Workspace `package.json` workspace entry for `apps/news`; it depends on `@signal-studio/{ai,config,database,publishers}` via the engine submodule path
-  - [ ] Set GitHub Actions secrets on the workspace repo for the news workflow
-  - [ ] One green scheduled run from the workspace; then disable `fetch-news.yml` in the engine and delete `apps/news` there
+- [~] **P0.4 Content out of git** (2026-09-18) — content moved and verified; asset handling deliberately deviates from the plan's literal wording, see below
+  - [x] Created `signal-studio-workspace` (private) on GitHub — `jayampathiw/signal-studio-workspace`
+  - [x] Copied `content/{longform,shorts,audio-kit,policy-file}` into `projects/{underdog-archive,policy-file}/…` per the plan's mapping — verified via file count (972/972) and a checksum spot-check on a binary (`.wav`) before deleting anything
+  - [~] `assets/music/`, `assets/logos/` — **not copied-then-deleted wholesale as the plan says.** Grepped actual code usage first (`rg` across `apps/video`/`apps/news`) and found `assets/music/` and most of `assets/logos/` are shared with wildlife channels (`apps/video`) and news pages (`apps/news`), both of which stay in the engine repo — deleting them would have broken live wildlife-reel and news-image generation. Copied the **whole** `assets/music/` folder to the workspace repo (for Underdog/Policy File use there) but left the engine repo's copy untouched; copied only the two logo files verified as exclusive to Underdog/Policy File (`PolicyFile_Watermark.{svg,png}`, `underdog_archive_standalone_icon.png`) and likewise left the engine repo's `assets/logos/` untouched. `assets/fonts/` untouched as planned
+  - [x] In the engine: deleted `content/` (972 files) after copy+verify
+  - [x] Fixed the two scripts that actually hard-coded `content/audio-kit` (`apps/video/src/longform/audio-mix.js`, `apps/video/scripts/longform/import-audio-kit.mjs`) to resolve `AUDIO_KIT_DIR` from an env var/`--dir` flag instead. Grep-guard re-run: only comment/usage-string references to `content/(longform|shorts|policy-file)` remain in `apps`/`packages`, no live hard-coded paths
+  - [ ] Engine repo size check (`git count-objects -vH` < 20 MB after a fresh clone) — **not met and can't be, yet.** Deleting `content/` in a new commit removes it from `HEAD` but not from history — every commit before this one still has the ~235MB of blobs, so a fresh clone is still large. Actually hitting this target needs a git history rewrite (`git filter-repo` + force-push), which is a separate, more invasive operation affecting published history — flagged for your explicit go-ahead, not bundled into today's work
+- [~] **P0.5 Freeze news** (2026-09-18) — `apps/news` code copied to the workspace repo; **not wired up or cut over**
+  - [x] Copied `apps/news/` + `.github/workflows/fetch-news.yml` into the workspace repo
+  - [ ] News edge functions — **not copied**; out of scope for today's pass, still living only in this repo's `supabase/functions/`
+  - [ ] Workspace `package.json` workspace entry for `apps/news` depending on `@signal-studio/{ai,config,database,publishers}` — not done; the workspace repo has no `package.json` at all yet, this needs its own setup pass
+  - [ ] GitHub Actions secrets on the workspace repo — not set (needs your credentials, not something to do unattended)
+  - [ ] One green scheduled run from the workspace, then disable `fetch-news.yml` here and delete `apps/news` here — **not started**; `apps/news` and `fetch-news.yml` are fully intact and live in this repo, untouched
 - [ ] **P0.6 Doc prune**
   - [ ] Move every doc not in the §3.1 list to `workspace/docs/archive/` (keep git history via the copy; note the origin commit in `archive/README.md`)
   - [ ] Rewrite `docs/README.md` index; rewrite `docs/PROJECT-STATUS.md` §1 from plan §1 (six pipelines, real state)
