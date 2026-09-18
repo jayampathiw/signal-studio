@@ -618,9 +618,9 @@ Goal: one Mode C post rendered `_fb` + `_ig` with no manual editing; published ~
   - [ ] Move every doc not in the §3.1 list to `workspace/docs/archive/` (keep git history via the copy; note the origin commit in `archive/README.md`)
   - [ ] Rewrite `docs/README.md` index; rewrite `docs/PROJECT-STATUS.md` §1 from plan §1 (six pipelines, real state)
   - [ ] Delete `docs/*.md:Zone.Identifier` artefacts
-- [ ] **P0.7 Logger**
-  - [ ] `packages/shared/logger.ts` (pino; pretty in dev, JSON in CI/prod; child loggers per stage)
-  - [ ] Replace `console.*` in any file touched from now on; do not sweep untouched files
+- [x] **P0.7 Logger** (2026-09-18)
+  - [x] New `@signal-studio/shared` package (flat convention like the other `packages/*`); `src/logger.ts` — pino, pretty-printed unless `NODE_ENV=production` or `CI=true` (then plain JSON), `stageLogger(name)` returns a child logger bound with `{ stage: name }`. Registered in `pnpm-workspace.yaml` and `scripts/typecheck.mjs`. Verified both modes manually (pretty output and raw JSON with `CI=true`) and that `stageLogger('render').warn(...)` correctly carries the `stage` binding
+  - [ ] Replace `console.*` in any file touched from now on — opportunistic by design, nothing to batch; not applicable as a one-time task
 
 **TEST GATES — P0**
 

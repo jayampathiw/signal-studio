@@ -17,6 +17,7 @@ import path from 'node:path';
 const TS_PROJECTS = [
   'apps/dashboard/tsconfig.app.json',
   'apps/dashboard/tsconfig.spec.json',
+  'packages/shared/tsconfig.json',
   'projects/assemblex-factory/pilot/tsconfig.json',
 ];
 

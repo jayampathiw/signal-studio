@@ -12,3 +12,4 @@ packages:
   - 'packages/publishers'
   - 'packages/config'
   - 'packages/types'
+  - 'packages/shared'
