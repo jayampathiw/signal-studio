@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node apps/video/scripts/safe-language-lint.mjs"
+            "command": "node scripts/hooks/fix-on-save.mjs"
           }
         ]
       },
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node apps/video/scripts/safe-language-lint.mjs"
+            "command": "node scripts/hooks/fix-on-save.mjs"
           }
         ]
       }
