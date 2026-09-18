@@ -23,14 +23,16 @@ Deno.serve(async (req: Request) => {
 async function handleRequest(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
   const { post_id } = await req.json();
   if (!post_id) {
     return new Response(JSON.stringify({ error: 'post_id is required' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
@@ -47,31 +49,41 @@ async function handleRequest(req: Request): Promise<Response> {
 
   if (fetchErr || !post) {
     return new Response(JSON.stringify({ error: `Post not found: ${post_id}` }), {
-      status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
   if (post.status === 'posted') {
     return new Response(JSON.stringify({ error: 'Already posted', fb_post_id: post.fb_post_id }), {
-      status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 409,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
   const imageUrls: string[] = (post.events ?? []).map((e: any) => e.image_url).filter(Boolean);
   if (!imageUrls.length) {
-    return new Response(JSON.stringify({ error: 'No images available — regenerate the post first' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: 'No images available — regenerate the post first' }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    );
   }
 
   const country = post.country as string;
-  const pageId  = Deno.env.get(`FB_PAGE_ID_${country}`);
-  const token   = Deno.env.get(`FB_ACCESS_TOKEN_${country}`);
+  const pageId = Deno.env.get(`FB_PAGE_ID_${country}`);
+  const token = Deno.env.get(`FB_ACCESS_TOKEN_${country}`);
 
   if (!pageId || !token) {
-    return new Response(JSON.stringify({ error: `Missing Facebook credentials for country: ${country}` }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: `Missing Facebook credentials for country: ${country}` }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    );
   }
 
   // Upload each image as an unpublished FB photo, collect photo IDs
@@ -95,7 +107,7 @@ async function handleRequest(req: Request): Promise<Response> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       message,
-      attached_media: photoIds.map(id => ({ media_fbid: id })),
+      attached_media: photoIds.map((id) => ({ media_fbid: id })),
       access_token: token,
     }),
   });
@@ -104,16 +116,20 @@ async function handleRequest(req: Request): Promise<Response> {
   if (!feedRes.ok) {
     await supabase.from('on_this_day_posts').update({ status: 'failed' }).eq('id', post_id);
     return new Response(JSON.stringify({ error: feedData?.error?.message ?? 'Feed post failed' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
   const fbPostId = feedData.id as string;
-  await supabase.from('on_this_day_posts').update({
-    status: 'posted',
-    fb_post_id: fbPostId,
-    posted_at: new Date().toISOString(),
-  }).eq('id', post_id);
+  await supabase
+    .from('on_this_day_posts')
+    .update({
+      status: 'posted',
+      fb_post_id: fbPostId,
+      posted_at: new Date().toISOString(),
+    })
+    .eq('id', post_id);
 
   return new Response(JSON.stringify({ success: true, fb_post_id: fbPostId }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },

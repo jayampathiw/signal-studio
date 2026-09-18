@@ -21,7 +21,7 @@ async function generateViaFal(prompt: string): Promise<Uint8Array> {
   const res = await fetch('https://fal.run/fal-ai/recraft-v3', {
     method: 'POST',
     headers: {
-      'Authorization': `Key ${falKey}`,
+      Authorization: `Key ${falKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -52,7 +52,7 @@ async function generateViaCloudflare(prompt: string): Promise<Uint8Array> {
   const res = await fetch(cfUrl, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${Deno.env.get('CF_API_TOKEN')}`,
+      Authorization: `Bearer ${Deno.env.get('CF_API_TOKEN')}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ prompt, num_steps: 8, width: 1080, height: 1920 }),
@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
       .single();
 
     if (fetchErr || !article) return json({ error: 'Article not found' }, 404);
-    if (!article.image_prompt) return json({ error: 'No image_prompt — generate caption first' }, 400);
+    if (!article.image_prompt)
+      return json({ error: 'No image_prompt — generate caption first' }, 400);
 
     // Try providers in priority order — fal.ai first, Cloudflare second, Google last
     let imageBytes: Uint8Array | null = null;
@@ -170,7 +171,11 @@ Deno.serve(async (req) => {
 
     if (updateErr) throw new Error(`DB update failed: ${updateErr.message}`);
 
-    return json({ url: imageUrl, provider, ...(errors.length > 0 ? { fallback_errors: errors } : {}) });
+    return json({
+      url: imageUrl,
+      provider,
+      ...(errors.length > 0 ? { fallback_errors: errors } : {}),
+    });
   } catch (err) {
     return json({ error: err instanceof Error ? err.message : String(err) }, 500);
   }

@@ -19,7 +19,6 @@ They follow for the feeling of being let into something private
 They share when the emotional register is tender, intimate, or quietly surprising
 They comment when the ending is unresolved or when they feel something unexpected
 
-
 Content Mix — What the Data Says
 As of June 2026, the page algorithm profile is strongly cavy-specific. Every non-cavy reel
 received negative distribution. Do not expand to new species until follower count exceeds 2,000.
@@ -84,7 +83,6 @@ Alert ears at golden hour — side profile, both ears erect, individual hairs tr
 Dewy grass at dawn — macro of whisker tip or eye with dew drop reflection
 Burrow threshold — cavy face half-in/half-out of entrance, split warm/cool light
 
-
 Voice and Narration Rules
 Narration is optional. When used:
 
@@ -102,7 +100,6 @@ Proven narration lines (use as register benchmark):
 "The sky breaks. The grass bends. The small ones wait."
 "One body. Two hearts. The plains are too vast to face alone."
 "She has two seconds. That is all."
-
 
 Audio Design Rules
 Every script must specify audio cues. Hierarchy:
@@ -125,7 +122,6 @@ Fri 23:00: 11s reach reel
 Sat 07:30: 21s conversion reel
 Sun 10:00: Image portrait (engagement/brand)
 Mon 21:30: 11s reach reel or backup content
-
 
 Closing Line (Reels only)
 Every reel description ends with this exact line:

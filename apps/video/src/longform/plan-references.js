@@ -62,7 +62,8 @@ ${JSON.stringify(clipScenes, null, 1)}`;
   }
 
   const json = extractJson(text);
-  if (!json) throw new Error(`Reference bible: no JSON in model output:\n${String(text).slice(0, 400)}`);
+  if (!json)
+    throw new Error(`Reference bible: no JSON in model output:\n${String(text).slice(0, 400)}`);
   let parsed;
   try {
     parsed = JSON.parse(json);

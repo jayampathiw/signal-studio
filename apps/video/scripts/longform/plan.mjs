@@ -9,7 +9,9 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 import { parseArgs } from 'util';
+
 import { getServiceClient } from '@signal-studio/database';
+
 import { getChannel } from '../../src/config/channels.js';
 import { parseShotList } from '../../src/longform/parse-shotlist.js';
 import { buildReferenceBible } from '../../src/longform/plan-references.js';
@@ -18,7 +20,7 @@ const { values } = parseArgs({
   options: {
     file: { type: 'string' },
     channel: { type: 'string', default: 'football/documentary/EN' },
-    bible: { type: 'string' },   // path to a cached reference bible JSON (skips the LLM call)
+    bible: { type: 'string' }, // path to a cached reference bible JSON (skips the LLM call)
     dry: { type: 'boolean', default: false },
   },
   strict: false,
@@ -38,7 +40,9 @@ async function main() {
 
   const clipCount = scenes.filter((s) => s.kind === 'clip').length;
   const cardCount = scenes.filter((s) => s.kind === 'text_card').length;
-  console.error(`Parsed: "${title}" — ${scenes.length} scenes (${clipCount} clips, ${cardCount} text cards), target ${targetDurationSec}s`);
+  console.error(
+    `Parsed: "${title}" — ${scenes.length} scenes (${clipCount} clips, ${cardCount} text cards), target ${targetDurationSec}s`,
+  );
 
   // The reference bible can be loaded from a cache (proxy is flaky; a good bible
   // shouldn't be regenerated). Otherwise generate it and cache to <file>.bible.json
@@ -59,11 +63,15 @@ async function main() {
   // Validate sceneRefs point at real keys.
   const keySet = new Set(references.map((r) => r.key));
   for (const [sn, keys] of Object.entries(sceneRefs)) {
-    for (const k of keys) if (!keySet.has(k)) console.error(`  ⚠ scene ${sn} cites unknown reference "${k}" — dropping`);
+    for (const k of keys)
+      if (!keySet.has(k))
+        console.error(`  ⚠ scene ${sn} cites unknown reference "${k}" — dropping`);
   }
 
   if (values.dry) {
-    console.log(JSON.stringify({ title, targetDurationSec, references, sceneRefs, scenes }, null, 2));
+    console.log(
+      JSON.stringify({ title, targetDurationSec, references, sceneRefs, scenes }, null, 2),
+    );
     console.error('--dry: nothing written.');
     return;
   }
@@ -123,7 +131,14 @@ async function main() {
   if (cErr) throw new Error(`Insert clips failed: ${cErr.message}`);
 
   console.error(`Wrote ${refRows.length} references + ${clipRows.length} clips.`);
-  console.log(JSON.stringify({ projectId, references: references.length, clips: clipRows.length, cards: cardCount }));
+  console.log(
+    JSON.stringify({
+      projectId,
+      references: references.length,
+      clips: clipRows.length,
+      cards: cardCount,
+    }),
+  );
 }
 
 main().catch((e) => {

@@ -10,9 +10,11 @@ Interactive wrapper around `apps/video/scripts/create-brief.mjs`. Takes the user
 **Do not run SQL directly. Do not duplicate validation logic. Always call the script.**
 
 ## When to invoke
+
 When the user wants to create a new Wild Capture brief from a concept idea.
 
 ## Inputs from user
+
 - `concept`: one or more sentences describing the reel idea
 - `format` (optional): `11s` | `21s` | `portrait` — if omitted, script recommends based on concept
 - `slot` (optional): override posting slot — if omitted, derived from format
@@ -20,11 +22,13 @@ When the user wants to create a new Wild Capture brief from a concept idea.
 ## Steps
 
 ### 1. Take the concept
+
 Accept the user's raw concept text. Do not pre-validate or pre-filter — pass it directly to the script. The script handles species check, format recommendation, and all other validation.
 
 If the user provided a format, include `--format`. If not, omit it and let the script recommend.
 
 ### 2. Call the shared script
+
 ```bash
 node apps/video/scripts/create-brief.mjs \
   --channel "wildlife/intimacy/EN" \
@@ -34,6 +38,7 @@ node apps/video/scripts/create-brief.mjs \
 ```
 
 The script will:
+
 - Call Claude API: species check → format recommendation → title generation → tension check (21s)
 - Validate slot / day-of-week
 - Near-duplicate check (content_items + reels_log)
@@ -43,6 +48,7 @@ The script will:
 ### 3. Handle script output
 
 **On success:** report back to the user:
+
 ```
 ✅ Brief created: C-{id}
 Format: {format}  |  Slot: {slot}
@@ -59,6 +65,7 @@ Ready for generation. Run /new-wild-reel {id} to start.
 **On slot rejection (Tue/Wed/Thu for Reels):** the script suggests a valid slot. Relay and confirm with the user.
 
 ## What this skill does NOT do
+
 - Run SQL INSERT directly
 - Generate titles without the script
 - Validate species independently
@@ -67,5 +74,6 @@ Ready for generation. Run /new-wild-reel {id} to start.
 All of that is in `apps/video/scripts/create-brief.mjs` — the single source of truth.
 
 ## Channel: Wild Capture
+
 `channel_key = 'wildlife/intimacy/EN'` is hardcoded for this skill.
 For a different channel, use that channel's brief skill.

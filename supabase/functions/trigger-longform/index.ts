@@ -13,34 +13,46 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const GITHUB_OWNER    = 'jayampathiw';
-const GITHUB_REPO     = 'reel-pipeline';
+const GITHUB_OWNER = 'jayampathiw';
+const GITHUB_REPO = 'reel-pipeline';
 const GITHUB_WORKFLOW = 'longform.yml';
 
 // Legal stage transitions: current_status → stage → running_status
 // Only these combinations are allowed — everything else returns 409.
 const TRANSITIONS: Record<string, { from: string[]; running: string }> = {
-  script:       { from: ['brief', 'awaiting_script_approval'],                        running: 'scripting' },
-  seed:         { from: ['awaiting_script_approval', 'awaiting_refs'],                running: 'seeding'   },
-  tts:          { from: ['awaiting_refs'],                                             running: 'seeding'   },
-  assemble:     { from: ['awaiting_stills'],                                           running: 'rendering' },
-  tts_assemble: { from: ['awaiting_final_approval', 'awaiting_stills', 'awaiting_refs'], running: 'rendering' },
-  publish:      { from: ['awaiting_final_approval'],                                   running: 'publishing'},
-  noop:         { from: ['*'],                                                         running: ''          },
+  script: { from: ['brief', 'awaiting_script_approval'], running: 'scripting' },
+  seed: { from: ['awaiting_script_approval', 'awaiting_refs'], running: 'seeding' },
+  tts: { from: ['awaiting_refs'], running: 'seeding' },
+  assemble: { from: ['awaiting_stills'], running: 'rendering' },
+  tts_assemble: {
+    from: ['awaiting_final_approval', 'awaiting_stills', 'awaiting_refs'],
+    running: 'rendering',
+  },
+  publish: { from: ['awaiting_final_approval'], running: 'publishing' },
+  noop: { from: ['*'], running: '' },
 };
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   let body: { project_id?: number; stage?: string; assemble_flags?: string };
-  try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: 'Invalid JSON body' }, 400);
+  }
 
   const { project_id, stage, assemble_flags } = body;
   if (!project_id) return json({ error: 'project_id is required' }, 400);
-  if (!stage)      return json({ error: 'stage is required (script|seed|tts|assemble|publish|noop)' }, 400);
+  if (!stage)
+    return json({ error: 'stage is required (script|seed|tts|assemble|publish|noop)' }, 400);
 
   const transition = TRANSITIONS[stage];
-  if (!transition) return json({ error: `Unknown stage "${stage}". Valid: ${Object.keys(TRANSITIONS).join(', ')}` }, 400);
+  if (!transition)
+    return json(
+      { error: `Unknown stage "${stage}". Valid: ${Object.keys(TRANSITIONS).join(', ')}` },
+      400,
+    );
 
   const githubPat = Deno.env.get('GITHUB_PAT');
   if (!githubPat) return json({ error: 'GITHUB_PAT secret not configured' }, 500);
@@ -61,10 +73,14 @@ Deno.serve(async (req: Request) => {
   // Validate transition (noop skips this check)
   const allowedFrom = transition.from;
   if (!allowedFrom.includes('*') && !allowedFrom.includes(item.status)) {
-    return json({
-      error: `Cannot run stage "${stage}" when project is "${item.status}". ` +
-             `Allowed from: ${allowedFrom.join(', ')}`,
-    }, 409);
+    return json(
+      {
+        error:
+          `Cannot run stage "${stage}" when project is "${item.status}". ` +
+          `Allowed from: ${allowedFrom.join(', ')}`,
+      },
+      409,
+    );
   }
 
   // noop: just verify the project exists, return current state
@@ -82,8 +98,8 @@ Deno.serve(async (req: Request) => {
 
   // Dispatch longform.yml
   const ghHeaders = {
-    'Authorization': `Bearer ${githubPat}`,
-    'Accept': 'application/vnd.github+json',
+    Authorization: `Bearer ${githubPat}`,
+    Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json',
     'User-Agent': 'signal-studio-longform',
@@ -98,9 +114,10 @@ Deno.serve(async (req: Request) => {
   // — Shorts still render via the local assemble-short-rewrite.mjs CLI path).
   const isShort = item.clip_type === 'short';
   const wantsAssemble = stage === 'assemble' || stage === 'tts_assemble';
-  const mergedAssembleFlags = isShort && wantsAssemble && !/--clip-type=/.test(assemble_flags ?? '')
-    ? [assemble_flags, '--clip-type=short'].filter(Boolean).join(' ')
-    : assemble_flags;
+  const mergedAssembleFlags =
+    isShort && wantsAssemble && !/--clip-type=/.test(assemble_flags ?? '')
+      ? [assemble_flags, '--clip-type=short'].filter(Boolean).join(' ')
+      : assemble_flags;
 
   const dispatchRes = await fetch(
     `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${GITHUB_WORKFLOW}/dispatches`,
@@ -109,7 +126,11 @@ Deno.serve(async (req: Request) => {
       headers: ghHeaders,
       body: JSON.stringify({
         ref: 'main',
-        inputs: { project_id: String(project_id), stage, ...(mergedAssembleFlags ? { assemble_flags: mergedAssembleFlags } : {}) },
+        inputs: {
+          project_id: String(project_id),
+          stage,
+          ...(mergedAssembleFlags ? { assemble_flags: mergedAssembleFlags } : {}),
+        },
       }),
     },
   );
@@ -117,12 +138,15 @@ Deno.serve(async (req: Request) => {
   if (!dispatchRes.ok) {
     const err = await dispatchRes.json().catch(() => ({ message: dispatchRes.statusText }));
     // Rollback status on dispatch failure
-    await db.from('content_items').update({ status: item.status, status_note: `dispatch failed: ${err.message}` }).eq('id', project_id);
+    await db
+      .from('content_items')
+      .update({ status: item.status, status_note: `dispatch failed: ${err.message}` })
+      .eq('id', project_id);
     return json({ error: `GitHub dispatch failed (${dispatchRes.status}): ${err.message}` }, 502);
   }
 
   // Wait 2s then fetch the queued run URL
-  await new Promise(r => setTimeout(r, 2000));
+  await new Promise((r) => setTimeout(r, 2000));
   const runsRes = await fetch(
     `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${GITHUB_WORKFLOW}/runs?per_page=1&event=workflow_dispatch`,
     { headers: ghHeaders },
@@ -133,5 +157,12 @@ Deno.serve(async (req: Request) => {
     runUrl = runs.workflow_runs?.[0]?.html_url ?? null;
   }
 
-  return json({ dispatched: true, stage, clip_type: item.clip_type, previous_status: item.status, running_status: transition.running, runUrl });
+  return json({
+    dispatched: true,
+    stage,
+    clip_type: item.clip_type,
+    previous_status: item.status,
+    running_status: transition.running,
+    runUrl,
+  });
 });

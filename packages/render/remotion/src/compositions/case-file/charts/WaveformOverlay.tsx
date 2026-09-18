@@ -1,4 +1,5 @@
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+
 import { PALETTE } from '../palette';
 
 // Simple animated audio-waveform bars, overlaid on the smartphone-screen B-roll to

@@ -1,7 +1,7 @@
 import { execFile } from 'child_process';
-import { promisify } from 'util';
 import { writeFileSync } from 'fs';
 import { join, dirname } from 'path';
+import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
@@ -18,8 +18,16 @@ export async function concatClips(clipPaths, outputPath) {
   writeFileSync(listPath, listContent);
 
   await execFileAsync('ffmpeg', [
-    '-y', '-f', 'concat', '-safe', '0', '-i', listPath,
-    '-c', 'copy', outputPath,
+    '-y',
+    '-f',
+    'concat',
+    '-safe',
+    '0',
+    '-i',
+    listPath,
+    '-c',
+    'copy',
+    outputPath,
   ]);
   return outputPath;
 }

@@ -1,5 +1,6 @@
-import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { loadFont as loadCourierPrime } from '@remotion/google-fonts/CourierPrime';
+import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+
 import { PALETTE } from '../palette';
 import type { TimelineVisual } from './AppealTimeline';
 
@@ -17,19 +18,21 @@ const PAD_BOTTOM = 20;
 // deadlineFraction, no new figures invented) rendered as an actual line chart, per
 // round-4 feedback: a proper chart shape reads more clearly than a flat bar and
 // fills the scene's empty space better.
-export const AppealLineChart: React.FC<{ visual: TimelineVisual; width?: number; static?: boolean }> = ({
-  visual,
-  width = 900,
-  static: isStatic = false,
-}) => {
+export const AppealLineChart: React.FC<{
+  visual: TimelineVisual;
+  width?: number;
+  static?: boolean;
+}> = ({ visual, width = 900, static: isStatic = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const deadlineFraction = visual.deadlineFraction ?? 1;
 
-  const travel = isStatic ? 1 : interpolate(frame, [10, 2.2 * fps], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const travel = isStatic
+    ? 1
+    : interpolate(frame, [10, 2.2 * fps], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
   const arrived = travel >= 0.995;
 
   const plotWidth = WIDTH - PAD_X * 2;
@@ -53,18 +56,41 @@ export const AppealLineChart: React.FC<{ visual: TimelineVisual; width?: number;
         {[0.25, 0.5, 0.75].map((f) => (
           <line
             key={f}
-            x1={PAD_X} y1={PAD_TOP + plotHeight * f} x2={WIDTH - PAD_X} y2={PAD_TOP + plotHeight * f}
-            stroke={PALETTE.bodyLine} strokeWidth={1.5} strokeDasharray="2 8"
+            x1={PAD_X}
+            y1={PAD_TOP + plotHeight * f}
+            x2={WIDTH - PAD_X}
+            y2={PAD_TOP + plotHeight * f}
+            stroke={PALETTE.bodyLine}
+            strokeWidth={1.5}
+            strokeDasharray="2 8"
           />
         ))}
-        <line x1={PAD_X} y1={HEIGHT - PAD_BOTTOM} x2={WIDTH - PAD_X} y2={HEIGHT - PAD_BOTTOM} stroke={PALETTE.bodyLine} strokeWidth={2} />
+        <line
+          x1={PAD_X}
+          y1={HEIGHT - PAD_BOTTOM}
+          x2={WIDTH - PAD_X}
+          y2={HEIGHT - PAD_BOTTOM}
+          stroke={PALETTE.bodyLine}
+          strokeWidth={2}
+        />
 
         {/* flat continuation past the deadline, showing the window is closed */}
-        <line x1={x1} y1={y1} x2={WIDTH - PAD_X} y2={y1} stroke={PALETTE.bodyLine} strokeWidth={4} strokeLinecap="round" />
+        <line
+          x1={x1}
+          y1={y1}
+          x2={WIDTH - PAD_X}
+          y2={y1}
+          stroke={PALETTE.bodyLine}
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
 
         {/* the declining line itself, drawn in over time */}
         <line
-          x1={x0} y1={y0} x2={x1} y2={y1}
+          x1={x0}
+          y1={y0}
+          x2={x1}
+          y2={y1}
           stroke={PALETTE.folderTanBottom}
           strokeWidth={7}
           strokeLinecap="round"
@@ -76,15 +102,42 @@ export const AppealLineChart: React.FC<{ visual: TimelineVisual; width?: number;
         <circle cx={x1} cy={y1} r={9} fill={PALETTE.highlight} opacity={0.85} />
 
         {/* moving "you are here" point */}
-        {arrived && <circle cx={curX} cy={curY} r={28} fill="none" stroke={PALETTE.highlight} strokeOpacity={0.35} strokeWidth={8} />}
+        {arrived && (
+          <circle
+            cx={curX}
+            cy={curY}
+            r={28}
+            fill="none"
+            stroke={PALETTE.highlight}
+            strokeOpacity={0.35}
+            strokeWidth={8}
+          />
+        )}
         <circle cx={curX} cy={curY} r={16} fill={arrived ? PALETTE.highlight : PALETTE.paper} />
       </svg>
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
-        <span style={{ fontFamily: monoFont, fontWeight: 700, fontSize: 28, color: PALETTE.supportingText }}>{visual.startLabel}</span>
-        <span style={{
-          fontFamily: monoFont, fontSize: 28, color: arrived ? PALETTE.highlight : PALETTE.paper, fontWeight: 700,
-          textAlign: 'right', maxWidth: '55%',
-        }}>
+      <div
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginTop: 20 }}
+      >
+        <span
+          style={{
+            fontFamily: monoFont,
+            fontWeight: 700,
+            fontSize: 28,
+            color: PALETTE.supportingText,
+          }}
+        >
+          {visual.startLabel}
+        </span>
+        <span
+          style={{
+            fontFamily: monoFont,
+            fontSize: 28,
+            color: arrived ? PALETTE.highlight : PALETTE.paper,
+            fontWeight: 700,
+            textAlign: 'right',
+            maxWidth: '55%',
+          }}
+        >
           {visual.deadlineLabel}
         </span>
       </div>

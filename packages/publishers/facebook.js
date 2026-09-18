@@ -1,7 +1,8 @@
 import { readFile } from 'fs/promises';
+
+import { env } from '@signal-studio/config';
 import axios from 'axios';
 import FormData from 'form-data';
-import { env } from '@signal-studio/config';
 
 const FB_BASE = 'https://graph.facebook.com/v22.0';
 
@@ -12,7 +13,7 @@ export const BOOST_ELIGIBLE_ENFORCED = { IT: true, FR: false };
 // Used by the news pipeline for standard article posts.
 export async function postToFacebook(article, captionObj, country) {
   const pageId = env[`FB_PAGE_ID_${country}`];
-  const token  = env[`FB_ACCESS_TOKEN_${country}`];
+  const token = env[`FB_ACCESS_TOKEN_${country}`];
 
   if (!pageId || !token) {
     throw new Error(`Missing Facebook credentials for country: ${country}`);
@@ -33,7 +34,7 @@ export async function postToFacebook(article, captionObj, country) {
 // Upload a video file to a Facebook page.
 export async function postVideoToFacebook(videoPath, captionObj, article, country) {
   const pageId = env[`FB_PAGE_ID_${country}`];
-  const token  = env[`FB_ACCESS_TOKEN_${country}`];
+  const token = env[`FB_ACCESS_TOKEN_${country}`];
   if (!pageId || !token) throw new Error(`Missing Facebook credentials for country: ${country}`);
 
   const { intro, question, cta } = captionObj;
@@ -60,7 +61,7 @@ export async function postVideoToFacebook(videoPath, captionObj, article, countr
 // attached to a single feed post in one call.
 export async function postMultiPhotoToFacebook(imageUrls, captionObj, country) {
   const pageId = env[`FB_PAGE_ID_${country}`];
-  const token  = env[`FB_ACCESS_TOKEN_${country}`];
+  const token = env[`FB_ACCESS_TOKEN_${country}`];
   if (!pageId || !token) throw new Error(`Missing Facebook credentials for country: ${country}`);
 
   const { intro, question, cta } = captionObj;
@@ -76,7 +77,7 @@ export async function postMultiPhotoToFacebook(imageUrls, captionObj, country) {
 
   const feedRes = await axios.post(`${FB_BASE}/${pageId}/feed`, {
     message,
-    attached_media: photoIds.map(id => ({ media_fbid: id })),
+    attached_media: photoIds.map((id) => ({ media_fbid: id })),
     access_token: token,
   });
 
@@ -96,7 +97,7 @@ export async function deletePost(postId, country) {
 // For news-specific posting use postToFacebook / postVideoToFacebook / postMultiPhotoToFacebook above.
 export async function postContent(pageKey, { message, imageUrl, videoPath }) {
   const pageId = env[`FB_PAGE_ID_${pageKey}`];
-  const token  = env[`FB_ACCESS_TOKEN_${pageKey}`];
+  const token = env[`FB_ACCESS_TOKEN_${pageKey}`];
   if (!pageId || !token) throw new Error(`Missing Facebook credentials for page key: ${pageKey}`);
 
   if (videoPath) {

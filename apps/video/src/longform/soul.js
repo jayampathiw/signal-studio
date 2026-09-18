@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+
 import { submit, poll } from './higgsfield.js';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
@@ -36,7 +37,11 @@ export async function generateStill({ prompt, referenceMediaId, aspectRatio = '1
  * @param {{ prompt: string, referenceMediaIds?: string[], aspectRatio?: string }} opts
  * @returns {Promise<{ jobId: string, url: string }>}
  */
-export async function generatePrecisionStill({ prompt, referenceMediaIds = [], aspectRatio = '16:9' }) {
+export async function generatePrecisionStill({
+  prompt,
+  referenceMediaIds = [],
+  aspectRatio = '16:9',
+}) {
   const params = {
     prompt: fullPrompt(prompt),
     aspect_ratio: aspectRatio,

@@ -9,27 +9,34 @@
 //   node apps/video/scripts/longform/resync-tier2.mjs --dir content/longform/son-also-saves
 //   node apps/video/scripts/longform/resync-tier2.mjs --dir content/longform/son-also-saves --scenes 1-5
 
-import { parseArgs } from 'util';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parseArgs } from 'util';
+
 import { generateWordTimestamps } from '@signal-studio/media/subtitles';
+
 import { parseShotlistV2 } from '../../src/longform/parse-shotlist-v2.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
 
 const { values } = parseArgs({
   options: {
-    dir:      { type: 'string' },
+    dir: { type: 'string' },
     shotlist: { type: 'string' },
-    scenes:   { type: 'string' },
+    scenes: { type: 'string' },
   },
   strict: false,
 });
 
-if (!values.dir) { console.error('--dir <project-dir> required'); process.exit(2); }
+if (!values.dir) {
+  console.error('--dir <project-dir> required');
+  process.exit(2);
+}
 const projectDir = resolve(REPO_ROOT, values.dir);
-const shotlistPath = values.shotlist ? resolve(values.shotlist) : join(projectDir, 'shotlist-v2.md');
+const shotlistPath = values.shotlist
+  ? resolve(values.shotlist)
+  : join(projectDir, 'shotlist-v2.md');
 const voDir = join(projectDir, 'vo');
 const resyncPath = join(projectDir, 'overlay-resync.json');
 
@@ -45,8 +52,28 @@ const pad2 = (n) => String(n).padStart(2, '0');
 // Tier 2 accents are sometimes numerals/scores ("26", "2-1") while the VO speaks
 // them as words ("twenty-six", "two-one") per the shotlist's TTS-normalization
 // rule — convert numeral tokens to word form before matching against VO words.
-const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const ONES = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+];
 const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
 
 function numberToWords(n) {
@@ -100,7 +127,10 @@ function findMatchOne(words, tokens) {
   for (let i = 0; i <= normed.length - tokens.length; i++) {
     let ok = true;
     for (let j = 0; j < tokens.length; j++) {
-      if (normed[i + j] !== tokens[j]) { ok = false; break; }
+      if (normed[i + j] !== tokens[j]) {
+        ok = false;
+        break;
+      }
     }
     if (ok) return { start: words[i].start, end: words[i + tokens.length - 1].end, exact: true };
   }
@@ -136,7 +166,8 @@ async function main() {
 
     const voPath = join(voDir, `S${n}.wav`);
     if (!existsSync(voPath)) {
-      for (const ov of tier2) rows.push({ scene: n, text: ov.text, status: 'no-vo', script_at: ov.at_sec });
+      for (const ov of tier2)
+        rows.push({ scene: n, text: ov.text, status: 'no-vo', script_at: ov.at_sec });
       continue;
     }
 
@@ -148,7 +179,11 @@ async function main() {
     // empirically: "AHMED SHOBEIR" as prompt still gave "Ack Med Shobr";
     // "Ahmed Shobeir" gave the correct transcription).
     const initialPrompt = tier2.map((ov) => titleCase(ov.text)).join(', ');
-    const words = await generateWordTimestamps(voPath, join(voDir, `S${n}.words.json`), initialPrompt);
+    const words = await generateWordTimestamps(
+      voPath,
+      join(voDir, `S${n}.words.json`),
+      initialPrompt,
+    );
 
     tier2.forEach((ov, idx) => {
       const tokens = targetTokenVariants(ov.text);
@@ -164,8 +199,11 @@ async function main() {
         : (ov.duration_sec ?? 1);
       resync[key] = { at_sec, duration_sec, exact: match.exact };
       rows.push({
-        scene: n, text: ov.text, status: match.exact ? 'matched' : 'anchor-only',
-        script_at: ov.at_sec, resync_at: at_sec,
+        scene: n,
+        text: ov.text,
+        status: match.exact ? 'matched' : 'anchor-only',
+        script_at: ov.at_sec,
+        resync_at: at_sec,
       });
     });
   }
@@ -182,4 +220,7 @@ async function main() {
   console.log(`\n${matched}/${rows.length} Tier 2 accents matched exactly. Wrote ${resyncPath}`);
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('FATAL:', e.message);
+  process.exit(1);
+});

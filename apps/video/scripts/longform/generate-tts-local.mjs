@@ -7,28 +7,35 @@
 //   node apps/video/scripts/longform/generate-tts-local.mjs --dir content/longform/son-also-saves
 //   node apps/video/scripts/longform/generate-tts-local.mjs --dir content/longform/son-also-saves --scenes 1-5
 
-import { parseArgs } from 'util';
 import { mkdirSync, existsSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parseArgs } from 'util';
+
 import { synthesise } from '@signal-studio/media/tts';
+
 import { parseShotlistV2 } from '../../src/longform/parse-shotlist-v2.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
 
 const { values } = parseArgs({
   options: {
-    dir:      { type: 'string' },
+    dir: { type: 'string' },
     shotlist: { type: 'string' },
-    scenes:   { type: 'string' },
-    voice:    { type: 'string' },   // override Kokoro voice ID, e.g. am_michael for a male narrator
+    scenes: { type: 'string' },
+    voice: { type: 'string' }, // override Kokoro voice ID, e.g. am_michael for a male narrator
   },
   strict: false,
 });
 
-if (!values.dir) { console.error('--dir <project-dir> required'); process.exit(2); }
+if (!values.dir) {
+  console.error('--dir <project-dir> required');
+  process.exit(2);
+}
 const projectDir = resolve(REPO_ROOT, values.dir);
-const shotlistPath = values.shotlist ? resolve(values.shotlist) : join(projectDir, 'shotlist-v2.md');
+const shotlistPath = values.shotlist
+  ? resolve(values.shotlist)
+  : join(projectDir, 'shotlist-v2.md');
 const voDir = join(projectDir, 'vo');
 
 function parseSceneRange(str) {
@@ -45,14 +52,20 @@ async function main() {
   mkdirSync(voDir, { recursive: true });
 
   const { scenes: allScenes } = parseShotlistV2(shotlistPath);
-  const scenes = (sceneRange
-    ? allScenes.filter((s) => s.scene_n >= sceneRange.from && s.scene_n <= sceneRange.to)
-    : allScenes
+  const scenes = (
+    sceneRange
+      ? allScenes.filter((s) => s.scene_n >= sceneRange.from && s.scene_n <= sceneRange.to)
+      : allScenes
   ).filter((s) => s.vo_text);
 
-  if (!scenes.length) { console.error('No scenes with vo_text in range'); return; }
+  if (!scenes.length) {
+    console.error('No scenes with vo_text in range');
+    return;
+  }
 
-  let done = 0, skipped = 0, errors = 0;
+  let done = 0,
+    skipped = 0,
+    errors = 0;
   for (const scene of scenes) {
     const n = pad2(scene.scene_n);
     const label = `S${n}`;
@@ -77,4 +90,7 @@ async function main() {
   console.log(`\nGenerated ${done}, skipped ${skipped}, errors ${errors}`);
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('FATAL:', e.message);
+  process.exit(1);
+});

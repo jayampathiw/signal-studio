@@ -1,16 +1,23 @@
 import { env } from '@signal-studio/config';
+import {
+  saveArticles,
+  getRecentArticleTitles,
+  getRecentArticlesForClustering,
+} from '@signal-studio/database/articles';
+
 import { SOURCES } from './config/sources.js';
-import { fetchRSSFeeds } from './ingestion/rss.js';
-import { fetchNewsAPI } from './ingestion/newsapi.js';
-import { saveArticles, getRecentArticleTitles, getRecentArticlesForClustering } from '@signal-studio/database/articles';
 import { deduplicate, similarity, detectAndAnnotateClusters } from './enrich/dedup.js';
+import { fetchNewsAPI } from './ingestion/newsapi.js';
+import { fetchRSSFeeds } from './ingestion/rss.js';
 import { validateArticle } from './validators/contentValidator.js';
 
 const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_KEY'];
-const missing = REQUIRED_ENV.filter(k => !env[k]);
+const missing = REQUIRED_ENV.filter((k) => !env[k]);
 if (missing.length) {
   console.error(`PIPELINE FAILED: Missing required environment variables: ${missing.join(', ')}`);
-  console.error('Set these as GitHub Actions Secrets under Settings → Secrets and variables → Actions');
+  console.error(
+    'Set these as GitHub Actions Secrets under Settings → Secrets and variables → Actions',
+  );
   process.exit(1);
 }
 
@@ -28,18 +35,20 @@ async function processCountry(country, config) {
   ]);
 
   const raw = deduplicate([...rssArticles, ...apiArticles]);
-  console.log(`  Fetched: ${rssArticles.length + apiArticles.length} total → ${raw.length} after in-batch dedup`);
+  console.log(
+    `  Fetched: ${rssArticles.length + apiArticles.length} total → ${raw.length} after in-batch dedup`,
+  );
 
   const recentTitles = await getRecentArticleTitles(country);
-  const unique = raw.filter(article => {
-    const tooSimilar = recentTitles.some(t => similarity(article.title, t) > 0.7);
+  const unique = raw.filter((article) => {
+    const tooSimilar = recentTitles.some((t) => similarity(article.title, t) > 0.7);
     if (tooSimilar) console.log(`  ↩ Already in DB: "${article.title}"`);
     return !tooSimilar;
   });
   console.log(`  After DB dedup: ${unique.length} new articles`);
 
   const validated = [];
-  const blocked   = [];
+  const blocked = [];
 
   for (const article of unique) {
     const check = validateArticle(article);
@@ -61,9 +70,11 @@ async function processCountry(country, config) {
 
   const recentForClustering = await getRecentArticlesForClustering(country);
   detectAndAnnotateClusters(validated, recentForClustering);
-  const clustered = validated.filter(a => a.cluster_size >= 2);
+  const clustered = validated.filter((a) => a.cluster_size >= 2);
   if (clustered.length > 0) {
-    console.log(`  Clusters detected: ${clustered.length} articles in ${new Set(clustered.map(a => a.cluster_id)).size} cluster(s)`);
+    console.log(
+      `  Clusters detected: ${clustered.length} articles in ${new Set(clustered.map((a) => a.cluster_id)).size} cluster(s)`,
+    );
   }
 
   const saved = await saveArticles(validated);

@@ -10,10 +10,11 @@
 //   node apps/video/scripts/longform/generate-srt.mjs --dir content/longform/one-match-short --max-silent-tail 2.5
 //   node apps/video/scripts/longform/generate-srt.mjs --dir content/longform/silenced-goalkeeper --output content/longform/silenced-goalkeeper/output/silenced-goalkeeper.srt
 
-import { parseArgs } from 'util';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parseArgs } from 'util';
+
 import { parseShotlistV2 } from '../../src/longform/parse-shotlist-v2.js';
 import { probeDuration } from '../../src/longform/render.js';
 
@@ -22,18 +23,23 @@ const STILL_EXTS = ['.jpeg', '.jpg', '.png'];
 
 const { values } = parseArgs({
   options: {
-    dir:              { type: 'string' },
-    shotlist:         { type: 'string' },
-    output:           { type: 'string' },
+    dir: { type: 'string' },
+    shotlist: { type: 'string' },
+    output: { type: 'string' },
     'max-silent-tail': { type: 'string' },
   },
   strict: false,
 });
-if (!values.dir) { console.error('--dir <project-dir> required'); process.exit(2); }
+if (!values.dir) {
+  console.error('--dir <project-dir> required');
+  process.exit(2);
+}
 const maxSilentTail = values['max-silent-tail'] != null ? Number(values['max-silent-tail']) : null;
 
 const projectDir = resolve(REPO_ROOT, values.dir);
-const shotlistPath = values.shotlist ? resolve(values.shotlist) : join(projectDir, 'shotlist-v2.md');
+const shotlistPath = values.shotlist
+  ? resolve(values.shotlist)
+  : join(projectDir, 'shotlist-v2.md');
 const stillsDir = join(projectDir, 'stills');
 const voDir = join(projectDir, 'vo');
 const captionsPath = join(projectDir, 'captions.json');
@@ -50,7 +56,9 @@ const NO_CAPTION_SCENES_BY_PROJECT = {
 };
 const NO_CAPTION_SCENES = NO_CAPTION_SCENES_BY_PROJECT[projectDir.split('/').pop()] ?? new Set();
 
-function pad2(n) { return String(n).padStart(2, '0'); }
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
 
 function findStillFile(sceneN, cut) {
   for (const ext of STILL_EXTS) {
@@ -77,7 +85,9 @@ function srtTimestamp(sec) {
 function main() {
   if (!existsSync(shotlistPath)) throw new Error(`Shotlist not found: ${shotlistPath}`);
   const { scenes } = parseShotlistV2(shotlistPath);
-  const sceneCaptions = existsSync(captionsPath) ? JSON.parse(readFileSync(captionsPath, 'utf-8')) : {};
+  const sceneCaptions = existsSync(captionsPath)
+    ? JSON.parse(readFileSync(captionsPath, 'utf-8'))
+    : {};
 
   let cursor = 0; // absolute seconds in the final concatenated timeline
   const cues = [];
@@ -107,7 +117,10 @@ function main() {
       const chunks = sceneCaptions[`S${n}`];
       if (chunks?.length) {
         for (const c of chunks) {
-          const text = c.words.map((w) => w.text).join(' ').trim();
+          const text = c.words
+            .map((w) => w.text)
+            .join(' ')
+            .trim();
           if (!text) continue;
           const start = cursor + c.at_sec;
           const end = start + c.duration_sec;
@@ -119,9 +132,9 @@ function main() {
     cursor += sceneDur;
   }
 
-  const srt = cues.map((c, i) =>
-    `${i + 1}\n${srtTimestamp(c.start)} --> ${srtTimestamp(c.end)}\n${c.text}\n`
-  ).join('\n');
+  const srt = cues
+    .map((c, i) => `${i + 1}\n${srtTimestamp(c.start)} --> ${srtTimestamp(c.end)}\n${c.text}\n`)
+    .join('\n');
 
   const outPath = values.output
     ? resolve(REPO_ROOT, values.output)

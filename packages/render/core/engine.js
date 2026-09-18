@@ -34,6 +34,7 @@ export function registerEngine(engine) {
  */
 export function getEngine(name) {
   const engine = registry.get(name);
-  if (!engine) throw new Error(`Render engine not registered: "${name}". Import it before calling render().`);
+  if (!engine)
+    throw new Error(`Render engine not registered: "${name}". Import it before calling render().`);
   return engine;
 }

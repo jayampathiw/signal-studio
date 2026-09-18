@@ -7,11 +7,11 @@
 // Ducking: music sidechaincompressed by the VO signal (~6dB dip under speech)
 // Master: two-pass loudnorm at -14 LUFS / -1.0 dBTP
 
+import { execFile, execSync } from 'child_process';
 import { createWriteStream, existsSync, readFileSync } from 'fs';
 import { join, resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import { pipeline } from 'stream/promises';
-import { execFile, execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 import { promisify } from 'util';
 
 const execAsync = promisify(execFile);
@@ -36,11 +36,14 @@ function ff(...args) {
 
 function probeDuration(path) {
   try {
-    return Number(execSync(
-      `ffprobe -v error -show_entries format=duration -of csv=p=0 "${path}"`,
-      { encoding: 'utf-8' },
-    ).trim());
-  } catch { return 0; }
+    return Number(
+      execSync(`ffprobe -v error -show_entries format=duration -of csv=p=0 "${path}"`, {
+        encoding: 'utf-8',
+      }).trim(),
+    );
+  } catch {
+    return 0;
+  }
 }
 
 // ── Load manifest ─────────────────────────────────────────────────────────────
@@ -49,7 +52,7 @@ export function loadManifest() {
   if (!existsSync(MANIFEST_PATH)) {
     throw new Error(
       'Audio kit manifest not found. ' +
-      'Run: node apps/video/scripts/longform/import-audio-kit.mjs (F1-8)',
+        'Run: node apps/video/scripts/longform/import-audio-kit.mjs (F1-8)',
     );
   }
   return JSON.parse(readFileSync(MANIFEST_PATH, 'utf-8'));
@@ -74,11 +77,20 @@ async function downloadKit(manifest, keys, workDir) {
 async function loopTrimTo(srcPath, durationSec, gainDb, out) {
   await ff(
     '-y',
-    '-stream_loop', '-1', '-i', srcPath,
-    '-t', String(durationSec),
-    '-af', `volume=${gainDb}dB,aresample=${AR},aformat=channel_layouts=stereo`,
-    '-ar', String(AR), '-ac', String(AC),
-    '-c:a', 'pcm_s16le',
+    '-stream_loop',
+    '-1',
+    '-i',
+    srcPath,
+    '-t',
+    String(durationSec),
+    '-af',
+    `volume=${gainDb}dB,aresample=${AR},aformat=channel_layouts=stereo`,
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     out,
   );
 }
@@ -87,11 +99,20 @@ async function loopTrimTo(srcPath, durationSec, gainDb, out) {
 async function acrossfade(aPath, bPath, fadeSec, out) {
   await ff(
     '-y',
-    '-i', aPath, '-i', bPath,
-    '-filter_complex', `[0:a][1:a]acrossfade=d=${fadeSec}:o=1[out]`,
-    '-map', '[out]',
-    '-ar', String(AR), '-ac', String(AC),
-    '-c:a', 'pcm_s16le',
+    '-i',
+    aPath,
+    '-i',
+    bPath,
+    '-filter_complex',
+    `[0:a][1:a]acrossfade=d=${fadeSec}:o=1[out]`,
+    '-map',
+    '[out]',
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     out,
   );
 }
@@ -110,10 +131,22 @@ async function buildMusicStem(audioPlan, kitPaths, totalDur, workDir) {
 
     if (seg.track === 'silence') {
       // Hard gap — pure silence
-      await ff('-y', '-f', 'lavfi',
-        '-i', `anullsrc=r=${AR}:cl=stereo`,
-        '-t', String(dur),
-        '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le', segOut);
+      await ff(
+        '-y',
+        '-f',
+        'lavfi',
+        '-i',
+        `anullsrc=r=${AR}:cl=stereo`,
+        '-t',
+        String(dur),
+        '-ar',
+        String(AR),
+        '-ac',
+        String(AC),
+        '-c:a',
+        'pcm_s16le',
+        segOut,
+      );
     } else {
       const track = seg.track === 'hum_only' ? 'stadium_hum' : seg.track;
       if (!kitPaths[track]) throw new Error(`Music bed "${track}" not in kit`);
@@ -135,9 +168,18 @@ async function buildMusicStem(audioPlan, kitPaths, totalDur, workDir) {
   const musicOut = join(workDir, 'music_stem.wav');
   if (Math.abs(actualDur - totalDur) > 1) {
     await ff(
-      '-y', '-i', current,
-      '-af', `apad=whole_dur=${totalDur},atrim=0:${totalDur}`,
-      '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le', musicOut,
+      '-y',
+      '-i',
+      current,
+      '-af',
+      `apad=whole_dur=${totalDur},atrim=0:${totalDur}`,
+      '-ar',
+      String(AR),
+      '-ac',
+      String(AC),
+      '-c:a',
+      'pcm_s16le',
+      musicOut,
     );
   } else {
     await ff('-y', '-i', current, '-t', String(totalDur), '-c:a', 'pcm_s16le', musicOut);
@@ -190,16 +232,28 @@ async function buildSfxStem(clips, kitPaths, totalDur, workDir) {
   // burying narration under every cue. Flat -14dB brings them in line with
   // the rest of the mix; loudnorm's TP ceiling still catches any transient peak.
   const inputs = events.flatMap((e) => ['-i', kitPaths[e.key]]);
-  const delays = events.map((_, i) => `[${i}:a]adelay=${events[i].absMs}|${events[i].absMs},volume=${SFX_GAIN_DB}dB[d${i}]`);
-  const mixed = events.map((_, i) => `[d${i}]`).join('') + `amix=inputs=${events.length}:normalize=0[sfx]`;
+  const delays = events.map(
+    (_, i) => `[${i}:a]adelay=${events[i].absMs}|${events[i].absMs},volume=${SFX_GAIN_DB}dB[d${i}]`,
+  );
+  const mixed =
+    events.map((_, i) => `[d${i}]`).join('') + `amix=inputs=${events.length}:normalize=0[sfx]`;
 
   const sfxOut = join(workDir, 'sfx_stem.wav');
   await ff(
-    '-y', ...inputs,
-    '-filter_complex', [...delays, mixed].join(';'),
-    '-map', '[sfx]',
-    '-t', String(totalDur),
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
+    '-y',
+    ...inputs,
+    '-filter_complex',
+    [...delays, mixed].join(';'),
+    '-map',
+    '[sfx]',
+    '-t',
+    String(totalDur),
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     sfxOut,
   );
 
@@ -233,9 +287,17 @@ async function applySilenceGates(clips, inputPath, workDir, suffix) {
   const expr = gates.map((g) => `between(t,${g.from},${g.to})`).join('+');
   const gated = join(workDir, `gated_${suffix}.wav`);
   await ff(
-    '-y', '-i', inputPath,
-    '-af', `volume='if(${expr},0,1)':eval=frame`,
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
+    '-y',
+    '-i',
+    inputPath,
+    '-af',
+    `volume='if(${expr},0,1)':eval=frame`,
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     gated,
   );
   return gated;
@@ -249,14 +311,22 @@ async function duckMusic(musicPath, voPath, workDir) {
   const out = join(workDir, 'music_ducked.wav');
   await ff(
     '-y',
-    '-i', musicPath,  // 0: music (the signal to compress)
-    '-i', voPath,     // 1: VO (the sidechain)
+    '-i',
+    musicPath, // 0: music (the signal to compress)
+    '-i',
+    voPath, // 1: VO (the sidechain)
     '-filter_complex',
     // threshold ~-38dBFS, ratio=10 → ~15-18dB dip under normal VO levels
     // attack=5ms (fast enough to catch speech onset), release=300ms (natural decay, avoids audible pumping)
     '[0:a][1:a]sidechaincompress=threshold=0.013:ratio=10:attack=5:release=300:knee=8[out]',
-    '-map', '[out]',
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
+    '-map',
+    '[out]',
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     out,
   );
   return out;
@@ -268,9 +338,13 @@ async function applyLoudnorm(inputPath, workDir) {
   let stderr = '';
   try {
     const { stderr: s } = await execAsync('ffmpeg', [
-      '-i', inputPath,
-      '-af', 'loudnorm=I=-14:TP=-1.0:LRA=11:print_format=json',
-      '-f', 'null', '/dev/null',
+      '-i',
+      inputPath,
+      '-af',
+      'loudnorm=I=-14:TP=-1.0:LRA=11:print_format=json',
+      '-f',
+      'null',
+      '/dev/null',
     ]);
     stderr = s;
   } catch (e) {
@@ -285,8 +359,11 @@ async function applyLoudnorm(inputPath, workDir) {
   // Pass 2 — apply
   const out = join(workDir, 'master_loudnorm.wav');
   await ff(
-    '-y', '-i', inputPath,
-    '-af', [
+    '-y',
+    '-i',
+    inputPath,
+    '-af',
+    [
       'loudnorm=I=-14:TP=-1.0:LRA=11:linear=true',
       `measured_I=${stats.input_i}`,
       `measured_TP=${stats.input_tp}`,
@@ -295,7 +372,12 @@ async function applyLoudnorm(inputPath, workDir) {
       `offset=${stats.target_offset}`,
       'print_format=json',
     ].join(':'),
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     out,
   );
 
@@ -321,7 +403,13 @@ async function applyLoudnorm(inputPath, workDir) {
  * @param {string} opts.workDir
  * @returns {{ loudnormStats: object }}
  */
-export async function buildSimpleMusicBed({ videoPath, bedKey, gainDb = -20, outputPath, workDir }) {
+export async function buildSimpleMusicBed({
+  videoPath,
+  bedKey,
+  gainDb = -20,
+  outputPath,
+  workDir,
+}) {
   const manifest = loadManifest();
   if (!manifest[bedKey]) throw new Error(`Audio kit key "${bedKey}" not in manifest`);
 
@@ -331,8 +419,19 @@ export async function buildSimpleMusicBed({ videoPath, bedKey, gainDb = -20, out
   await dl(manifest[bedKey].url, bedSrc);
 
   const voPath = join(workDir, 'vo_stem.wav');
-  await ff('-y', '-i', videoPath, '-vn',
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le', voPath);
+  await ff(
+    '-y',
+    '-i',
+    videoPath,
+    '-vn',
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
+    voPath,
+  );
 
   const bedTrimmed = join(workDir, 'bed_trimmed.wav');
   await loopTrimTo(bedSrc, totalDur, gainDb, bedTrimmed);
@@ -341,10 +440,21 @@ export async function buildSimpleMusicBed({ videoPath, bedKey, gainDb = -20, out
 
   const premix = join(workDir, 'premix_simple.wav');
   await ff(
-    '-y', '-i', bedDucked, '-i', voPath,
-    '-filter_complex', '[0:a][1:a]amix=inputs=2:normalize=0[premix]',
-    '-map', '[premix]',
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
+    '-y',
+    '-i',
+    bedDucked,
+    '-i',
+    voPath,
+    '-filter_complex',
+    '[0:a][1:a]amix=inputs=2:normalize=0[premix]',
+    '-map',
+    '[premix]',
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     premix,
   );
 
@@ -352,11 +462,22 @@ export async function buildSimpleMusicBed({ videoPath, bedKey, gainDb = -20, out
 
   await ff(
     '-y',
-    '-i', videoPath,
-    '-i', masterPath,
-    '-map', '0:v', '-map', '1:a',
-    '-c:v', 'copy',
-    '-c:a', 'aac', '-b:a', '192k', '-ar', String(AR),
+    '-i',
+    videoPath,
+    '-i',
+    masterPath,
+    '-map',
+    '0:v',
+    '-map',
+    '1:a',
+    '-c:v',
+    'copy',
+    '-c:a',
+    'aac',
+    '-b:a',
+    '192k',
+    '-ar',
+    String(AR),
     outputPath,
   );
 
@@ -384,7 +505,7 @@ export async function buildAudioMix({ concatPath, clips, audioPlan, outputPath, 
     if (track && track !== 'silence') neededKeys.add(track);
   }
   for (const clip of clips) {
-    for (const fx of (clip.sfx ?? [])) {
+    for (const fx of clip.sfx ?? []) {
       if (fx.key && fx.key !== 'silence') neededKeys.add(fx.key);
     }
   }
@@ -399,18 +520,29 @@ export async function buildAudioMix({ concatPath, clips, audioPlan, outputPath, 
   // 1. Extract VO
   console.log('  [1/6] Extracting VO…');
   const voPath = join(workDir, 'vo_stem.wav');
-  await ff('-y', '-i', concatPath, '-vn',
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le', voPath);
+  await ff(
+    '-y',
+    '-i',
+    concatPath,
+    '-vn',
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
+    voPath,
+  );
 
   // 2. Music stem
   console.log('  [2/6] Building music stem…');
   const rawMusicPath = await buildMusicStem(audioPlan, kitPaths, totalDur, workDir);
-  const musicGated   = await applySilenceGates(clips, rawMusicPath, workDir, 'music');
+  const musicGated = await applySilenceGates(clips, rawMusicPath, workDir, 'music');
 
   // 3. Ambience stem
   console.log('  [3/6] Building ambience stem…');
   const rawAmbiencePath = await buildAmbienceStem(kitPaths, totalDur, workDir);
-  const ambienceGated   = await applySilenceGates(clips, rawAmbiencePath, workDir, 'ambience');
+  const ambienceGated = await applySilenceGates(clips, rawAmbiencePath, workDir, 'ambience');
 
   // 4. SFX stem
   console.log('  [4/6] Building SFX stem…');
@@ -426,14 +558,23 @@ export async function buildAudioMix({ concatPath, clips, audioPlan, outputPath, 
   if (sfxPath) stemInputs.push(sfxPath);
 
   const inputs = stemInputs.flatMap((p) => ['-i', p]);
-  const mixFilter = stemInputs.map((_, i) => `[${i}:a]`).join('') +
+  const mixFilter =
+    stemInputs.map((_, i) => `[${i}:a]`).join('') +
     `amix=inputs=${stemInputs.length}:normalize=0[premix]`;
   const preMixPath = join(workDir, 'premix.wav');
   await ff(
-    '-y', ...inputs,
-    '-filter_complex', mixFilter,
-    '-map', '[premix]',
-    '-ar', String(AR), '-ac', String(AC), '-c:a', 'pcm_s16le',
+    '-y',
+    ...inputs,
+    '-filter_complex',
+    mixFilter,
+    '-map',
+    '[premix]',
+    '-ar',
+    String(AR),
+    '-ac',
+    String(AC),
+    '-c:a',
+    'pcm_s16le',
     preMixPath,
   );
 
@@ -442,11 +583,22 @@ export async function buildAudioMix({ concatPath, clips, audioPlan, outputPath, 
   // Mux: replace concat's audio with the mixed master
   await ff(
     '-y',
-    '-i', concatPath,
-    '-i', masterPath,
-    '-map', '0:v', '-map', '1:a',
-    '-c:v', 'copy',
-    '-c:a', 'aac', '-b:a', '192k', '-ar', String(AR),
+    '-i',
+    concatPath,
+    '-i',
+    masterPath,
+    '-map',
+    '0:v',
+    '-map',
+    '1:a',
+    '-c:v',
+    'copy',
+    '-c:a',
+    'aac',
+    '-b:a',
+    '192k',
+    '-ar',
+    String(AR),
     outputPath,
   );
 

@@ -196,14 +196,17 @@ async function handleRequest(req: Request): Promise<Response> {
   const res = await anthropic.messages.create({
     model,
     max_tokens: 4096,
-    system: [{
-      type: 'text' as const,
-      text: ANALYZE_SYSTEM_PROMPT,
-      cache_control: { type: 'ephemeral' as const },
-    }],
-    messages: [{
-      role: 'user',
-      content: `Analyze this research text. Target country: ${country}. Target language: ${captionLanguage}.
+    system: [
+      {
+        type: 'text' as const,
+        text: ANALYZE_SYSTEM_PROMPT,
+        cache_control: { type: 'ephemeral' as const },
+      },
+    ],
+    messages: [
+      {
+        role: 'user',
+        content: `Analyze this research text. Target country: ${country}. Target language: ${captionLanguage}.
 
 Extract every individual article or story. Apply all policy checks and editorial classification rules from the system prompt.
 
@@ -213,7 +216,8 @@ ${rawText.slice(0, 8000)}
 ---
 
 Return ONLY a raw JSON object starting with { and ending with }.`,
-    }],
+      },
+    ],
   });
 
   const text = (res.content?.[0] as any)?.text ?? '';

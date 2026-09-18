@@ -1,13 +1,15 @@
-import { parseArgs } from 'util';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parseArgs } from 'util';
+
 import Anthropic from '@anthropic-ai/sdk';
+import { extractJson } from '@signal-studio/ai';
 import { env } from '@signal-studio/config';
 import { getServiceClient } from '@signal-studio/database';
-import { extractJson } from '@signal-studio/ai';
-import { getChannel } from '../src/config/channels.js';
 import { createBrief, listRecentBriefs } from '@signal-studio/database/briefs';
+
+import { getChannel } from '../src/config/channels.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -17,10 +19,10 @@ let _parsed;
 try {
   const { values } = parseArgs({
     options: {
-      channel:         { type: 'string' },
-      concept:         { type: 'string' },
-      format:          { type: 'string' },
-      slot:            { type: 'string' },
+      channel: { type: 'string' },
+      concept: { type: 'string' },
+      format: { type: 'string' },
+      slot: { type: 'string' },
       'scheduled-for': { type: 'string' },
     },
     strict: false,
@@ -32,10 +34,10 @@ try {
 }
 
 const args = {
-  channel:      _parsed.channel,
-  concept:      _parsed.concept,
-  format:       _parsed.format,
-  slot:         _parsed.slot,
+  channel: _parsed.channel,
+  concept: _parsed.concept,
+  format: _parsed.format,
+  slot: _parsed.slot,
   scheduledFor: _parsed['scheduled-for'],
 };
 
@@ -51,17 +53,19 @@ function loadKnowledge(channelKey) {
   const base = join(__dirname, '../knowledge', dir);
   const files = [
     { label: 'CHANNEL HOUSE STYLE & RULES', file: 'house-style.md' },
-    { label: 'PROVEN SCRIPT PATTERNS',      file: 'script-library.md' },
-    { label: 'SEO EXAMPLES & PATTERNS',     file: 'seo-examples.md' },
+    { label: 'PROVEN SCRIPT PATTERNS', file: 'script-library.md' },
+    { label: 'SEO EXAMPLES & PATTERNS', file: 'seo-examples.md' },
   ];
-  return files.map(({ label, file }) => {
-    try {
-      const content = readFileSync(join(base, file), 'utf8');
-      return `\n${'═'.repeat(60)}\n${label}\n${'═'.repeat(60)}\n${content}`;
-    } catch {
-      return '';
-    }
-  }).join('\n');
+  return files
+    .map(({ label, file }) => {
+      try {
+        const content = readFileSync(join(base, file), 'utf8');
+        return `\n${'═'.repeat(60)}\n${label}\n${'═'.repeat(60)}\n${content}`;
+      } catch {
+        return '';
+      }
+    })
+    .join('\n');
 }
 
 // ── AI validation ───────────────────────────────────────────────────────────
@@ -123,8 +127,11 @@ On 21s tension failure:
     messages: [{ role: 'user', content: userLines }],
   });
 
-  const textBlock = response.content.find(b => b.type === 'text');
-  if (!textBlock) throw new Error(`AI returned no text block. Content types: ${response.content.map(b => b.type).join(', ')}`);
+  const textBlock = response.content.find((b) => b.type === 'text');
+  if (!textBlock)
+    throw new Error(
+      `AI returned no text block. Content types: ${response.content.map((b) => b.type).join(', ')}`,
+    );
   const jsonStr = extractJson(textBlock.text);
   if (!jsonStr) throw new Error(`AI returned no JSON. Raw: ${textBlock.text.slice(0, 300)}`);
   return JSON.parse(jsonStr);
@@ -133,7 +140,9 @@ On 21s tension failure:
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 if (!args.channel || !args.concept) {
-  console.error(JSON.stringify({ error: 'missing-args', message: '--channel and --concept are required' }));
+  console.error(
+    JSON.stringify({ error: 'missing-args', message: '--channel and --concept are required' }),
+  );
   process.exit(2);
 }
 
@@ -146,15 +155,22 @@ try {
 }
 
 if (!channel.formats) {
-  console.error(JSON.stringify({ error: 'no-formats', message: `Channel "${args.channel}" does not support the brief/format system` }));
+  console.error(
+    JSON.stringify({
+      error: 'no-formats',
+      message: `Channel "${args.channel}" does not support the brief/format system`,
+    }),
+  );
   process.exit(2);
 }
 
 if (args.format && !channel.formats[args.format]) {
-  console.error(JSON.stringify({
-    error:   'unknown-format',
-    message: `Format "${args.format}" is not valid for "${args.channel}". Valid: ${Object.keys(channel.formats).join(', ')}`,
-  }));
+  console.error(
+    JSON.stringify({
+      error: 'unknown-format',
+      message: `Format "${args.format}" is not valid for "${args.channel}". Valid: ${Object.keys(channel.formats).join(', ')}`,
+    }),
+  );
   process.exit(2);
 }
 
@@ -178,20 +194,29 @@ try {
   ]);
 
   recentContext = [
-    ...recentBriefs.map(b => ({ source: `brief #${b.id}`, title: b.title, description: b.description })),
-    ...recentPosts.map(p => ({ source: 'posted',           title: p.topic_title, description: null })),
+    ...recentBriefs.map((b) => ({
+      source: `brief #${b.id}`,
+      title: b.title,
+      description: b.description,
+    })),
+    ...recentPosts.map((p) => ({ source: 'posted', title: p.topic_title, description: null })),
   ];
 } catch (e) {
-  console.error(JSON.stringify({ error: 'context-warn', message: `Could not load recent context for duplicate check: ${e.message}` }));
+  console.error(
+    JSON.stringify({
+      error: 'context-warn',
+      message: `Could not load recent context for duplicate check: ${e.message}`,
+    }),
+  );
 }
 
 // Phase 1 — AI validation
 let ai;
 try {
   ai = await validateBrief({
-    channelKey:    args.channel,
-    concept:       args.concept,
-    format:        args.format,
+    channelKey: args.channel,
+    concept: args.concept,
+    format: args.format,
     recentContext,
     channelConfig: channel,
   });
@@ -206,10 +231,12 @@ if (!ai.ok) {
 }
 
 if (!channel.formats[ai.format]) {
-  console.error(JSON.stringify({
-    error:   'ai-invalid-format',
-    message: `AI returned format "${ai.format}" which is not valid for "${args.channel}". Valid: ${Object.keys(channel.formats).join(', ')}`,
-  }));
+  console.error(
+    JSON.stringify({
+      error: 'ai-invalid-format',
+      message: `AI returned format "${ai.format}" which is not valid for "${args.channel}". Valid: ${Object.keys(channel.formats).join(', ')}`,
+    }),
+  );
   process.exit(2);
 }
 
@@ -219,10 +246,10 @@ const slot = args.slot ?? channel.formats[ai.format].slot ?? null;
 let brief;
 try {
   brief = await createBrief({
-    channelKey:   args.channel,
-    format:       ai.format,
-    title:        ai.title,
-    description:  args.concept,
+    channelKey: args.channel,
+    format: ai.format,
+    title: ai.title,
+    description: args.concept,
     slot,
     scheduledFor: args.scheduledFor ?? null,
   });
@@ -231,4 +258,6 @@ try {
   process.exit(2);
 }
 
-console.log(JSON.stringify({ id: brief.id, title: brief.title, format: brief.format, slot: brief.slot }));
+console.log(
+  JSON.stringify({ id: brief.id, title: brief.title, format: brief.format, slot: brief.slot }),
+);

@@ -58,14 +58,20 @@ export async function deleteArticle(id) {
 
 export async function deleteArticlesByCountry(country) {
   const supabase = getClient();
-  const { error, count } = await supabase.from('articles').delete({ count: 'exact' }).eq('country', country);
+  const { error, count } = await supabase
+    .from('articles')
+    .delete({ count: 'exact' })
+    .eq('country', country);
   if (error) throw new Error(`DB delete error: ${error.message}`);
   return count ?? 0;
 }
 
 export async function truncateArticles() {
   const supabase = getClient();
-  const { error } = await supabase.from('articles').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { error } = await supabase
+    .from('articles')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000');
   if (error) throw new Error(`DB truncate error: ${error.message}`);
 }
 
@@ -79,7 +85,7 @@ export async function getRecentSeedComments(country, limit = 20) {
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw error;
-  return (data || []).map(r => r.seed_comment_template_id).filter(Boolean);
+  return (data || []).map((r) => r.seed_comment_template_id).filter(Boolean);
 }
 
 export async function getRecentArticlesForClustering(country, windowHours = 6) {
@@ -120,7 +126,7 @@ export async function getPendingArticlesSortedByScore(country) {
     .eq('status', 'pending')
     .not('ai_caption', 'is', null)
     .order('editorial_score', { ascending: false, nullsFirst: false })
-    .order('publish_score',   { ascending: false, nullsFirst: false });
+    .order('publish_score', { ascending: false, nullsFirst: false });
   if (country) query = query.eq('country', country);
   const { data, error } = await query;
   if (error) throw error;
@@ -152,5 +158,5 @@ export async function getRecentArticleTitles(country, daysBack = 3) {
     .eq('country', country)
     .gte('created_at', since);
   if (error) throw error;
-  return (data || []).map(r => r.title);
+  return (data || []).map((r) => r.title);
 }

@@ -8,33 +8,39 @@
 //   node apps/video/scripts/longform/mix-audio-local.mjs --dir content/longform/two-shots-messi
 //   node apps/video/scripts/longform/mix-audio-local.mjs --dir content/longform/two-shots-messi --input output/final.mp4 --output output/final-mixed.mp4
 
-import { parseArgs } from 'util';
 import { existsSync, mkdirSync, rmSync, readFileSync, copyFileSync } from 'fs';
+import { tmpdir } from 'os';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { tmpdir } from 'os';
-import { parseShotlistV2 } from '../../src/longform/parse-shotlist-v2.js';
-import { mapAllCues } from '../../src/longform/map-audio-cues.js';
+import { parseArgs } from 'util';
+
 import { buildAudioMix } from '../../src/longform/audio-mix.js';
+import { mapAllCues } from '../../src/longform/map-audio-cues.js';
+import { parseShotlistV2 } from '../../src/longform/parse-shotlist-v2.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
 
 const { values } = parseArgs({
   options: {
-    dir:    { type: 'string' },
-    input:  { type: 'string' },  // relative to <dir>, defaults to output/final.mp4
-    output: { type: 'string' },  // relative to <dir>, defaults to output/final-mixed.mp4
+    dir: { type: 'string' },
+    input: { type: 'string' }, // relative to <dir>, defaults to output/final.mp4
+    output: { type: 'string' }, // relative to <dir>, defaults to output/final-mixed.mp4
     'audio-plan': { type: 'string' }, // override path, defaults to <dir>/audio-plan.json
     'keep-tmp': { type: 'boolean', default: false },
   },
   strict: false,
 });
 
-if (!values.dir) { console.error('--dir <project-dir> required'); process.exit(2); }
+if (!values.dir) {
+  console.error('--dir <project-dir> required');
+  process.exit(2);
+}
 const projectDir = resolve(REPO_ROOT, values.dir);
 const inputPath = resolve(projectDir, values.input ?? 'output/final.mp4');
 const outputPath = resolve(projectDir, values.output ?? 'output/final-mixed.mp4');
-const audioPlanPath = values['audio-plan'] ? resolve(values['audio-plan']) : join(projectDir, 'audio-plan.json');
+const audioPlanPath = values['audio-plan']
+  ? resolve(values['audio-plan'])
+  : join(projectDir, 'audio-plan.json');
 const shotlistPath = join(projectDir, 'shotlist-v2.md');
 
 async function main() {
@@ -45,8 +51,10 @@ async function main() {
   const { scenes } = parseShotlistV2(shotlistPath);
   const unmatched = mapAllCues(scenes);
   if (unmatched.length) {
-    console.warn(`[warn] ${unmatched.length} audio cue(s) unmatched (no SFX, bed continues):`,
-      unmatched.map((u) => `S${u.scene_n}`).join(', '));
+    console.warn(
+      `[warn] ${unmatched.length} audio cue(s) unmatched (no SFX, bed continues):`,
+      unmatched.map((u) => `S${u.scene_n}`).join(', '),
+    );
   }
 
   // Real per-scene durations (post VO-stretch/tighten), written by
@@ -71,7 +79,9 @@ async function main() {
   mkdirSync(workDir, { recursive: true });
 
   try {
-    console.log(`Mixing audio for ${clips.length} scenes (${audioPlan.segments.length} bed segments)…`);
+    console.log(
+      `Mixing audio for ${clips.length} scenes (${audioPlan.segments.length} bed segments)…`,
+    );
     const { loudnormStats } = await buildAudioMix({
       concatPath: inputPath,
       clips,
@@ -79,7 +89,9 @@ async function main() {
       outputPath,
       workDir,
     });
-    console.log(`  Loudnorm measured: I=${Number(loudnormStats.input_i).toFixed(1)} → -14.0 LUFS, TP=${Number(loudnormStats.input_tp).toFixed(1)} → -1.0 dBTP`);
+    console.log(
+      `  Loudnorm measured: I=${Number(loudnormStats.input_i).toFixed(1)} → -14.0 LUFS, TP=${Number(loudnormStats.input_tp).toFixed(1)} → -1.0 dBTP`,
+    );
     console.log(`\n✓ Mixed: ${outputPath}`);
   } finally {
     if (values['keep-tmp']) console.log(`Temp dir kept: ${workDir}`);
@@ -87,4 +99,7 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('FATAL:', e.message);
+  process.exit(1);
+});

@@ -101,63 +101,63 @@
 
 ### Scripts (you run these)
 
-| Script | What it does | Command |
-|---|---|---|
-| `apps/video/scripts/longform/plan.mjs` | Parses the shot list, creates all DB rows | `node plan.mjs --file shotlist.md --channel football/documentary/EN` |
-| `apps/video/scripts/longform/classify-scenes.mjs` | Claude classifies each scene as still / clip / text_card | `node classify-scenes.mjs --project 29 --file shotlist.md` |
-| `apps/video/scripts/longform/generate-references.mjs` | Generates the 12 reference images (visual bible) | `node generate-references.mjs --project 29` |
-| `apps/video/scripts/longform/prompt-sheet.mjs` | Writes a brief for scenes needing Google photos | `node prompt-sheet.mjs --project 29` |
-| `apps/video/scripts/longform/import-stills.mjs` | Uploads manually-downloaded Google photos to R2 | `node import-stills.mjs --project 29 --dir ./google-stills/` |
-| `apps/video/scripts/longform/generate-stills.mjs` | Generates all 37 still images via Higgsfield | `node generate-stills.mjs --project 29` |
-| `apps/video/scripts/longform/generate-tts.mjs` | Generates all narrator WAV files via Kokoro TTS | `node generate-tts.mjs --project 29` |
-| `apps/video/scripts/longform/generate-clips.mjs` | Generates all 11 motion video clips via Higgsfield | `node generate-clips.mjs --project 29` |
-| `apps/video/scripts/longform/assemble-longform.mjs` | Assembles everything into the final MP4 | `node assemble-longform.mjs --project 29` |
+| Script                                                | What it does                                             | Command                                                              |
+| ----------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `apps/video/scripts/longform/plan.mjs`                | Parses the shot list, creates all DB rows                | `node plan.mjs --file shotlist.md --channel football/documentary/EN` |
+| `apps/video/scripts/longform/classify-scenes.mjs`     | Claude classifies each scene as still / clip / text_card | `node classify-scenes.mjs --project 29 --file shotlist.md`           |
+| `apps/video/scripts/longform/generate-references.mjs` | Generates the 12 reference images (visual bible)         | `node generate-references.mjs --project 29`                          |
+| `apps/video/scripts/longform/prompt-sheet.mjs`        | Writes a brief for scenes needing Google photos          | `node prompt-sheet.mjs --project 29`                                 |
+| `apps/video/scripts/longform/import-stills.mjs`       | Uploads manually-downloaded Google photos to R2          | `node import-stills.mjs --project 29 --dir ./google-stills/`         |
+| `apps/video/scripts/longform/generate-stills.mjs`     | Generates all 37 still images via Higgsfield             | `node generate-stills.mjs --project 29`                              |
+| `apps/video/scripts/longform/generate-tts.mjs`        | Generates all narrator WAV files via Kokoro TTS          | `node generate-tts.mjs --project 29`                                 |
+| `apps/video/scripts/longform/generate-clips.mjs`      | Generates all 11 motion video clips via Higgsfield       | `node generate-clips.mjs --project 29`                               |
+| `apps/video/scripts/longform/assemble-longform.mjs`   | Assembles everything into the final MP4                  | `node assemble-longform.mjs --project 29`                            |
 
 ### Supporting Source Files (the engine — not run directly)
 
-| File | Role |
-|---|---|
-| `apps/video/src/config/channels.js` | Channel config — sets the AI models, resolution, concurrency, and platform targets for `football/documentary/EN` |
-| `apps/video/src/longform/pool.js` | Rolling concurrency pool — keeps exactly 8 Higgsfield jobs running at once, starts the next one the moment any finishes |
-| `apps/video/src/longform/higgsfield.js` | Higgsfield CLI wrapper — submits a job, polls for completion, handles the 8-job rate limit as a back-off not a failure |
-| `apps/video/src/longform/soul.js` | Still image generation — calls Higgsfield's image API with the right model and reference images |
-| `apps/video/src/longform/parse-shotlist.js` | Parses the markdown shot list into structured scene objects |
-| `apps/video/src/longform/plan-references.js` | Builds the reference image bible from the shot list |
+| File                                         | Role                                                                                                                    |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `apps/video/src/config/channels.js`          | Channel config — sets the AI models, resolution, concurrency, and platform targets for `football/documentary/EN`        |
+| `apps/video/src/longform/pool.js`            | Rolling concurrency pool — keeps exactly 8 Higgsfield jobs running at once, starts the next one the moment any finishes |
+| `apps/video/src/longform/higgsfield.js`      | Higgsfield CLI wrapper — submits a job, polls for completion, handles the 8-job rate limit as a back-off not a failure  |
+| `apps/video/src/longform/soul.js`            | Still image generation — calls Higgsfield's image API with the right model and reference images                         |
+| `apps/video/src/longform/parse-shotlist.js`  | Parses the markdown shot list into structured scene objects                                                             |
+| `apps/video/src/longform/plan-references.js` | Builds the reference image bible from the shot list                                                                     |
 
 ### Packages (shared across the whole platform)
 
-| Package | Import | What it provides |
-|---|---|---|
-| `packages/media/tts.js` | `@signal-studio/media/tts` | Kokoro TTS — converts text to WAV audio |
-| `packages/media/storage.js` | `@signal-studio/media/storage` | `uploadToR2()` — uploads files to Cloudflare R2 |
-| `packages/database/supabase.js` | `@signal-studio/database` | Supabase client — reads/writes all DB tables |
-| `packages/render/ffmpeg/kenburns.js` | `@signal-studio/render-ffmpeg` | Ken Burns zoom animation for still images |
-| `packages/render/ffmpeg/concat.js` | `@signal-studio/render-ffmpeg` | FFmpeg concat — joins multiple MP4s into one |
+| Package                              | Import                         | What it provides                                |
+| ------------------------------------ | ------------------------------ | ----------------------------------------------- |
+| `packages/media/tts.js`              | `@signal-studio/media/tts`     | Kokoro TTS — converts text to WAV audio         |
+| `packages/media/storage.js`          | `@signal-studio/media/storage` | `uploadToR2()` — uploads files to Cloudflare R2 |
+| `packages/database/supabase.js`      | `@signal-studio/database`      | Supabase client — reads/writes all DB tables    |
+| `packages/render/ffmpeg/kenburns.js` | `@signal-studio/render-ffmpeg` | Ken Burns zoom animation for still images       |
+| `packages/render/ffmpeg/concat.js`   | `@signal-studio/render-ffmpeg` | FFmpeg concat — joins multiple MP4s into one    |
 
 ### Database Tables (Supabase — single source of truth)
 
-| Table | Holds |
-|---|---|
-| `content_items` | One row per project — title, channel, status, final video URL |
-| `content_clips` | One row per scene — prompt, VO text, duration, clip URL, VO URL, status |
-| `content_references` | One row per reference image — key name, Higgsfield media ID, status |
+| Table                | Holds                                                                   |
+| -------------------- | ----------------------------------------------------------------------- |
+| `content_items`      | One row per project — title, channel, status, final video URL           |
+| `content_clips`      | One row per scene — prompt, VO text, duration, clip URL, VO URL, status |
+| `content_references` | One row per reference image — key name, Higgsfield media ID, status     |
 
 ### Database Migrations (schema history)
 
-| File | What it created |
-|---|---|
+| File                                               | What it created                                                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `supabase/migrations/20260701_longform_schema.sql` | `content_clips` + `content_references` tables — the longform pipeline tables |
-| `supabase/migrations/20260702_hybrid_stills.sql` | Added `image_source` column to support Google/Higgsfield/reference routing |
+| `supabase/migrations/20260702_hybrid_stills.sql`   | Added `image_source` column to support Google/Higgsfield/reference routing   |
 
 ### Working Files (temp — created during production)
 
-| File / Folder | Created by | Contains |
-|---|---|---|
-| `temp/longform/29/silenced-shotlist.md` | You (manually written) | The 51-scene shot list — the source of everything |
-| `temp/longform/29/silenced.bible.json` | Claude | Story narrative and character notes |
-| `temp/longform/29/29-promptsheet.md` | `prompt-sheet.mjs` | Brief for Google photo scenes (S14, S30, S51) |
-| `temp/longform/29/google-stills/` | You (manually downloaded) | Real match photos before R2 upload |
-| `temp/longform/29/refs/` | `generate-references.mjs` | Local copies of reference images |
+| File / Folder                           | Created by                | Contains                                          |
+| --------------------------------------- | ------------------------- | ------------------------------------------------- |
+| `temp/longform/29/silenced-shotlist.md` | You (manually written)    | The 51-scene shot list — the source of everything |
+| `temp/longform/29/silenced.bible.json`  | Claude                    | Story narrative and character notes               |
+| `temp/longform/29/29-promptsheet.md`    | `prompt-sheet.mjs`        | Brief for Google photo scenes (S14, S30, S51)     |
+| `temp/longform/29/google-stills/`       | You (manually downloaded) | Real match photos before R2 upload                |
+| `temp/longform/29/refs/`                | `generate-references.mjs` | Local copies of reference images                  |
 
 ---
 
@@ -202,10 +202,10 @@ connection pooling through PgBouncer and avoids hitting Postgres's connection li
 
 The secret stores you will need to configure on the `reel-pipeline` GitHub repo:
 
-| Secret | Used by |
-|---|---|
-| `SIGNAL_STUDIO_DEPLOY_KEY` | Checkout this private repo |
-| `ANTHROPIC_API_KEY` | Claude (classify step) |
-| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | All DB reads/writes |
-| `HIGGSFIELD_AUTH_TOKEN` | Image and video generation |
-| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_RENDERED`, `R2_PUBLIC_BASE_URL` | Uploading assets |
+| Secret                                                                                                  | Used by                    |
+| ------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `SIGNAL_STUDIO_DEPLOY_KEY`                                                                              | Checkout this private repo |
+| `ANTHROPIC_API_KEY`                                                                                     | Claude (classify step)     |
+| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`                                                            | All DB reads/writes        |
+| `HIGGSFIELD_AUTH_TOKEN`                                                                                 | Image and video generation |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_RENDERED`, `R2_PUBLIC_BASE_URL` | Uploading assets           |

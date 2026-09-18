@@ -2,8 +2,12 @@ import { readFileSync } from 'fs';
 
 const ACT_FROM_HEADER = {
   'COLD OPEN': 0,
-  'ACT 1': 1, 'ACT 2': 2, 'ACT 3': 3, 'ACT 4': 4, 'ACT 5': 5,
-  'OUTRO': 6,
+  'ACT 1': 1,
+  'ACT 2': 2,
+  'ACT 3': 3,
+  'ACT 4': 4,
+  'ACT 5': 5,
+  OUTRO: 6,
 };
 
 export function tcToSec(tc) {
@@ -19,7 +23,8 @@ function parseMotionLine(motionLine, cutCount) {
   const line = motionLine.replace(/^🎞️\s*/, '').trim();
 
   // Try to detect per-cut references "A: <motion> ... B: <motion>"
-  const cutPattern = /\b([A-D]):\s*(SMASH|PUSH|PULL|PARALLAX|micro.?PUSH|Slow lateral pan|Hold|pan)\b/gi;
+  const cutPattern =
+    /\b([A-D]):\s*(SMASH|PUSH|PULL|PARALLAX|micro.?PUSH|Slow lateral pan|Hold|pan)\b/gi;
   const cutMatches = [...line.matchAll(cutPattern)];
 
   if (cutMatches.length >= 2) {
@@ -138,18 +143,20 @@ function parseOverlayLine(line) {
     // Drop timecode: at M:SS
     const atM = meta.match(/at\s+(\d+:\d+)/i);
     // Zone: right third / left third / bottom third / centered / over ... / editor
-    const zoneM = meta.match(/(right third|left third|bottom third|centered|over [^,\.]+|editor [^,\.]+)/i);
+    const zoneM = meta.match(
+      /(right third|left third|bottom third|centered|over [^,\.]+|editor [^,\.]+)/i,
+    );
     // Size
     const sizeM = meta.match(/\b(large|small)\b/i);
 
     return {
-      tier:         1,
-      text:         cardText,
-      amber_word:   amberM ? amberM[1] : null,
-      size:         sizeM ? sizeM[1].toLowerCase() : 'large',
-      zone:         zoneM ? zoneM[1].toLowerCase().trim() : null,
+      tier: 1,
+      text: cardText,
+      amber_word: amberM ? amberM[1] : null,
+      size: sizeM ? sizeM[1].toLowerCase() : 'large',
+      zone: zoneM ? zoneM[1].toLowerCase().trim() : null,
       duration_sec: durM ? Number(durM[1]) : null,
-      at_sec:       atM ? tcToSec(atM[1]) : null,
+      at_sec: atM ? tcToSec(atM[1]) : null,
     };
   }
 
@@ -157,13 +164,13 @@ function parseOverlayLine(line) {
   const timeMatch = line.match(/at\s+(\d+:\d+)/);
   const textMatch = line.match(/"([^"]+)"/);
   return {
-    tier:         1,
-    text:         textMatch ? textMatch[1] : raw,
-    amber_word:   null,
-    size:         'small',
-    zone:         null,
+    tier: 1,
+    text: textMatch ? textMatch[1] : raw,
+    amber_word: null,
+    size: 'small',
+    zone: null,
     duration_sec: null,
-    at_sec:       timeMatch ? tcToSec(timeMatch[1]) : null,
+    at_sec: timeMatch ? tcToSec(timeMatch[1]) : null,
   };
 }
 
@@ -192,11 +199,17 @@ export function parseShotlistText(text) {
     // Header metadata
     if (!title) {
       const titleM = line.match(/^\*\*TITLE:\*\*\s*(.*)/);
-      if (titleM) { title = titleM[1].trim(); continue; }
+      if (titleM) {
+        title = titleM[1].trim();
+        continue;
+      }
     }
     if (targetDurationSec === null) {
       const durM = line.match(/\*\*TARGET_DURATION_SEC:\*\*\s*(\d+)/);
-      if (durM) { targetDurationSec = Number(durM[1]); continue; }
+      if (durM) {
+        targetDurationSec = Number(durM[1]);
+        continue;
+      }
     }
 
     // Act section headers: ## COLD OPEN, ## ACT 1, etc.
@@ -226,7 +239,10 @@ export function parseShotlistText(text) {
         still_motions: [],
         stills: [],
         keep_video: line.includes('KEEP-VIDEO'),
-        kind: line.includes('EDITOR GRAPHIC') || line.includes('EDITOR BUILD') ? 'editor_build' : 'still',
+        kind:
+          line.includes('EDITOR GRAPHIC') || line.includes('EDITOR BUILD')
+            ? 'editor_build'
+            : 'still',
       };
       stillCount = 0;
       continue;
@@ -262,7 +278,11 @@ export function parseShotlistText(text) {
 
     // VO
     if (line.startsWith('🎙️')) {
-      const vo = line.replace(/^🎙️\s*/, '').trim().replace(/^"/, '').replace(/"$/, '');
+      const vo = line
+        .replace(/^🎙️\s*/, '')
+        .trim()
+        .replace(/^"/, '')
+        .replace(/"$/, '');
       currentScene.vo_text = vo;
       continue;
     }
@@ -296,7 +316,10 @@ export function parseShotlistText(text) {
 // CLI
 if (process.argv[1].endsWith('parse-shotlist-v2.js')) {
   const path = process.argv[2];
-  if (!path) { console.error('Usage: node parse-shotlist-v2.js <shotlist-v2.md>'); process.exit(1); }
+  if (!path) {
+    console.error('Usage: node parse-shotlist-v2.js <shotlist-v2.md>');
+    process.exit(1);
+  }
   const { title, target_duration_sec, scenes } = parseShotlistV2(path);
   console.log(`Title: ${title}`);
   console.log(`Duration: ${target_duration_sec}s`);
@@ -304,5 +327,5 @@ if (process.argv[1].endsWith('parse-shotlist-v2.js')) {
   const s12 = scenes.find((s) => s.scene_n === 12);
   if (s12) console.log('S12 overlay:', JSON.stringify(s12.overlays));
   const s7 = scenes.find((s) => s.scene_n === 7);
-  if (s7) console.log('S7 stills:', JSON.stringify(s7.stills?.map(s => s.cut)));
+  if (s7) console.log('S7 stills:', JSON.stringify(s7.stills?.map((s) => s.cut)));
 }

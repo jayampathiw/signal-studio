@@ -1,6 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { S3Client, PutObjectCommand } from 'https://esm.sh/@aws-sdk/client-s3@3';
 import Anthropic from 'https://esm.sh/@anthropic-ai/sdk';
+import { S3Client, PutObjectCommand } from 'https://esm.sh/@aws-sdk/client-s3@3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -20,7 +20,7 @@ function r2Client() {
     region: 'auto',
     endpoint: `https://${Deno.env.get('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId:     Deno.env.get('R2_ACCESS_KEY_ID')!,
+      accessKeyId: Deno.env.get('R2_ACCESS_KEY_ID')!,
       secretAccessKey: Deno.env.get('R2_SECRET_ACCESS_KEY')!,
     },
   });
@@ -44,8 +44,8 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     project_id = Number(body.project_id);
     image_base64 = String(body.image_base64 ?? '');
-    mime_type    = String(body.mime_type ?? 'image/jpeg');
-    filename     = String(body.filename  ?? 'image.jpg');
+    mime_type = String(body.mime_type ?? 'image/jpeg');
+    filename = String(body.filename ?? 'image.jpg');
     if (!project_id || !image_base64) throw new Error('project_id and image_base64 required');
   } catch (e) {
     return json({ error: (e as Error).message }, 400);
@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
 
   // Build slot list for Claude
   const slotList = stills
-    .map(s => `S${s.scene_n}-${s.cut}: ${(s.prompt as string).slice(0, 200)}`)
+    .map((s) => `S${s.scene_n}-${s.cut}: ${(s.prompt as string).slice(0, 200)}`)
     .join('\n');
 
   // Call Claude Vision
@@ -96,24 +96,27 @@ Deno.serve(async (req: Request) => {
     const res = await anthropic.messages.create({
       model,
       max_tokens: 15,
-      system: 'You are a slot-matching engine. Output ONLY a slot ID like "S7-A" or the word "NO_MATCH". Never describe images. Never explain. No punctuation. No other words.',
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mime_type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-              data: image_base64,
+      system:
+        'You are a slot-matching engine. Output ONLY a slot ID like "S7-A" or the word "NO_MATCH". Never describe images. Never explain. No punctuation. No other words.',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mime_type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+                data: image_base64,
+              },
             },
-          },
-          {
-            type: 'text',
-            text: `Which slot does this image match? Output only the slot ID or NO_MATCH.\n\n${slotList}`,
-          },
-        ],
-      }],
+            {
+              type: 'text',
+              text: `Which slot does this image match? Output only the slot ID or NO_MATCH.\n\n${slotList}`,
+            },
+          ],
+        },
+      ],
     });
     matchedSlot = ((res.content[0] as { text: string }).text ?? '').trim();
   } catch (e: any) {
@@ -130,26 +133,29 @@ Deno.serve(async (req: Request) => {
   if (!slotM) return json({ error: `NO_MATCH: Claude could not identify a slot` }, 422);
 
   const scene_n = Number(slotM[1]);
-  const cut     = slotM[2].toUpperCase();
-  const slot    = `S${scene_n}-${cut}`;
+  const cut = slotM[2].toUpperCase();
+  const slot = `S${scene_n}-${cut}`;
 
   // Verify slot exists in DB
-  const slotExists = stills.some(s => s.scene_n === scene_n && s.cut === cut);
-  if (!slotExists) return json({ error: `Matched slot S${scene_n}-${cut} not found in project stills` }, 422);
+  const slotExists = stills.some((s) => s.scene_n === scene_n && s.cut === cut);
+  if (!slotExists)
+    return json({ error: `Matched slot S${scene_n}-${cut} not found in project stills` }, 422);
 
   // Upload image bytes to R2
-  const ext    = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const key    = `longform/${project_id}/stills/S${String(scene_n).padStart(2, '0')}-${cut}/${Date.now()}.${ext}`;
+  const ext = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
+  const key = `longform/${project_id}/stills/S${String(scene_n).padStart(2, '0')}-${cut}/${Date.now()}.${ext}`;
   const bucket = Deno.env.get('R2_BUCKET_RENDERED')!;
 
   try {
-    const bytes = Uint8Array.from(atob(image_base64), c => c.charCodeAt(0));
-    await r2Client().send(new PutObjectCommand({
-      Bucket:      bucket,
-      Key:         key,
-      Body:        bytes,
-      ContentType: mime_type,
-    }));
+    const bytes = Uint8Array.from(atob(image_base64), (c) => c.charCodeAt(0));
+    await r2Client().send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: bytes,
+        ContentType: mime_type,
+      }),
+    );
   } catch (e: any) {
     return json({ error: `R2 upload failed: ${e.message}` }, 500);
   }

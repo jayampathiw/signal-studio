@@ -1,9 +1,10 @@
-import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
+
 import { classifyArticle } from '../enrich/criticality.js';
-import { validateArticle } from '../validators/contentValidator.js';
 import { deduplicate, similarity } from '../enrich/dedup.js';
 import { computeEditorialScore } from '../enrich/publishScore.js';
+import { validateArticle } from '../validators/contentValidator.js';
 
 const TRENDS_RSS = {
   FR: 'https://trends.google.com/trending/rss?geo=FR',
@@ -16,7 +17,12 @@ function extractTag(xml, tag) {
   const re = new RegExp(`<${tag}(?:[^>]*)>([\\s\\S]*?)<\\/${tag}>`, 'i');
   const m = xml.match(re);
   if (!m) return null;
-  return m[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, '').trim() || null;
+  return (
+    m[1]
+      .replace(/<!\[CDATA\[|\]\]>/g, '')
+      .replace(/<[^>]+>/g, '')
+      .trim() || null
+  );
 }
 
 function parseTrendingItems(xml) {
@@ -27,10 +33,10 @@ function parseTrendingItems(xml) {
 
     const newsItems = [];
     for (const [, niXml] of itemXml.matchAll(/<ht:news_item>([\s\S]*?)<\/ht:news_item>/g)) {
-      const title   = extractTag(niXml, 'ht:news_item_title');
+      const title = extractTag(niXml, 'ht:news_item_title');
       const snippet = extractTag(niXml, 'ht:news_item_snippet');
-      const url     = extractTag(niXml, 'ht:news_item_url');
-      const source  = extractTag(niXml, 'ht:news_item_source');
+      const url = extractTag(niXml, 'ht:news_item_url');
+      const source = extractTag(niXml, 'ht:news_item_source');
       if (title && url) newsItems.push({ title, snippet, url, source });
     }
 
@@ -89,10 +95,10 @@ async function run() {
       for (const ni of newsItems) {
         const article = {
           country,
-          source:       `Google Trends — ${ni.source || query}`,
-          title:        ni.title,
+          source: `Google Trends — ${ni.source || query}`,
+          title: ni.title,
           original_url: ni.url,
-          summary:      ni.snippet || '',
+          summary: ni.snippet || '',
           published_at: new Date().toISOString(),
         };
 
@@ -101,9 +107,9 @@ async function run() {
           signal_type: 'google_trends',
           query,
           source_page: ni.source,
-          title:       ni.title,
-          snippet:     ni.snippet,
-          url:         ni.url,
+          title: ni.title,
+          snippet: ni.snippet,
+          url: ni.url,
         });
 
         if (!isDuplicate(article, recentArticles)) {
@@ -130,13 +136,17 @@ async function run() {
 
       if (check.severity === 'absolute' || check.severity === 'manual_review') continue;
 
-      const editorial_score = computeEditorialScore({ ...article, priority_score, created_at: new Date().toISOString() });
+      const editorial_score = computeEditorialScore({
+        ...article,
+        priority_score,
+        created_at: new Date().toISOString(),
+      });
       const row = {
         ...article,
         criticality,
         priority_score,
         editorial_score,
-        status:        check.valid ? 'pending' : 'blocked',
+        status: check.valid ? 'pending' : 'blocked',
         boost_eligible: check.boostEligible !== false,
       };
       if (!check.valid && check.reason) row.blocked_reason = check.reason;
@@ -153,10 +163,12 @@ async function run() {
     totalSaved += saved;
   }
 
-  console.log(`\n[google-trends] Done — ${totalSaved} articles saved, ${totalSignals} signals stored`);
+  console.log(
+    `\n[google-trends] Done — ${totalSaved} articles saved, ${totalSignals} signals stored`,
+  );
 }
 
-run().catch(err => {
+run().catch((err) => {
   console.error('GOOGLE-TRENDS FAILED:', err);
   process.exit(1);
 });

@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { env } from '@signal-studio/config';
+import axios from 'axios';
 
 export async function fetchNewsAPI(query, language, country) {
   if (!env.NEWSAPI_KEY) {
@@ -20,8 +20,8 @@ export async function fetchNewsAPI(query, language, country) {
     });
 
     const articles = response.data.articles
-      .filter(a => a.title && a.url && a.title !== '[Removed]')
-      .map(a => ({
+      .filter((a) => a.title && a.url && a.title !== '[Removed]')
+      .map((a) => ({
         country,
         source: a.source.name,
         title: a.title,

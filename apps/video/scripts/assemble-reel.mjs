@@ -6,14 +6,15 @@
 //
 // Requires: ffmpeg on PATH, R2_* env vars, Supabase service role.
 
-import { parseArgs } from 'util';
 import { createWriteStream, mkdirSync, rmSync } from 'fs';
-import { join } from 'path';
 import { tmpdir } from 'os';
+import { join } from 'path';
 import { pipeline } from 'stream/promises';
+import { parseArgs } from 'util';
+
 import { getServiceClient } from '@signal-studio/database';
-import { concatClips } from '@signal-studio/render-ffmpeg';
 import { uploadToR2 } from '@signal-studio/media/storage';
+import { concatClips } from '@signal-studio/render-ffmpeg';
 
 const { values } = parseArgs({
   options: { id: { type: 'string' } },
@@ -89,4 +90,7 @@ async function main() {
   }
 }
 
-main().catch(e => { console.error(JSON.stringify({ error: 'assembly-failed', message: e.message })); process.exit(1); });
+main().catch((e) => {
+  console.error(JSON.stringify({ error: 'assembly-failed', message: e.message }));
+  process.exit(1);
+});

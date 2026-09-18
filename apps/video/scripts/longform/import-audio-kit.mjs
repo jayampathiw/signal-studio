@@ -1,10 +1,11 @@
-import { parseArgs } from 'util';
+import { execSync } from 'child_process';
 import { writeFileSync, existsSync, readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
-import { uploadToR2 } from '@signal-studio/media/storage';
+import { parseArgs } from 'util';
+
 import { env } from '@signal-studio/config';
+import { uploadToR2 } from '@signal-studio/media/storage';
 
 const { values } = parseArgs({
   options: { check: { type: 'boolean', default: false } },
@@ -24,31 +25,51 @@ const KIND_DIR = { bed: 'beds', sfx: 'sfx' };
 // Canonical key list — must match what audio_plan and map-audio-cues.js reference
 const CANONICAL = {
   // Music beds
-  somber:     { kind: 'bed', ext: 'mp3', desc: 'Somber/dramatic orchestral bed — Act 1 lineage' },
-  tension:    { kind: 'bed', ext: 'mp3', desc: 'Building tension bed — Acts 2-3 match' },
-  drone:      { kind: 'bed', ext: 'mp3', desc: 'Low drone/minimal bed — Act 4 shootout' },
-  release:    { kind: 'bed', ext: 'mp3', desc: 'Emotional release bed — Act 5 climax' },
+  somber: { kind: 'bed', ext: 'mp3', desc: 'Somber/dramatic orchestral bed — Act 1 lineage' },
+  tension: { kind: 'bed', ext: 'mp3', desc: 'Building tension bed — Acts 2-3 match' },
+  drone: { kind: 'bed', ext: 'mp3', desc: 'Low drone/minimal bed — Act 4 shootout' },
+  release: { kind: 'bed', ext: 'mp3', desc: 'Emotional release bed — Act 5 climax' },
   reflective: { kind: 'bed', ext: 'mp3', desc: 'Reflective/hopeful bed — Act 5 outro' },
-  piano_sad_solo: { kind: 'bed', ext: 'mp3', desc: 'Solo piano, sad/somber — reversal/injustice beats (Silenced S2)' },
-  tragic_loss:    { kind: 'bed', ext: 'mp3', desc: 'Gutting, specific loss — heavier than somber' },
-  epic_dramatic:  { kind: 'bed', ext: 'mp3', desc: 'Big, bombastic dramatic orchestral — bigger than tension/release' },
-  ethereal_mystery: { kind: 'bed', ext: 'mp3', desc: 'Ambient/mysterious atmosphere — distinct from drone/reflective' },
+  piano_sad_solo: {
+    kind: 'bed',
+    ext: 'mp3',
+    desc: 'Solo piano, sad/somber — reversal/injustice beats (Silenced S2)',
+  },
+  tragic_loss: { kind: 'bed', ext: 'mp3', desc: 'Gutting, specific loss — heavier than somber' },
+  epic_dramatic: {
+    kind: 'bed',
+    ext: 'mp3',
+    desc: 'Big, bombastic dramatic orchestral — bigger than tension/release',
+  },
+  ethereal_mystery: {
+    kind: 'bed',
+    ext: 'mp3',
+    desc: 'Ambient/mysterious atmosphere — distinct from drone/reflective',
+  },
   // Ambience
   stadium_hum: { kind: 'sfx', ext: 'mp3', desc: 'Continuous low stadium crowd hum/ambience loop' },
   // SFX one-shots
-  drum_hit:       { kind: 'sfx', ext: 'mp3', desc: 'Single heavy low-freq drum hit (smash cuts)' },
-  musical_hit:    { kind: 'sfx', ext: 'mp3', desc: 'Sharp musical impact (goal moments)' },
-  ref_whistle:    { kind: 'sfx', ext: 'mp3', desc: 'Referee whistle blast' },
-  crowd_roar:     { kind: 'sfx', ext: 'mp3', desc: 'Crowd eruption roar (celebration)' },
+  drum_hit: { kind: 'sfx', ext: 'mp3', desc: 'Single heavy low-freq drum hit (smash cuts)' },
+  musical_hit: { kind: 'sfx', ext: 'mp3', desc: 'Sharp musical impact (goal moments)' },
+  ref_whistle: { kind: 'sfx', ext: 'mp3', desc: 'Referee whistle blast' },
+  crowd_roar: { kind: 'sfx', ext: 'mp3', desc: 'Crowd eruption roar (celebration)' },
   celebration_cut: { kind: 'sfx', ext: 'mp3', desc: 'Crowd roar cut to silence abruptly (S28)' },
   hum_cut_silence: { kind: 'sfx', ext: 'mp3', desc: 'Hum cuts to dead silence (S02 ending)' },
-  heartbeat:      { kind: 'sfx', ext: 'mp3', desc: 'Single heartbeat thud (S37 suspense walk)' },
-  crowd_quiet:    { kind: 'sfx', ext: 'mp3', desc: 'Hushed held-breath crowd murmur' },
-  ball_thud:      { kind: 'sfx', ext: 'mp3', desc: 'Ball hitting woodwork or turf thud' },
-  crowd_clap:     { kind: 'sfx', ext: 'mp3', desc: 'Short audience clapping burst (< 15s)' },
+  heartbeat: { kind: 'sfx', ext: 'mp3', desc: 'Single heartbeat thud (S37 suspense walk)' },
+  crowd_quiet: { kind: 'sfx', ext: 'mp3', desc: 'Hushed held-breath crowd murmur' },
+  ball_thud: { kind: 'sfx', ext: 'mp3', desc: 'Ball hitting woodwork or turf thud' },
+  crowd_clap: { kind: 'sfx', ext: 'mp3', desc: 'Short audience clapping burst (< 15s)' },
   crowd_applause: { kind: 'sfx', ext: 'mp3', desc: 'Sustained applause/ovation (< 30s)' },
-  crowd_cheer:    { kind: 'sfx', ext: 'mp3', desc: 'Sustained crowd cheer — lighter energy than crowd_roar' },
-  stadium_crowd_energy: { kind: 'sfx', ext: 'mp3', desc: 'Energetic live stadium crowd texture, longer than stadium_hum' },
+  crowd_cheer: {
+    kind: 'sfx',
+    ext: 'mp3',
+    desc: 'Sustained crowd cheer — lighter energy than crowd_roar',
+  },
+  stadium_crowd_energy: {
+    kind: 'sfx',
+    ext: 'mp3',
+    desc: 'Energetic live stadium crowd texture, longer than stadium_hum',
+  },
 };
 
 function ffprobe(filePath) {

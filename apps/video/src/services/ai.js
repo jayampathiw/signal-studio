@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { env } from '@signal-studio/config';
 import { MODEL as DEFAULT_MODEL, parseResponse, extractJson } from '@signal-studio/ai';
+import { env } from '@signal-studio/config';
 
 let _client = null;
 function getClient() {
@@ -23,38 +23,40 @@ export const TOPIC_FIRST_MODES = new Set(['factual', 'listicle']);
 export async function pickTopic({ niche, mode, language }) {
   const isVisual = mode === 'silent' || mode === 'cinematic';
 
-  const prompt = isVisual ? [
-    `You are a wildlife content strategist for a cinematic/silent nature channel.`,
-    `Pick ONE specific cute, small, or visually captivating animal category for a ${mode} reel.`,
-    '',
-    'Return a JSON object with EXACTLY these 2 fields:',
-    '  animal:      the animal category (e.g. "baby squirrels", "hedgehogs", "fox cubs", "baby otters")',
-    '  searchQuery: 3-5 words for Pexels video search (e.g. "baby squirrel forest cute")',
-    '',
-    'Rules:',
-    '  - Focus on small, cute, endearing animals: rodents, baby animals, fox cubs, ducklings, baby deer, etc.',
-    '  - All clips will be of this ONE category — keep it specific enough for consistent results on Pexels',
-    '  - Animals must be commonly available as portrait stock footage',
-    `  - Niche: ${niche} | Mode: ${mode} | Language: ${language}`,
-    '  - Rotate widely: squirrels, hedgehogs, otters, ducklings, fox cubs, fawns, chipmunks, rabbit kits, etc.',
-    '  - Return JSON only. No markdown fences, no prose.',
-  ].join('\n') : [
-    `You are a wildlife content strategist. Pick ONE specific animal for a short-form ${mode}-style wildlife reel.`,
-    '',
-    'Return a JSON object with EXACTLY these 3 fields:',
-    '  animal:      common name of the animal (e.g. "cheetah", "mantis shrimp", "axolotl")',
-    '  searchQuery: 3-5 words optimised for Pexels video search (e.g. "cheetah running savanna wildlife")',
-    '  angle:       the specific interesting angle to lead with (e.g. "accelerates from 0 to 70mph in 3 seconds")',
-    '',
-    'Rules:',
-    '  - Pick animals commonly available as stock footage (mammals, birds, reptiles, large marine animals)',
-    '  - Avoid extremely rare or microscopic animals that are hard to film',
-    `  - For listicle: animal must have at least 5 surprising facts`,
-    `  - For factual: angle must yield one striking hook plus 3 supporting facts`,
-    `  - Niche: ${niche} | Mode: ${mode} | Language: ${language}`,
-    '  - Vary widely — do not default to lions, elephants, or cheetahs every time',
-    '  - Return JSON only. No markdown fences, no prose.',
-  ].join('\n');
+  const prompt = isVisual
+    ? [
+        `You are a wildlife content strategist for a cinematic/silent nature channel.`,
+        `Pick ONE specific cute, small, or visually captivating animal category for a ${mode} reel.`,
+        '',
+        'Return a JSON object with EXACTLY these 2 fields:',
+        '  animal:      the animal category (e.g. "baby squirrels", "hedgehogs", "fox cubs", "baby otters")',
+        '  searchQuery: 3-5 words for Pexels video search (e.g. "baby squirrel forest cute")',
+        '',
+        'Rules:',
+        '  - Focus on small, cute, endearing animals: rodents, baby animals, fox cubs, ducklings, baby deer, etc.',
+        '  - All clips will be of this ONE category — keep it specific enough for consistent results on Pexels',
+        '  - Animals must be commonly available as portrait stock footage',
+        `  - Niche: ${niche} | Mode: ${mode} | Language: ${language}`,
+        '  - Rotate widely: squirrels, hedgehogs, otters, ducklings, fox cubs, fawns, chipmunks, rabbit kits, etc.',
+        '  - Return JSON only. No markdown fences, no prose.',
+      ].join('\n')
+    : [
+        `You are a wildlife content strategist. Pick ONE specific animal for a short-form ${mode}-style wildlife reel.`,
+        '',
+        'Return a JSON object with EXACTLY these 3 fields:',
+        '  animal:      common name of the animal (e.g. "cheetah", "mantis shrimp", "axolotl")',
+        '  searchQuery: 3-5 words optimised for Pexels video search (e.g. "cheetah running savanna wildlife")',
+        '  angle:       the specific interesting angle to lead with (e.g. "accelerates from 0 to 70mph in 3 seconds")',
+        '',
+        'Rules:',
+        '  - Pick animals commonly available as stock footage (mammals, birds, reptiles, large marine animals)',
+        '  - Avoid extremely rare or microscopic animals that are hard to film',
+        `  - For listicle: animal must have at least 5 surprising facts`,
+        `  - For factual: angle must yield one striking hook plus 3 supporting facts`,
+        `  - Niche: ${niche} | Mode: ${mode} | Language: ${language}`,
+        '  - Vary widely — do not default to lions, elephants, or cheetahs every time',
+        '  - Return JSON only. No markdown fences, no prose.',
+      ].join('\n');
 
   const raw = await getClient().messages.create({
     model: MODEL,
@@ -260,7 +262,15 @@ If you cannot fulfil the request for safety reasons, return:
 and nothing else.`;
 
 export async function generateReelContent({
-  channelKey, mode, language, pageName, durationSec, clipCount, topic, topicAngle, sourceClipsContext,
+  channelKey,
+  mode,
+  language,
+  pageName,
+  durationSec,
+  clipCount,
+  topic,
+  topicAngle,
+  sourceClipsContext,
 }) {
   const user = [
     `Generate reel content for channel: ${channelKey}`,
@@ -281,7 +291,9 @@ export async function generateReelContent({
     mode === 'silent' ? 'narration_script must be null (silent mode has no voice-over).' : null,
     'Do NOT add clip lists, editing_notes, style, concept, channel, mode, or any other keys.',
     'Return the JSON object now.',
-  ].filter(Boolean).join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   const raw = await getClient().messages.create({
     model: MODEL,
@@ -295,29 +307,43 @@ export async function generateReelContent({
   if (!text) throw new Error('Claude returned empty response');
 
   const jsonStr = extractJson(text);
-  if (!jsonStr) throw new Error(`Claude response had no JSON object. Raw text:\n${text.slice(0, 400)}`);
+  if (!jsonStr)
+    throw new Error(`Claude response had no JSON object. Raw text:\n${text.slice(0, 400)}`);
 
   let parsed;
   try {
     parsed = JSON.parse(jsonStr);
   } catch (e) {
-    throw new Error(`Claude JSON parse failed: ${e.message}\nExtracted JSON:\n${jsonStr.slice(0, 400)}`);
+    throw new Error(
+      `Claude JSON parse failed: ${e.message}\nExtracted JSON:\n${jsonStr.slice(0, 400)}`,
+    );
   }
 
   if (parsed.error) throw new Error(`Claude refused: ${parsed.error}`);
 
   // Normalise schema drift — model sometimes returns alternative key names
-  if (!parsed.narration_script && parsed.voiceover?.full_script) parsed.narration_script = parsed.voiceover.full_script;
-  if (!parsed.narration_script && typeof parsed.voiceover === 'string') parsed.narration_script = parsed.voiceover;
+  if (!parsed.narration_script && parsed.voiceover?.full_script)
+    parsed.narration_script = parsed.voiceover.full_script;
+  if (!parsed.narration_script && typeof parsed.voiceover === 'string')
+    parsed.narration_script = parsed.voiceover;
   if (!parsed.ai_caption && parsed.caption) parsed.ai_caption = parsed.caption;
   if (typeof parsed.ai_caption === 'string') {
-    parsed.ai_caption = { intro: parsed.ai_caption, question: parsed.question || '', cta: parsed.cta || `👉 Follow ${pageName} for more.` };
+    parsed.ai_caption = {
+      intro: parsed.ai_caption,
+      question: parsed.question || '',
+      cta: parsed.cta || `👉 Follow ${pageName} for more.`,
+    };
   }
-  if (typeof parsed.hashtags === 'string') parsed.hashtags = parsed.hashtags.split(/\s+/).filter(Boolean);
-  if (Array.isArray(parsed.hashtags)) parsed.hashtags = parsed.hashtags.map(h => h.replace(/^#+/, '')).filter(Boolean);
+  if (typeof parsed.hashtags === 'string')
+    parsed.hashtags = parsed.hashtags.split(/\s+/).filter(Boolean);
+  if (Array.isArray(parsed.hashtags))
+    parsed.hashtags = parsed.hashtags.map((h) => h.replace(/^#+/, '')).filter(Boolean);
 
   for (const k of ['title', 'ai_caption', 'hashtags']) {
-    if (!(k in parsed)) throw new Error(`Claude response missing required field "${k}". Got keys: ${Object.keys(parsed).join(', ')}\n${text.slice(0, 800)}`);
+    if (!(k in parsed))
+      throw new Error(
+        `Claude response missing required field "${k}". Got keys: ${Object.keys(parsed).join(', ')}\n${text.slice(0, 800)}`,
+      );
   }
 
   if (!parsed.description) {
@@ -325,7 +351,9 @@ export async function generateReelContent({
     parsed.description = parsed.title;
   }
   if (mode !== 'silent' && !parsed.narration_script) {
-    throw new Error(`Claude response missing narration_script for mode=${mode}. Got keys: ${Object.keys(parsed).join(', ')}`);
+    throw new Error(
+      `Claude response missing narration_script for mode=${mode}. Got keys: ${Object.keys(parsed).join(', ')}`,
+    );
   }
   if (mode === 'silent' && parsed.narration_script != null) parsed.narration_script = null;
 

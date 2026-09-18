@@ -1,4 +1,5 @@
 # SHOT LIST v2 (IMAGE-FIRST) — "Silenced: The Night a Goalkeeper Sent Germany Home"
+
 ### South American Football & Diaspora Stories — Video #1 · Stills + Ken Burns pipeline
 
 **TITLE:** Silenced | The Night a Goalkeeper Sent Germany Home
@@ -8,9 +9,11 @@
 ---
 
 ## SECTION A — MASTER CONSISTENCY BIBLE
+
 **The #1 defect in v1 output was kit drift: colors and styles changed between generations because the prompts never specified them.** Fix it in two layers:
 
 **Layer 1 — Reference Elements (do this FIRST, before any bulk generation):**
+
 1. Generate ONE "kit reference sheet" image per block below (a single anonymous figure, front view, neutral pose, full kit visible, plain dark background).
 2. Approve it manually against the specs.
 3. Save each approved image as a Higgsfield **Reference Element**: `PY-KIT`, `DE-KIT`, `GK-GILL`, `DE-GK`, `PY-GK-90s`.
@@ -39,6 +42,7 @@
 ---
 
 ## SECTION B — MOTION LANGUAGE (editor-side, applies to stills)
+
 - **PUSH:** scale 1.00 → 1.08–1.15 over the scene duration, Bézier ease in/out. Default move.
 - **PULL:** scale 1.15 → 1.00. Reserved for contextual reveals (isolation, aftermath).
 - **SMASH:** scale 1.00 → 1.30 in ~1.5s, synced to a low-frequency audio hit.
@@ -83,7 +87,7 @@
 🎞️ PULL 1.10 → 1.00 over 12s; add a slow opacity fade on the ghost layer as the interrupt (editor).
 🎙️ "Paraguay has never been a nation of artists. It didn't give the world a Pelé, or a Maradona, or a Messi."
 
-**SCENE 6 — 0:55–1:06 (11s)** · *(v1 video was NSFW false-flagged; this concrete still should pass — manual graphic remains the fallback)*
+**SCENE 6 — 0:55–1:06 (11s)** · _(v1 video was NSFW false-flagged; this concrete still should pass — manual graphic remains the fallback)_
 🖼️ STILL A: A single frame split diagonally from upper-left to lower-right. Upper-left half: a footballer silhouette frozen in a flowing dribble, surrounded by warm golden bokeh and drifting confetti light. Lower-right half: a bare grey concrete wall texture in cold flat blue light. Hard clean diagonal seam between the two halves. [STYLE]
 🎞️ Slow lateral pan upper-left → lower-right across the seam over 11s; grade cools as the pan crosses it.
 🎙️ "While Brazil was painting and Argentina was dreaming, Paraguay was doing something far less glamorous — and far more stubborn."
@@ -117,7 +121,7 @@
 🎞️ A holds with micro-PUSH (1:50–1:56); cut to B on "They lost that day" (1:56–2:01).
 🎙️ "They lost that day. One goal. To Spain — the team that went on to win the whole tournament."
 
-**SCENE 12 — 2:01–2:13 (12s)** · *(v1 calendar/clock motif was an NSFW-flag trigger — replaced with a concrete object)*
+**SCENE 12 — 2:01–2:13 (12s)** · _(v1 calendar/clock motif was an NSFW-flag trigger — replaced with a concrete object)_
 🖼️ STILL A: A dark locker room: a dark-green chalkboard on the wall carrying sixteen white hand-drawn tally marks in four groups; a single worn goalkeeper glove hangs on a hook beside the board; one bare bulb overhead. No readable text anywhere. [STYLE]
 🎞️ PUSH 1.00 → 1.12 toward the tally marks over 12s.
 🎙️ "That was sixteen years ago. Sixteen years of being the small country the giants walk past on their way to the final."
@@ -147,7 +151,7 @@
 🎞️ Slow lateral pan left → right over 10s.
 🎙️ "June twenty-ninth. The first half plays out exactly the way everyone expected."
 
-**SCENE 17 — 2:55–3:09 (14s)** · *(v1 video was NSFW false-flagged on "pressing in waves" — replaced with two concrete, literal compositions)*
+**SCENE 17 — 2:55–3:09 (14s)** · _(v1 video was NSFW false-flagged on "pressing in waves" — replaced with two concrete, literal compositions)_
 🖼️ STILL A: Elevated tactical camera above the halfway line: seven anonymous players in [DE-KIT] arranged in a wide passing shape across midfield, [BALL] at the feet of the central player; two players in [PY-KIT] positioned deep in their own half near the penalty area. Night, floodlit. [STYLE]
 🖼️ STILL B: Pitch-level 85mm: one midfielder in [DE-KIT] frozen at the moment of striking a pass with his instep, [BALL] just leaving his boot, two Paraguay defenders in [PY-KIT] blurred in the background. [STYLE]
 🎞️ A: PUSH (2:55–3:02). Cut to B on "They press" (3:02–3:09), micro-PUSH.
@@ -162,13 +166,13 @@
 
 ## ACT 3 — THE MATCH
 
-**SCENE 19 — 3:17–3:30 (13s)** · *(v1 video flagged as kit-inconsistent — regenerate as stills with the bible)*
+**SCENE 19 — 3:17–3:30 (13s)** · _(v1 video flagged as kit-inconsistent — regenerate as stills with the bible)_
 🖼️ STILL A: Corner-flag view: an anonymous player in [PY-KIT] planted beside the corner flag at the end of his run-up, body coiled to strike [BALL], night, stands blurred behind. [STYLE]
 🖼️ STILL B: The crowded penalty box frozen the instant the cross arrives: four players in [PY-KIT] and five in [DE-KIT] rising together, [BALL] hanging in the air above them, slight motion blur at the frame edges, the goalkeeper in [DE-GK] rooted on his line. [STYLE]
 🎞️ A: PUSH (3:17–3:23). Cut to B on "whipped in" (3:23–3:30), micro-PUSH into the crowd.
 🎙️ "A corner — whipped in by Matías Galarza, a man who plays his club football right here in the United States, for Atlanta."
 
-**SCENE 20 — 3:30–3:40 (10s)** · *(v1 video flagged as kit-inconsistent — regenerate)*
+**SCENE 20 — 3:30–3:40 (10s)** · _(v1 video flagged as kit-inconsistent — regenerate)_
 🖼️ STILL A: A leaping header frozen at the exact moment of impact: an anonymous player in [PY-KIT] rising highest above two defenders in [DE-KIT], forehead meeting [BALL], the goal frame behind them and the keeper in [DE-GK] diving low to his right. Slow-shutter energy, motion blur on limbs only. [STYLE]
 🖼️ STILL B: Behind-goal shot through the net: [BALL] buried in the rippling side netting, the keeper in [DE-GK] grounded and beaten. [STYLE]
 🎞️ A: SMASH 1.00 → 1.30 in 1.5s on the musical hit, then hold; cut to B at 3:36.
@@ -179,7 +183,7 @@
 🖼️ STILL A: A back-lit celebration silhouette group — five players in [PY-KIT] with arms raised, seen from behind against a wall of floodlight flare, rim-lit stripes just legible. [STYLE]
 📝 Editor TEXT CARD over the still: "Paraguay's FIRST EVER World Cup knockout goal."
 
-**SCENE 22 — 3:46–3:59 (13s)** · *(v1 video flagged as kit-inconsistent — regenerate)*
+**SCENE 22 — 3:46–3:59 (13s)** · _(v1 video flagged as kit-inconsistent — regenerate)_
 🖼️ STILL A: A cross frozen mid-flight from the right wing: [BALL] hanging above the penalty area, three players in [DE-KIT] attacking the far post, cold steel-blue grade replacing the warm palette. [STYLE]
 🖼️ STILL B: A striker in [DE-KIT] meeting [BALL] with his head at the near post, the goalkeeper in [GK-GILL] at full stretch and beaten, cold blue grade. [STYLE]
 🎞️ A: PUSH (3:46–3:53). Cut to B (3:53–3:59). The warm→cold grade shift is itself the pattern interrupt.
@@ -220,7 +224,7 @@
 🎙️ "And then — the flags. A review."
 🔊 Celebration sound cuts abruptly to a low hum on the cut.
 
-**SCENE 29 — 4:58–5:10 (12s)** · *(two-body contact — concrete/literal wording on purpose; if the image model still flags it, fall back to an editor composite of two separate stills)*
+**SCENE 29 — 4:58–5:10 (12s)** · _(two-body contact — concrete/literal wording on purpose; if the image model still flags it, fall back to an editor composite of two separate stills)_
 🖼️ STILL A: A frozen replay-style frame with a subtle scanline texture: inside a crowded six-yard box, a defender in [DE-KIT] with both hands planted flat on the back of the goalkeeper in [GK-GILL], who is falling forward off-balance; [BALL] and leaping heads motion-blurred in the background. [STYLE]
 🎞️ Very slow PUSH 1.00 → 1.08 over 12s; a white "replay" corner bracket overlay blinks once mid-scene (editor, interrupt).
 🎙️ "Before Tah's header, a German defender had shoved Gill to the ground — stopping him from even trying to save it."
@@ -245,7 +249,7 @@
 🎞️ 2.5D PARALLAX: keeper on alpha layer tracking right, background pans 30% slower; total move over 13s.
 🎙️ "And before the first kick, Orlando Gill takes a slow walk. He makes Kai Havertz stand there, and wait, and think."
 
-**SCENE 33 — 5:45–5:53 (8s)** · *(if you keep ANY motion clip in the video, this is the scene that earns it)*
+**SCENE 33 — 5:45–5:53 (8s)** · _(if you keep ANY motion clip in the video, this is the scene that earns it)_
 🖼️ STILL A: A penalty taker in [DE-KIT] frozen mid run-up, low front angle from beside the goal post, floodlight flare behind him. [STYLE]
 🖼️ STILL B: The goalkeeper in [GK-GILL] fully extended low to his right, both gloves behind [BALL], frozen at the instant of contact, net texture in the near foreground. [STYLE]
 🎞️ A holds 4s; SMASH cut to B on the hit (1.00 → 1.30 in 1.5s), hold.
@@ -320,12 +324,12 @@
 🎞️ This time B → A: keeper first, dissolve to the stone wall; PULL instead of PUSH.
 🎙️ "And that answers, over and over, in the same stubborn way: by producing a wall, and refusing to break."
 
-**SCENE 45 — 7:50–8:03 (13s)** · *(v1 video generated but unreviewed — review it; if kits drift, this still replaces it)*
+**SCENE 45 — 7:50–8:03 (13s)** · _(v1 video generated but unreviewed — review it; if kits drift, this still replaces it)_
 🖼️ STILL A: Three goalkeeper figures standing in a row on a dark pitch, evenly spaced, front-on, faces in shadow, each lit by his own vertical shaft of white light. Left: [PY-GK-90s]. Center: the plain navy long-sleeved 2010 kit from Scene 11B. Right: [GK-GILL]. Night, haze. [STYLE]
 🎞️ Slow lateral pan left → right across the three figures over 13s, landing on the amber jersey.
 🎙️ "Chilavert did it with a snarl. Villar did it in twenty ten. And tonight, Orlando Gill did it against the best team he may ever face."
 
-**SCENE 46 — 8:03–8:12 (9s)** · *(v1 video generated but unreviewed — same rule)*
+**SCENE 46 — 8:03–8:12 (9s)** · _(v1 video generated but unreviewed — same rule)_
 🖼️ STILL A: The goalkeeper in [GK-GILL] standing upright and perfectly still in his goalmouth while blurred dark shapes of attackers in [DE-KIT] stream past him on both sides as long-exposure motion trails; the keeper is the only tack-sharp element in the frame. [STYLE]
 🎞️ Micro-PUSH 1.00 → 1.08; hold the stillness.
 🎙️ "Twenty-one shots. And he would not let them have the one that mattered."
@@ -342,7 +346,7 @@
 🎙️ "On July fourth, in Philadelphia, Paraguay play again — for a place in the quarter-finals."
 📝 "Round of 16 — first time since 2010"
 
-**SCENE 49 — 8:35–8:47 (12s)** · **PARALLAX hero shot** *(mirror composition of Scene 13 — bookends the video)*
+**SCENE 49 — 8:35–8:47 (12s)** · **PARALLAX hero shot** _(mirror composition of Scene 13 — bookends the video)_
 🖼️ STILL A: The goalkeeper in [GK-GILL], seen from directly behind, walking down the stadium tunnel toward a bright white opening of light, resolute stride, kit bag over one shoulder. [STYLE]
 🎞️ 2.5D PARALLAX: keeper on alpha, tunnel walls pan slower; slow PUSH 1.00 → 1.12 toward the light.
 🎙️ "But that's tomorrow's story. Tonight belongs to a goalkeeper, a small country, and the oldest tradition Paraguayan football has."

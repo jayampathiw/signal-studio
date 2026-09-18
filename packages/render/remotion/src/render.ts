@@ -1,9 +1,10 @@
+import { mkdirSync, copyFileSync, rmSync } from 'fs';
+import { join, basename } from 'path';
+
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 import { registerEngine } from '@signal-studio/render-core/engine';
 import type { Timeline } from '@signal-studio/types/timeline';
-import { join, basename } from 'path';
-import { mkdirSync, copyFileSync, rmSync } from 'fs';
 
 const isRemoteUrl = (p: string) => /^https?:\/\//i.test(p);
 
@@ -37,7 +38,11 @@ const remotionEngine = {
       // inputProps must also go to selectComposition — CaseFile's calculateMetadata
       // (variable episode length) needs the real scenes, not defaultProps, to compute
       // durationInFrames correctly.
-      const composition = await selectComposition({ serveUrl: bundled, id: compositionId, inputProps });
+      const composition = await selectComposition({
+        serveUrl: bundled,
+        id: compositionId,
+        inputProps,
+      });
 
       const outputPath = join(outputDir, `${timeline.contentId}.mp4`);
       await renderMedia({
@@ -60,7 +65,8 @@ export default remotionEngine;
 
 function resolveComposition(timeline: Timeline): string {
   // TODO: expand as more compositions are registered in Root.tsx
-  if (timeline.template === 'case-file') return timeline.aspectRatio === '9:16' ? 'CaseFileVertical' : 'CaseFile';
+  if (timeline.template === 'case-file')
+    return timeline.aspectRatio === '9:16' ? 'CaseFileVertical' : 'CaseFile';
   return 'NewsCard';
 }
 
@@ -79,10 +85,12 @@ function stageLocalAssets(timeline: Timeline, stagingDir: string): Map<string, s
   };
 
   for (const scene of timeline.scenes) {
-    if (scene.source?.localPath && !isRemoteUrl(scene.source.localPath)) stage(scene.source.localPath);
+    if (scene.source?.localPath && !isRemoteUrl(scene.source.localPath))
+      stage(scene.source.localPath);
     if (scene.narrationPath && !isRemoteUrl(scene.narrationPath)) stage(scene.narrationPath);
   }
-  if (timeline.watermark?.path && !isRemoteUrl(timeline.watermark.path)) stage(timeline.watermark.path);
+  if (timeline.watermark?.path && !isRemoteUrl(timeline.watermark.path))
+    stage(timeline.watermark.path);
 
   return refs;
 }
@@ -99,7 +107,10 @@ function toAssetRef(localPath: string | null | undefined, assetRefs: Map<string,
   return assetRefs.get(localPath) ?? '';
 }
 
-function timelineToProps(timeline: Timeline, assetRefs: Map<string, string>): Record<string, unknown> {
+function timelineToProps(
+  timeline: Timeline,
+  assetRefs: Map<string, string>,
+): Record<string, unknown> {
   if (timeline.template === 'case-file') {
     return {
       caseMeta: timeline.caseMeta ?? null,

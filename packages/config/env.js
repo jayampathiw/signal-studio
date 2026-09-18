@@ -1,7 +1,9 @@
-import { config as loadDotenv } from 'dotenv';
+import { existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
+
+import { config as loadDotenv } from 'dotenv';
+
 import { schema } from './schema.js';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -13,7 +15,9 @@ if (existsSync(envPath)) {
 
 const missing = schema.required.filter((k) => !process.env[k]);
 if (missing.length > 0) {
-  throw new Error(`Missing required env vars: ${missing.join(', ')}\nCopy .env.example → .env and fill in values.`);
+  throw new Error(
+    `Missing required env vars: ${missing.join(', ')}\nCopy .env.example → .env and fill in values.`,
+  );
 }
 
 export const env = new Proxy(process.env, {

@@ -9,13 +9,15 @@
 // Usage:
 //   node apps/video/scripts/policy-file/register-case.mjs --dir content/policy-file/<case-slug>
 
-import { parseArgs } from 'util';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { uploadToR2 } from '@signal-studio/media/storage';
+import { parseArgs } from 'util';
+
 import { insertContentItem } from '@signal-studio/database/content-items';
+import { uploadToR2 } from '@signal-studio/media/storage';
+
 import { getChannel } from '../../src/config/channels.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
@@ -65,4 +67,6 @@ const row = await insertContentItem({
   target_platforms: ['facebook'],
 });
 
-console.log(`Registered content_items row ${row.id} for ${caseData.caseId}. Publish from the dashboard when ready.`);
+console.log(
+  `Registered content_items row ${row.id} for ${caseData.caseId}. Publish from the dashboard when ready.`,
+);

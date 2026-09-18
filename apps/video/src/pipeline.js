@@ -9,18 +9,24 @@
 import { spawn } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+
 import { CHANNELS } from './config/channels.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const INGEST    = resolve(__dirname, 'scripts/ingest.js');
-const GENERATE  = resolve(__dirname, 'scripts/generate-reel.js');
+const INGEST = resolve(__dirname, 'scripts/ingest.js');
+const GENERATE = resolve(__dirname, 'scripts/generate-reel.js');
 
 function runScript(scriptPath, args) {
   return new Promise((res, rej) => {
     let stdout = '';
     const p = spawn('node', [scriptPath, ...args], { stdio: ['ignore', 'pipe', 'inherit'] });
-    p.stdout.on('data', d => { process.stdout.write(d); stdout += d.toString(); });
-    p.on('close', code => code === 0 ? res(stdout) : rej(new Error(`${scriptPath} exited ${code}`)));
+    p.stdout.on('data', (d) => {
+      process.stdout.write(d);
+      stdout += d.toString();
+    });
+    p.on('close', (code) =>
+      code === 0 ? res(stdout) : rej(new Error(`${scriptPath} exited ${code}`)),
+    );
   });
 }
 
@@ -52,10 +58,13 @@ async function main() {
   const keys = targetKeys.length > 0 ? targetKeys : Object.keys(CHANNELS);
 
   // Only process channels with at least one enabled platform
-  const enabled = keys.filter(k => {
+  const enabled = keys.filter((k) => {
     const ch = CHANNELS[k];
-    if (!ch) { console.warn(`[pipeline] unknown channel key: ${k}`); return false; }
-    return Object.values(ch.platforms).some(p => p.enabled);
+    if (!ch) {
+      console.warn(`[pipeline] unknown channel key: ${k}`);
+      return false;
+    }
+    return Object.values(ch.platforms).some((p) => p.enabled);
   });
 
   if (enabled.length === 0) {
@@ -67,10 +76,13 @@ async function main() {
   const results = [];
   for (const key of enabled) results.push(await processChannel(key));
 
-  const ok    = results.filter(r => r.ok).length;
-  const failed = results.filter(r => !r.ok).length;
+  const ok = results.filter((r) => r.ok).length;
+  const failed = results.filter((r) => !r.ok).length;
   console.log(`\n[pipeline] done — ${ok} succeeded, ${failed} failed`);
   if (failed > 0) process.exit(1);
 }
 
-main().catch(e => { console.error('[pipeline] fatal:', e); process.exit(1); });
+main().catch((e) => {
+  console.error('[pipeline] fatal:', e);
+  process.exit(1);
+});

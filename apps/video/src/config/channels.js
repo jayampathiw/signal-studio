@@ -10,7 +10,15 @@ export const CHANNELS = {
     style: 'factual',
     language: 'EN',
     contentLanguage: 'English',
-    fetchers: [{ type: 'pexels', query: 'wildlife animal nature', perPage: 25, orientation: 'portrait', minDuration: 5 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'wildlife animal nature',
+        perPage: 25,
+        orientation: 'portrait',
+        minDuration: 5,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'factual',
@@ -21,7 +29,7 @@ export const CHANNELS = {
       voice: 'af_bella',
       voiceSpeed: 1.0,
       music: 'nature_uplifting.mp3',
-      musicVolume: 0.10,
+      musicVolume: 0.1,
       cta: { line1: 'FOLLOW FOR MORE', line2: 'NaturePulse' },
       ctaStyle: { animation: 'fadein', line1FontColor: 'white', line2FontColor: '#90EE90' },
     },
@@ -37,7 +45,15 @@ export const CHANNELS = {
     style: 'listicle',
     language: 'EN',
     contentLanguage: 'English',
-    fetchers: [{ type: 'pexels', query: 'wildlife animal nature', perPage: 25, orientation: 'portrait', minDuration: 5 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'wildlife animal nature',
+        perPage: 25,
+        orientation: 'portrait',
+        minDuration: 5,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'listicle',
@@ -64,7 +80,15 @@ export const CHANNELS = {
     style: 'cinematic',
     language: 'EN',
     contentLanguage: 'English',
-    fetchers: [{ type: 'pexels', query: 'wildlife nature cinematic', perPage: 20, orientation: 'portrait', minDuration: 6 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'wildlife nature cinematic',
+        perPage: 20,
+        orientation: 'portrait',
+        minDuration: 6,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'cinematic',
@@ -91,7 +115,15 @@ export const CHANNELS = {
     style: 'silent',
     language: 'EN',
     contentLanguage: 'English',
-    fetchers: [{ type: 'pexels', query: 'cute small animals baby wildlife', perPage: 25, orientation: 'portrait', minDuration: 5 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'cute small animals baby wildlife',
+        perPage: 25,
+        orientation: 'portrait',
+        minDuration: 5,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'silent',
@@ -153,7 +185,7 @@ export const CHANNELS = {
         slot: 'Sat 07:30 BST',
         description: 'Formula B — 3-scene tension/survival arc. Drives follows.',
       },
-      'portrait': {
+      portrait: {
         type: 'image',
         generationStrategy: 'image_only',
         durationSec: null,
@@ -177,7 +209,15 @@ export const CHANNELS = {
     style: 'silent',
     language: 'FR',
     contentLanguage: 'French',
-    fetchers: [{ type: 'pexels', query: 'france paris culture travel', perPage: 20, orientation: 'portrait', minDuration: 5 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'france paris culture travel',
+        perPage: 20,
+        orientation: 'portrait',
+        minDuration: 5,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'silent',
@@ -189,7 +229,7 @@ export const CHANNELS = {
       voiceSpeed: null,
       music: 'cinematic_epic.mp3',
       musicVolume: 0.32,
-      cta: { line1: 'SI VOUS AIMEZ LA FRANCE', line2: 'Suivez France Aujourd\'hui' },
+      cta: { line1: 'SI VOUS AIMEZ LA FRANCE', line2: "Suivez France Aujourd'hui" },
       ctaStyle: {
         animation: 'fadein',
         line1FontColor: 'white',
@@ -202,7 +242,7 @@ export const CHANNELS = {
       facebook: { enabled: true, envKey: 'FR' },
     },
     watermarkFile: 'FranceAujourdhui_Logo.png',
-    pageName: 'France Aujourd\'hui',
+    pageName: "France Aujourd'hui",
   },
 
   'culture/silent/FR-long': {
@@ -210,7 +250,15 @@ export const CHANNELS = {
     style: 'silent',
     language: 'FR',
     contentLanguage: 'French',
-    fetchers: [{ type: 'pexels', query: 'france landscape architecture culture', perPage: 20, orientation: 'portrait', minDuration: 6 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'france landscape architecture culture',
+        perPage: 20,
+        orientation: 'portrait',
+        minDuration: 6,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'silent',
@@ -221,8 +269,8 @@ export const CHANNELS = {
       voice: null,
       voiceSpeed: null,
       music: 'alternates/paulyudin-inspiring-uplifting-corporate-160692.mp3',
-      musicVolume: 0.30,
-      cta: { line1: 'SI VOUS AIMEZ LA FRANCE', line2: 'Suivez France Aujourd\'hui' },
+      musicVolume: 0.3,
+      cta: { line1: 'SI VOUS AIMEZ LA FRANCE', line2: "Suivez France Aujourd'hui" },
       ctaStyle: {
         animation: 'fadein',
         line1FontColor: 'white',
@@ -235,7 +283,7 @@ export const CHANNELS = {
       facebook: { enabled: true, envKey: 'FR' },
     },
     watermarkFile: 'FranceAujourdhui_Logo.png',
-    pageName: 'France Aujourd\'hui',
+    pageName: "France Aujourd'hui",
   },
 
   // ── Vivere in Italia — Italian culture ────────────────────────────────────
@@ -245,7 +293,15 @@ export const CHANNELS = {
     style: 'silent',
     language: 'IT',
     contentLanguage: 'Italian',
-    fetchers: [{ type: 'pexels', query: 'italy rome culture food travel', perPage: 20, orientation: 'portrait', minDuration: 5 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'italy rome culture food travel',
+        perPage: 20,
+        orientation: 'portrait',
+        minDuration: 5,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'silent',
@@ -257,7 +313,7 @@ export const CHANNELS = {
       voiceSpeed: null,
       music: 'cinematic_epic.mp3',
       musicVolume: 0.32,
-      cta: { line1: 'SE AMI L\'ITALIA', line2: 'Segui Vivere in Italia' },
+      cta: { line1: "SE AMI L'ITALIA", line2: 'Segui Vivere in Italia' },
       ctaStyle: {
         animation: 'fadein',
         line1FontColor: 'white',
@@ -278,7 +334,15 @@ export const CHANNELS = {
     style: 'silent',
     language: 'IT',
     contentLanguage: 'Italian',
-    fetchers: [{ type: 'pexels', query: 'italy venice florence tuscany landscape', perPage: 20, orientation: 'portrait', minDuration: 6 }],
+    fetchers: [
+      {
+        type: 'pexels',
+        query: 'italy venice florence tuscany landscape',
+        perPage: 20,
+        orientation: 'portrait',
+        minDuration: 6,
+      },
+    ],
     renderer: 'reel',
     rendererConfig: {
       mode: 'silent',
@@ -289,8 +353,8 @@ export const CHANNELS = {
       voice: null,
       voiceSpeed: null,
       music: 'alternates/paulyudin-documentary-epic-162452.mp3',
-      musicVolume: 0.30,
-      cta: { line1: 'SE AMI L\'ITALIA', line2: 'Segui Vivere in Italia' },
+      musicVolume: 0.3,
+      cta: { line1: "SE AMI L'ITALIA", line2: 'Segui Vivere in Italia' },
       ctaStyle: {
         animation: 'fadein',
         line1FontColor: 'white',
@@ -358,20 +422,20 @@ export const CHANNELS = {
     contentLanguage: 'English',
     source: 'higgsfield',
     renderer: 'higgsfield',
-    imageModel: 'nano_banana_2',     // reference-image bible (Higgsfield "Nano Banana Pro")
+    imageModel: 'nano_banana_2', // reference-image bible (Higgsfield "Nano Banana Pro")
     videoModel: 'seedance_2_0_mini', // unlimited this month; 8-concurrent ceiling
     imageRes: '2k',
     videoRes: '720p',
     aspectRatio: '16:9',
-    generateAudio: false,            // VO is per-scene TTS, mixed in assembly
-    concurrency: 8,                  // Higgsfield per-account ceiling (API-enforced)
+    generateAudio: false, // VO is per-scene TTS, mixed in assembly
+    concurrency: 8, // Higgsfield per-account ceiling (API-enforced)
     formats: {
-      'long_form': {
+      long_form: {
         type: 'long_form',
-        generationStrategy: 'reference_pool',  // shared reference images + rolling 8-wide pool
-        clipDurationSec: 15,                    // max per clip; actual = per-scene VO length
+        generationStrategy: 'reference_pool', // shared reference images + rolling 8-wide pool
+        clipDurationSec: 15, // max per clip; actual = per-scene VO length
         narration: true,
-        narrationProvider: 'kokoro',            // per-scene TTS (@signal-studio/media)
+        narrationProvider: 'kokoro', // per-scene TTS (@signal-studio/media)
         music: true,
         validation: { look: true, semanticAction: true }, // both gates (Phase 0 decision)
         // targetDurationSec is per-project (from the shot list), not fixed here
@@ -403,12 +467,12 @@ export const CHANNELS = {
     generateAudio: false,
     concurrency: 8,
     formats: {
-      'long_form': {
+      long_form: {
         type: 'long_form',
         generationStrategy: 'reference_pool',
         clipDurationSec: 15,
         narration: true,
-        narrationProvider: 'piper',            // es-MX voice — Kokoro has no LatAm Spanish
+        narrationProvider: 'piper', // es-MX voice — Kokoro has no LatAm Spanish
         music: true,
         validation: { look: true, semanticAction: true },
         description: 'Long-form documentary, Spanish (Mexico) narration trial.',
@@ -422,7 +486,10 @@ export const CHANNELS = {
 
 export function getChannel(key) {
   const ch = CHANNELS[key];
-  if (!ch) throw new Error(`Unknown channel key: "${key}". Valid keys: ${Object.keys(CHANNELS).join(', ')}`);
+  if (!ch)
+    throw new Error(
+      `Unknown channel key: "${key}". Valid keys: ${Object.keys(CHANNELS).join(', ')}`,
+    );
   return ch;
 }
 

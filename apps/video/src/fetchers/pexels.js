@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { env } from '@signal-studio/config';
+import axios from 'axios';
 
 const PEXELS_BASE = 'https://api.pexels.com/videos';
 
@@ -24,8 +24,9 @@ export async function fetch({ query, perPage = 15, orientation = 'portrait', min
     if (v.duration < minDuration) continue;
 
     // Prefer HD portrait files at 1080p, fall back to highest-portrait available
-    const portraitFiles = (v.video_files || [])
-      .filter(f => f.file_type === 'video/mp4' && f.height > f.width);
+    const portraitFiles = (v.video_files || []).filter(
+      (f) => f.file_type === 'video/mp4' && f.height > f.width,
+    );
 
     if (portraitFiles.length === 0) continue;
 

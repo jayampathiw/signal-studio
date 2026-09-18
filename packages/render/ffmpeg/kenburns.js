@@ -26,10 +26,19 @@ async function applyKenBurns(imagePath, durationSecs, outputPath) {
   const zoompan = `zoompan=z='min(zoom+0.0015,1.5)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=${fps}`;
 
   await execFileAsync('ffmpeg', [
-    '-y', '-loop', '1', '-i', imagePath,
-    '-vf', zoompan,
-    '-t', String(durationSecs),
-    '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
+    '-y',
+    '-loop',
+    '1',
+    '-i',
+    imagePath,
+    '-vf',
+    zoompan,
+    '-t',
+    String(durationSecs),
+    '-c:v',
+    'libx264',
+    '-pix_fmt',
+    'yuv420p',
     outputPath,
   ]);
   return outputPath;
@@ -37,9 +46,13 @@ async function applyKenBurns(imagePath, durationSecs, outputPath) {
 
 async function trimClip(clipPath, durationSecs, outputPath) {
   await execFileAsync('ffmpeg', [
-    '-y', '-i', clipPath,
-    '-t', String(durationSecs),
-    '-c', 'copy',
+    '-y',
+    '-i',
+    clipPath,
+    '-t',
+    String(durationSecs),
+    '-c',
+    'copy',
     outputPath,
   ]);
   return outputPath;

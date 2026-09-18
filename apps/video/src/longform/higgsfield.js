@@ -63,16 +63,21 @@ export async function submit(jobType, params, { maxRateLimitRetries = 40, backof
       // `generate create` returns a bare array of job ids, e.g. ["<uuid>"];
       // some paths return an object with an id — handle both.
       const id = Array.isArray(job)
-        ? (typeof job[0] === 'string' ? job[0] : job[0]?.id)
+        ? typeof job[0] === 'string'
+          ? job[0]
+          : job[0]?.id
         : (job.id ?? job.job_id ?? job.jobs?.[0]?.id);
-      if (!id) throw new Error(`submit: no job id in response: ${JSON.stringify(job).slice(0, 200)}`);
+      if (!id)
+        throw new Error(`submit: no job id in response: ${JSON.stringify(job).slice(0, 200)}`);
       return id;
     } catch (err) {
       if (isRateLimit(err) && attempt < maxRateLimitRetries) {
         await sleep(backoffMs);
         continue; // transient — a slot will free up; not a failure
       }
-      throw new Error(`Higgsfield submit(${jobType}) failed: ${(err.stderr || err.message || '').slice(0, 300)}`);
+      throw new Error(
+        `Higgsfield submit(${jobType}) failed: ${(err.stderr || err.message || '').slice(0, 300)}`,
+      );
     }
   }
 }
@@ -89,12 +94,14 @@ export async function poll(jobId, { timeoutMs = 15 * 60 * 1000, intervalMs = 800
     try {
       job = await hf(['generate', 'get', jobId]);
     } catch (err) {
-      if (Date.now() > deadline) throw new Error(`poll(${jobId}) timed out (get failed): ${err.message}`);
+      if (Date.now() > deadline)
+        throw new Error(`poll(${jobId}) timed out (get failed): ${err.message}`);
       await sleep(intervalMs);
       continue;
     }
     const status = job.status;
-    if (status === 'completed') return { status, url: job.result_url ?? job.min_result_url ?? null };
+    if (status === 'completed')
+      return { status, url: job.result_url ?? job.min_result_url ?? null };
     if (status === 'failed' || status === 'nsfw' || status === 'canceled') {
       throw new Error(`job ${jobId} ${status}: ${job.error ?? job.fail_reason ?? 'no reason'}`);
     }

@@ -36,19 +36,19 @@ npm run video          # run video pipeline
 
 ## Runtime modes
 
-| Mode | Where | How AI/media is reached |
-|---|---|---|
-| Interactive | claude.ai / Claude Code | MCP servers (Higgsfield, Supabase, GitHub…) |
-| Automated | WSL + GitHub Actions | Direct API calls (packages/ai, fal.ai REST) + edge functions |
+| Mode        | Where                   | How AI/media is reached                                      |
+| ----------- | ----------------------- | ------------------------------------------------------------ |
+| Interactive | claude.ai / Claude Code | MCP servers (Higgsfield, Supabase, GitHub…)                  |
+| Automated   | WSL + GitHub Actions    | Direct API calls (packages/ai, fal.ai REST) + edge functions |
 
 ## Active pages
 
-| Page | Country/Niche | Platform |
-|---|---|---|
-| France Aujourd'hui | FR | Facebook |
-| Vivere in Italia | IT | Facebook |
-| NaturePulse | Wildlife/EN | Facebook |
-| NatureFrame | Wildlife/EN | Facebook |
+| Page               | Country/Niche | Platform |
+| ------------------ | ------------- | -------- |
+| France Aujourd'hui | FR            | Facebook |
+| Vivere in Italia   | IT            | Facebook |
+| NaturePulse        | Wildlife/EN   | Facebook |
+| NatureFrame        | Wildlife/EN   | Facebook |
 
 ## Docs
 

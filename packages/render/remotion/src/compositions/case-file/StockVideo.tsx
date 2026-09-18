@@ -1,4 +1,5 @@
 import { AbsoluteFill, OffthreadVideo } from 'remotion';
+
 import { PALETTE } from './palette';
 import { resolveAsset } from '../resolve-asset';
 
@@ -17,7 +18,11 @@ type Props = {
 export const StockVideo: React.FC<Props> = ({ videoUrl, children }) => (
   <AbsoluteFill style={{ backgroundColor: PALETTE.background, overflow: 'hidden' }}>
     {videoUrl && (
-      <OffthreadVideo src={resolveAsset(videoUrl)} muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <OffthreadVideo
+        src={resolveAsset(videoUrl)}
+        muted
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      />
     )}
     {children}
   </AbsoluteFill>

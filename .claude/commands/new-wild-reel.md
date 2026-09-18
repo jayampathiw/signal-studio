@@ -3,6 +3,7 @@
 Start or resume Wild Capture reel generation.
 
 **Usage:**
+
 - `/new-wild-reel` — pick the oldest `status='brief'` row in `wildlife/intimacy/EN`
 - `/new-wild-reel 42` — work on content_item id 42 specifically
 - `/new-wild-reel "A cavy waking at dawn in her burrow"` — create a new brief from concept and then generate
@@ -16,6 +17,7 @@ Invokes the `wild-eye-reel` skill: credit check → load house-style → expand 
 The skill first calls `wild-eye-brief` to create the `content_items` row, then immediately continues into generation. You will be asked to confirm the format (11s/21s/portrait) and slot.
 
 **Interactive approval gates:**
+
 1. Storyboard image — you approve/reject before any video is generated
 2. Each scene's start frame — approve before video generation for that scene
 3. Final reel summary before `status='rendered'` is written

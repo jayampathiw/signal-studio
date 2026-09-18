@@ -5,8 +5,8 @@
 export const CHANNEL_SLUGS = {
   'wild-eye': {
     channelKey: 'wildlife/intimacy/EN',
-    skill:      'wild-eye-reel',
-    pageName:   'Wild Capture',
+    skill: 'wild-eye-reel',
+    pageName: 'Wild Capture',
   },
   // 'sports': {
   //   channelKey: 'sports/highlights/EN',
@@ -24,7 +24,7 @@ export function resolveChannelSlug(slug) {
   const entry = CHANNEL_SLUGS[slug];
   if (!entry) {
     throw new Error(
-      `Unknown channel slug: "${slug}". Valid slugs: ${Object.keys(CHANNEL_SLUGS).join(', ')}`
+      `Unknown channel slug: "${slug}". Valid slugs: ${Object.keys(CHANNEL_SLUGS).join(', ')}`,
     );
   }
   return entry;

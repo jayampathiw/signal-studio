@@ -1,8 +1,19 @@
-import { getArticleById, updateArticle, getRecentSeedComments, getPillarWeeklyCounts } from '@signal-studio/database/articles';
-import { generateCaption, generateImagePrompt, formatImagePrompt, generateSEOContent } from '../services/ai.js';
+import {
+  getArticleById,
+  updateArticle,
+  getRecentSeedComments,
+  getPillarWeeklyCounts,
+} from '@signal-studio/database/articles';
+
+import { SLOTS } from '../config/slots.js';
 import { SOURCES } from '../config/sources.js';
 import { computePublishScore } from '../enrich/publishScore.js';
-import { SLOTS } from '../config/slots.js';
+import {
+  generateCaption,
+  generateImagePrompt,
+  formatImagePrompt,
+  generateSEOContent,
+} from '../services/ai.js';
 
 const ids = process.argv.slice(2);
 if (ids.length === 0) {
@@ -29,7 +40,13 @@ for (const id of ids) {
 
     const recentSeedIds = await getRecentSeedComments(article.country);
     const [caption, imageResult, seoContent] = await Promise.all([
-      generateCaption(article, config.captionLanguage, config.pageName, config.pageHashtag, recentSeedIds),
+      generateCaption(
+        article,
+        config.captionLanguage,
+        config.pageName,
+        config.pageHashtag,
+        recentSeedIds,
+      ),
       generateImagePrompt(article, config.captionLanguage),
       generateSEOContent(article, config.captionLanguage),
     ]);
@@ -41,7 +58,11 @@ for (const id of ids) {
     };
     const weeklyPillarCounts = await getPillarWeeklyCounts(article.country);
     const updatedArticle = { ...article, pillar, content_signals: mergedSignals };
-    const publish_score = computePublishScore(updatedArticle, weeklyPillarCounts, SLOTS[article.country] ?? []);
+    const publish_score = computePublishScore(
+      updatedArticle,
+      weeklyPillarCounts,
+      SLOTS[article.country] ?? [],
+    );
 
     await updateArticle(id, {
       ai_caption: { intro: caption.intro, question: caption.question, cta: caption.cta },
@@ -52,7 +73,11 @@ for (const id of ids) {
       content_signals: mergedSignals,
       image_headline: imageResult.imageHeadline,
       image_prompt: imageResult.prompt,
-      formatted_image_prompt: formatImagePrompt(imageResult.prompt, imageResult.imageHeadline, config.watermarkFile),
+      formatted_image_prompt: formatImagePrompt(
+        imageResult.prompt,
+        imageResult.imageHeadline,
+        config.watermarkFile,
+      ),
       seo_title: seoContent.seo_title,
       seo_description: seoContent.seo_description,
       pillar,

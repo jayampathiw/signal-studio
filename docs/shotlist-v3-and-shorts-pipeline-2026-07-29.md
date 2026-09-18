@@ -29,7 +29,7 @@ shared Supabase project (`nnxtvbolhuvihlpwppbj`), ahead of a production deploy.
 ## 3. "New Video" modal rebuild
 
 - Replaced the manual "Video Title" text field with an **upload-or-paste shot
-  list** flow: choose a `.md` file *or* paste markdown into a textarea, either
+  list** flow: choose a `.md` file _or_ paste markdown into a textarea, either
   populates a live preview (clip type, title, video slug, scene count,
   parent for Shorts) and drives project creation — no manual title typing.
 - Added `Component`-level clip_type badges (🎬 Long-form / ⚡ Short) to the
@@ -68,6 +68,7 @@ parses the header (including block scalars and nested mappings like
 **Music/audio v3 addition** (added mid-session, after discovering the shot
 list had no field driving background music at all — only SFX via
 `audio_cue`):
+
 - Long-form: new `music_bed` (required every row, 7-value enum:
   `somber/tension/drone/release/reflective/hum_only/silence`) +
   `music_gain_db` (optional override). Consecutive same-value rows merge into
@@ -131,7 +132,7 @@ that script itself.
 
 - Ran the full v3 template + music_bed/heartbeat_layer merge logic through a
   deliberately edge-case-heavy Shorts test file (non-adjacent bed repeat,
-  heartbeat offset from bed in the *opposite* direction from an earlier test,
+  heartbeat offset from bed in the _opposite_ direction from an earlier test,
   `audio_cue` + `music_bed` both populated on the same row, no
   `music_gain_db` column at all). Verified via a standalone script against
   the real deployed parser + the real `map-audio-cues.js` — all checks

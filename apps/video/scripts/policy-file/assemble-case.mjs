@@ -29,15 +29,17 @@
 //   node --experimental-strip-types apps/video/scripts/policy-file/assemble-case.mjs --dir content/policy-file/<case-slug>
 // or: pnpm --filter @signal-studio/video assemble-case -- --dir content/policy-file/<case-slug>
 
-import { parseArgs } from 'util';
+import { execSync } from 'child_process';
 import { existsSync, mkdirSync } from 'fs';
 import { readFile } from 'fs/promises';
-import { execSync } from 'child_process';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { synthesise } from '@signal-studio/media/tts';
+import { parseArgs } from 'util';
+
 import { generateWordTimestamps } from '@signal-studio/media/subtitles';
+import { synthesise } from '@signal-studio/media/tts';
 import { render } from '@signal-studio/render-core';
+
 import { getChannel } from '../../src/config/channels.js';
 import '@signal-studio/render-remotion'; // side-effect: registers the 'remotion' engine
 
@@ -49,10 +51,11 @@ const DEFAULT_CHANNEL_KEY = 'policy-file/case-file/EN';
 const TAIL_PADDING_SECS = 0.5;
 
 function probeDuration(filePath) {
-  return Number(execSync(
-    `ffprobe -v error -show_entries format=duration -of csv=p=0 "${filePath}"`,
-    { encoding: 'utf-8' },
-  ).trim());
+  return Number(
+    execSync(`ffprobe -v error -show_entries format=duration -of csv=p=0 "${filePath}"`, {
+      encoding: 'utf-8',
+    }).trim(),
+  );
 }
 
 // Turns Whisper's raw word list into the CaptionLayer word-timing shape, and joins
@@ -109,7 +112,10 @@ for (const scene of caseData.scenes) {
   const narrationText = scene.narrationText ?? scene.captionText;
   if (!existsSync(narrationPath) && narrationText) {
     console.log(`Synthesising narration for ${scene.id}...`);
-    await synthesise(narrationText, narrationPath, { voice: channel.voice, speed: channel.voiceSpeed });
+    await synthesise(narrationText, narrationPath, {
+      voice: channel.voice,
+      speed: channel.voiceSpeed,
+    });
   }
 
   const hasNarration = existsSync(narrationPath);
@@ -138,16 +144,23 @@ for (const scene of caseData.scenes) {
   // fromFraction/toFraction (0-1 of the scene) — fractions are resolved against the
   // *measured* duration here, since the authored durationSecs above is only a guess
   // until the audio exists.
-  const resolveHighlight = (h) => (h && (h.fromFraction != null || h.toFraction != null))
-    ? { ...h, fromSec: (h.fromFraction ?? 0) * durationSecs, toSec: (h.toFraction ?? 1) * durationSecs }
-    : h;
+  const resolveHighlight = (h) =>
+    h && (h.fromFraction != null || h.toFraction != null)
+      ? {
+          ...h,
+          fromSec: (h.fromFraction ?? 0) * durationSecs,
+          toSec: (h.toFraction ?? 1) * durationSecs,
+        }
+      : h;
 
   // `highlights` (an array) is the general case — sequential evidence beats shown
   // one at a time within the same scene. `highlight` (singular) is kept as shorthand
   // for the common one-beat-per-scene case; when both are absent this resolves to [].
   const highlights = scene.highlights
     ? scene.highlights.map(resolveHighlight)
-    : (scene.highlight ? [resolveHighlight(scene.highlight)] : []);
+    : scene.highlight
+      ? [resolveHighlight(scene.highlight)]
+      : [];
 
   scenes.push({
     id: scene.id,
@@ -183,6 +196,8 @@ const timeline = {
   scenes,
 };
 
-console.log(`Rendering ${caseData.caseId} (${scenes.length} scenes, total ${scenes.reduce((s, sc) => s + sc.durationSecs, 0).toFixed(1)}s)...`);
+console.log(
+  `Rendering ${caseData.caseId} (${scenes.length} scenes, total ${scenes.reduce((s, sc) => s + sc.durationSecs, 0).toFixed(1)}s)...`,
+);
 const outputPath = await render(timeline, { engine: 'remotion', outputDir });
 console.log(`Rendered: ${outputPath}`);

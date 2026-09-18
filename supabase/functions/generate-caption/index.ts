@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Anthropic from 'https://esm.sh/@anthropic-ai/sdk';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,36 +31,54 @@ const PAGE_HASHTAG: Record<string, string> = {
 // Tag patterns — verbatim copy of src/utils/tagArticle.js.
 // Both copies must stay in sync; the verification step in the plan diffs them.
 
-const PATRIOTIC_PATTERN = /\b(victoire|victory|vittoria|seger|champion|médaille|medaglia|medalj|medal|award|prix|premio|pris|record|exploit|succès|successo|framgång|fierté|pride|orgoglio|stolthet|historique|historico|historisk|first\s+ever|premier\s+(français|italian)|nationale?)\b/i;
+const PATRIOTIC_PATTERN =
+  /\b(victoire|victory|vittoria|seger|champion|médaille|medaglia|medalj|medal|award|prix|premio|pris|record|exploit|succès|successo|framgång|fierté|pride|orgoglio|stolthet|historique|historico|historisk|first\s+ever|premier\s+(français|italian)|nationale?)\b/i;
 
-const SOCIAL_PATTERN = /\b(retraite|pension|pensionné|retraité|pensionato|pensionista|ålderspension|logement|loyer|immobilier|appartement|alloggio|affitto|bostad|hyra|emploi|chômage|licenciement|salaire|lavoro|disoccupazione|stipendio|arbete|lön|famille|enfant|parent|scuola|familj|barn|skola)\b/i;
+const SOCIAL_PATTERN =
+  /\b(retraite|pension|pensionné|retraité|pensionato|pensionista|ålderspension|logement|loyer|immobilier|appartement|alloggio|affitto|bostad|hyra|emploi|chômage|licenciement|salaire|lavoro|disoccupazione|stipendio|arbete|lön|famille|enfant|parent|scuola|familj|barn|skola)\b/i;
 
-const HEALTH_PATTERN = /\b(salute|sanitari[oa]?|sanitarie|malatt[ia]|ospedale|medic[oi]|farmac[io]|vaccin[oi]?|cura|santé|sanitaire|hôpital|maladie|cancer|médicament|hälsa|sjukhus)\b/i;
+const HEALTH_PATTERN =
+  /\b(salute|sanitari[oa]?|sanitarie|malatt[ia]|ospedale|medic[oi]|farmac[io]|vaccin[oi]?|cura|santé|sanitaire|hôpital|maladie|cancer|médicament|hälsa|sjukhus)\b/i;
 
-const PRICES_PATTERN = /\b(rincaro|prezzi|prezzo|bollett[ea]|spesa|carovita|povert[àa]|pension[ei]|pouvoir\s+d.achat|coût\s+de\s+la\s+vie|hausse|inflation|economia|tasse|ekonomi)\b/i;
+const PRICES_PATTERN =
+  /\b(rincaro|prezzi|prezzo|bollett[ea]|spesa|carovita|povert[àa]|pension[ei]|pouvoir\s+d.achat|coût\s+de\s+la\s+vie|hausse|inflation|economia|tasse|ekonomi)\b/i;
 
-const JUSTICE_PATTERN = /\b(giustizia|ingiustizia|vittima|truffa|truffe|tribunale|condann[ao]|omicidi[io]?|violenza|sicurezza|justice|victime|tribunal|condamn[eé]e?|meurtre|agression)\b/i;
+const JUSTICE_PATTERN =
+  /\b(giustizia|ingiustizia|vittima|truffa|truffe|tribunale|condann[ao]|omicidi[io]?|violenza|sicurezza|justice|victime|tribunal|condamn[eé]e?|meurtre|agression)\b/i;
 
-const SPORT_PATTERN = /\b(football|rugby|tennis|cyclisme|ligue\s+1|serie\s+a|top\s+14|tour\s+de\s+france|roland[-\s]garros|champions\s+league|coupe\s+du\s+monde|coppa\s+del\s+mondo|nazionale|azzurri|équipe\s+de\s+france|les\s+bleus|olympique|PSG|\bOM\b|OGC\s+Nice|RC\s+Toulon|Stade\s+Toulousain|Juventus|Inter|Milan|Napoli)\b/i;
+const SPORT_PATTERN =
+  /\b(football|rugby|tennis|cyclisme|ligue\s+1|serie\s+a|top\s+14|tour\s+de\s+france|roland[-\s]garros|champions\s+league|coupe\s+du\s+monde|coppa\s+del\s+mondo|nazionale|azzurri|équipe\s+de\s+france|les\s+bleus|olympique|PSG|\bOM\b|OGC\s+Nice|RC\s+Toulon|Stade\s+Toulousain|Juventus|Inter|Milan|Napoli)\b/i;
 
-const OFF_TARGET_PATTERN = /\b(OTAN|NATO|vertice\s+NATO|défense\s+europ|spese\s+militari|geopolitica|geopolitique|fiscalité\s+d.entreprise|tassa\s+di\s+gruppo|imposte\s+societarie|déficit\s+structurel|debito\s+pubblico\s+strutturale|riforma\s+fiscale\s+complessa)\b/i;
+const OFF_TARGET_PATTERN =
+  /\b(OTAN|NATO|vertice\s+NATO|défense\s+europ|spese\s+militari|geopolitica|geopolitique|fiscalité\s+d.entreprise|tassa\s+di\s+gruppo|imposte\s+societarie|déficit\s+structurel|debito\s+pubblico\s+strutturale|riforma\s+fiscale\s+complessa)\b/i;
 
-const FR_PLACE_NAMES = /\b(Paris|Lyon|Marseille|Toulouse|Nice|Nantes|Strasbourg|Montpellier|Bordeaux|Lille|Rennes|Toulon|Avignon|Hyères|Perpignan|Aix[-\s]en[-\s]Provence|Provence|Côte\s+d['']Azur|Occitanie|PACA)\b/i;
+const FR_PLACE_NAMES =
+  /\b(Paris|Lyon|Marseille|Toulouse|Nice|Nantes|Strasbourg|Montpellier|Bordeaux|Lille|Rennes|Toulon|Avignon|Hyères|Perpignan|Aix[-\s]en[-\s]Provence|Provence|Côte\s+d['']Azur|Occitanie|PACA)\b/i;
 
-const IT_PLACE_NAMES = /\b(Roma|Milano|Napoli|Torino|Palermo|Genova|Bologna|Firenze|Bari|Catania|Venezia|Verona|Lazio|Lombardia|Campania|Sicilia|Veneto)\b/i;
+const IT_PLACE_NAMES =
+  /\b(Roma|Milano|Napoli|Torino|Palermo|Genova|Bologna|Firenze|Bari|Catania|Venezia|Verona|Lazio|Lombardia|Campania|Sicilia|Veneto)\b/i;
 
 const REGIONAL_SOURCES = new Set([
-  'La Provence', 'Nice-Matin', 'Midi Libre',
-  'Roma Today', 'ANSA Cronaca',
-  'Il Resto del Carlino', 'Il Messaggero', 'Il Secolo XIX', 'La Gazzetta del Mezzogiorno',
+  'La Provence',
+  'Nice-Matin',
+  'Midi Libre',
+  'Roma Today',
+  'ANSA Cronaca',
+  'Il Resto del Carlino',
+  'Il Messaggero',
+  'Il Secolo XIX',
+  'La Gazzetta del Mezzogiorno',
 ]);
 
-const SPORT_SOURCES = new Set([
-  "L'Équipe",
-  'La Gazzetta dello Sport',
-]);
+const SPORT_SOURCES = new Set(["L'Équipe", 'La Gazzetta dello Sport']);
 
-function tagArticle(a: { title: string; summary: string | null; source?: string; country?: string; story_category?: string }): string[] {
+function tagArticle(a: {
+  title: string;
+  summary: string | null;
+  source?: string;
+  country?: string;
+  story_category?: string;
+}): string[] {
   const tags: string[] = [];
   const text = `${a.title || ''} ${a.summary ?? ''}`;
   const source = a.source || '';
@@ -68,17 +86,16 @@ function tagArticle(a: { title: string; summary: string | null; source?: string;
 
   if (OFF_TARGET_PATTERN.test(text)) tags.push('off_target');
   if (PATRIOTIC_PATTERN.test(text)) tags.push('patriotic');
-  if (HEALTH_PATTERN.test(text))    tags.push('health');
-  if (JUSTICE_PATTERN.test(text))   tags.push('justice');
-  if (PRICES_PATTERN.test(text))    tags.push('prices');
+  if (HEALTH_PATTERN.test(text)) tags.push('health');
+  if (JUSTICE_PATTERN.test(text)) tags.push('justice');
+  if (PRICES_PATTERN.test(text)) tags.push('prices');
 
-  const placeRegex = country === 'FR' ? FR_PLACE_NAMES
-                   : country === 'IT' ? IT_PLACE_NAMES
-                   : null;
+  const placeRegex = country === 'FR' ? FR_PLACE_NAMES : country === 'IT' ? IT_PLACE_NAMES : null;
   const hasPlace = placeRegex && placeRegex.test(text);
   if (REGIONAL_SOURCES.has(source) || hasPlace) tags.push('region');
 
-  if (SPORT_SOURCES.has(source) || a.story_category === 'Sport' || SPORT_PATTERN.test(text)) tags.push('sport');
+  if (SPORT_SOURCES.has(source) || a.story_category === 'Sport' || SPORT_PATTERN.test(text))
+    tags.push('sport');
 
   if (SOCIAL_PATTERN.test(text)) tags.push('social');
 
@@ -424,12 +441,18 @@ const SEED_COMMENT_TEMPLATES: Record<string, { id: string; t: string }[]> = {
   FR: [
     { id: 'fr_01', t: '💬 Et vous ? {topic_noun} — votre réaction en commentaire 👇' },
     { id: 'fr_02', t: 'Pour ou contre ? {topic_noun} en débat — votre verdict 👇' },
-    { id: 'fr_03', t: 'Est-ce que ça vous touche directement ? {topic_noun} — on vous lit tous 👇' },
+    {
+      id: 'fr_03',
+      t: 'Est-ce que ça vous touche directement ? {topic_noun} — on vous lit tous 👇',
+    },
     { id: 'fr_04', t: 'Un mot pour décrire la situation : {topic_noun} — répondez ici 👇' },
     { id: 'fr_05', t: '🗣️ La parole est à vous. {topic_noun} — votre avis compte.' },
     { id: 'fr_06', t: 'Vous êtes surpris(e) par {topic_noun} ? Dites-le en commentaire 👇' },
     { id: 'fr_07', t: "💬 {topic_noun} — d'accord ou pas ? Un commentaire suffit." },
-    { id: 'fr_08', t: 'Dans votre quotidien, {topic_noun} ça change quoi ? Répondez ci-dessous 👇' },
+    {
+      id: 'fr_08',
+      t: 'Dans votre quotidien, {topic_noun} ça change quoi ? Répondez ci-dessous 👇',
+    },
     { id: 'fr_09', t: 'Bonne ou mauvaise nouvelle ? {topic_noun} — votre verdict 👇' },
     { id: 'fr_10', t: 'On débat : {topic_noun} — pour ou contre en commentaire 👇' },
   ],
@@ -450,7 +473,7 @@ const SEED_COMMENT_TEMPLATES: Record<string, { id: string; t: string }[]> = {
 function pickEligibleTemplates(country: string, recentIds: string[]): { id: string; t: string }[] {
   const pool = SEED_COMMENT_TEMPLATES[country] || [];
   const recent = new Set(recentIds);
-  const eligible = pool.filter(t => !recent.has(t.id));
+  const eligible = pool.filter((t) => !recent.has(t.id));
   return eligible.length > 0 ? eligible : pool;
 }
 
@@ -478,23 +501,39 @@ function sanitizeSeoDescription(desc: string | undefined | null): string {
   if (lastTerm > 50) return candidate.slice(0, lastTerm + 1);
   const lastSpace = candidate.lastIndexOf(' ');
   if (lastSpace > 50) {
-    return candidate.slice(0, lastSpace).trim().replace(/[,;:—–-]+$/, '') + '.';
+    return (
+      candidate
+        .slice(0, lastSpace)
+        .trim()
+        .replace(/[,;:—–-]+$/, '') + '.'
+    );
   }
   return candidate.replace(/[,;:—–-]+$/, '') + '.';
 }
 
 const LIGHTING_PATTERNS = [
-  /golden hour/i, /fluorescent lighting/i, /fire glow/i, /morning light/i,
-  /studio lights?/i, /overhead lighting/i, /stormy (?:sky|lighting)/i,
-  /cold blue.{0,20}grading/i, /warm golden.{0,20}light/i,
-  /dramatic.{0,30}lighting/i, /cinematic lighting/i, /chiaroscuro/i,
+  /golden hour/i,
+  /fluorescent lighting/i,
+  /fire glow/i,
+  /morning light/i,
+  /studio lights?/i,
+  /overhead lighting/i,
+  /stormy (?:sky|lighting)/i,
+  /cold blue.{0,20}grading/i,
+  /warm golden.{0,20}light/i,
+  /dramatic.{0,30}lighting/i,
+  /cinematic lighting/i,
+  /chiaroscuro/i,
 ];
 
 function formatImagePrompt(basePrompt: string, overlayText: string, watermarkFile: string): string {
   let lightingContext = 'the lighting of the scene';
   for (const pattern of LIGHTING_PATTERNS) {
     const match = basePrompt.match(pattern);
-    if (match) { lightingContext = match[0].toLowerCase(); break; }
+    if (match) {
+      lightingContext = match[0].toLowerCase();
+      break;
+    }
   }
   return `[ORIGINAL PROMPT]\n${basePrompt.trim()}\n\n[TEXT OVERLAY]\nContent: "${overlayText}"\nPosition: upper\nOpacity: 80%\n\n[OUTPUT]\nNo flags, no people visible.\nAdd a subtle gradient overlay beneath the text for legibility.\nOverlay the text above in large white Anton font at the upper position, semi-transparent at 80% opacity, integrated with ${lightingContext}.\nAdd ${watermarkFile} watermark, bottom-right, small, 70% opacity.`;
 }
@@ -509,40 +548,46 @@ async function generateAllContent(
   model: string,
   recentSeedTemplateIds: string[] = [],
 ) {
-  const systemBlock = [{
-    type: 'text' as const,
-    text: CONTENT_SYSTEM_PROMPT,
-    cache_control: { type: 'ephemeral' as const },
-  }];
+  const systemBlock = [
+    {
+      type: 'text' as const,
+      text: CONTENT_SYSTEM_PROMPT,
+      cache_control: { type: 'ephemeral' as const },
+    },
+  ];
 
   // Cap summary at 1500 chars — very long articles caused JSON truncation at 1200 output tokens.
   const summary = (article.summary || 'Non disponible').slice(0, 1500);
 
   const isIdentityLang = captionLanguage === 'italiano' || captionLanguage === 'français';
   const ctaMap: Record<string, string> = {
-    'français': `Suivez ${pageName} pour rester informé de l'actualité française — chaque jour.`,
-    'italiano': `Segui ${pageName} per restare informato sull'attualità italiana — ogni giorno.`,
-    'English': `Follow ${pageName} to stay informed — every day.`,
-    'svenska': `Följ ${pageName} för att hålla dig informerad — varje dag.`,
+    français: `Suivez ${pageName} pour rester informé de l'actualité française — chaque jour.`,
+    italiano: `Segui ${pageName} per restare informato sull'attualità italiana — ogni giorno.`,
+    English: `Follow ${pageName} to stay informed — every day.`,
+    svenska: `Följ ${pageName} för att hålla dig informerad — varje dag.`,
   };
-  const ctaInstruction = ctaMap[captionLanguage] ?? `Suivez ${pageName} pour rester informé — chaque jour.`;
-  const identityModeChoices = captionLanguage === 'italiano'
-    ? '• ORGOGLIO — risultato sportivo, eccellenza italiana, record, premio\n• RESILIENZA — crisi economica, carovita, difficoltà collettiva\n• DIBATTITO — riforma controversa, tema divisivo, dibattito parlamentare\n• PATRIMONIO — storia, arte, cultura, anniversario, tradizione'
-    : '• FIERTÉ — victoire française, excellence culturelle, reconnaissance internationale\n• RÉSISTANCE — crise économique, hausse des prix, difficulté sociale\n• DÉBAT — réforme controversée, sujet clivant, débat parlementaire\n• PATRIMOINE — histoire, art, culture, anniversaire, tradition régionale';
-  const identityModeList = captionLanguage === 'italiano'
-    ? 'ORGOGLIO|RESILIENZA|DIBATTITO|PATRIMONIO'
-    : 'FIERTÉ|RÉSISTANCE|DÉBAT|PATRIMOINE';
+  const ctaInstruction =
+    ctaMap[captionLanguage] ?? `Suivez ${pageName} pour rester informé — chaque jour.`;
+  const identityModeChoices =
+    captionLanguage === 'italiano'
+      ? '• ORGOGLIO — risultato sportivo, eccellenza italiana, record, premio\n• RESILIENZA — crisi economica, carovita, difficoltà collettiva\n• DIBATTITO — riforma controversa, tema divisivo, dibattito parlamentare\n• PATRIMONIO — storia, arte, cultura, anniversario, tradizione'
+      : '• FIERTÉ — victoire française, excellence culturelle, reconnaissance internationale\n• RÉSISTANCE — crise économique, hausse des prix, difficulté sociale\n• DÉBAT — réforme controversée, sujet clivant, débat parlementaire\n• PATRIMOINE — histoire, art, culture, anniversaire, tradition régionale';
+  const identityModeList =
+    captionLanguage === 'italiano'
+      ? 'ORGOGLIO|RESILIENZA|DIBATTITO|PATRIMONIO'
+      : 'FIERTÉ|RÉSISTANCE|DÉBAT|PATRIMOINE';
   const modeStep = isIdentityLang
     ? `\nÉTAPE 0 — MODE IDENTITAIRE (choisir avant de rédiger, voir Section 6) :\n${identityModeChoices}\nSi aucun mode ne s'applique (fait divers neutre, international pur, judiciaire) : identity_mode = null.\nLe mode est la lentille éditoriale pour l'ENSEMBLE du post — pas un ajout en fin de texte.\n`
     : '';
   const hookInstruction = isIdentityLang
     ? "si mode identitaire actif : cadrer en termes d'identité nationale (Section 6) ; sinon : tension/conflit central avec acteur nommé"
     : 'tension/conflit central avec acteur nommé si possible';
-  const questionGuide = captionLanguage === 'italiano'
-    ? `ORGOGLIO → "Di cosa sei più orgoglioso/a dell'Italia ?" ; RESILIENZA → "Come stai affrontando questo ?" ; DIBATTITO → "Cosa dice questo dell'Italia che vogliamo ?" ; PATRIMONIO → "Cosa trasmetti di italiano ai tuoi figli ?" ; null → domanda chiusa o binaria`
-    : captionLanguage === 'français'
-    ? `FIERTÉ → "Qu'est-ce qui vous rend le plus fier(ère) d'être français(e) ?" ; RÉSISTANCE → "Comment vous en sortez-vous ?" ; DÉBAT → "Qu'est-ce que cela dit de la France que nous voulons ?" ; PATRIMOINE → "Quel est votre patrimoine français préféré ?" ; null → fermée ou binaire`
-    : 'fermée ou binaire (pas ouverte seule)';
+  const questionGuide =
+    captionLanguage === 'italiano'
+      ? `ORGOGLIO → "Di cosa sei più orgoglioso/a dell'Italia ?" ; RESILIENZA → "Come stai affrontando questo ?" ; DIBATTITO → "Cosa dice questo dell'Italia che vogliamo ?" ; PATRIMONIO → "Cosa trasmetti di italiano ai tuoi figli ?" ; null → domanda chiusa o binaria`
+      : captionLanguage === 'français'
+        ? `FIERTÉ → "Qu'est-ce qui vous rend le plus fier(ère) d'être français(e) ?" ; RÉSISTANCE → "Comment vous en sortez-vous ?" ; DÉBAT → "Qu'est-ce que cela dit de la France que nous voulons ?" ; PATRIMOINE → "Quel est votre patrimoine français préféré ?" ; null → fermée ou binaire`
+        : 'fermée ou binaire (pas ouverte seule)';
   const jsonSchema = `{"intro":"[blocs 1-4]","question":"[bloc 5]","cta":"[blocs 6-7 + hashtags]","hashtags":["#Tag1","#Tag2","#Tag3"],"seed_comment":"[template rempli]","seed_comment_template_id":"[id du template]","story_category":"[Politique|Société|Sport|Culture|International|Santé|Environnement]","recommended_format":"[image|video|poll|carousel]","content_signals":{"binary_frame":true,"poll_fit_score":3,"protagonist_named":"Dupont","best_format":"post","fr_it_stake_first_sentence":true,"pillar_hint":"france-en-debat"}${isIdentityLang ? `,"identity_mode":"[${identityModeList}|null]"` : ''}}`;
 
   const [captionRes, seoRes, imageRes] = await Promise.all([
@@ -550,9 +595,10 @@ async function generateAllContent(
       model,
       max_tokens: 1400,
       system: systemBlock,
-      messages: [{
-        role: 'user',
-        content: `OUTPUT FORMAT: you must respond with ONLY a raw JSON object. No markdown, no text before or after, no code fences. Start your response with { and end with }.
+      messages: [
+        {
+          role: 'user',
+          content: `OUTPUT FORMAT: you must respond with ONLY a raw JSON object. No markdown, no text before or after, no code fences. Start your response with { and end with }.
 ${modeStep}
 Rédige un post Facebook complet pour ${pageName} en ${captionLanguage}.
 Hashtag fixe de la page : ${pageHashtag}
@@ -571,21 +617,25 @@ JSON attendu :
 ${jsonSchema}
 
 Templates éligibles pour le seed_comment (choisir un parmi ces IDs, remplir {topic_noun} en ${captionLanguage}) :
-${pickEligibleTemplates(article.country, recentSeedTemplateIds).map((t: { id: string; t: string }) => `[${t.id}] "${t.t}"`).join('\n')}
+${pickEligibleTemplates(article.country, recentSeedTemplateIds)
+  .map((t: { id: string; t: string }) => `[${t.id}] "${t.t}"`)
+  .join('\n')}
 
 Article :
 Titre : ${article.title}
 Source : ${article.source}
 Résumé : ${summary}`,
-      }],
+        },
+      ],
     }),
     anthropic.messages.create({
       model,
       max_tokens: 200,
       system: systemBlock,
-      messages: [{
-        role: 'user',
-        content: `Génère un seo_title et une seo_description pour cet article.
+      messages: [
+        {
+          role: 'user',
+          content: `Génère un seo_title et une seo_description pour cet article.
 
 RAPPEL CRITIQUE — appliquer dans cet ordre :
 1. seo_title ≤ 60 caractères (compter avant de répondre). Se termine sur un mot entier.
@@ -599,14 +649,16 @@ Article:
 Titre: ${article.title}
 Source: ${article.source}
 Résumé: ${summary}`,
-      }],
+        },
+      ],
     }),
     anthropic.messages.create({
       model,
       max_tokens: 700,
-      messages: [{
-        role: 'user',
-        content: `Generate a cinematic AI image prompt AND a short image headline for this news article.
+      messages: [
+        {
+          role: 'user',
+          content: `Generate a cinematic AI image prompt AND a short image headline for this news article.
 
 Return JSON only: {"image_prompt": "...", "image_headline": "..."}
 
@@ -654,7 +706,8 @@ STEP 2 · Write the image_prompt:
 
 Article: ${article.title}
 Summary: ${summary}`,
-      }],
+        },
+      ],
     }),
   ]);
 
@@ -662,7 +715,9 @@ Summary: ${summary}`,
     try {
       const m = text.trim().match(/\{[\s\S]*\}/);
       return JSON.parse(m ? m[0] : text.trim());
-    } catch { return fallback; }
+    } catch {
+      return fallback;
+    }
   };
 
   const getText = (res: any): string => {
@@ -675,7 +730,8 @@ Summary: ${summary}`,
     intro: captionRawText,
     question: '',
     cta: '',
-    seed_comment: '💬 Et vous, qu\'en pensez-vous ? Est-ce que cette nouvelle vous surprend ? Répondez en commentaire — on lit tout. 👇',
+    seed_comment:
+      "💬 Et vous, qu'en pensez-vous ? Est-ce que cette nouvelle vous surprend ? Répondez en commentaire — on lit tout. 👇",
     story_category: 'Société',
   });
   if (!captionData.intro) captionData.intro = captionRawText;
@@ -695,9 +751,15 @@ Summary: ${summary}`,
   const imagePromptText = (imageData.image_prompt || getText(imageRes)).trim();
   const imageHeadlineWords = (imageData.image_headline || article.title).split(/\s+/);
   const imageHeadline = imageHeadlineWords.slice(0, 6).join(' ');
-  const EDGE_ENGLISH_STOPWORDS = /\b(the|and|of|for|has|have|will|with|this|that|are|was|were|been|being)\b/i;
-  if (['français', 'italiano'].includes(captionLanguage) && EDGE_ENGLISH_STOPWORDS.test(imageHeadline)) {
-    console.error(`image_headline appears English: "${imageHeadline}" (lang: ${captionLanguage}) — regenerate via generate-image.js`);
+  const EDGE_ENGLISH_STOPWORDS =
+    /\b(the|and|of|for|has|have|will|with|this|that|are|was|were|been|being)\b/i;
+  if (
+    ['français', 'italiano'].includes(captionLanguage) &&
+    EDGE_ENGLISH_STOPWORDS.test(imageHeadline)
+  ) {
+    console.error(
+      `image_headline appears English: "${imageHeadline}" (lang: ${captionLanguage}) — regenerate via generate-image.js`,
+    );
   }
 
   const allowedFormats = new Set(['image', 'video', 'poll', 'carousel']);
@@ -706,7 +768,11 @@ Summary: ${summary}`,
     : 'image';
 
   return {
-    ai_caption: { intro: captionData.intro || '', question: captionData.question || '', cta: captionData.cta || '' },
+    ai_caption: {
+      intro: captionData.intro || '',
+      question: captionData.question || '',
+      cta: captionData.cta || '',
+    },
     seo_title: seo.seo_title,
     seo_description: seo.seo_description,
     image_prompt: imagePromptText,
@@ -731,7 +797,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-  return await handleRequest(req);
+    return await handleRequest(req);
   } catch (err: any) {
     console.error('Unhandled error:', err?.message ?? err);
     return new Response(JSON.stringify({ error: err?.message ?? 'Internal server error' }), {
@@ -770,7 +836,9 @@ async function handleRequest(req: Request): Promise<Response> {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
-  const anthropicOpts: { apiKey: string; baseURL?: string } = { apiKey: Deno.env.get('ANTHROPIC_KEY')! };
+  const anthropicOpts: { apiKey: string; baseURL?: string } = {
+    apiKey: Deno.env.get('ANTHROPIC_KEY')!,
+  };
   const baseURL = Deno.env.get('ANTHROPIC_BASE_URL');
   if (baseURL) anthropicOpts.baseURL = baseURL;
   const anthropic = new Anthropic(anthropicOpts);
@@ -809,10 +877,20 @@ async function handleRequest(req: Request): Promise<Response> {
           .order('created_at', { ascending: false })
           .limit(20);
         recentSeedByCountry[article.country] = (seedRows || [])
-          .map((r: any) => r.seed_comment_template_id).filter(Boolean);
+          .map((r: any) => r.seed_comment_template_id)
+          .filter(Boolean);
       }
       const recentSeedIds = recentSeedByCountry[article.country];
-      const content = await generateAllContent(anthropic, article, captionLanguage, pageName, pageHashtag, watermarkFile, model, recentSeedIds);
+      const content = await generateAllContent(
+        anthropic,
+        article,
+        captionLanguage,
+        pageName,
+        pageHashtag,
+        watermarkFile,
+        model,
+        recentSeedIds,
+      );
       if (content.seed_comment_template_id) {
         recentSeedByCountry[article.country].push(content.seed_comment_template_id);
       }
@@ -823,7 +901,10 @@ async function handleRequest(req: Request): Promise<Response> {
         country: article.country,
         story_category: content.story_category,
       });
-      await supabase.from('articles').update({ ...content, tags }).eq('id', article.id);
+      await supabase
+        .from('articles')
+        .update({ ...content, tags })
+        .eq('id', article.id);
       processed++;
       results.push({ id: article.id, seo_title: content.seo_title });
     } catch (err: any) {

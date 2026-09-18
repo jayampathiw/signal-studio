@@ -21,11 +21,11 @@
 import { readFileSync } from 'fs';
 
 const SUBSTITUTIONS = [
-  { from: /\bexposed roots?\b/gi,    to: 'tangled root structures' },
-  { from: /\bpredawn\b/gi,           to: 'cool morning light' },
-  { from: /\btoe pads?\b/gi,         to: 'small paws' },
-  { from: /\bnose leather\b/gi,      to: 'muzzle detail' },
-  { from: /\biris texture\b/gi,      to: 'eye catching light' },
+  { from: /\bexposed roots?\b/gi, to: 'tangled root structures' },
+  { from: /\bpredawn\b/gi, to: 'cool morning light' },
+  { from: /\btoe pads?\b/gi, to: 'small paws' },
+  { from: /\bnose leather\b/gi, to: 'muzzle detail' },
+  { from: /\biris texture\b/gi, to: 'eye catching light' },
 ];
 
 function lint(text, fix = false) {
@@ -46,7 +46,7 @@ function lint(text, fix = false) {
 function main() {
   const args = process.argv.slice(2);
   const fix = args.includes('--fix');
-  const filePath = args.find(a => !a.startsWith('--'));
+  const filePath = args.find((a) => !a.startsWith('--'));
 
   let input;
   if (filePath) {

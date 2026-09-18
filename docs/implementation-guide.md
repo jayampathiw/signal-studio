@@ -4,7 +4,7 @@
 > **Last analysed:** 2026-06-26 against `main`.
 > **Companion docs:** `docs/PROJECT-STATUS.md` (progress tracker), `docs/cloud-automation-workflow.md`, `docs/video-generation-flow.md`, `docs/higgsfield-models.md`, `CLAUDE.md`. Index: `docs/README.md`.
 
-This guide is the single onboarding reference. It explains *what the system does*, *how the pieces fit*, *where everything lives*, and *how to run, extend, and debug it*.
+This guide is the single onboarding reference. It explains _what the system does_, _how the pieces fit_, _where everything lives_, and _how to run, extend, and debug it_.
 
 ---
 
@@ -12,17 +12,18 @@ This guide is the single onboarding reference. It explains *what the system does
 
 Signal Studio is a **self-contained monorepo** that does all the real work: data ingestion, AI generation, rendering, storage, database, and the review dashboard.
 
-Two **external, public GitHub repositories exist only as automation triggers** — they are *entry points*, not implementation:
+Two **external, public GitHub repositories exist only as automation triggers** — they are _entry points_, not implementation:
 
-| External repo | Visibility | Role | What it actually contains |
-|---|---|---|---|
-| `reel-pipeline` | public | Hosts the GitHub Actions workflow that runs the AI **video** generation agent in the cloud | A `generate.yml` workflow + a thin `runner.sh`. It checks out *this* repo via a deploy key and runs the skills that live here. |
-| `facebook-news-pipeline` | public *(legacy origin)* | Historical origin of the **news** pipeline; the news automation now runs from this repo's own `.github/workflows/` | Effectively superseded — the news GitHub Actions live in `signal-studio/.github/workflows/fetch-news.yml`. |
+| External repo            | Visibility               | Role                                                                                                               | What it actually contains                                                                                                      |
+| ------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `reel-pipeline`          | public                   | Hosts the GitHub Actions workflow that runs the AI **video** generation agent in the cloud                         | A `generate.yml` workflow + a thin `runner.sh`. It checks out _this_ repo via a deploy key and runs the skills that live here. |
+| `facebook-news-pipeline` | public _(legacy origin)_ | Historical origin of the **news** pipeline; the news automation now runs from this repo's own `.github/workflows/` | Effectively superseded — the news GitHub Actions live in `signal-studio/.github/workflows/fetch-news.yml`.                     |
 
 > **Why public repos as triggers?** GitHub Actions minutes are free and unlimited on public repos. The heavy, private logic stays in `signal-studio` (private) and is checked out at job runtime via an SSH deploy key. Compute is free; secrets stay private.
 
 **The one-sentence mental model:**
-> `reel-pipeline` (public) is a doorbell. When rung (cron or manual dispatch), it pulls `signal-studio` (private) into a free cloud VM and runs a Claude Code agent that drives Higgsfield + Supabase. Everything the agent knows and does is defined *here*.
+
+> `reel-pipeline` (public) is a doorbell. When rung (cron or manual dispatch), it pulls `signal-studio` (private) into a free cloud VM and runs a Claude Code agent that drives Higgsfield + Supabase. Everything the agent knows and does is defined _here_.
 
 ---
 
@@ -41,7 +42,7 @@ The platform is organised around **channels**. A channel key has the shape `<nic
 
 ### Core design goals
 
-- **Cloud-to-cloud automation** — the AI video pipeline runs with *zero* local-machine involvement. GitHub runner ↔ Anthropic ↔ Higgsfield ↔ Supabase.
+- **Cloud-to-cloud automation** — the AI video pipeline runs with _zero_ local-machine involvement. GitHub runner ↔ Anthropic ↔ Higgsfield ↔ Supabase.
 - **Cost safety** — hard credit guards and a cheap storyboard preview before any expensive video credits are spent.
 - **Quality gates** — every generated frame is vision-reviewed and continuity-checked before the next (costlier) step.
 - **Idempotent resume** — a crashed or cancelled generation run resumes exactly where it stopped; completed scenes are never re-paid for.
@@ -94,11 +95,11 @@ Tier 2 — Platform skills/agents        (apply to ALL channels)
 Tier 3 — Channel skills                (one set per channel)
 ```
 
-| Tier | Examples (file) | Scope |
-|---|---|---|
-| **T1** | `higgsfield:generate` (`npx skills add higgsfield-ai/skills`) | Higgsfield mechanics only — model selection, job polling |
-| **T2** | `.claude/skills/higgsfield-credit-guard/SKILL.md`; agents `.claude/agents/{image-quality-gate,continuity-checker,seo-writer,performance-analyst}.md` | Platform-wide rules: credit ceiling, vision gate, continuity, SEO |
-| **T3** | `.claude/skills/wild-eye-reel/SKILL.md`, `.claude/skills/wild-eye-brief/SKILL.md` | One channel: cavy-only rules, format formulas, CTA phrasing, scheduling |
+| Tier   | Examples (file)                                                                                                                                      | Scope                                                                   |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **T1** | `higgsfield:generate` (`npx skills add higgsfield-ai/skills`)                                                                                        | Higgsfield mechanics only — model selection, job polling                |
+| **T2** | `.claude/skills/higgsfield-credit-guard/SKILL.md`; agents `.claude/agents/{image-quality-gate,continuity-checker,seo-writer,performance-analyst}.md` | Platform-wide rules: credit ceiling, vision gate, continuity, SEO       |
+| **T3** | `.claude/skills/wild-eye-reel/SKILL.md`, `.claude/skills/wild-eye-brief/SKILL.md`                                                                    | One channel: cavy-only rules, format formulas, CTA phrasing, scheduling |
 
 **Promotion rule:** anything used by ≥2 channels moves up to Tier 2; anything channel-specific stays Tier 3; Tier 1 is never edited.
 
@@ -144,20 +145,20 @@ Tier 3 — Channel skills                (one set per channel)
 
 ```
 brief → storyboard → generating → rendered → publishing → posted
-                          │                      
+                          │
                           └──▶ blocked   (vision gate fails twice, or hard continuity conflict)
                           └──▶ failed    (terminal error, e.g. 21s assembly failed)
 ```
 
-| Status | Set by | Meaning |
-|---|---|---|
-| `brief` | user / brief script | Concept only; `scenes='[]'` |
-| `storyboard` | expand-brief / skill | Scene prompts written; storyboard image generated |
-| `generating` | skill | Row claimed (concurrency guard); per-scene generation in progress |
-| `rendered` | skill | All scenes done, SEO written, `rendered_video_url` set; publisher-ready |
-| `publishing` / `posted` | publish step / dashboard | Upload in progress / live |
-| `blocked` | skill | On hold; `status_note` holds the reason; needs a human decision |
-| `failed` | skill / publish | Terminal error; `status_note` holds the reason |
+| Status                  | Set by                   | Meaning                                                                 |
+| ----------------------- | ------------------------ | ----------------------------------------------------------------------- |
+| `brief`                 | user / brief script      | Concept only; `scenes='[]'`                                             |
+| `storyboard`            | expand-brief / skill     | Scene prompts written; storyboard image generated                       |
+| `generating`            | skill                    | Row claimed (concurrency guard); per-scene generation in progress       |
+| `rendered`              | skill                    | All scenes done, SEO written, `rendered_video_url` set; publisher-ready |
+| `publishing` / `posted` | publish step / dashboard | Upload in progress / live                                               |
+| `blocked`               | skill                    | On hold; `status_note` holds the reason; needs a human decision         |
+| `failed`                | skill / publish          | Terminal error; `status_note` holds the reason                          |
 
 `status_note` (renamed from `open_thread` in migration 102) is non-null whenever a human needs to act.
 
@@ -170,24 +171,24 @@ brief → storyboard → generating → rendered → publishing → posted
 
 ## 4. Technology stack
 
-| Layer | Technology | Where / version |
-|---|---|---|
-| Runtime | Node.js ≥ 20 (ESM only, `"type":"module"`) | root `package.json` `engines` |
-| Monorepo | npm workspaces (no pnpm/lerna) | root `package.json` `workspaces` |
-| AI captions/scripts | Anthropic Claude via `@anthropic-ai/sdk` | `packages/ai/claude.js`; default model `claude-haiku-4-5-20251001` |
-| AI image (news) | fal.ai (primary) → Cloudflare Workers AI → Google AI (fallbacks); Pollinations (free) | `packages/ai/image-gen/*` |
-| AI image+video (reels) | Higgsfield (MCP tools `generate_image`/`generate_video`) | models in `docs/higgsfield-models.md` |
-| Video render | FFmpeg (`packages/render/ffmpeg`) + Remotion (`packages/render/remotion`, React/TS) | engine is per-channel config |
-| TTS / subtitles | Kokoro TTS + Whisper (`packages/media`) | `renderers/tts.py` |
-| Object storage | Cloudflare R2 (S3-compatible via `@aws-sdk/client-s3`) | `packages/media/storage.js` |
-| Database / auth / serverless | Supabase (Postgres + Edge Functions in Deno + Storage) | project `nnxtvbolhuvihlpwppbj` |
-| Dashboard | Angular 21 (standalone components, signals) + Tailwind | `apps/dashboard` |
-| Dashboard hosting | Vercel (SPA rewrite) | `apps/dashboard/vercel.json` |
-| Automation | GitHub Actions (public-repo free runners) | `.github/workflows/`, external `reel-pipeline` |
-| Stock footage | Pexels / Pixabay | `apps/video/src/fetchers/pexels.js` |
-| Publishing | Facebook/IG/YT/TikTok Graph & Data APIs | `packages/publishers/*` |
-| Agent orchestration | Claude Code skills + subagents (`.claude/`) | Tier 2/3 skills & agents |
-| MCP servers | supabase, github, context7, sequential-thinking, filesystem, memory (+ higgsfield OAuth, notion, playwright at user level) | `.mcp.json` |
+| Layer                        | Technology                                                                                                                 | Where / version                                                    |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Runtime                      | Node.js ≥ 20 (ESM only, `"type":"module"`)                                                                                 | root `package.json` `engines`                                      |
+| Monorepo                     | npm workspaces (no pnpm/lerna)                                                                                             | root `package.json` `workspaces`                                   |
+| AI captions/scripts          | Anthropic Claude via `@anthropic-ai/sdk`                                                                                   | `packages/ai/claude.js`; default model `claude-haiku-4-5-20251001` |
+| AI image (news)              | fal.ai (primary) → Cloudflare Workers AI → Google AI (fallbacks); Pollinations (free)                                      | `packages/ai/image-gen/*`                                          |
+| AI image+video (reels)       | Higgsfield (MCP tools `generate_image`/`generate_video`)                                                                   | models in `docs/higgsfield-models.md`                              |
+| Video render                 | FFmpeg (`packages/render/ffmpeg`) + Remotion (`packages/render/remotion`, React/TS)                                        | engine is per-channel config                                       |
+| TTS / subtitles              | Kokoro TTS + Whisper (`packages/media`)                                                                                    | `renderers/tts.py`                                                 |
+| Object storage               | Cloudflare R2 (S3-compatible via `@aws-sdk/client-s3`)                                                                     | `packages/media/storage.js`                                        |
+| Database / auth / serverless | Supabase (Postgres + Edge Functions in Deno + Storage)                                                                     | project `nnxtvbolhuvihlpwppbj`                                     |
+| Dashboard                    | Angular 21 (standalone components, signals) + Tailwind                                                                     | `apps/dashboard`                                                   |
+| Dashboard hosting            | Vercel (SPA rewrite)                                                                                                       | `apps/dashboard/vercel.json`                                       |
+| Automation                   | GitHub Actions (public-repo free runners)                                                                                  | `.github/workflows/`, external `reel-pipeline`                     |
+| Stock footage                | Pexels / Pixabay                                                                                                           | `apps/video/src/fetchers/pexels.js`                                |
+| Publishing                   | Facebook/IG/YT/TikTok Graph & Data APIs                                                                                    | `packages/publishers/*`                                            |
+| Agent orchestration          | Claude Code skills + subagents (`.claude/`)                                                                                | Tier 2/3 skills & agents                                           |
+| MCP servers                  | supabase, github, context7, sequential-thinking, filesystem, memory (+ higgsfield OAuth, notion, playwright at user level) | `.mcp.json`                                                        |
 
 **Facebook API version:** always `https://graph.facebook.com/v22.0` (v19 deprecated May 2026).
 
@@ -281,7 +282,7 @@ Each entry is keyed by `channel_key`. Two shapes coexist:
 - **Stock-footage channels** (NaturePulse, NatureFrame, France, Italy): carry `fetchers[]`, `renderer:'reel'`, and a `rendererConfig` (duration, clips, narration, voice, music, CTA).
 - **AI-video channel** (`wildlife/intimacy/EN`): carries `source:'higgsfield'`, `renderer:'higgsfield'`, model defaults (`imageModel`, `videoModel`, `imageRes`, `videoRes`, `aspectRatio`, `generateAudio`), and a `formats` map (`11s` / `21s` / `portrait`) instead of `rendererConfig`.
 
-`getChannel(key)` throws on unknown keys; `listEnabledPlatforms(channel)` returns the platforms to publish to. The Wild Eye block's model defaults are the *fallback* layer for generation config (see §6.5).
+`getChannel(key)` throws on unknown keys; `listEnabledPlatforms(channel)` returns the platforms to publish to. The Wild Eye block's model defaults are the _fallback_ layer for generation config (see §6.5).
 
 ### 6.2 Config & env (`packages/config`)
 
@@ -325,15 +326,15 @@ generateAudio = channel.generateAudio                          // true
 Set per-scene during brief expansion; this single field drives how the skill generates each scene (full detail: `docs/video-generation-flow.md §2.2`):
 
 - **Scenario 1 — storyboard-direct** (`transition:'panel'`): storyboard panel → video reference; no dedicated start frame, no start-frame vision gate.
-- **Scenario 2 — start-frame only / cut** (`transition:'fresh'`): fresh start frame per scene; previous clip's `final_frame_url` used only as a *character* reference; the cut happens in assembly.
-- **Scenario 3 — start+end chain** (`transition:'fresh'`→`'chain'`): each clip's end frame *is* the next scene's start frame. Runs **two-phase**: generate ALL start frames first (Phase A), then all videos (Phase B). The chain only works if every start frame exists before any video.
+- **Scenario 2 — start-frame only / cut** (`transition:'fresh'`): fresh start frame per scene; previous clip's `final_frame_url` used only as a _character_ reference; the cut happens in assembly.
+- **Scenario 3 — start+end chain** (`transition:'fresh'`→`'chain'`): each clip's end frame _is_ the next scene's start frame. Runs **two-phase**: generate ALL start frames first (Phase A), then all videos (Phase B). The chain only works if every start frame exists before any video.
 
 11s defaults to one scenario-3 scene; 21s defaults to three scenario-3 scenes (a scene becomes scenario 2 where the concept demands an angle cut); portrait is `image_only`.
 
 ### 6.7 Vision gate & continuity (Tier 2 agents)
 
 - **`image-quality-gate`** runs after every generated frame. For storyboards it is **advisory** (never blocks — the storyboard is the human review point). For start/end frames it is a **HARD gate**: `pass` (score ≥7) proceeds; `retry` (score <7, attempt 1) regenerates the same frame; `blocked` (score <7, attempt ≥2) sets `scene_status='blocked'`, `status='blocked'`, writes `status_note`, and STOPs. **No video credits are spent until the start frame passes.**
-- **`continuity-checker`** runs after the gate passes: `none`→proceed, `soft`→log & proceed (cloud), `hard`→block. It also reviews multi-panel storyboards for cross-scene contradictions (same animal, consistent location, plausible lighting progression) *before* any video credits.
+- **`continuity-checker`** runs after the gate passes: `none`→proceed, `soft`→log & proceed (cloud), `hard`→block. It also reviews multi-panel storyboards for cross-scene contradictions (same animal, consistent location, plausible lighting progression) _before_ any video credits.
 
 ### 6.8 Credit guard (Tier 2)
 
@@ -367,37 +368,37 @@ One Supabase Postgres database backs everything. The two pipelines do not share 
 
 ### 7.1 Core tables
 
-| Table | Purpose |
-|---|---|
-| `articles` | News pipeline rows (ingested stories, captions, FB post status) |
-| `content_items` | Reels/video rows (briefs → rendered assets) **and** legacy stock-footage reels |
-| `render_queue` | Pending/processing render jobs |
-| `on_this_day_posts` | "On this day" historical FB posts |
-| `reels_log` | Performance/topic-hash log for near-duplicate checks |
-| `post_metrics` | Time-series FB metrics snapshots (`+1h`/`+24h`/`+7d`) |
+| Table               | Purpose                                                                        |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `articles`          | News pipeline rows (ingested stories, captions, FB post status)                |
+| `content_items`     | Reels/video rows (briefs → rendered assets) **and** legacy stock-footage reels |
+| `render_queue`      | Pending/processing render jobs                                                 |
+| `on_this_day_posts` | "On this day" historical FB posts                                              |
+| `reels_log`         | Performance/topic-hash log for near-duplicate checks                           |
+| `post_metrics`      | Time-series FB metrics snapshots (`+1h`/`+24h`/`+7d`)                          |
 
 ### 7.2 `content_items` — key columns (Wild Eye relevant)
 
 From `migrations/100_content_items.sql` + `101_wild_eye.sql` + `102_generic_brief.sql` + dated migrations:
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | bigserial PK | |
-| `channel_key` | text | `'wildlife/intimacy/EN'` |
-| `niche`/`style`/`language`/`source_type`/`source_clips`/`target_platforms` | text/jsonb | **nullable since 102** (channel config lives in `channels.js`, not rows) |
-| `title` / `description` | text | brief concept |
-| `format` | text | `'11s'` / `'21s'` / `'portrait'` |
-| `status` | text CHECK | `brief, storyboard, generating, pending, rendering, rendered, publishing, posted, failed, blocked` |
-| `scenes` | jsonb `'[]'` | progressively populated per scene (canonical shape: `docs/video-generation-flow.md §6`) |
-| `gen_config` | jsonb | per-reel generation overrides (dashboard Config tab) |
-| `status_note` | text | renamed from `open_thread`; non-null = needs human attention |
-| `seo` | jsonb | `{title, description, hashtags[]}` — **written by the generator** |
-| `ai_caption` | jsonb | `{intro, question, cta}` — legacy news/pexels caption shape |
-| `hashtags` | text[] | legacy hashtag column |
-| `slot` / `scheduled_for` | text / timestamptz | posting slot |
-| `rendered_video_url` / `rendered_at` | text / timestamptz | final asset |
-| `metrics` | jsonb | performance log (dated migration) |
-| `fb_*`/`ig_*`/`yt_*`/`tt_*` | text/timestamptz | denormalized per-platform publish status |
+| Column                                                                     | Type               | Notes                                                                                              |
+| -------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| `id`                                                                       | bigserial PK       |                                                                                                    |
+| `channel_key`                                                              | text               | `'wildlife/intimacy/EN'`                                                                           |
+| `niche`/`style`/`language`/`source_type`/`source_clips`/`target_platforms` | text/jsonb         | **nullable since 102** (channel config lives in `channels.js`, not rows)                           |
+| `title` / `description`                                                    | text               | brief concept                                                                                      |
+| `format`                                                                   | text               | `'11s'` / `'21s'` / `'portrait'`                                                                   |
+| `status`                                                                   | text CHECK         | `brief, storyboard, generating, pending, rendering, rendered, publishing, posted, failed, blocked` |
+| `scenes`                                                                   | jsonb `'[]'`       | progressively populated per scene (canonical shape: `docs/video-generation-flow.md §6`)            |
+| `gen_config`                                                               | jsonb              | per-reel generation overrides (dashboard Config tab)                                               |
+| `status_note`                                                              | text               | renamed from `open_thread`; non-null = needs human attention                                       |
+| `seo`                                                                      | jsonb              | `{title, description, hashtags[]}` — **written by the generator**                                  |
+| `ai_caption`                                                               | jsonb              | `{intro, question, cta}` — legacy news/pexels caption shape                                        |
+| `hashtags`                                                                 | text[]             | legacy hashtag column                                                                              |
+| `slot` / `scheduled_for`                                                   | text / timestamptz | posting slot                                                                                       |
+| `rendered_video_url` / `rendered_at`                                       | text / timestamptz | final asset                                                                                        |
+| `metrics`                                                                  | jsonb              | performance log (dated migration)                                                                  |
+| `fb_*`/`ig_*`/`yt_*`/`tt_*`                                                | text/timestamptz   | denormalized per-platform publish status                                                           |
 
 A `set_updated_at()` trigger maintains `updated_at`.
 
@@ -405,18 +406,30 @@ A `set_updated_at()` trigger maintains `updated_at`.
 
 ```jsonc
 {
-  "scene_num": 1, "duration_sec": 11,
-  "scenario": 3, "transition": "fresh",       // generation strategy per scene
+  "scene_num": 1,
+  "duration_sec": 11,
+  "scenario": 3,
+  "transition": "fresh", // generation strategy per scene
   "image_prompt": "flowing prose…",
-  "video_prompt": { "composition": "...", "style": "...", "cameraMotion": "...",
-                    "subjects": "...", "action": "...", "location": "...",
-                    "audioCues": "...", "lighting": "...", "durationSec": 11 },
-  "storyboard_url": "…",                       // scene 1 only, after Step 3
-  "higgsfield_image_job": "…", "start_frame_url": "…",
-  "higgsfield_video_job": "…", "clip_url": "…",
-  "final_frame_url": "…",                      // scenario 2 only (character ref for next scene)
-  "vision_check": { "status":"pass", "score":8, "attempts":1, "issues":[] },
-  "scene_status": "pending|image_done|video_done|blocked"
+  "video_prompt": {
+    "composition": "...",
+    "style": "...",
+    "cameraMotion": "...",
+    "subjects": "...",
+    "action": "...",
+    "location": "...",
+    "audioCues": "...",
+    "lighting": "...",
+    "durationSec": 11,
+  },
+  "storyboard_url": "…", // scene 1 only, after Step 3
+  "higgsfield_image_job": "…",
+  "start_frame_url": "…",
+  "higgsfield_video_job": "…",
+  "clip_url": "…",
+  "final_frame_url": "…", // scenario 2 only (character ref for next scene)
+  "vision_check": { "status": "pass", "score": 8, "attempts": 1, "issues": [] },
+  "scene_status": "pending|image_done|video_done|blocked",
 }
 ```
 
@@ -439,15 +452,15 @@ Apply with: `supabase db query --linked -f supabase/migrations/<file>.sql` (or `
 
 All functions are Deno, live in `supabase/functions/<name>/index.ts`, share CORS headers, and are called by the dashboard via `SupabaseService` with the user's access token (falling back to the anon key). `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are auto-injected by Supabase; other secrets are set via `supabase secrets set`.
 
-| Function | Method / body | Does | Calls out to |
-|---|---|---|---|
-| `expand-brief` | POST `{content_item_id}` | Claude expands a `brief` row into `scenes` jsonb, advances to `storyboard`; reverts to `brief` with `status_note` on parse/AI failure | Anthropic |
-| `trigger-generation` | POST `{content_item_id}` | Validates `status='storyboard'`, maps `channel_key`→slug, dispatches `generate.yml` `workflow_dispatch` to `jayampathiw/reel-pipeline`, returns the queued run URL | GitHub API (`GITHUB_PAT`) |
-| `generate-image` | POST `{article_id}` | Generates a news composite image | fal.ai / CF / Google |
-| `generate-caption` | POST `{article_ids[]}` | Claude SEO captions for articles | Anthropic |
-| `post-to-facebook` | POST `{article_ids[]}` | Publishes articles to FB pages | Graph v22.0 |
-| `analyze-upload` | POST `{rawText, country}` | Parses pasted text into structured article candidates | Anthropic |
-| `queue-on-this-day` / `post-on-this-day` | POST | Build + publish "on this day" posts | Anthropic / Graph |
+| Function                                 | Method / body             | Does                                                                                                                                                               | Calls out to              |
+| ---------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| `expand-brief`                           | POST `{content_item_id}`  | Claude expands a `brief` row into `scenes` jsonb, advances to `storyboard`; reverts to `brief` with `status_note` on parse/AI failure                              | Anthropic                 |
+| `trigger-generation`                     | POST `{content_item_id}`  | Validates `status='storyboard'`, maps `channel_key`→slug, dispatches `generate.yml` `workflow_dispatch` to `jayampathiw/reel-pipeline`, returns the queued run URL | GitHub API (`GITHUB_PAT`) |
+| `generate-image`                         | POST `{article_id}`       | Generates a news composite image                                                                                                                                   | fal.ai / CF / Google      |
+| `generate-caption`                       | POST `{article_ids[]}`    | Claude SEO captions for articles                                                                                                                                   | Anthropic                 |
+| `post-to-facebook`                       | POST `{article_ids[]}`    | Publishes articles to FB pages                                                                                                                                     | Graph v22.0               |
+| `analyze-upload`                         | POST `{rawText, country}` | Parses pasted text into structured article candidates                                                                                                              | Anthropic                 |
+| `queue-on-this-day` / `post-on-this-day` | POST                      | Build + publish "on this day" posts                                                                                                                                | Anthropic / Graph         |
 
 **`trigger-generation` channel map** (mirrors `channel-slugs.js`):
 `wildlife/intimacy/EN → wild-eye`, plus stubbed `wildlife/{factual,listicle,cinematic,silent}/EN`. Dispatch payload: `{ ref:'main', inputs:{ channel, content_id } }` → `repos/jayampathiw/reel-pipeline/actions/workflows/generate.yml/dispatches`.
@@ -491,12 +504,12 @@ Grouped optional keys (see `.env.example` + `packages/config/schema.js`):
 
 ### 9.4 Where secrets live (four separate stores)
 
-| Store | Set how | Holds |
-|---|---|---|
-| Root `.env` | local file | everything, for local runs (⚠️ a template — many keys are blank placeholders with inline comments) |
-| **GitHub Actions secrets** (`signal-studio` repo) | `gh secret set …` | news + video workflow keys (Supabase, Anthropic, FAL, FB, R2, Pexels) |
-| **Supabase Edge Function secrets** | `supabase secrets set …` | `ANTHROPIC_KEY`, `FAL_KEY`, **`GITHUB_PAT`** (critical for trigger-generation; needs `actions:write` on reel-pipeline), FB keys, image fallbacks |
-| **`reel-pipeline` repo secrets** | `gh secret set … --repo jayampathiw/reel-pipeline` | `SIGNAL_STUDIO_DEPLOY_KEY`, `ANTHROPIC_API_KEY` + `ANTHROPIC_BASE_URL` + `ANTHROPIC_MODEL` (proxy), `SUPABASE_MCP_TOKEN`, `HIGGSFIELD_AUTH_TOKEN`, `R2_*` |
+| Store                                             | Set how                                            | Holds                                                                                                                                                     |
+| ------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root `.env`                                       | local file                                         | everything, for local runs (⚠️ a template — many keys are blank placeholders with inline comments)                                                        |
+| **GitHub Actions secrets** (`signal-studio` repo) | `gh secret set …`                                  | news + video workflow keys (Supabase, Anthropic, FAL, FB, R2, Pexels)                                                                                     |
+| **Supabase Edge Function secrets**                | `supabase secrets set …`                           | `ANTHROPIC_KEY`, `FAL_KEY`, **`GITHUB_PAT`** (critical for trigger-generation; needs `actions:write` on reel-pipeline), FB keys, image fallbacks          |
+| **`reel-pipeline` repo secrets**                  | `gh secret set … --repo jayampathiw/reel-pipeline` | `SIGNAL_STUDIO_DEPLOY_KEY`, `ANTHROPIC_API_KEY` + `ANTHROPIC_BASE_URL` + `ANTHROPIC_MODEL` (proxy), `SUPABASE_MCP_TOKEN`, `HIGGSFIELD_AUTH_TOKEN`, `R2_*` |
 
 (Supabase auto-injects `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` into edge functions — do not set those manually. All `reel-pipeline` secrets were provisioned 2026-06-26 — see `docs/PROJECT-STATUS.md §5.3`.)
 
@@ -526,7 +539,7 @@ node apps/video/scripts/create-brief.mjs \
 
 ### 10.1 News automation (`.github/workflows/fetch-news.yml`)
 
-Cron every 30 min (+ manual dispatch). Steps: checkout → Node 22 → `npm ci` → `npm run news`, with Supabase/Anthropic/FAL/CF/Google/NewsAPI/FB env from `secrets.*`. This runs from *this* repo's Actions — `facebook-news-pipeline` is the legacy origin and not the live trigger.
+Cron every 30 min (+ manual dispatch). Steps: checkout → Node 22 → `npm ci` → `npm run news`, with Supabase/Anthropic/FAL/CF/Google/NewsAPI/FB env from `secrets.*`. This runs from _this_ repo's Actions — `facebook-news-pipeline` is the legacy origin and not the live trigger.
 
 ### 10.2 Reel automation (the `reel-pipeline` doorbell)
 
@@ -581,6 +594,7 @@ Cron (or `npm run news`) ingests + dedups + validates + saves articles → human
 ### 11.4 Add a new AI-video channel
 
 (Per `docs/cloud-automation-workflow.md §10` — Tier 1 & Tier 2 unchanged.)
+
 1. Write `<channel>-brief` + `<channel>-reel` skills (Tier 3) in `.claude/skills/`.
 2. Add `apps/video/knowledge/<channel>/{house-style,script-library,seo-examples}.md`.
 3. Register the channel in `channels.js` and the slug in `channel-slugs.js` (+ the edge-fn `CHANNEL_SLUG` map).
@@ -591,15 +605,15 @@ Cron (or `npm run news`) ingests + dedups + validates + saves articles → human
 
 ## 12. Common tasks & maintenance
 
-| Task | How |
-|---|---|
-| Add an env var | add to `packages/config/schema.js` (required or optional) + `.env.example` + relevant secret store(s) |
-| Add a Higgsfield model | update `docs/higgsfield-models.md` + the `IMAGE_MODELS`/`VIDEO_MODELS` arrays in `reel-detail-dialog.component.ts` (note `endImage` flag) |
-| Change generation defaults | edit the `wildlife/intimacy/EN` block in `channels.js` |
-| Adjust house rules / prompts | edit `apps/video/knowledge/wild-eye/*.md` and/or `wild-eye-reel/SKILL.md` |
-| Add a safe-language substitution | `apps/video/scripts/safe-language-lint.mjs` **and** the `UNSAFE_TERMS` array in the dashboard component (keep in sync) |
-| Inspect a run | dashboard Pipeline tab (job IDs, run URL) or the GitHub Actions log of the dispatched run |
-| Re-run a stuck generation | reset `status` to `storyboard`, re-dispatch (idempotent) |
+| Task                             | How                                                                                                                                       |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Add an env var                   | add to `packages/config/schema.js` (required or optional) + `.env.example` + relevant secret store(s)                                     |
+| Add a Higgsfield model           | update `docs/higgsfield-models.md` + the `IMAGE_MODELS`/`VIDEO_MODELS` arrays in `reel-detail-dialog.component.ts` (note `endImage` flag) |
+| Change generation defaults       | edit the `wildlife/intimacy/EN` block in `channels.js`                                                                                    |
+| Adjust house rules / prompts     | edit `apps/video/knowledge/wild-eye/*.md` and/or `wild-eye-reel/SKILL.md`                                                                 |
+| Add a safe-language substitution | `apps/video/scripts/safe-language-lint.mjs` **and** the `UNSAFE_TERMS` array in the dashboard component (keep in sync)                    |
+| Inspect a run                    | dashboard Pipeline tab (job IDs, run URL) or the GitHub Actions log of the dispatched run                                                 |
+| Re-run a stuck generation        | reset `status` to `storyboard`, re-dispatch (idempotent)                                                                                  |
 
 ### Debugging tips
 
@@ -613,19 +627,19 @@ Cron (or `npm run news`) ingests + dedups + validates + saves articles → human
 
 ## 13. Dependencies & external integrations
 
-| Service | Used for | Auth | Code |
-|---|---|---|---|
-| Anthropic Claude | captions, brief expansion, scene prompts, agent reasoning | `ANTHROPIC_KEY` (+ optional proxy) | `packages/ai/claude.js`, edge fns |
-| Higgsfield | reel image+video generation; credit checks | OAuth MCP (interactive) / `HIGGSFIELD_AUTH_TOKEN` (cloud) | skills + MCP tools |
-| fal.ai | news composite images (primary) | `FAL_KEY` | `packages/ai/image-gen/fal.js` |
-| Cloudflare Workers AI / Google AI / Pollinations | image fallbacks | `CF_*` / `GOOGLE_AI_KEY` / `POLLINATIONS_TOKEN` | `packages/ai/image-gen/*` |
-| Cloudflare R2 | rendered video/asset storage | `R2_*` | `packages/media/storage.js` |
-| Supabase | Postgres, Edge Functions, Storage, Auth | service role / anon / `SUPABASE_MCP_TOKEN` | `packages/database/*`, `supabase/*` |
-| GitHub Actions | free cloud runners (news + reel triggers) | `GITHUB_PAT` / deploy key | `.github/workflows`, `reel-pipeline` |
-| Pexels / Pixabay | stock footage | `PEXELS_API_KEY` / `PIXABAY_API_KEY` | `apps/video/src/fetchers` |
-| NewsAPI + RSS | news ingestion | `NEWSAPI_KEY` | `apps/news/src/ingestion` |
-| Facebook / IG / YouTube / TikTok | publishing | per-page tokens | `packages/publishers/*` |
-| Vercel | dashboard hosting | — | `apps/dashboard/vercel.json` |
+| Service                                          | Used for                                                  | Auth                                                      | Code                                 |
+| ------------------------------------------------ | --------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------ |
+| Anthropic Claude                                 | captions, brief expansion, scene prompts, agent reasoning | `ANTHROPIC_KEY` (+ optional proxy)                        | `packages/ai/claude.js`, edge fns    |
+| Higgsfield                                       | reel image+video generation; credit checks                | OAuth MCP (interactive) / `HIGGSFIELD_AUTH_TOKEN` (cloud) | skills + MCP tools                   |
+| fal.ai                                           | news composite images (primary)                           | `FAL_KEY`                                                 | `packages/ai/image-gen/fal.js`       |
+| Cloudflare Workers AI / Google AI / Pollinations | image fallbacks                                           | `CF_*` / `GOOGLE_AI_KEY` / `POLLINATIONS_TOKEN`           | `packages/ai/image-gen/*`            |
+| Cloudflare R2                                    | rendered video/asset storage                              | `R2_*`                                                    | `packages/media/storage.js`          |
+| Supabase                                         | Postgres, Edge Functions, Storage, Auth                   | service role / anon / `SUPABASE_MCP_TOKEN`                | `packages/database/*`, `supabase/*`  |
+| GitHub Actions                                   | free cloud runners (news + reel triggers)                 | `GITHUB_PAT` / deploy key                                 | `.github/workflows`, `reel-pipeline` |
+| Pexels / Pixabay                                 | stock footage                                             | `PEXELS_API_KEY` / `PIXABAY_API_KEY`                      | `apps/video/src/fetchers`            |
+| NewsAPI + RSS                                    | news ingestion                                            | `NEWSAPI_KEY`                                             | `apps/news/src/ingestion`            |
+| Facebook / IG / YouTube / TikTok                 | publishing                                                | per-page tokens                                           | `packages/publishers/*`              |
+| Vercel                                           | dashboard hosting                                         | —                                                         | `apps/dashboard/vercel.json`         |
 
 **Publisher status:** `facebook.js` is fully implemented (feed posts, video upload, multi-photo, generic `postContent`). `instagram.js`, `youtube.js`, `tiktok.js` in `packages/publishers/` are **stubs that throw** (deferred until those pages launch); fuller implementations exist under `apps/video/src/publishers/` per the roadmap (`docs/PROJECT-STATUS.md §7.2`).
 
@@ -673,18 +687,18 @@ Channel slug registry, `tracker.mjs` performance logging, `metrics` + `gen_confi
 
 ## 16. Glossary
 
-| Term | Meaning |
-|---|---|
-| Channel key | `<niche>/<style>/<LANG>`, e.g. `wildlife/intimacy/EN`; primary key into `channels.js` |
-| Channel slug | short name used by the cloud trigger, e.g. `wild-eye` → mapped in `channel-slugs.js` |
-| Wild Eye / Wild Capture | brand / Facebook page name for the flagship AI-video channel |
-| Brief | a `content_items` row with `status='brief'` — concept only |
-| Scenario 1/2/3 | per-scene generation strategy (storyboard-direct / cut / start+end chain) |
-| Vision gate | the `image-quality-gate` agent — hard gate on frames, advisory on storyboards |
-| Tier 1/2/3 | Higgsfield official / platform-wide / channel-specific skills |
-| `gen_config` | per-reel jsonb generation overrides (dashboard Config tab) |
-| `status_note` | human-readable reason a row is `blocked`/`failed` (was `open_thread`) |
+| Term                    | Meaning                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| Channel key             | `<niche>/<style>/<LANG>`, e.g. `wildlife/intimacy/EN`; primary key into `channels.js` |
+| Channel slug            | short name used by the cloud trigger, e.g. `wild-eye` → mapped in `channel-slugs.js`  |
+| Wild Eye / Wild Capture | brand / Facebook page name for the flagship AI-video channel                          |
+| Brief                   | a `content_items` row with `status='brief'` — concept only                            |
+| Scenario 1/2/3          | per-scene generation strategy (storyboard-direct / cut / start+end chain)             |
+| Vision gate             | the `image-quality-gate` agent — hard gate on frames, advisory on storyboards         |
+| Tier 1/2/3              | Higgsfield official / platform-wide / channel-specific skills                         |
+| `gen_config`            | per-reel jsonb generation overrides (dashboard Config tab)                            |
+| `status_note`           | human-readable reason a row is `blocked`/`failed` (was `open_thread`)                 |
 
 ---
 
-*Mainteners: keep this guide in sync with `channels.js`, `wild-eye-reel/SKILL.md`, the edge-function set, and the migration list — those four are the load-bearing surfaces. When the SEO→publish fix lands, update §12/§15 accordingly.*
+_Mainteners: keep this guide in sync with `channels.js`, `wild-eye-reel/SKILL.md`, the edge-function set, and the migration list — those four are the load-bearing surfaces. When the SEO→publish fix lands, update §12/§15 accordingly._

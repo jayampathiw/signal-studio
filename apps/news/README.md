@@ -17,8 +17,8 @@ Edit `src/config/sources.js` to add new country pages. See `../../docs/platform-
 
 ## Resources
 
-| Folder | Contents |
-|---|---|
-| `resources/brand/` | FR/IT page logos, watermarks, banners |
+| Folder                | Contents                                       |
+| --------------------- | ---------------------------------------------- |
+| `resources/brand/`    | FR/IT page logos, watermarks, banners          |
 | `resources/research/` | Source audits, audience analyses, Grok reports |
-| `resources/docs/` | Country strategy docs, posting-time analyses |
+| `resources/docs/`     | Country strategy docs, posting-time analyses   |

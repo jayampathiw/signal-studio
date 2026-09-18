@@ -1,7 +1,7 @@
 import { execFile } from 'child_process';
-import { promisify } from 'util';
 import { writeFileSync, readFileSync, existsSync, rmSync } from 'fs';
 import { dirname, join, basename } from 'path';
+import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
@@ -18,10 +18,18 @@ export async function generateSubtitles(audioPath, srtPath) {
 
   await execFileAsync('whisper', [
     audioPath,
-    '--model', 'tiny',
-    '--output_format', 'srt',
-    '--word_timestamps', 'True',
-    '--output_dir', srtPath.replace(/\.srt$/, '').split('/').slice(0, -1).join('/'),
+    '--model',
+    'tiny',
+    '--output_format',
+    'srt',
+    '--word_timestamps',
+    'True',
+    '--output_dir',
+    srtPath
+      .replace(/\.srt$/, '')
+      .split('/')
+      .slice(0, -1)
+      .join('/'),
   ]);
 
   return srtPath;
@@ -50,10 +58,14 @@ export async function generateWordTimestamps(audioPath, jsonPath, initialPrompt)
   const outDir = dirname(jsonPath);
   const args = [
     audioPath,
-    '--model', 'tiny',
-    '--output_format', 'json',
-    '--word_timestamps', 'True',
-    '--output_dir', outDir,
+    '--model',
+    'tiny',
+    '--output_format',
+    'json',
+    '--word_timestamps',
+    'True',
+    '--output_dir',
+    outDir,
   ];
   if (initialPrompt) args.push('--initial_prompt', initialPrompt);
   await execFileAsync('whisper', args);
@@ -62,15 +74,21 @@ export async function generateWordTimestamps(audioPath, jsonPath, initialPrompt)
   // locate it, flatten to a single word array, then normalize to jsonPath.
   const whisperOut = join(outDir, `${basename(audioPath).replace(/\.[^.]+$/, '')}.json`);
   const raw = JSON.parse(readFileSync(whisperOut, 'utf-8'));
-  const words = (raw.segments ?? []).flatMap((seg) => seg.words ?? []).map((w) => ({
-    word: w.word.trim(),
-    start: w.start,
-    end: w.end,
-  }));
+  const words = (raw.segments ?? [])
+    .flatMap((seg) => seg.words ?? [])
+    .map((w) => ({
+      word: w.word.trim(),
+      start: w.start,
+      end: w.end,
+    }));
 
   writeFileSync(jsonPath, JSON.stringify(words, null, 2));
   if (whisperOut !== jsonPath) {
-    try { rmSync(whisperOut); } catch { /* best-effort cleanup of whisper's raw file */ }
+    try {
+      rmSync(whisperOut);
+    } catch {
+      /* best-effort cleanup of whisper's raw file */
+    }
   }
   return words;
 }

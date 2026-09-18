@@ -12,15 +12,17 @@
 
 import { existsSync } from 'fs';
 import { resolve } from 'path';
+
 import { getContentItem } from '@signal-studio/database/content-items';
+
 import { getChannel } from '../config/channels.js';
 
-const SEP  = '═'.repeat(64);
+const SEP = '═'.repeat(64);
 const THIN = '─'.repeat(64);
 
 function buildCaption(item) {
   const { intro, question, cta } = item.ai_caption || {};
-  const tags = (item.hashtags || []).map(h => '#' + h.replace(/^#/, '')).join(' ');
+  const tags = (item.hashtags || []).map((h) => '#' + h.replace(/^#/, '')).join(' ');
   return [intro, question, cta, tags].filter(Boolean).join('\n\n');
 }
 
@@ -41,7 +43,9 @@ function printFull(item, channel) {
   } else if (item.rendered_local_path) {
     console.log(`  (no R2 URL — local file at ${item.rendered_local_path})`);
   } else {
-    console.log('  ⚠ NOT RENDERED YET — run: node apps/video/src/scripts/generate-reel.js ' + item.id);
+    console.log(
+      '  ⚠ NOT RENDERED YET — run: node apps/video/src/scripts/generate-reel.js ' + item.id,
+    );
   }
   console.log('');
 
@@ -81,16 +85,22 @@ function printFull(item, channel) {
 }
 
 async function processOne(id, flags) {
-  const item    = await getContentItem(id);
+  const item = await getContentItem(id);
   const channel = getChannel(item.channel_key);
 
   if (flags.urlOnly) {
-    if (!item.rendered_video_url) { console.error(`content_item ${id}: no rendered_video_url`); process.exit(2); }
+    if (!item.rendered_video_url) {
+      console.error(`content_item ${id}: no rendered_video_url`);
+      process.exit(2);
+    }
     console.log(item.rendered_video_url);
     return;
   }
 
-  if (flags.captionOnly) { console.log(buildCaption(item)); return; }
+  if (flags.captionOnly) {
+    console.log(buildCaption(item));
+    return;
+  }
 
   printFull(item, channel);
 }
@@ -99,12 +109,14 @@ async function main() {
   const args = process.argv.slice(2);
   const flags = {
     captionOnly: args.includes('--caption-only'),
-    urlOnly:     args.includes('--url-only'),
+    urlOnly: args.includes('--url-only'),
   };
-  const ids = args.filter(a => !a.startsWith('--'));
+  const ids = args.filter((a) => !a.startsWith('--'));
 
   if (ids.length === 0) {
-    console.error('Usage: node apps/video/src/scripts/print-upload-package.js [--caption-only|--url-only] <id> [<id> ...]');
+    console.error(
+      'Usage: node apps/video/src/scripts/print-upload-package.js [--caption-only|--url-only] <id> [<id> ...]',
+    );
     process.exit(1);
   }
 
@@ -117,4 +129,7 @@ async function main() {
   }
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

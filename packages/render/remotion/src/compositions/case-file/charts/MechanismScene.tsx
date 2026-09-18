@@ -1,5 +1,6 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 import { loadFont as loadCourierPrime } from '@remotion/google-fonts/CourierPrime';
+import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+
 import { PALETTE } from '../palette';
 import { AppealLineChart } from './AppealLineChart';
 import type { TimelineVisual } from './AppealTimeline';
@@ -28,7 +29,16 @@ export const MechanismScene: React.FC<{ visual: MechanismVisual }> = ({ visual }
   return (
     <AbsoluteFill style={{ backgroundColor: PALETTE.background, opacity }}>
       <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <p style={{ fontFamily: monoFont, fontWeight: 700, fontSize: 38, letterSpacing: 2, color: PALETTE.supportingText, marginBottom: 48 }}>
+        <p
+          style={{
+            fontFamily: monoFont,
+            fontWeight: 700,
+            fontSize: 38,
+            letterSpacing: 2,
+            color: PALETTE.supportingText,
+            marginBottom: 48,
+          }}
+        >
           THE APPEAL WINDOW
         </p>
         <AppealLineChart visual={visual.timeline} width={900} />

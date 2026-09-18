@@ -6,13 +6,14 @@
 //
 // Extracted verbatim (behavior-preserving) from assemble-longform.mjs.
 
+import { execFile, execSync } from 'child_process';
 import { createWriteStream, writeFileSync, existsSync, copyFileSync } from 'fs';
 import { join, extname } from 'path';
 import { pipeline } from 'stream/promises';
-import { execFile, execSync } from 'child_process';
 import { promisify } from 'util';
-import { buildMotionFilter, W, H, FPS } from './motion.js';
+
 import { SERIF_FONT } from './fonts.js';
+import { buildMotionFilter, W, H, FPS } from './motion.js';
 import { measureTextWidth } from './text-metrics.js';
 
 const execAsync = promisify(execFile);
@@ -39,8 +40,10 @@ export async function download(url, dest) {
 }
 
 export function urlExt(url, fallback = '.png') {
-  try { const e = extname(new URL(url).pathname); return e || fallback; }
-  catch {
+  try {
+    const e = extname(new URL(url).pathname);
+    return e || fallback;
+  } catch {
     // Not a URL — likely a local file path; try a plain extname before giving up.
     const e = extname(url);
     return e || fallback;
@@ -49,11 +52,14 @@ export function urlExt(url, fallback = '.png') {
 
 export function probeDuration(filePath) {
   try {
-    return Number(execSync(
-      `ffprobe -v error -show_entries format=duration -of csv=p=0 "${filePath}"`,
-      { encoding: 'utf-8' },
-    ).trim());
-  } catch { return 0; }
+    return Number(
+      execSync(`ffprobe -v error -show_entries format=duration -of csv=p=0 "${filePath}"`, {
+        encoding: 'utf-8',
+      }).trim(),
+    );
+  } catch {
+    return 0;
+  }
 }
 
 // ── Text card builder ─────────────────────────────────────────────────────────
@@ -75,12 +81,30 @@ export async function buildTextCard(text, durationSec, out, bgImagePath, format 
     const vf = `scale=${fW}:${fH}:force_original_aspect_ratio=increase,crop=${fW}:${fH},format=yuv420p`;
     await execAsync('ffmpeg', [
       '-y',
-      '-loop', '1', '-i', bgImagePath,
-      '-f', 'lavfi', '-i', `anullsrc=r=${AR}:cl=stereo`,
-      '-vf', vf,
-      '-t', String(durationSec),
-      '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
-      '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+      '-loop',
+      '1',
+      '-i',
+      bgImagePath,
+      '-f',
+      'lavfi',
+      '-i',
+      `anullsrc=r=${AR}:cl=stereo`,
+      '-vf',
+      vf,
+      '-t',
+      String(durationSec),
+      '-c:v',
+      'libx264',
+      '-preset',
+      'fast',
+      '-pix_fmt',
+      'yuv420p',
+      '-c:a',
+      'aac',
+      '-ar',
+      String(AR),
+      '-ac',
+      '2',
       out,
     ]);
     return;
@@ -98,39 +122,91 @@ export async function buildTextCard(text, durationSec, out, bgImagePath, format 
   const BASE_CARD_FONTSIZE = 72;
   const maxTextWidth = fW * 0.92;
   const rawWidth = measureTextWidth(SERIF_FONT, BASE_CARD_FONTSIZE, text);
-  const cardFontsize = rawWidth > maxTextWidth
-    ? Math.max(MIN_CARD_FONTSIZE, Math.floor(BASE_CARD_FONTSIZE * maxTextWidth / rawWidth))
-    : BASE_CARD_FONTSIZE;
+  const cardFontsize =
+    rawWidth > maxTextWidth
+      ? Math.max(MIN_CARD_FONTSIZE, Math.floor((BASE_CARD_FONTSIZE * maxTextWidth) / rawWidth))
+      : BASE_CARD_FONTSIZE;
   const dt = `drawtext=text='${safe}':fontfile='${SERIF_FONT}':fontcolor=white:fontsize=${cardFontsize}:x=(w-text_w)/2:y=(h-text_h)/2`;
   await execAsync('ffmpeg', [
     '-y',
-    '-f', 'lavfi', '-i', `color=c=black:s=${fW}x${fH}:r=${fFPS}:d=${durationSec}`,
-    '-f', 'lavfi', '-i', `anullsrc=r=${AR}:cl=stereo`,
-    '-vf', `${dt},format=yuv420p`,
-    '-t', String(durationSec),
-    '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
-    '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+    '-f',
+    'lavfi',
+    '-i',
+    `color=c=black:s=${fW}x${fH}:r=${fFPS}:d=${durationSec}`,
+    '-f',
+    'lavfi',
+    '-i',
+    `anullsrc=r=${AR}:cl=stereo`,
+    '-vf',
+    `${dt},format=yuv420p`,
+    '-t',
+    String(durationSec),
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-pix_fmt',
+    'yuv420p',
+    '-c:a',
+    'aac',
+    '-ar',
+    String(AR),
+    '-ac',
+    '2',
     out,
   ]);
 }
 
 // ── Single still cut builder ─────────────────────────────────────────────────
 
-export async function buildCut(imgPath, motion, durationSec, regrade, overlays, out, format = DEFAULT_FORMAT, cropX = 0.5) {
+export async function buildCut(
+  imgPath,
+  motion,
+  durationSec,
+  regrade,
+  overlays,
+  out,
+  format = DEFAULT_FORMAT,
+  cropX = 0.5,
+) {
   const allOverlays = (overlays ?? []).map((o) => ({ ...o, font_path: SERIF_FONT }));
   const vf = buildMotionFilter({
-    motion, durationSec, regrade, overlays: allOverlays,
-    width: format.width, height: format.height, fps: format.fps, cropX,
+    motion,
+    durationSec,
+    regrade,
+    overlays: allOverlays,
+    width: format.width,
+    height: format.height,
+    fps: format.fps,
+    cropX,
   });
 
   await execAsync('ffmpeg', [
     '-y',
-    '-loop', '1', '-i', imgPath,
-    '-f', 'lavfi', '-i', `anullsrc=r=${AR}:cl=stereo`,
-    '-vf', vf,
-    '-t', String(durationSec),
-    '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
-    '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+    '-loop',
+    '1',
+    '-i',
+    imgPath,
+    '-f',
+    'lavfi',
+    '-i',
+    `anullsrc=r=${AR}:cl=stereo`,
+    '-vf',
+    vf,
+    '-t',
+    String(durationSec),
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-pix_fmt',
+    'yuv420p',
+    '-c:a',
+    'aac',
+    '-ar',
+    String(AR),
+    '-ac',
+    '2',
     out,
   ]);
 }
@@ -171,7 +247,10 @@ function computeAutoSplitDurations(sceneDur, numStills, chunks) {
     for (const c of candidates) {
       if (c <= prev + minCutDur || c >= sceneDur - minCutDur * (numStills - k)) continue;
       const d = Math.abs(c - target);
-      if (d < bestDist) { bestDist = d; best = c; }
+      if (d < bestDist) {
+        bestDist = d;
+        best = c;
+      }
     }
     if (bestDist > maxDrift) best = target;
     boundaries.push(Math.max(prev + minCutDur, Number(best.toFixed(3))));
@@ -188,7 +267,13 @@ function computeAutoSplitDurations(sceneDur, numStills, chunks) {
 // `clip.captionChunks` (optional) enables auto cut-split (see above) — omit it
 // (existing callers don't pass it) to keep the old equal-split behavior byte-identical.
 
-export async function buildStillsScene(stills, clip, voPath, workDir, { noOverlays = false, maxSilentTail = null, format = DEFAULT_FORMAT, onSceneDur = null } = {}) {
+export async function buildStillsScene(
+  stills,
+  clip,
+  voPath,
+  workDir,
+  { noOverlays = false, maxSilentTail = null, format = DEFAULT_FORMAT, onSceneDur = null } = {},
+) {
   // F4: VO-length reconciliation
   const plannedDur = clip.duration_sec;
   let voDur = 0;
@@ -197,7 +282,9 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
   }
   let sceneDur = Math.max(plannedDur, voDur + 0.4);
   if (sceneDur > plannedDur) {
-    console.log(`    [stretch] S${clip.scene_n}: ${plannedDur}s → ${sceneDur.toFixed(2)}s (VO ${voDur.toFixed(2)}s)`);
+    console.log(
+      `    [stretch] S${clip.scene_n}: ${plannedDur}s → ${sceneDur.toFixed(2)}s (VO ${voDur.toFixed(2)}s)`,
+    );
   } else if (maxSilentTail != null && voDur > 0) {
     // Opt-in only (maxSilentTail is null unless a caller explicitly passes it)
     // so existing projects' locked renders (son-also-saves, project 29) stay
@@ -205,23 +292,28 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
     // capped tail instead of always running the full scripted scene duration.
     const capped = Math.min(plannedDur, voDur + maxSilentTail);
     if (capped < sceneDur) {
-      console.log(`    [tighten] S${clip.scene_n}: ${plannedDur}s → ${capped.toFixed(2)}s (VO ${voDur.toFixed(2)}s, tail capped at ${maxSilentTail}s)`);
+      console.log(
+        `    [tighten] S${clip.scene_n}: ${plannedDur}s → ${capped.toFixed(2)}s (VO ${voDur.toFixed(2)}s, tail capped at ${maxSilentTail}s)`,
+      );
       sceneDur = capped;
     }
   }
 
   if (onSceneDur) onSceneDur(sceneDur);
   const scale = sceneDur / plannedDur;
-  const overlays = (noOverlays || !Array.isArray(clip.overlays)) ? [] : clip.overlays;
+  const overlays = noOverlays || !Array.isArray(clip.overlays) ? [] : clip.overlays;
   const n = String(clip.scene_n).padStart(2, '0');
 
   // Build each cut
   const hasExplicitSplit = stills.some((s) => s.start_sec != null && s.end_sec != null);
-  const autoSplitDurations = (!hasExplicitSplit && stills.length > 1 && Array.isArray(clip.captionChunks))
-    ? computeAutoSplitDurations(sceneDur, stills.length, clip.captionChunks)
-    : null;
+  const autoSplitDurations =
+    !hasExplicitSplit && stills.length > 1 && Array.isArray(clip.captionChunks)
+      ? computeAutoSplitDurations(sceneDur, stills.length, clip.captionChunks)
+      : null;
   if (autoSplitDurations) {
-    console.log(`    [auto-split] S${clip.scene_n}: ${autoSplitDurations.map((d) => d.toFixed(1)).join('s / ')}s`);
+    console.log(
+      `    [auto-split] S${clip.scene_n}: ${autoSplitDurations.map((d) => d.toFixed(1)).join('s / ')}s`,
+    );
   }
 
   const cutPaths = [];
@@ -232,13 +324,13 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
 
     // Determine cut duration from start/end_sec, scaled for VO reconciliation
     let rawStart = still.start_sec ?? null;
-    let rawEnd   = still.end_sec ?? null;
+    let rawEnd = still.end_sec ?? null;
 
     let cutDur;
     if (rawStart != null && rawEnd != null) {
       // start/end are relative to scene start
       const relStart = rawStart - (stills[0].start_sec ?? rawStart);
-      const relEnd   = rawEnd   - (stills[0].start_sec ?? rawStart);
+      const relEnd = rawEnd - (stills[0].start_sec ?? rawStart);
       cutDur = (relEnd - relStart) * scale;
     } else if (autoSplitDurations) {
       cutDur = autoSplitDurations[i];
@@ -262,21 +354,32 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
       .filter((o) => o.at_sec != null)
       .map((o) => {
         // Make overlay at_sec relative to cut start
-        const absAt = o.at_sec - (clip.from_sec ?? (stills[0].start_sec ?? 0));
+        const absAt = o.at_sec - (clip.from_sec ?? stills[0].start_sec ?? 0);
         const relAt = absAt - cutRelStart;
         return relAt >= 0 && relAt < cutDur ? { ...o, at_sec: relAt } : null;
       })
       .filter(Boolean);
 
     if (!still.clip_url) {
-      console.warn(`    [skip] S${n}-${still.cut}: clip_url is null (asset_reuse not resolved) — skipping cut`);
+      console.warn(
+        `    [skip] S${n}-${still.cut}: clip_url is null (asset_reuse not resolved) — skipping cut`,
+      );
       continue;
     }
     const imgPath = join(workDir, `cut_${cutId}${urlExt(still.clip_url, '.png')}`);
     await download(still.clip_url, imgPath);
 
     const cutPath = join(workDir, `cut_${cutId}.mp4`);
-    await buildCut(imgPath, still.motion ?? 'push', cutDur, still.regrade ?? null, cutOverlays, cutPath, format, still.crop_x ?? 0.5);
+    await buildCut(
+      imgPath,
+      still.motion ?? 'push',
+      cutDur,
+      still.regrade ?? null,
+      cutOverlays,
+      cutPath,
+      format,
+      still.crop_x ?? 0.5,
+    );
     cutPaths.push({ path: cutPath, transition: still.transition ?? 'cut' });
     cutRelStart += cutDur; // only advance for cuts actually concatenated into the scene
   }
@@ -294,7 +397,18 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
       // Simple concat
       const listPath = join(workDir, `cuts_${n}.txt`);
       writeFileSync(listPath, cutPaths.map((c) => `file '${c.path}'`).join('\n'));
-      await execAsync('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-c', 'copy', sceneSilentPath]);
+      await execAsync('ffmpeg', [
+        '-y',
+        '-f',
+        'concat',
+        '-safe',
+        '0',
+        '-i',
+        listPath,
+        '-c',
+        'copy',
+        sceneSilentPath,
+      ]);
     }
   }
 
@@ -311,25 +425,52 @@ export async function buildStillsScene(stills, clip, voPath, workDir, { noOverla
   if (voPath && existsSync(voPath)) {
     await execAsync('ffmpeg', [
       '-y',
-      '-i', sceneSilentPath,
-      '-i', voPath,
-      '-map', '0:v', '-map', '1:a',
-      '-t', String(sceneDur),
-      '-c:v', 'copy',
-      '-af', 'apad',
-      '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+      '-i',
+      sceneSilentPath,
+      '-i',
+      voPath,
+      '-map',
+      '0:v',
+      '-map',
+      '1:a',
+      '-t',
+      String(sceneDur),
+      '-c:v',
+      'copy',
+      '-af',
+      'apad',
+      '-c:a',
+      'aac',
+      '-ar',
+      String(AR),
+      '-ac',
+      '2',
       sceneOut,
     ]);
   } else {
     // No VO — use silence
     await execAsync('ffmpeg', [
       '-y',
-      '-i', sceneSilentPath,
-      '-f', 'lavfi', '-i', `anullsrc=r=${AR}:cl=stereo`,
-      '-map', '0:v', '-map', '1:a',
-      '-t', String(sceneDur),
-      '-c:v', 'copy',
-      '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+      '-i',
+      sceneSilentPath,
+      '-f',
+      'lavfi',
+      '-i',
+      `anullsrc=r=${AR}:cl=stereo`,
+      '-map',
+      '0:v',
+      '-map',
+      '1:a',
+      '-t',
+      String(sceneDur),
+      '-c:v',
+      'copy',
+      '-c:a',
+      'aac',
+      '-ar',
+      String(AR),
+      '-ac',
+      '2',
       sceneOut,
     ]);
   }
@@ -349,7 +490,9 @@ async function buildWithXfade(cutPaths, out) {
     const outV = i < cutPaths.length - 1 ? `[v${i}]` : '[vout]';
     const outA = i < cutPaths.length - 1 ? `[a${i}]` : '[aout]';
     const transition = cutPaths[i].transition === 'dissolve' ? 'dissolve' : 'fade';
-    filterParts.push(`${prev}[${i}:v]xfade=transition=${transition}:duration=${DISSOLVE_DUR}:offset=0${outV}`);
+    filterParts.push(
+      `${prev}[${i}:v]xfade=transition=${transition}:duration=${DISSOLVE_DUR}:offset=0${outV}`,
+    );
     filterParts.push(`${aacPrev}[${i}:a]acrossfade=d=${DISSOLVE_DUR}${outA}`);
     prev = outV;
     aacPrev = outA;
@@ -358,10 +501,24 @@ async function buildWithXfade(cutPaths, out) {
   await execAsync('ffmpeg', [
     '-y',
     ...inputs,
-    '-filter_complex', filterParts.join(';'),
-    '-map', '[vout]', '-map', '[aout]',
-    '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
-    '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+    '-filter_complex',
+    filterParts.join(';'),
+    '-map',
+    '[vout]',
+    '-map',
+    '[aout]',
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-pix_fmt',
+    'yuv420p',
+    '-c:a',
+    'aac',
+    '-ar',
+    String(AR),
+    '-ac',
+    '2',
     out,
   ]);
 }
@@ -381,29 +538,73 @@ export async function buildLegacyStill(clip, voPath, workDir) {
 
   const silentPath = join(workDir, `scene_${n}_silent.mp4`);
   await execAsync('ffmpeg', [
-    '-y', '-loop', '1', '-i', imgPath,
-    '-vf', vf,
-    '-t', String(sceneDur),
-    '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
+    '-y',
+    '-loop',
+    '1',
+    '-i',
+    imgPath,
+    '-vf',
+    vf,
+    '-t',
+    String(sceneDur),
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-pix_fmt',
+    'yuv420p',
     silentPath,
   ]);
 
   const sceneOut = join(workDir, `scene_${n}.mp4`);
   if (voExistsSrc) {
     await execAsync('ffmpeg', [
-      '-y', '-i', silentPath, '-i', voPath,
-      '-map', '0:v', '-map', '1:a',
-      '-t', String(sceneDur),
-      '-c:v', 'copy', '-af', 'apad', '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+      '-y',
+      '-i',
+      silentPath,
+      '-i',
+      voPath,
+      '-map',
+      '0:v',
+      '-map',
+      '1:a',
+      '-t',
+      String(sceneDur),
+      '-c:v',
+      'copy',
+      '-af',
+      'apad',
+      '-c:a',
+      'aac',
+      '-ar',
+      String(AR),
+      '-ac',
+      '2',
       sceneOut,
     ]);
   } else {
     await execAsync('ffmpeg', [
-      '-y', '-i', silentPath,
-      '-f', 'lavfi', '-i', `anullsrc=r=${AR}:cl=stereo`,
-      '-map', '0:v', '-map', '1:a',
-      '-t', String(sceneDur),
-      '-c:v', 'copy', '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+      '-y',
+      '-i',
+      silentPath,
+      '-f',
+      'lavfi',
+      '-i',
+      `anullsrc=r=${AR}:cl=stereo`,
+      '-map',
+      '0:v',
+      '-map',
+      '1:a',
+      '-t',
+      String(sceneDur),
+      '-c:v',
+      'copy',
+      '-c:a',
+      'aac',
+      '-ar',
+      String(AR),
+      '-ac',
+      '2',
       sceneOut,
     ]);
   }
@@ -422,27 +623,70 @@ export async function buildLegacyClip(clip, voPath, workDir) {
   const scale = `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2,format=yuv420p`;
   const silentPath = join(workDir, `scene_${n}_silent.mp4`);
   await execAsync('ffmpeg', [
-    '-y', '-i', vidPath,
-    '-vf', scale, '-t', String(sceneDur),
-    '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
+    '-y',
+    '-i',
+    vidPath,
+    '-vf',
+    scale,
+    '-t',
+    String(sceneDur),
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-pix_fmt',
+    'yuv420p',
     silentPath,
   ]);
   const sceneOut = join(workDir, `scene_${n}.mp4`);
   if (voExistsSrc) {
     await execAsync('ffmpeg', [
-      '-y', '-i', silentPath, '-i', voPath,
-      '-map', '0:v', '-map', '1:a',
-      '-t', String(sceneDur),
-      '-c:v', 'copy', '-af', 'apad', '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+      '-y',
+      '-i',
+      silentPath,
+      '-i',
+      voPath,
+      '-map',
+      '0:v',
+      '-map',
+      '1:a',
+      '-t',
+      String(sceneDur),
+      '-c:v',
+      'copy',
+      '-af',
+      'apad',
+      '-c:a',
+      'aac',
+      '-ar',
+      String(AR),
+      '-ac',
+      '2',
       sceneOut,
     ]);
   } else {
     await execAsync('ffmpeg', [
-      '-y', '-i', silentPath,
-      '-f', 'lavfi', '-i', `anullsrc=r=${AR}:cl=stereo`,
-      '-map', '0:v', '-map', '1:a',
-      '-t', String(sceneDur),
-      '-c:v', 'copy', '-c:a', 'aac', '-ar', String(AR), '-ac', '2',
+      '-y',
+      '-i',
+      silentPath,
+      '-f',
+      'lavfi',
+      '-i',
+      `anullsrc=r=${AR}:cl=stereo`,
+      '-map',
+      '0:v',
+      '-map',
+      '1:a',
+      '-t',
+      String(sceneDur),
+      '-c:v',
+      'copy',
+      '-c:a',
+      'aac',
+      '-ar',
+      String(AR),
+      '-ac',
+      '2',
       sceneOut,
     ]);
   }

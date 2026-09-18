@@ -1,6 +1,9 @@
 # SHOT LIST v2 (IMAGE-FIRST) — "Silenced: The Night a Goalkeeper Sent Germany Home"
+
 ### South American Football & Diaspora Stories — Video #1 · Stills + Ken Burns pipeline
+
 ### TEMPLATE VERSION: This file is now the master spec for ALL Underdog Archive videos.
+
 ### New additions vs original v2 (from Video #2 Egypt production learnings) marked ★
 
 ---
@@ -18,6 +21,7 @@
 **The #1 defect in v1 output was kit drift: colors and styles changed between generations because the prompts never specified them.** Fix it in two layers:
 
 **Layer 1 — Reference Elements (do this FIRST, before any bulk generation):**
+
 1. Generate ONE "kit reference sheet" image per token below (single anonymous figure, front view, neutral pose, full kit visible, plain dark background).
 2. Approve it manually against the spec.
 3. Save each approved image to TurboFlow Image Library with the exact @tag shown.
@@ -73,6 +77,7 @@ Named grades used across this video. Apply consistently in the editor.
 **MOURNFUL:** warm amber pulled back, heavy, flat. Aftermath, reflection, defeat processed. Warm but drained.
 
 ★ **Grade transition map for this video:**
+
 - WARM: 0:00–3:29 (Paraguay's lineage and the goal)
 - COLD begins: 3:30–3:45 (Germany equalise)
 - COLD dominant: 3:46–5:09 (siege, VAR, disallowed goal)
@@ -93,6 +98,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 **Typeface:** Bebas Neue (primary — import via Google Fonts in Remotion). Montserrat Bold as fallback. All caps. Wide tracking 0.08–0.12em.
 
 **Colors:**
+
 - Body text: `#f2ece1` (cream-white)
 - ONE emphasis word per card only: `#e8a559` (amber) — never the whole card
 - Background layer (where legibility requires it): semi-transparent navy `#16243a` at 60% opacity
@@ -102,6 +108,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 **Animation:** opacity 0→1 over 0.4s with letter-spacing expand from 0.04→0.12em simultaneously. No slides. No wipes. Letters track open as they appear.
 
 **Duration:**
+
 - Dramatic reveal cards: 4–5 seconds
 - Chapter label cards: 2–3 seconds
 - Title cards (full screen): 4 seconds
@@ -112,19 +119,20 @@ Every image prompt for a scene with a text overlay must specify which third of t
 
 ★ **Text overlay schedule — complete reference for editor assembly:**
 
-| Scene | Timecode | Card Text | Amber word | Duration | Negative space zone |
-|-------|----------|-----------|------------|----------|---------------------|
-| S12 | 2:07 | 16 YEARS | 16 | 3s | right third |
-| S14 | 2:24 | 12TH IN THE WORLD vs 34TH | — | 3s | editor graphic |
-| S21 | 3:40 | PARAGUAY'S FIRST EVER WORLD CUP KNOCKOUT GOAL | FIRST EVER | 5s | over celebration still |
-| S25 | 4:22 | 21 SHOTS · 16 CORNERS | 21 | 3s | drops with A/B cut |
-| S30 | 5:13 | GOAL DISALLOWED | — | 4s | editor stamp |
-| S40 | 7:00 | PARAGUAY 4–3 GERMANY | 4–3 | 4s | right third |
-| S48 | 8:30 | ROUND OF 16 — FIRST TIME SINCE 2010 | 2010 | 3s | bottom third |
+| Scene | Timecode | Card Text                                     | Amber word | Duration | Negative space zone    |
+| ----- | -------- | --------------------------------------------- | ---------- | -------- | ---------------------- |
+| S12   | 2:07     | 16 YEARS                                      | 16         | 3s       | right third            |
+| S14   | 2:24     | 12TH IN THE WORLD vs 34TH                     | —          | 3s       | editor graphic         |
+| S21   | 3:40     | PARAGUAY'S FIRST EVER WORLD CUP KNOCKOUT GOAL | FIRST EVER | 5s       | over celebration still |
+| S25   | 4:22     | 21 SHOTS · 16 CORNERS                         | 21         | 3s       | drops with A/B cut     |
+| S30   | 5:13     | GOAL DISALLOWED                               | —          | 4s       | editor stamp           |
+| S40   | 7:00     | PARAGUAY 4–3 GERMANY                          | 4–3        | 4s       | right third            |
+| S48   | 8:30     | ROUND OF 16 — FIRST TIME SINCE 2010           | 2010       | 3s       | bottom third           |
 
 ---
 
 ## Per-scene format:
+
 🖼️ STILL(s) — image prompt(s) for generation
 🎞️ MOTION — editor-side Ken Burns / parallax instruction
 🎙️ VO — continuous narration (TTS-normalized, numerals written out)
@@ -166,7 +174,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🎞️ PULL 1.10 → 1.00 over 12s; add a slow opacity fade on the ghost layer as the pattern interrupt (editor).
 🎙️ "Paraguay has never been a nation of artists. It didn't give the world a Pelé, or a Maradona, or a Messi."
 
-**SCENE 6 — 0:55–1:06 (11s)** · *(v1 video NSFW false-flagged — concrete split-frame composition avoids that)*
+**SCENE 6 — 0:55–1:06 (11s)** · _(v1 video NSFW false-flagged — concrete split-frame composition avoids that)_
 🖼️ STILL A: A single frame split diagonally from upper-left to lower-right by a hard clean seam. Upper-left half: a footballer silhouette frozen in a flowing dribble, surrounded by warm golden bokeh and drifting confetti light. Lower-right half: a bare grey concrete wall texture in cold flat blue light. Hard clean diagonal seam, no blending. [STYLE]
 🎞️ Slow lateral pan upper-left → lower-right across the seam over 11s; grade cools as the pan crosses it (editor).
 🎙️ "While Brazil was painting and Argentina was dreaming, Paraguay was doing something far less glamorous — and far more stubborn."
@@ -200,7 +208,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🎞️ A holds with micro-PUSH (1:50–1:56); cut to B on "They lost that day" (1:56–2:01).
 🎙️ "They lost that day. One goal. To Spain — the team that went on to win the whole tournament."
 
-**SCENE 12 — 2:01–2:13 (12s)** · *(v1 calendar/clock motif NSFW-flagged — replaced with concrete locker room)*
+**SCENE 12 — 2:01–2:13 (12s)** · _(v1 calendar/clock motif NSFW-flagged — replaced with concrete locker room)_
 🖼️ STILL A: A dark locker room: a dark-green chalkboard carrying sixteen white hand-drawn tally marks in four groups; a single worn goalkeeper glove hangs on a hook beside the board; one bare bulb overhead. No readable text anywhere. Right third negative space. [STYLE]
 🎞️ PUSH 1.00 → 1.12 toward the tally marks over 12s.
 🎙️ "That was sixteen years ago. Sixteen years of being the small country the giants walk past on their way to the final."
@@ -230,7 +238,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🎞️ Slow lateral pan left → right over 10s.
 🎙️ "June twenty-ninth. The first half plays out exactly the way everyone expected."
 
-**SCENE 17 — 2:55–3:09 (14s)** · *(v1 video NSFW false-flagged on "pressing in waves" — concrete literal compositions avoid that)*
+**SCENE 17 — 2:55–3:09 (14s)** · _(v1 video NSFW false-flagged on "pressing in waves" — concrete literal compositions avoid that)_
 🖼️ STILL A: Elevated tactical camera above the halfway line: seven anonymous players in [DE-KIT] arranged in a wide passing shape across midfield, [BALL] at the feet of the central player; two players in [PY-KIT] positioned deep near the penalty area. Night, floodlit. Right third negative space. [STYLE]
 🖼️ STILL B: Pitch-level 85mm: one midfielder in [DE-KIT] frozen at the moment of striking a pass with his instep, [BALL] just leaving his boot, two Paraguay defenders in [PY-KIT] blurred in the background. Left third negative space. [STYLE]
 🎞️ A: PUSH (2:55–3:02). Cut to B on "They press" (3:02–3:09), micro-PUSH.
@@ -245,13 +253,13 @@ Every image prompt for a scene with a text overlay must specify which third of t
 
 ## ACT 3 — THE MATCH
 
-**SCENE 19 — 3:17–3:30 (13s)** · *(v1 video kit-inconsistent — regenerate as stills)*
+**SCENE 19 — 3:17–3:30 (13s)** · _(v1 video kit-inconsistent — regenerate as stills)_
 🖼️ STILL A: Corner-flag view: an anonymous player in [PY-KIT] planted beside the corner flag at the end of his run-up, body coiled to strike [BALL], night, stands blurred behind. Right third negative space. [STYLE]
 🖼️ STILL B: The crowded penalty box frozen the instant the cross arrives: four players in [PY-KIT] and five in [DE-KIT] rising together, [BALL] hanging in the air above them, slight motion blur at the frame edges, the goalkeeper in [DE-GK] rooted on his line. Left third negative space. [STYLE]
 🎞️ A: PUSH (3:17–3:23). Cut to B on "whipped in" (3:23–3:30), micro-PUSH into the crowd.
 🎙️ "A corner — whipped in by Matías Galarza, a man who plays his club football right here in the United States, for Atlanta."
 
-**SCENE 20 — 3:30–3:40 (10s)** · *(v1 video kit-inconsistent — regenerate)* · WARM→COLD grade shift
+**SCENE 20 — 3:30–3:40 (10s)** · _(v1 video kit-inconsistent — regenerate)_ · WARM→COLD grade shift
 🖼️ STILL A: A leaping header frozen at the exact moment of impact: an anonymous player in [PY-KIT] rising highest above two defenders in [DE-KIT], forehead meeting [BALL], the goal frame behind them, the keeper in [DE-GK] diving low to his right. Slow-shutter energy, motion blur on limbs only. WARM grade. [STYLE]
 🖼️ STILL B: Behind-goal shot through the net: [BALL] buried in the rippling side netting, the keeper in [DE-GK] grounded and beaten. WARM grade returning. [STYLE]
 🎞️ A: SMASH 1.00 → 1.30 in 1.5s on the musical hit, then hold; cut to B at 3:36.
@@ -262,7 +270,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🖼️ STILL A: Back-lit celebration silhouette: five players in [PY-KIT] arms raised, seen from behind, against a wall of floodlight flare. Red and white stripes rim-lit. Bottom third negative space for text. WARM grade. [STYLE]
 📝 PARAGUAY'S FIRST EVER WORLD CUP KNOCKOUT GOAL — Bebas Neue, white, amber on "FIRST EVER", large, bottom third. 5s.
 
-**SCENE 22 — 3:46–3:59 (13s)** · *(v1 video kit-inconsistent — regenerate)* · COLD grade begins
+**SCENE 22 — 3:46–3:59 (13s)** · _(v1 video kit-inconsistent — regenerate)_ · COLD grade begins
 🖼️ STILL A: A cross frozen mid-flight from the right wing: [BALL] hanging above the penalty area, three players in [DE-KIT] attacking the far post. COLD grade — warm amber drains from the frame. [STYLE]
 🖼️ STILL B: A striker in [DE-KIT] meeting [BALL] with his head at the near post, the goalkeeper in [GK-GILL] at full stretch and beaten. COLD grade. Left third negative space. [STYLE]
 🎞️ A: PUSH (3:46–3:53). Cut to B (3:53–3:59). The WARM→COLD grade shift is itself the pattern interrupt.
@@ -303,7 +311,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🎙️ "And then — the flags. A review."
 🔊 Celebration sound cuts abruptly to a low hum on the cut.
 
-**SCENE 29 — 4:58–5:10 (12s)** · *(two-body contact — concrete/literal wording; if model flags it, fall back to an editor composite of two separate stills)*
+**SCENE 29 — 4:58–5:10 (12s)** · _(two-body contact — concrete/literal wording; if model flags it, fall back to an editor composite of two separate stills)_
 🖼️ STILL A: A frozen replay-style frame with subtle scanline texture: inside a crowded six-yard box, a defender in [DE-KIT] with both hands planted flat on the back of the goalkeeper in [GK-GILL], who is falling forward off-balance; [BALL] and leaping heads motion-blurred in the background. Right third negative space. [STYLE]
 🎞️ Very slow PUSH 1.00 → 1.08 over 12s; a white "replay" corner bracket overlay blinks once mid-scene (editor, interrupt).
 🎙️ "Before Tah's header, a German defender had shoved Gill to the ground — stopping him from even trying to save it."
@@ -329,7 +337,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🎞️ 2.5D PARALLAX: keeper on alpha layer tracking right, background pans 30% slower; total move over 13s.
 🎙️ "And before the first kick, Orlando Gill takes a slow walk. He makes Kai Havertz stand there, and wait, and think."
 
-**SCENE 33 — 5:45–5:53 (8s)** · *(if you keep ANY motion clip in the video, this is the scene that earns it)* · MONOCHROME grade
+**SCENE 33 — 5:45–5:53 (8s)** · _(if you keep ANY motion clip in the video, this is the scene that earns it)_ · MONOCHROME grade
 🖼️ STILL A: A penalty taker in [DE-KIT] frozen mid run-up, low front angle from beside the goal post, floodlight flare behind him. Left third negative space. [STYLE]
 🖼️ STILL B: The goalkeeper in [GK-GILL] fully extended low to his right, both gloves behind [BALL], frozen at the instant of contact, net texture in the near foreground. Right third negative space. [STYLE]
 🎞️ A holds 4s; SMASH cut to B on the hit (1.00 → 1.30 in 1.5s), hold.
@@ -404,12 +412,12 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🎞️ This time B → A: keeper first, dissolve to the stone wall; PULL instead of PUSH.
 🎙️ "And that answers, over and over, in the same stubborn way: by producing a wall, and refusing to break."
 
-**SCENE 45 — 7:50–8:03 (13s)** · *(v1 video generated but unreviewed — check kit drift before using)*
+**SCENE 45 — 7:50–8:03 (13s)** · _(v1 video generated but unreviewed — check kit drift before using)_
 🖼️ STILL A: Three goalkeeper figures standing in a row on a dark pitch, evenly spaced, front-on, faces in shadow, each lit by his own vertical shaft of white light. Left: [PY-GK-90s]. Center: the plain navy long-sleeved 2010 kit from Scene 11B. Right: [GK-GILL]. Night, haze. Left third negative space. [STYLE]
 🎞️ Slow lateral pan left → right across the three figures over 13s, landing on the amber jersey.
 🎙️ "Chilavert did it with a snarl. Villar did it in twenty ten. And tonight, Orlando Gill did it against the best team he may ever face."
 
-**SCENE 46 — 8:03–8:12 (9s)** · *(v1 video generated but unreviewed — same rule)*
+**SCENE 46 — 8:03–8:12 (9s)** · _(v1 video generated but unreviewed — same rule)_
 🖼️ STILL A: The goalkeeper in [GK-GILL] standing upright and perfectly still in his goalmouth while blurred dark shapes of attackers in [DE-KIT] stream past him on both sides as long-exposure motion trails; the keeper is the only tack-sharp element in the frame. Right third negative space. [STYLE]
 🎞️ Micro-PUSH 1.00 → 1.08; hold the stillness.
 🎙️ "Twenty-one shots. And he would not let them have the one that mattered."
@@ -426,7 +434,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 🎙️ "On July fourth, in Philadelphia, Paraguay play again — for a place in the quarter-finals."
 📝 ROUND OF 16 — FIRST TIME SINCE 2010 — Bebas Neue, white, amber "2010", large, bottom third. 3s.
 
-**SCENE 49 — 8:35–8:47 (12s)** · **PARALLAX hero shot** · *(mirror composition of Scene 13 — bookends the video)*
+**SCENE 49 — 8:35–8:47 (12s)** · **PARALLAX hero shot** · _(mirror composition of Scene 13 — bookends the video)_
 🖼️ STILL A: The goalkeeper in [GK-GILL], seen from directly behind, walking down the stadium tunnel toward a bright white opening of light, resolute stride, kit bag over one shoulder. Right third negative space. [STYLE]
 🎞️ 2.5D PARALLAX: keeper on alpha, tunnel walls pan slower; slow PUSH 1.00 → 1.12 toward the light.
 🎙️ "But that's tomorrow's story. Tonight belongs to a goalkeeper, a small country, and the oldest tradition Paraguayan football has."
@@ -452,6 +460,7 @@ Every image prompt for a scene with a text overlay must specify which third of t
 **TurboFlow batch file:** `turboflow_prompts.txt` is the machine-submission document. This shot list is the human reference. Both must stay in sync. Import the .txt into TurboFlow — do not type prompts manually.
 
 **Order of operations:**
+
 1. Generate + approve all 5 kit reference sheets (@gkgill @pyout @deout @degk @gk90s + @ball @stadium)
 2. Save as TurboFlow Image Library entries with exact @tags
 3. Generate Act by Act — review every Act for kit drift BEFORE starting the next

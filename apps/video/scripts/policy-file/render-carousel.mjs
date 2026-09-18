@@ -11,13 +11,15 @@
 // Usage (--experimental-strip-types required, same reason as assemble-case.mjs):
 //   node --experimental-strip-types apps/video/scripts/policy-file/render-carousel.mjs --dir content/policy-file/<case-slug>
 
-import { parseArgs } from 'util';
 import { existsSync, mkdirSync, copyFileSync, rmSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { join, resolve, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
+import { parseArgs } from 'util';
+
 import { bundle } from '@remotion/bundler';
 import { selectComposition, renderStill } from '@remotion/renderer';
+
 import { getChannel } from '../../src/config/channels.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
@@ -74,9 +76,19 @@ try {
       showFolder: slide.showFolder ?? false,
     };
 
-    const composition = await selectComposition({ serveUrl: bundled, id: 'CarouselSlide', inputProps });
+    const composition = await selectComposition({
+      serveUrl: bundled,
+      id: 'CarouselSlide',
+      inputProps,
+    });
     const outPath = join(outputDir, `slide-${String(i + 1).padStart(2, '0')}.png`);
-    await renderStill({ composition, serveUrl: bundled, output: outPath, inputProps, overwrite: true });
+    await renderStill({
+      composition,
+      serveUrl: bundled,
+      output: outPath,
+      inputProps,
+      overwrite: true,
+    });
     console.log(`Rendered ${outPath}`);
   }
 

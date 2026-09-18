@@ -48,20 +48,21 @@
 //                          (mainly for muted/visual-only scenes, which
 //                          otherwise default to their full long-form length).
 
-import { parseArgs } from 'util';
+import { execFile } from 'child_process';
 import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync, copyFileSync } from 'fs';
+import { tmpdir } from 'os';
 import { join, resolve, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
-import { tmpdir } from 'os';
-import { execFile } from 'child_process';
+import { parseArgs } from 'util';
 import { promisify } from 'util';
+
+import { buildSimpleMusicBed } from '../../src/longform/audio-mix.js';
+import { splitOversizedCaptions } from '../../src/longform/captions.js';
+import { BEBAS_FONT } from '../../src/longform/fonts.js';
+import { FPS, TEXT_GEOMETRY } from '../../src/longform/motion.js';
 import { parseShotlistV2, tcToSec } from '../../src/longform/parse-shotlist-v2.js';
 import { buildStillsScene, buildTextCard, probeDuration } from '../../src/longform/render.js';
-import { buildSimpleMusicBed } from '../../src/longform/audio-mix.js';
-import { FPS, TEXT_GEOMETRY } from '../../src/longform/motion.js';
-import { splitOversizedCaptions } from '../../src/longform/captions.js';
 import { measureTextWidth } from '../../src/longform/text-metrics.js';
-import { BEBAS_FONT } from '../../src/longform/fonts.js';
 
 const execAsync = promisify(execFile);
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
@@ -144,15 +145,20 @@ const NO_CAPTION_SCENES_BY_PROJECT = {
 
 const { values } = parseArgs({
   options: {
-    config:     { type: 'string' },
-    output:     { type: 'string' },   // override output path (default: <config dir>/src/<config.output>)
+    config: { type: 'string' },
+    output: { type: 'string' }, // override output path (default: <config dir>/src/<config.output>)
     'keep-tmp': { type: 'boolean', default: false },
-    watermark:  { type: 'string' },   // override watermark file under assets/logos/; 'none' to disable
+    watermark: { type: 'string' }, // override watermark file under assets/logos/; 'none' to disable
   },
   strict: false,
 });
 
-if (!values.config) { console.error('--config <short-config.json> required, e.g. content/shorts/silenced/silenced-s1-tah-miss-EN.json'); process.exit(2); }
+if (!values.config) {
+  console.error(
+    '--config <short-config.json> required, e.g. content/shorts/silenced/silenced-s1-tah-miss-EN.json',
+  );
+  process.exit(2);
+}
 const configPath = resolve(REPO_ROOT, values.config);
 if (!existsSync(configPath)) throw new Error(`Short config not found: ${configPath}`);
 const config = JSON.parse(readFileSync(configPath, 'utf-8'));
@@ -168,13 +174,18 @@ const voDir = join(sourceDir, 'vo');
 const captionsPath = join(sourceDir, 'captions.json');
 const keepTmp = values['keep-tmp'];
 
-const watermarkFile = values.watermark === 'none' ? null : (values.watermark ?? 'underdog_archive_standalone_icon.png');
+const watermarkFile =
+  values.watermark === 'none' ? null : (values.watermark ?? 'underdog_archive_standalone_icon.png');
 const watermarkPath = watermarkFile ? resolve(REPO_ROOT, 'assets/logos', watermarkFile) : null;
 
-const sceneCaptions = existsSync(captionsPath) ? JSON.parse(readFileSync(captionsPath, 'utf-8')) : {};
+const sceneCaptions = existsSync(captionsPath)
+  ? JSON.parse(readFileSync(captionsPath, 'utf-8'))
+  : {};
 const NO_CAPTION_SCENES = NO_CAPTION_SCENES_BY_PROJECT[sourceSlug] ?? new Set();
 
-function pad2(n) { return String(n).padStart(2, '0'); }
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
 
 function mergeCaptions(sceneN, fromSec) {
   if (NO_CAPTION_SCENES.has(sceneN)) return [];
@@ -186,7 +197,11 @@ function mergeCaptions(sceneN, fromSec) {
     kind: 'caption',
     at_sec: fromSec + c.at_sec,
     duration_sec: c.duration_sec,
-    words: c.words.map((w) => ({ text: w.text, offset_start: w.offset_start, offset_end: w.offset_end })),
+    words: c.words.map((w) => ({
+      text: w.text,
+      offset_start: w.offset_start,
+      offset_end: w.offset_end,
+    })),
   }));
   // These chunks were sized for the source project's LANDSCAPE render —
   // split (never shrink) any that overflow the narrower portrait frame at
@@ -230,11 +245,16 @@ async function main() {
   const scenes = config.scenes.map((n) => {
     const scene = allScenes.find((s) => s.scene_n === n);
     if (!scene) throw new Error(`Scene S${pad2(n)} not found in ${shotlistPath}`);
-    if (!scene.stills?.length) throw new Error(`Scene S${pad2(n)} has no stills — text/title cards aren't supported as Short source scenes`);
+    if (!scene.stills?.length)
+      throw new Error(
+        `Scene S${pad2(n)} has no stills — text/title cards aren't supported as Short source scenes`,
+      );
     return scene;
   });
 
-  console.log(`"${config.output}" ← ${sourceSlug} scenes ${config.scenes.join(',')} (${SHORT_FORMAT.width}x${SHORT_FORMAT.height})\n`);
+  console.log(
+    `"${config.output}" ← ${sourceSlug} scenes ${config.scenes.join(',')} (${SHORT_FORMAT.width}x${SHORT_FORMAT.height})\n`,
+  );
 
   const workDir = join(tmpdir(), `short-${Date.now()}`);
   mkdirSync(workDir, { recursive: true });
@@ -252,7 +272,11 @@ async function main() {
       // something a vo_override should be able to override back on.
       const isMuted = config.mute?.includes(scene.scene_n);
       const voOverride = config.vo_override?.[String(scene.scene_n)];
-      const voPath = isMuted ? null : voOverride ? resolve(REPO_ROOT, voOverride) : findVoFile(scene.scene_n);
+      const voPath = isMuted
+        ? null
+        : voOverride
+          ? resolve(REPO_ROOT, voOverride)
+          : findVoFile(scene.scene_n);
       const cropX = config.crop?.[String(scene.scene_n)] ?? 0.5;
 
       const stillRows = scene.stills.map((st) => {
@@ -265,7 +289,9 @@ async function main() {
         return {
           cut: st.cut,
           motion,
-          clip_url: stillOverride ? resolve(REPO_ROOT, stillOverride) : findStillFile(scene.scene_n, st.cut),
+          clip_url: stillOverride
+            ? resolve(REPO_ROOT, stillOverride)
+            : findStillFile(scene.scene_n, st.cut),
           regrade: mapGrade(scene.grade),
           transition: 'cut',
           crop_x: cropX,
@@ -274,10 +300,14 @@ async function main() {
 
       const missing = stillRows.filter((s) => !s.clip_url);
       if (missing.length === stillRows.length) {
-        throw new Error(`${label}: no still image(s) found in ${stillsDir} (expected S${n}-${scene.stills.map((s) => s.cut).join('/')}.[jpeg|jpg|png])`);
+        throw new Error(
+          `${label}: no still image(s) found in ${stillsDir} (expected S${n}-${scene.stills.map((s) => s.cut).join('/')}.[jpeg|jpg|png])`,
+        );
       }
       if (missing.length) {
-        console.warn(`  ${label} missing cut(s): ${missing.map((s) => s.cut).join(', ')} — rendering with the rest`);
+        console.warn(
+          `  ${label} missing cut(s): ${missing.map((s) => s.cut).join(', ')} — rendering with the rest`,
+        );
       }
 
       const fromSec = tcToSec(scene.from_tc);
@@ -288,7 +318,9 @@ async function main() {
       // re-included via config.no_captions being false for it (it never is
       // today — no re-alignment tooling exists yet, see Wave 1 shot lists'
       // own re-sync note on this exact case).
-      const skipCaptions = config.no_captions?.includes(scene.scene_n) || Boolean(config.vo_override?.[String(scene.scene_n)]);
+      const skipCaptions =
+        config.no_captions?.includes(scene.scene_n) ||
+        Boolean(config.vo_override?.[String(scene.scene_n)]);
       let overlays = skipCaptions ? [] : mergeCaptions(scene.scene_n, fromSec);
 
       // Hook line renders as a Tier-1 hero card over the opening ~3s of the
@@ -334,7 +366,10 @@ async function main() {
     // own payoff/resolution, so the Short creates a reason to go watch it.
     if (config.outro) {
       const outroText = typeof config.outro === 'string' ? config.outro : config.outro.text;
-      const outroDur = typeof config.outro === 'object' ? (config.outro.duration_sec ?? DEFAULT_OUTRO_DUR_SEC) : DEFAULT_OUTRO_DUR_SEC;
+      const outroDur =
+        typeof config.outro === 'object'
+          ? (config.outro.duration_sec ?? DEFAULT_OUTRO_DUR_SEC)
+          : DEFAULT_OUTRO_DUR_SEC;
       process.stdout.write(`  [outro] "${outroText}" (${outroDur}s) … `);
       const outroPath = join(workDir, 'outro.mp4');
       await buildTextCard(outroText, outroDur, outroPath, null, SHORT_FORMAT);
@@ -346,7 +381,18 @@ async function main() {
     const listPath = join(workDir, '_concat.txt');
     const concatPath = join(workDir, 'concat.mp4');
     writeFileSync(listPath, scenePaths.map((p) => `file '${p}'`).join('\n'));
-    await execAsync('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-c', 'copy', concatPath]);
+    await execAsync('ffmpeg', [
+      '-y',
+      '-f',
+      'concat',
+      '-safe',
+      '0',
+      '-i',
+      listPath,
+      '-c',
+      'copy',
+      concatPath,
+    ]);
 
     let finalPath = concatPath;
     if (watermarkPath && existsSync(watermarkPath)) {
@@ -354,12 +400,20 @@ async function main() {
       const wmPath = join(workDir, 'watermarked.mp4');
       await execAsync('ffmpeg', [
         '-y',
-        '-i', finalPath,
-        '-i', watermarkPath,
+        '-i',
+        finalPath,
+        '-i',
+        watermarkPath,
         '-filter_complex',
         '[1:v]scale=80:-1,format=rgba,colorchannelmixer=aa=0.4[wm];[0:v][wm]overlay=W-w-20:H-h-20:format=auto',
-        '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
-        '-c:a', 'copy',
+        '-c:v',
+        'libx264',
+        '-preset',
+        'fast',
+        '-pix_fmt',
+        'yuv420p',
+        '-c:a',
+        'copy',
         wmPath,
       ]);
       finalPath = wmPath;
@@ -394,7 +448,9 @@ async function main() {
     const finalDur = probeDuration(outPath);
     console.log(`\n✓ Rendered: ${outPath}  (${finalDur.toFixed(1)}s)`);
     if (finalDur > MAX_RECOMMENDED_SEC) {
-      console.warn(`[warn] ${finalDur.toFixed(1)}s exceeds the ${MAX_RECOMMENDED_SEC}s Shorts target — consider trimming scenes`);
+      console.warn(
+        `[warn] ${finalDur.toFixed(1)}s exceeds the ${MAX_RECOMMENDED_SEC}s Shorts target — consider trimming scenes`,
+      );
     }
   } finally {
     if (keepTmp) {
@@ -405,4 +461,7 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('FATAL:', e.message);
+  process.exit(1);
+});

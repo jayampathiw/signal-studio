@@ -1,0 +1,36 @@
+{
+  "_placeholder": true,
+  "_note": "Synthetic 3-episode series for P0.8-07 render-compilation smoke test — not real content.",
+  "post_id": "series_test_ep3",
+  "mode": "C",
+  "subject": "Episode Three",
+  "fact_confidence": "high",
+  "verify": "https://example.com",
+  "end_card": {
+    "subject": "Series Test",
+    "disclosure": "AI-narrated. Footage: user-supplied."
+  },
+  "watermark": {
+    "text": "AI visualisation"
+  },
+  "outputs": [
+    "fb"
+  ],
+  "shots": [
+    {
+      "id": "s1",
+      "clip_file": "s1.mp4",
+      "trim_in_s": 0,
+      "speed": 1,
+      "overlay_text": "Episode three concludes",
+      "overlay_in_s": 0.4,
+      "overlay_out_s": 3.5,
+      "voiceover_text": "This is episode three.",
+      "fact_confidence": "high",
+      "verify": "https://example.com",
+      "duration_s": 4,
+      "voiceover_file": "vo/s1_vo_n.wav",
+      "voiceover_duration_s": 2.525
+    }
+  ]
+}

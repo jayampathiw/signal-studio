@@ -4,22 +4,22 @@ import { Article } from './supabase.service';
 // Keep in sync; rationale documented in docs/research/posting-time-analysis.md.
 export const SLOTS_BY_DAY: Record<string, Record<string, string[]>> = {
   IT: {
-    monday:    ['07:30', '13:00', '22:00'],
-    tuesday:   ['07:30', '13:00', '22:00'],
+    monday: ['07:30', '13:00', '22:00'],
+    tuesday: ['07:30', '13:00', '22:00'],
     wednesday: ['07:30', '13:00', '22:00'],
-    thursday:  ['07:30', '13:00', '22:00'],
-    friday:    ['07:30', '13:00', '22:00'],
-    saturday:  ['09:00',          '22:00'],
-    sunday:    ['11:00', '13:00', '22:00'],
+    thursday: ['07:30', '13:00', '22:00'],
+    friday: ['07:30', '13:00', '22:00'],
+    saturday: ['09:00', '22:00'],
+    sunday: ['11:00', '13:00', '22:00'],
   },
   FR: {
-    monday:    ['07:30',          '22:00'],
-    tuesday:   ['07:30', '13:00', '22:00'],
+    monday: ['07:30', '22:00'],
+    tuesday: ['07:30', '13:00', '22:00'],
     wednesday: ['07:30', '13:00', '22:00'],
-    thursday:  ['07:30', '13:00', '22:00'],
-    friday:    ['07:30',          '22:00'],
-    saturday:  ['09:00',          '22:00'],
-    sunday:    ['09:30',          '22:00'],
+    thursday: ['07:30', '13:00', '22:00'],
+    friday: ['07:30', '22:00'],
+    saturday: ['09:00', '22:00'],
+    sunday: ['09:30', '22:00'],
   },
 };
 
@@ -38,10 +38,11 @@ export function getSlotsForDate(country: string, date: Date = new Date()): strin
 export function slotToIST(slot: string): string {
   const [h, m] = slot.split(':').map(Number);
   const now = new Date();
-  const parisH = parseInt(
-    now.toLocaleString('en-US', { timeZone: 'Europe/Paris', hour12: false, hour: '2-digit' }),
-    10,
-  ) % 24; // % 24 guards against the '24' midnight quirk in some browsers
+  const parisH =
+    parseInt(
+      now.toLocaleString('en-US', { timeZone: 'Europe/Paris', hour12: false, hour: '2-digit' }),
+      10,
+    ) % 24; // % 24 guards against the '24' midnight quirk in some browsers
   const parisOffsetMin = ((parisH - now.getUTCHours() + 24) % 24) * 60;
   const istRaw = h * 60 + m - parisOffsetMin + 330; // IST = UTC+5:30
   const istMin = ((istRaw % 1440) + 1440) % 1440;
@@ -66,22 +67,22 @@ export function slotIntent(slot: string): SlotIntent {
 export function slotIntentLabel(intent: SlotIntent, lang: 'en' | 'it' | 'fr' = 'en'): string {
   const labels = {
     en: { morning: 'morning', midday: 'midday', evening: 'evening' },
-    it: { morning: 'mattina', midday: 'pranzo',  evening: 'sera' },
-    fr: { morning: 'matin',   midday: 'midi',    evening: 'soir' },
+    it: { morning: 'mattina', midday: 'pranzo', evening: 'sera' },
+    fr: { morning: 'matin', midday: 'midi', evening: 'soir' },
   };
   return labels[lang][intent];
 }
 
 // Maps an identity_mode to the slot intent it fits best.
 const MODE_TO_INTENT: Record<string, SlotIntent> = {
-  RESILIENZA:  'morning',
-  'RÉSISTANCE': 'morning',
-  DIBATTITO:   'midday',
-  'DÉBAT':     'midday',
-  ORGOGLIO:    'evening',
-  'FIERTÉ':    'evening',
-  PATRIMONIO:  'evening',
-  PATRIMOINE:  'evening',
+  RESILIENZA: 'morning',
+  RÉSISTANCE: 'morning',
+  DIBATTITO: 'midday',
+  DÉBAT: 'midday',
+  ORGOGLIO: 'evening',
+  FIERTÉ: 'evening',
+  PATRIMONIO: 'evening',
+  PATRIMOINE: 'evening',
 };
 
 export function bestSlotIntent(article: Article): SlotIntent {
@@ -96,7 +97,6 @@ export function bestSlotForArticle(article: Article, date: Date = new Date()): s
   const slots = getSlotsForDate(article.country, date);
   if (slots.length === 0) return null;
   const intent = bestSlotIntent(article);
-  const matching = slots.find(s => slotIntent(s) === intent);
+  const matching = slots.find((s) => slotIntent(s) === intent);
   return matching ?? slots[slots.length - 1];
 }
-

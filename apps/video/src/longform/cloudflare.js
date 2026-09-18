@@ -7,8 +7,9 @@
 // poll() falls through to the task-status endpoint. Both paths resolve to an R2
 // URL so the caller never holds a Cloudflare-scoped reference.
 
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
+
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const CF_BASE = 'https://api.cloudflare.com/client/v4';
 const MODEL = '@bytedance/seedance-2.0-mini';
@@ -44,12 +45,14 @@ function r2Client() {
 
 async function uploadBufferToR2(buffer, key) {
   const bucket = process.env.R2_BUCKET_RENDERED;
-  await r2Client().send(new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    Body: buffer,
-    ContentType: 'video/mp4',
-  }));
+  await r2Client().send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: 'video/mp4',
+    }),
+  );
   return `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
 }
 
@@ -79,10 +82,12 @@ export async function submit(_jobType, params, { timeoutMs = 5 * 60 * 1000 } = {
 
   let res;
   try {
-    res = await fetch(
-      `${CF_BASE}/accounts/${accountId()}/ai/run/${MODEL}`,
-      { method: 'POST', headers: cfHeaders(), body: JSON.stringify(body), signal: controller.signal },
-    );
+    res = await fetch(`${CF_BASE}/accounts/${accountId()}/ai/run/${MODEL}`, {
+      method: 'POST',
+      headers: cfHeaders(),
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
   } finally {
     clearTimeout(timer);
   }
@@ -105,7 +110,8 @@ export async function submit(_jobType, params, { timeoutMs = 5 * 60 * 1000 } = {
     // Async path — expect JSON with a task id
     const json = await res.json();
     const taskId = json?.result?.id ?? json?.id;
-    if (!taskId) throw new Error(`Cloudflare: no task ID in response: ${JSON.stringify(json).slice(0, 200)}`);
+    if (!taskId)
+      throw new Error(`Cloudflare: no task ID in response: ${JSON.stringify(json).slice(0, 200)}`);
     _jobs.set(jobId, { taskId, projectId, sceneN });
   }
 
@@ -131,12 +137,12 @@ export async function poll(jobId, { timeoutMs = 5 * 60 * 1000, intervalMs = 8000
   const deadline = Date.now() + timeoutMs;
 
   for (;;) {
-    const res = await fetch(
-      `${CF_BASE}/accounts/${accountId()}/ai/tasks/${taskId}`,
-      { headers: cfHeaders() },
-    );
+    const res = await fetch(`${CF_BASE}/accounts/${accountId()}/ai/tasks/${taskId}`, {
+      headers: cfHeaders(),
+    });
     if (!res.ok) {
-      if (Date.now() > deadline) throw new Error(`poll(${jobId}) timed out (tasks API error ${res.status})`);
+      if (Date.now() > deadline)
+        throw new Error(`poll(${jobId}) timed out (tasks API error ${res.status})`);
       await sleep(intervalMs);
       continue;
     }
@@ -157,7 +163,9 @@ export async function poll(jobId, { timeoutMs = 5 * 60 * 1000, intervalMs = 8000
     }
 
     if (status === 'failed' || status === 'error') {
-      throw new Error(`Cloudflare task ${taskId} failed: ${JSON.stringify(json?.result ?? json).slice(0, 200)}`);
+      throw new Error(
+        `Cloudflare task ${taskId} failed: ${JSON.stringify(json?.result ?? json).slice(0, 200)}`,
+      );
     }
 
     if (Date.now() > deadline) throw new Error(`poll(${jobId}) timed out in status "${status}"`);

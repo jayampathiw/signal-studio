@@ -1,0 +1,16 @@
+# AssembleX Factory — project config (pilot bridge, P0.8-04)
+#
+# `voice` is provisional: bm_george, matching the placeholder pack's default.
+# The listening test (3 voices on the same sentence — see samples generated
+# during P0.8-04) still needs a human ear; swap `voice` below if a different
+# one wins and re-run `npm run tts` (cache key includes voice, so it will
+# regenerate only what changed).
+
+voice: bm_george
+speed: 1.0
+music:
+  gain_db: -18
+  duck: true
+fonts:
+  - family: Inter
+    weight: 800

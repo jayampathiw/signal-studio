@@ -32,7 +32,11 @@ const RULES = [
   { pattern: /celebration.*cut|cut.*celebration/i, key: 'celebration_cut' },
   { pattern: /hum.*cut.*silence|silence.*hum|hum cuts/i, key: 'hum_cut_silence' },
   { pattern: /stadium hum|rising hum|hum/i, key: 'stadium_hum' },
-  { pattern: /silence.*hold|hold.*silence|two.?second silence|2.?second silence/i, key: null, hold_sec: 2 },
+  {
+    pattern: /silence.*hold|hold.*silence|two.?second silence|2.?second silence/i,
+    key: null,
+    hold_sec: 2,
+  },
   { pattern: /silence/i, key: null },
 ];
 

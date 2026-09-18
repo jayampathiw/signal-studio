@@ -26,43 +26,46 @@ Tier 3 — Channel / Page Skills
 ```
 
 ### Tier 1 — Official Higgsfield Skills
-| Property | Detail |
-|---|---|
-| Source | `github.com/higgsfield-ai/skills` |
-| Install | `npx skills add higgsfield-ai/skills` (on runner at job start) |
-| Scope | Higgsfield platform mechanics only — model selection, job polling, auto-upload, virality |
-| Maintained by | Higgsfield AI — auto-updates with new models |
-| Skills | `higgsfield:generate`, `higgsfield:soul-id`, `higgsfield:product-photoshoot` |
+
+| Property      | Detail                                                                                   |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Source        | `github.com/higgsfield-ai/skills`                                                        |
+| Install       | `npx skills add higgsfield-ai/skills` (on runner at job start)                           |
+| Scope         | Higgsfield platform mechanics only — model selection, job polling, auto-upload, virality |
+| Maintained by | Higgsfield AI — auto-updates with new models                                             |
+| Skills        | `higgsfield:generate`, `higgsfield:soul-id`, `higgsfield:product-photoshoot`             |
 
 These skills know nothing about your content strategy, house rules, or channels. They just talk to Higgsfield.
 
 ### Tier 2 — Content-Platform (Signal Studio) Skills
-| Property | Detail |
-|---|---|
-| Source | `signal-studio` repo → `.claude/skills/` and `.claude/agents/` |
-| Scope | Platform-wide rules applicable to **all channels** |
-| Maintained by | Signal Studio team |
 
-| Skill / Agent | Applies to | Why platform-level |
-|---|---|---|
-| `higgsfield-credit-guard` | All channels | Hard credit ceiling before any generation run; Tier 1 has no abort logic |
-| `image-quality-gate` agent | All AI image/video channels | Vision review after every image generation — checks prompt adherence, realism, lighting, species, prohibited content. Hard gate for start/end frames; advisory for storyboard. |
-| `continuity-checker` agent | All AI video channels | Scene-to-scene continuity; runs after quality gate passes |
-| `seo-writer` agent | All channels | Base SEO generation; channel skills pass channel-specific rules as context |
-| `performance-analyst` agent | All channels (interactive) | Reads DB + script library; channel-agnostic |
+| Property      | Detail                                                         |
+| ------------- | -------------------------------------------------------------- |
+| Source        | `signal-studio` repo → `.claude/skills/` and `.claude/agents/` |
+| Scope         | Platform-wide rules applicable to **all channels**             |
+| Maintained by | Signal Studio team                                             |
+
+| Skill / Agent               | Applies to                  | Why platform-level                                                                                                                                                             |
+| --------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `higgsfield-credit-guard`   | All channels                | Hard credit ceiling before any generation run; Tier 1 has no abort logic                                                                                                       |
+| `image-quality-gate` agent  | All AI image/video channels | Vision review after every image generation — checks prompt adherence, realism, lighting, species, prohibited content. Hard gate for start/end frames; advisory for storyboard. |
+| `continuity-checker` agent  | All AI video channels       | Scene-to-scene continuity; runs after quality gate passes                                                                                                                      |
+| `seo-writer` agent          | All channels                | Base SEO generation; channel skills pass channel-specific rules as context                                                                                                     |
+| `performance-analyst` agent | All channels (interactive)  | Reads DB + script library; channel-agnostic                                                                                                                                    |
 
 ### Tier 3 — Channel / Page Skills
-| Property | Detail |
-|---|---|
-| Source | `signal-studio` repo → `.claude/skills/` (prefix: `<channel>-`) |
-| Scope | Rules and orchestration for **one specific channel** |
-| Maintained by | Signal Studio team (per channel) |
 
-| Channel | Orchestrator skill | Brief skill | What it encodes |
-|---|---|---|---|
-| Wild Eye (Wild Capture) | `wild-eye-reel` | `wild-eye-brief` | Cavy-only, formula selection (11s/21s/portrait), no Tue/Wed/Thu, natural audio, CTA phrasing |
-| Sports *(future)* | `sports-reel` | `sports-brief` | Sports-specific house rules, formats, scheduling |
-| Cartoon *(future)* | `cartoon-reel` | `cartoon-brief` | Cartoon-specific house rules, formats, scheduling |
+| Property      | Detail                                                          |
+| ------------- | --------------------------------------------------------------- |
+| Source        | `signal-studio` repo → `.claude/skills/` (prefix: `<channel>-`) |
+| Scope         | Rules and orchestration for **one specific channel**            |
+| Maintained by | Signal Studio team (per channel)                                |
+
+| Channel                 | Orchestrator skill | Brief skill      | What it encodes                                                                              |
+| ----------------------- | ------------------ | ---------------- | -------------------------------------------------------------------------------------------- |
+| Wild Eye (Wild Capture) | `wild-eye-reel`    | `wild-eye-brief` | Cavy-only, formula selection (11s/21s/portrait), no Tue/Wed/Thu, natural audio, CTA phrasing |
+| Sports _(future)_       | `sports-reel`      | `sports-brief`   | Sports-specific house rules, formats, scheduling                                             |
+| Cartoon _(future)_      | `cartoon-reel`     | `cartoon-brief`  | Cartoon-specific house rules, formats, scheduling                                            |
 
 **Rule:** anything that only applies to one channel lives in Tier 3. Anything that would be copy-pasted across two or more channels gets promoted to Tier 2. Tier 1 is never modified by us.
 
@@ -183,10 +186,10 @@ on:
 
   schedule:
     # Wild Eye — posting slots (UTC)
-    - cron: '0 22 * * 5'    # Fri 22:00 UTC = Fri 23:00 BST  (11s reel)
-    - cron: '30 6 * * 6'    # Sat 06:30 UTC = Sat 07:30 BST  (21s reel)
-    - cron: '0 9 * * 0'     # Sun 09:00 UTC = Sun 10:00 BST  (portrait)
-    - cron: '0 9 * * 4'     # Thu 09:00 UTC = Thu 10:00 BST  (portrait)
+    - cron: '0 22 * * 5' # Fri 22:00 UTC = Fri 23:00 BST  (11s reel)
+    - cron: '30 6 * * 6' # Sat 06:30 UTC = Sat 07:30 BST  (21s reel)
+    - cron: '0 9 * * 0' # Sun 09:00 UTC = Sun 10:00 BST  (portrait)
+    - cron: '0 9 * * 4' # Thu 09:00 UTC = Thu 10:00 BST  (portrait)
     # Sports — add entries here when channel launches
     # Cartoon — add entries here when channel launches
 ```
@@ -199,12 +202,12 @@ The runner maps cron trigger times to channel slugs. `workflow_dispatch` accepts
 
 Two secrets are created once, stored in GitHub Actions, and never touched again:
 
-| Secret | How to get | GitHub secret name |
-|---|---|---|
-| Higgsfield CLI token | `npm install -g @higgsfield/cli` → `higgsfield auth login` (browser OAuth once) → copy token from `~/.higgsfield/credentials` | `HIGGSFIELD_AUTH_TOKEN` |
-| Anthropic API key | console.anthropic.com → API Keys | `ANTHROPIC_API_KEY` |
-| Supabase management token | supabase.com → Account Settings → Access Tokens → Generate | `SUPABASE_MCP_TOKEN` |
-| signal-studio deploy key | `ssh-keygen` → public key added to signal-studio repo → Deploy Keys | `SIGNAL_STUDIO_DEPLOY_KEY` |
+| Secret                    | How to get                                                                                                                    | GitHub secret name         |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Higgsfield CLI token      | `npm install -g @higgsfield/cli` → `higgsfield auth login` (browser OAuth once) → copy token from `~/.higgsfield/credentials` | `HIGGSFIELD_AUTH_TOKEN`    |
+| Anthropic API key         | console.anthropic.com → API Keys                                                                                              | `ANTHROPIC_API_KEY`        |
+| Supabase management token | supabase.com → Account Settings → Access Tokens → Generate                                                                    | `SUPABASE_MCP_TOKEN`       |
+| signal-studio deploy key  | `ssh-keygen` → public key added to signal-studio repo → Deploy Keys                                                           | `SIGNAL_STUDIO_DEPLOY_KEY` |
 
 After this one-time setup, **every generation run is fully automated with zero local involvement.**
 
@@ -213,6 +216,7 @@ After this one-time setup, **every generation run is fully automated with zero l
 ## 7. Image review (automated — Claude vision)
 
 After each start frame is generated, Claude inspects the image against:
+
 - Scene prompt (does the image match what was described?)
 - Channel house rules loaded from `apps/video/knowledge/<channel>/house-style.md`
 - Platform safety rules (no flagged elements)
@@ -233,13 +237,13 @@ Human review gate (GitHub Environment protection rules + image URL post) is **de
 
 ## 9. Cost
 
-| Component | Cost | Notes |
-|---|---|---|
-| GitHub Actions runner | **$0** | Free forever — public repo, no minute limit |
-| Cross-repo checkout | **$0** | Network I/O on free runner |
-| Anthropic API | **~$0.01–0.05 per reel** | ~20–50K tokens at Haiku pricing |
-| Higgsfield generation | **$0 extra** | Covered by existing Max plan credits + unlimiteds |
-| Supabase reads/writes | **$0 extra** | Covered by existing plan |
+| Component             | Cost                     | Notes                                             |
+| --------------------- | ------------------------ | ------------------------------------------------- |
+| GitHub Actions runner | **$0**                   | Free forever — public repo, no minute limit       |
+| Cross-repo checkout   | **$0**                   | Network I/O on free runner                        |
+| Anthropic API         | **~$0.01–0.05 per reel** | ~20–50K tokens at Haiku pricing                   |
+| Higgsfield generation | **$0 extra**             | Covered by existing Max plan credits + unlimiteds |
+| Supabase reads/writes | **$0 extra**             | Covered by existing plan                          |
 
 ---
 
@@ -271,20 +275,20 @@ Tier 1 (official Higgsfield skills) and Tier 2 (credit guard, continuity, SEO, p
 
 ## 12. Open items
 
-| Item | When |
-|---|---|
-| Verify exact path of `~/.higgsfield/credentials` after `higgsfield auth login` | Implementation Step 1 |
-| Confirm Higgsfield CLI token longevity (expiry? refresh needed?) | Implementation Step 1 |
-| Design human review gate (GitHub Environment vs Slack vs Issue) | Video pipeline design phase |
-| Decide cron→channel mapping strategy in runner script | Implementation Step 5 |
-| `tracker.mjs` performance logging script | Post-launch (optional) |
+| Item                                                                           | When                        |
+| ------------------------------------------------------------------------------ | --------------------------- |
+| Verify exact path of `~/.higgsfield/credentials` after `higgsfield auth login` | Implementation Step 1       |
+| Confirm Higgsfield CLI token longevity (expiry? refresh needed?)               | Implementation Step 1       |
+| Design human review gate (GitHub Environment vs Slack vs Issue)                | Video pipeline design phase |
+| Decide cron→channel mapping strategy in runner script                          | Implementation Step 5       |
+| `tracker.mjs` performance logging script                                       | Post-launch (optional)      |
 
 ---
 
 ## 13. Channel implementations
 
-| Channel | Page | Status | Tier 3 skills | Knowledge files | Doc |
-|---|---|---|---|---|---|
+| Channel                 | Page                  | Status               | Tier 3 skills                     | Knowledge files                                          | Doc                                               |
+| ----------------------- | --------------------- | -------------------- | --------------------------------- | -------------------------------------------------------- | ------------------------------------------------- |
 | Wild Eye (Wild Capture) | Wild Capture Facebook | ✅ Architecture done | `wild-eye-reel`, `wild-eye-brief` | `house-style.md`, `script-library.md`, `seo-examples.md` | `docs/wild-eye/integration-and-video-pipeline.md` |
-| Sports | TBD | ⬜ Not started | — | — | — |
-| Cartoon | TBD | ⬜ Not started | — | — | — |
+| Sports                  | TBD                   | ⬜ Not started       | —                                 | —                                                        | —                                                 |
+| Cartoon                 | TBD                   | ⬜ Not started       | —                                 | —                                                        | —                                                 |

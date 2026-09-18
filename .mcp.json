@@ -2,20 +2,20 @@
   "mcpServers": {
     "supabase": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@supabase/mcp-server-supabase",
-        "--access-token",
-        "${SUPABASE_MCP_TOKEN}"
-      ],
+      "args": ["-y", "@supabase/mcp-server-supabase", "--access-token", "${SUPABASE_MCP_TOKEN}"],
       "env": {}
     },
     "github": {
       "command": "docker",
       "args": [
-        "run", "-i", "--rm", "--network=host",
-        "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "-e", "GITHUB_TOOLSETS=repos,issues,pull_requests,actions,code_security,context",
+        "run",
+        "-i",
+        "--rm",
+        "--network=host",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "-e",
+        "GITHUB_TOOLSETS=repos,issues,pull_requests,actions,code_security,context",
         "ghcr.io/github/github-mcp-server"
       ],
       "env": {

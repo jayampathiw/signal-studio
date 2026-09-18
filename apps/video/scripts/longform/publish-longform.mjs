@@ -10,6 +10,7 @@
  */
 
 import { parseArgs } from 'node:util';
+
 import { createClient } from '@supabase/supabase-js';
 
 const { values } = parseArgs({
@@ -18,7 +19,10 @@ const { values } = parseArgs({
 });
 
 const projectId = Number(values.project);
-if (!projectId) { console.error('--project <id> required'); process.exit(1); }
+if (!projectId) {
+  console.error('--project <id> required');
+  process.exit(1);
+}
 
 const db = createClient(
   process.env.SUPABASE_URL,
@@ -43,7 +47,8 @@ if (row.status !== 'publishing') {
 
 if (!row.rendered_video_url) {
   console.error('rendered_video_url is NULL — cannot publish without a video file');
-  await db.from('content_items')
+  await db
+    .from('content_items')
     .update({ status: 'failed', status_note: 'publish failed: rendered_video_url is NULL' })
     .eq('id', projectId);
   process.exit(1);
@@ -62,7 +67,7 @@ if (row.seo) {
   console.log(`Title      : ${row.seo.title ?? ''}`);
   console.log(`Description:\n${row.seo.description ?? ''}`);
   if (row.seo.hashtags?.length) {
-    console.log(`Hashtags   : ${row.seo.hashtags.map(h => `#${h}`).join(' ')}`);
+    console.log(`Hashtags   : ${row.seo.hashtags.map((h) => `#${h}`).join(' ')}`);
   }
 }
 

@@ -5,13 +5,14 @@
 // pzoom in zoompan is unreliable on some FFmpeg builds (stays at 1.0 → static frames).
 // crop filter's 'n' variable is reliable across all FFmpeg 4.x+ versions.
 
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { createHash } from 'crypto';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { measureSegments } from './text-metrics.js';
-import { resolvePlacement } from './placement.js';
+
 import { BEBAS_FONT } from './fonts.js';
+import { resolvePlacement } from './placement.js';
+import { measureSegments } from './text-metrics.js';
 
 // ffmpeg drawtext's inline `text='...'` escaping for embedded single quotes
 // (close-quote, escaped-quote, reopen-quote) does not actually render on this
@@ -104,7 +105,16 @@ function zoomChain(zExpr, fW, fH, cropX = 0.5) {
  *   Shorts frame from a 16:9 source whose subject isn't centered.
  * @returns {string} ffmpeg vf filter chain
  */
-export function buildMotionFilter({ motion, durationSec, fps, width, height, regrade, overlays, cropX = 0.5 }) {
+export function buildMotionFilter({
+  motion,
+  durationSec,
+  fps,
+  width,
+  height,
+  regrade,
+  overlays,
+  cropX = 0.5,
+}) {
   const fW = width ?? W;
   const fH = height ?? H;
   const fFPS = fps ?? FPS;
@@ -147,8 +157,8 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     }
     case 'pan_lr': {
       // Constant z=1.20, pan left→right using t
-      const panW = Math.round(canvasW / 1.20);
-      const panH = Math.round(canvasH / 1.20);
+      const panW = Math.round(canvasW / 1.2);
+      const panH = Math.round(canvasH / 1.2);
       const maxX = canvasW - panW;
       const panCY = Math.round((canvasH - panH) / 2);
       zpFilter = [
@@ -159,8 +169,8 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
     }
     case 'pan_rl': {
       // Constant z=1.20, pan right→left using t
-      const panW = Math.round(canvasW / 1.20);
-      const panH = Math.round(canvasH / 1.20);
+      const panW = Math.round(canvasW / 1.2);
+      const panH = Math.round(canvasH / 1.2);
       const maxX = canvasW - panW;
       const panCY = Math.round((canvasH - panH) / 2);
       zpFilter = [
@@ -186,7 +196,9 @@ export function buildMotionFilter({ motion, durationSec, fps, width, height, reg
   const parts = skipPrescale ? [zpFilter] : [prescale(canvasW, canvasH), zpFilter];
 
   if (regrade === 'warm_amber') {
-    parts.push('colorbalance=rs=0.1:gs=-0.05:bs=-0.15:rm=0.05:gm=0:bm=-0.1:rh=0.15:gh=0.05:bh=-0.1');
+    parts.push(
+      'colorbalance=rs=0.1:gs=-0.05:bs=-0.15:rm=0.05:gm=0:bm=-0.1:rh=0.15:gh=0.05:bh=-0.1',
+    );
   } else if (regrade === 'cold_blue') {
     parts.push('colorbalance=rs=-0.1:gs=0:bs=0.15:rm=-0.05:gm=0.05:bm=0.1:rh=-0.15:gh=0:bh=0.2');
   }
@@ -220,11 +232,23 @@ const REVEAL_FADE = 0.15;
 // orientation-aware (HERO_FONTSIZE=100, CAPTION_FONTSIZE=80, CAPTION_Y=h*0.80,
 // REVEAL_FONTSIZE=64), so 16:9 output is unaffected.
 export const TEXT_GEOMETRY = {
-  landscape: { heroFontsize: 100, heroDefaultDur: 3, captionFontsize: 80, captionY: 'h*0.80', revealFontsize: 64 },
+  landscape: {
+    heroFontsize: 100,
+    heroDefaultDur: 3,
+    captionFontsize: 80,
+    captionY: 'h*0.80',
+    revealFontsize: 64,
+  },
   // captionFontsize=110 matches the Wave 1 shot lists' karaoke-caption spec
   // ("scaled to ~110px, center-lower third") — larger than a first-pass guess
   // since Shorts captions read at arm's length scroll speed, not seated close.
-  portrait:  { heroFontsize: 72,  heroDefaultDur: 3, captionFontsize: 110, captionY: 'h*0.70', revealFontsize: 48 },
+  portrait: {
+    heroFontsize: 72,
+    heroDefaultDur: 3,
+    captionFontsize: 110,
+    captionY: 'h*0.70',
+    revealFontsize: 48,
+  },
 };
 
 function resolveTextGeometry(fW, fH) {
@@ -262,7 +286,7 @@ function buildLegacyDrawtext({ at_sec, text, style, font_path }) {
   const styleMap = {
     small_cream: `fontsize=42:fontcolor=0xFFFAF0:x=(w-text_w)/2:y=h*0.82${font}`,
     lower_third: `fontsize=52:fontcolor=white:x=w*0.07:y=h*0.78${font}:box=1:boxcolor=black@0.5:boxborderw=12`,
-    stamp:       `fontsize=80:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2${font}:borderw=3:bordercolor=black`,
+    stamp: `fontsize=80:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2${font}:borderw=3:bordercolor=black`,
   };
   const params = styleMap[style] ?? styleMap.small_cream;
 
@@ -302,7 +326,11 @@ function buildHeroCard({ at_sec, text, amber_word, duration_sec, zone, y, fade_i
   // Short pulling an unfamiliar scene, so this is defensive, not dead code.
   const MIN_HERO_FONTSIZE = 32;
   let heroFontsize = geometry.heroFontsize;
-  let widths = measureSegments(BEBAS_FONT, heroFontsize, segments.map((s) => s.text));
+  let widths = measureSegments(
+    BEBAS_FONT,
+    heroFontsize,
+    segments.map((s) => s.text),
+  );
   let totalWidth = widths.reduce((a, b) => a + b, 0);
   const maxHeroWidth = geometry.frameWidth * 0.92;
   if (totalWidth > maxHeroWidth) {
@@ -319,12 +347,12 @@ function buildHeroCard({ at_sec, text, amber_word, duration_sec, zone, y, fade_i
   // fadeIn <= 0 skips the alpha ramp entirely (no :alpha= param) rather than
   // emitting a (t-at_sec)/0 expression — text just appears instantly at full
   // opacity the moment its enable window opens.
-  const alphaExpr = at_sec != null && fadeIn > 0
-    ? `if(lt(t-${at_sec}\\,${fadeIn})\\,(t-${at_sec})/${fadeIn}\\,1)`
-    : null;
-  const enableExpr = at_sec != null
-    ? `between(t\\,${at_sec}\\,${(at_sec + dur).toFixed(3)})`
-    : null;
+  const alphaExpr =
+    at_sec != null && fadeIn > 0
+      ? `if(lt(t-${at_sec}\\,${fadeIn})\\,(t-${at_sec})/${fadeIn}\\,1)`
+      : null;
+  const enableExpr =
+    at_sec != null ? `between(t\\,${at_sec}\\,${(at_sec + dur).toFixed(3)})` : null;
 
   let cumulative = 0;
   const filters = segments.map((seg, i) => {
@@ -387,12 +415,17 @@ function buildCaptionAccent({ at_sec, duration_sec, words }, geometry) {
     const file = textFilePath(texts[i]);
     const x = i === 0 ? x0Expr : `(${x0Expr})+${cumulative.toFixed(2)}`;
     cumulative += widths[i];
-    const common = `textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${fontsize}` +
+    const common =
+      `textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${fontsize}` +
       `:x='${x}':y='${geometry.captionY}':borderw=3:bordercolor=black@0.8`;
-    filters.push(`drawtext=${common}:fontcolor=${CREAM}:alpha='${alphaExpr}':enable='${phraseEnable}'`);
+    filters.push(
+      `drawtext=${common}:fontcolor=${CREAM}:alpha='${alphaExpr}':enable='${phraseEnable}'`,
+    );
     const wordStart = (start + w.offset_start).toFixed(3);
     const wordEnd = (start + w.offset_end).toFixed(3);
-    filters.push(`drawtext=${common}:fontcolor=${AMBER}:enable='between(t\\,${wordStart}\\,${wordEnd})'`);
+    filters.push(
+      `drawtext=${common}:fontcolor=${AMBER}:enable='between(t\\,${wordStart}\\,${wordEnd})'`,
+    );
   });
 
   return filters.join(',');
@@ -417,16 +450,15 @@ function buildStandaloneAccent({ at_sec, duration_sec, text, zone }, geometry) {
     `if(lt(t-${at_sec}\\,${REVEAL_FADE})\\,(t-${at_sec})/${REVEAL_FADE}\\,` +
     `if(lt(t\\,${(end - REVEAL_FADE).toFixed(3)})\\,1\\,max(0\\,(${end.toFixed(3)}-t)/${REVEAL_FADE})))`;
   const enableExpr = `between(t\\,${at_sec}\\,${end.toFixed(3)})`;
-  return `drawtext=textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${geometry.revealFontsize}` +
+  return (
+    `drawtext=textfile='${file}':fontfile='${BEBAS_FONT}':fontsize=${geometry.revealFontsize}` +
     `:fontcolor=${AMBER}:x='${placement.x}':y='${placement.y}':borderw=2:bordercolor=black@0.8` +
-    `:alpha='${alphaExpr}':enable='${enableExpr}'`;
+    `:alpha='${alphaExpr}':enable='${enableExpr}'`
+  );
 }
 
 function escapeDrawtext(t) {
   // Inside single-quoted FFmpeg filter option, ' must use '\'' (close, escaped, reopen).
   // Actual newline chars → \n (two chars) so FFmpeg drawtext renders line breaks.
-  return String(t)
-    .replace(/\\/g, '\\\\')
-    .replace(/\n/g, '\\n')
-    .replace(/'/g, "'\\''");
+  return String(t).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/'/g, "'\\''");
 }

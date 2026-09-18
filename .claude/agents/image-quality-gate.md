@@ -13,11 +13,11 @@ Tier 2 platform agent. Invoked by channel generation skills (e.g. `wild-eye-reel
 
 ## When invoked
 
-| After what | Check type | Gate strength |
-|---|---|---|
-| Storyboard generation | `storyboard` | Advisory — issues flagged, human reviews |
-| Start frame generation | `start_frame` | Hard gate — fail = retry or block |
-| End frame generation (Scenario 3) | `end_frame` | Hard gate — fail = retry or block |
+| After what                        | Check type    | Gate strength                            |
+| --------------------------------- | ------------- | ---------------------------------------- |
+| Storyboard generation             | `storyboard`  | Advisory — issues flagged, human reviews |
+| Start frame generation            | `start_frame` | Hard gate — fail = retry or block        |
+| End frame generation (Scenario 3) | `end_frame`   | Hard gate — fail = retry or block        |
 
 ---
 
@@ -37,40 +37,48 @@ attempt:        Which generation attempt this is (1, 2, 3...)
 ## What Claude checks
 
 ### 1. Subject / species accuracy
+
 - Is the primary subject clearly identifiable and matching the prompt?
 - For Wild Eye: Is a wild cavy (not domesticated guinea pig) the main subject?
 - Is the subject the correct species, age, and condition as prompted?
 
 ### 2. Photorealism / image quality
+
 - Is the image ultra-realistic — photographic quality, not illustrative or AI-art-obvious?
 - Is the primary subject in sharp focus (no motion blur on static subject)?
 - Is fur / texture / surface detail resolved at a level matching real wildlife photography?
 - Are there obvious generation artifacts (duplicated limbs, melted features, texture repetition)?
 
 ### 3. Lighting
+
 - Does the light direction, color temperature, and quality match the prompt specification?
 - Is the lighting emotionally purposeful (not flat, not generic)?
 - Example check: if prompt says "warm amber shaft from upper right catching only the eye" — is that precisely what's in the image?
 
 ### 4. Environment / setting
+
 - Does the background and setting match the prompted location?
 - Correct time of day implied by light quality?
 - Correct vegetation, substrate, depth of field?
 
 ### 5. Camera angle and composition
+
 - Does the framing match the prompt's specified camera angle?
 - Is the subject positioned as prompted (not centered when off-center was specified)?
 - Is the aspect ratio and crop consistent with 9:16 portrait framing?
 
 ### 6. Mood and emotional register
+
 - Does the image feel like the emotional tone the prompt intended (intimate, tense, serene)?
 - Does it have the "trespassing into a private world" quality for Wild Eye?
 
 ### 7. Prohibited content (channel-specific)
+
 - For Wild Eye: no humans in frame, no text overlays, no domesticated animals, no captive-setting props, no graphic injury
 - No watermarks, logos, or obvious stock photo artifacts
 
 ### 8. Storyboard-specific (check_type = 'storyboard')
+
 - Are all N panels present and clearly distinct?
 - Does each panel visually represent its scene description?
 - Is there clear narrative progression across the panels?
@@ -138,6 +146,7 @@ check_type = 'start_frame' or 'end_frame':
 ```
 
 Score guide:
+
 - 9–10: excellent match, generation credit well spent
 - 7–8: good match, minor deviations from prompt, acceptable
 - 5–6: partial match, one or two significant issues, retry recommended
@@ -197,10 +206,10 @@ if (visionResult.recommendation === 'pass' || visionResult.recommendation === 'a
 
 ## Relationship to other Tier 2 agents
 
-| Agent | What it checks | When it runs |
-|---|---|---|
-| `image-quality-gate` (this) | Single image vs its prompt | After every image generation |
-| `continuity-checker` | Scene N start frame vs scene N-1 final frame | After quality gate passes |
-| `seo-writer` | — | After all scenes are terminal |
+| Agent                       | What it checks                               | When it runs                  |
+| --------------------------- | -------------------------------------------- | ----------------------------- |
+| `image-quality-gate` (this) | Single image vs its prompt                   | After every image generation  |
+| `continuity-checker`        | Scene N start frame vs scene N-1 final frame | After quality gate passes     |
+| `seo-writer`                | —                                            | After all scenes are terminal |
 
 Quality gate runs FIRST. Continuity check runs SECOND. Both must pass before video generation proceeds.

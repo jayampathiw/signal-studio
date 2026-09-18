@@ -7,21 +7,28 @@
 //   node apps/video/scripts/longform/assemble-longform.mjs --project 29 --scenes 1-13 --no-audio-mix
 //   node apps/video/scripts/longform/assemble-longform.mjs --project 29 --keep-tmp
 
-import { parseArgs } from 'util';
+import { execFile } from 'child_process';
 import { mkdirSync, rmSync, writeFileSync, existsSync } from 'fs';
+import { tmpdir } from 'os';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { tmpdir } from 'os';
-import { execFile } from 'child_process';
+import { parseArgs } from 'util';
 import { promisify } from 'util';
+
+import { env } from '@signal-studio/config';
 import { getServiceClient } from '@signal-studio/database';
 import { uploadToR2 } from '@signal-studio/media/storage';
-import { env } from '@signal-studio/config';
-import { W, H, FPS } from '../../src/longform/motion.js';
-import { buildAudioMix, loadManifest } from '../../src/longform/audio-mix.js';
+
 import { getChannel } from '../../src/config/channels.js';
+import { buildAudioMix, loadManifest } from '../../src/longform/audio-mix.js';
+import { W, H, FPS } from '../../src/longform/motion.js';
 import {
-  AR, download, buildTextCard, buildStillsScene, buildLegacyStill, buildLegacyClip,
+  AR,
+  download,
+  buildTextCard,
+  buildStillsScene,
+  buildLegacyStill,
+  buildLegacyClip,
 } from '../../src/longform/render.js';
 
 const execAsync = promisify(execFile);
@@ -29,20 +36,23 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../
 
 const { values } = parseArgs({
   options: {
-    project:        { type: 'string' },
-    scenes:         { type: 'string' },    // e.g. "1-13" for partial render
+    project: { type: 'string' },
+    scenes: { type: 'string' }, // e.g. "1-13" for partial render
     // Audio mix and overlays default OFF — opt in with --audio-mix / --overlays
     'no-audio-mix': { type: 'boolean', default: true },
-    'no-overlays':  { type: 'boolean', default: true },
-    'audio-mix':    { type: 'boolean', default: false }, // opt-in: enable 4-layer audio mix
-    'overlays':     { type: 'boolean', default: false }, // opt-in: enable stamp overlays
-    'keep-tmp':     { type: 'boolean', default: false },
-    output:         { type: 'string' },    // override final output path
+    'no-overlays': { type: 'boolean', default: true },
+    'audio-mix': { type: 'boolean', default: false }, // opt-in: enable 4-layer audio mix
+    overlays: { type: 'boolean', default: false }, // opt-in: enable stamp overlays
+    'keep-tmp': { type: 'boolean', default: false },
+    output: { type: 'string' }, // override final output path
   },
   strict: false,
 });
 
-if (!values.project) { console.error('--project <id> required'); process.exit(2); }
+if (!values.project) {
+  console.error('--project <id> required');
+  process.exit(2);
+}
 const projectId = Number(values.project);
 // --audio-mix overrides the default no-mix; --no-audio-mix overrides --audio-mix
 const noAudioMix = values['audio-mix'] ? false : values['no-audio-mix'];
@@ -66,8 +76,11 @@ async function main() {
   const db = getServiceClient();
 
   // Load project row — audio_plan + channel_key (for watermark lookup)
-  const { data: projectRow, error: projErr } = await db.from('content_items')
-    .select('audio_plan, status, channel_key').eq('id', projectId).single();
+  const { data: projectRow, error: projErr } = await db
+    .from('content_items')
+    .select('audio_plan, status, channel_key')
+    .eq('id', projectId)
+    .single();
   if (projErr) throw new Error(`DB project fetch: ${projErr.message}`);
   const audioPlan = projectRow?.audio_plan ?? [];
 
@@ -77,12 +90,17 @@ async function main() {
     try {
       const ch = getChannel(projectRow.channel_key);
       channelWatermarkFile = ch?.watermarkFile ?? null;
-    } catch { /* unknown channel_key — skip watermark */ }
+    } catch {
+      /* unknown channel_key — skip watermark */
+    }
   }
 
   // Load scenes (content_clips, always the scene-level backbone)
-  let clipsQuery = db.from('content_clips')
-    .select('id, scene_n, kind, clip_url, vo_url, duration_sec, text_overlay, overlays, sfx, image_source')
+  let clipsQuery = db
+    .from('content_clips')
+    .select(
+      'id, scene_n, kind, clip_url, vo_url, duration_sec, text_overlay, overlays, sfx, image_source',
+    )
     .eq('project_id', projectId)
     .in('status', ['generated', 'passed'])
     .order('scene_n');
@@ -98,7 +116,9 @@ async function main() {
   // Load all content_stills for this project (indexed by scene_n)
   const { data: allStills, error: sErr } = await db
     .from('content_stills')
-    .select('id, scene_n, cut, motion, start_sec, end_sec, clip_url, reuse_of, regrade, transition, status')
+    .select(
+      'id, scene_n, cut, motion, start_sec, end_sec, clip_url, reuse_of, regrade, transition, status',
+    )
     .eq('project_id', projectId)
     .in('status', ['generated', 'passed'])
     .order('scene_n')
@@ -117,9 +137,12 @@ async function main() {
     for (const s of stills) {
       if (s.image_source === 'reuse' && s.reuse_of && !s.clip_url) {
         if (!reuseCache[s.reuse_of]) {
-          const { data: src } = await db.from('content_stills')
-            .select('clip_url').eq('project_id', projectId)
-            .like('id', `%${s.reuse_of}%`).maybeSingle();
+          const { data: src } = await db
+            .from('content_stills')
+            .select('clip_url')
+            .eq('project_id', projectId)
+            .like('id', `%${s.reuse_of}%`)
+            .maybeSingle();
           reuseCache[s.reuse_of] = src?.clip_url ?? null;
         }
         s.clip_url = reuseCache[s.reuse_of];
@@ -129,7 +152,9 @@ async function main() {
 
   const totalSec = clips.reduce((sum, c) => sum + (c.duration_sec ?? 0), 0);
   const rangeLabel = sceneRange ? ` scenes ${sceneRange.from}-${sceneRange.to}` : '';
-  console.log(`Project ${projectId}${rangeLabel} — ${clips.length} scenes, ~${Math.round(totalSec)}s total`);
+  console.log(
+    `Project ${projectId}${rangeLabel} — ${clips.length} scenes, ~${Math.round(totalSec)}s total`,
+  );
   console.log(`Resolution: ${W}x${H} @ ${FPS}fps\n`);
 
   const workDir = join(tmpdir(), `longform-v2-${projectId}-${Date.now()}`);
@@ -147,8 +172,12 @@ async function main() {
       let voPath = null;
       if (clip.vo_url) {
         voPath = join(workDir, `vo_${n}.wav`);
-        try { await download(clip.vo_url, voPath); }
-        catch (e) { console.warn(`  [warn] ${label} VO download failed: ${e.message}`); voPath = null; }
+        try {
+          await download(clip.vo_url, voPath);
+        } catch (e) {
+          console.warn(`  [warn] ${label} VO download failed: ${e.message}`);
+          voPath = null;
+        }
       }
 
       // ── Text card / editor build ──────────────────────────────────────────
@@ -181,7 +210,7 @@ async function main() {
         continue;
       }
 
-      if ((clip.kind === 'clip') && clip.clip_url) {
+      if (clip.kind === 'clip' && clip.clip_url) {
         process.stdout.write(`  ${label} [legacy clip] … `);
         const out = await buildLegacyClip(clip, voPath, workDir);
         scenePaths.push(out);
@@ -199,14 +228,27 @@ async function main() {
     const listPath = join(workDir, '_concat.txt');
     const concatPath = join(workDir, `concat_${projectId}.mp4`);
     writeFileSync(listPath, scenePaths.map((p) => `file '${p}'`).join('\n'));
-    await execAsync('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-c', 'copy', concatPath]);
+    await execAsync('ffmpeg', [
+      '-y',
+      '-f',
+      'concat',
+      '-safe',
+      '0',
+      '-i',
+      listPath,
+      '-c',
+      'copy',
+      concatPath,
+    ]);
 
     let finalPath = concatPath;
 
     // ── Audio mix (F5) ────────────────────────────────────────────────────────
     if (!noAudioMix) {
       if (!audioPlan?.segments?.length) {
-        console.warn('[warn] No audio_plan on project — skipping audio mix (use --no-audio-mix to suppress)');
+        console.warn(
+          '[warn] No audio_plan on project — skipping audio mix (use --no-audio-mix to suppress)',
+        );
       } else {
         console.log('\nBuilding 4-layer audio mix…');
         const mixedPath = join(workDir, `mixed_${projectId}.mp4`);
@@ -224,7 +266,9 @@ async function main() {
           workDir,
         });
         finalPath = mixedPath;
-        console.log(`  Loudnorm measured: I=${Number(loudnormStats.input_i).toFixed(1)} → -14.0 LUFS, TP=${Number(loudnormStats.input_tp).toFixed(1)} → -1.0 dBTP`);
+        console.log(
+          `  Loudnorm measured: I=${Number(loudnormStats.input_i).toFixed(1)} → -14.0 LUFS, TP=${Number(loudnormStats.input_tp).toFixed(1)} → -1.0 dBTP`,
+        );
       }
     } else {
       console.log('[skip] Audio mix disabled (--no-audio-mix)');
@@ -240,12 +284,20 @@ async function main() {
       // Scale icon to 80px wide, 40% opacity, bottom-right with 20px padding
       await execAsync('ffmpeg', [
         '-y',
-        '-i', finalPath,
-        '-i', wmSrc,
+        '-i',
+        finalPath,
+        '-i',
+        wmSrc,
         '-filter_complex',
         '[1:v]scale=80:-1,format=rgba,colorchannelmixer=aa=0.4[wm];[0:v][wm]overlay=W-w-20:H-h-20:format=auto',
-        '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
-        '-c:a', 'copy',
+        '-c:v',
+        'libx264',
+        '-preset',
+        'fast',
+        '-pix_fmt',
+        'yuv420p',
+        '-c:a',
+        'copy',
         wmPath,
       ]);
       finalPath = wmPath;
@@ -267,8 +319,10 @@ async function main() {
         console.log('Uploading to R2…');
         const r2Key = `longform/${projectId}/final.mp4`;
         const videoUrl = await uploadToR2(finalPath, { key: r2Key });
-        const { error: updErr } = await db.from('content_items')
-          .update({ rendered_video_url: videoUrl, status: 'rendered' }).eq('id', projectId);
+        const { error: updErr } = await db
+          .from('content_items')
+          .update({ rendered_video_url: videoUrl, status: 'rendered' })
+          .eq('id', projectId);
         if (updErr) throw new Error(`DB update: ${updErr.message}`);
         console.log(`\n✓ Assembly complete`);
         console.log(`  URL: ${videoUrl}`);
@@ -276,13 +330,13 @@ async function main() {
       }
     } else {
       // Partial render — keep file local for review
-      const outPath = values.output ?? join(REPO_ROOT, `temp/longform/${projectId}-scenes-${values.scenes}.mp4`);
+      const outPath =
+        values.output ?? join(REPO_ROOT, `temp/longform/${projectId}-scenes-${values.scenes}.mp4`);
       mkdirSync(dirname(outPath), { recursive: true });
       const { copyFileSync } = await import('fs');
       copyFileSync(finalPath, outPath);
       console.log(`\n✓ Partial render: ${outPath}`);
     }
-
   } finally {
     if (keepTmp) {
       console.log(`\nTemp dir kept: ${workDir}`);
@@ -292,4 +346,7 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('FATAL:', e.message);
+  process.exit(1);
+});

@@ -34,7 +34,16 @@ export interface Article {
     best_format?: 'post' | 'carousel' | 'reel';
     fr_it_stake_first_sentence?: boolean;
     pillar_hint?: string | null;
-    identity_mode?: 'ORGOGLIO' | 'RESILIENZA' | 'DIBATTITO' | 'PATRIMONIO' | 'FIERTÉ' | 'RÉSISTANCE' | 'DÉBAT' | 'PATRIMOINE' | null;
+    identity_mode?:
+      | 'ORGOGLIO'
+      | 'RESILIENZA'
+      | 'DIBATTITO'
+      | 'PATRIMONIO'
+      | 'FIERTÉ'
+      | 'RÉSISTANCE'
+      | 'DÉBAT'
+      | 'PATRIMOINE'
+      | null;
   } | null;
   source_type?: 'news' | 'historical';
   historical_topic_id?: string | null;
@@ -134,10 +143,20 @@ export interface OnThisDayPost {
 // ── Longform ──────────────────────────────────────────────────────────────────
 
 export type LongformStatus =
-  | 'brief' | 'storyboard' | 'scripting' | 'awaiting_script_approval'
-  | 'seeding' | 'awaiting_refs' | 'awaiting_stills'
-  | 'rendering' | 'rendered' | 'awaiting_final_approval'
-  | 'publishing' | 'posted' | 'failed' | 'blocked';
+  | 'brief'
+  | 'storyboard'
+  | 'scripting'
+  | 'awaiting_script_approval'
+  | 'seeding'
+  | 'awaiting_refs'
+  | 'awaiting_stills'
+  | 'rendering'
+  | 'rendered'
+  | 'awaiting_final_approval'
+  | 'publishing'
+  | 'posted'
+  | 'failed'
+  | 'blocked';
 
 export interface LongformProject {
   id: number;
@@ -185,7 +204,8 @@ export interface AudioPlanSegment {
   gain_db: number;
 }
 
-export type StillStatus = 'pending' | 'generating' | 'generated' | 'validating' | 'passed' | 'failed' | 'blocked';
+export type StillStatus =
+  'pending' | 'generating' | 'generated' | 'validating' | 'passed' | 'failed' | 'blocked';
 export type StillCut = 'A' | 'B' | 'C' | 'D';
 
 export interface ContentStill {
@@ -252,13 +272,35 @@ export interface ContentItem {
   rendered_at: string | null;
   duration_sec: number | null;
   thumbnail_url: string | null;
-  status: 'brief' | 'storyboard' | 'generating' | 'pending' | 'rendering' | 'rendered' | 'publishing' | 'posted' | 'failed' | 'blocked';
+  status:
+    | 'brief'
+    | 'storyboard'
+    | 'generating'
+    | 'pending'
+    | 'rendering'
+    | 'rendered'
+    | 'publishing'
+    | 'posted'
+    | 'failed'
+    | 'blocked';
   status_note: string | null;
   target_platforms: string[];
-  fb_status: string | null; fb_post_id: string | null; fb_posted_at: string | null; fb_error: string | null;
-  ig_status: string | null; ig_post_id: string | null; ig_posted_at: string | null; ig_error: string | null;
-  yt_status: string | null; yt_video_id: string | null; yt_posted_at: string | null; yt_error: string | null;
-  tt_status: string | null; tt_video_id: string | null; tt_posted_at: string | null; tt_error: string | null;
+  fb_status: string | null;
+  fb_post_id: string | null;
+  fb_posted_at: string | null;
+  fb_error: string | null;
+  ig_status: string | null;
+  ig_post_id: string | null;
+  ig_posted_at: string | null;
+  ig_error: string | null;
+  yt_status: string | null;
+  yt_video_id: string | null;
+  yt_posted_at: string | null;
+  yt_error: string | null;
+  tt_status: string | null;
+  tt_video_id: string | null;
+  tt_posted_at: string | null;
+  tt_error: string | null;
   created_at: string;
   updated_at: string;
   // Wild Eye / video pipeline fields
@@ -345,16 +387,35 @@ export class SupabaseService {
   }
 
   async getStats(): Promise<ArticleStats> {
-    const statuses: Array<keyof ArticleStats> = ['pending', 'approved', 'rejected', 'posted', 'failed', 'blocked', 'manual_review'];
-    const stats: ArticleStats = { pending: 0, approved: 0, rejected: 0, posted: 0, failed: 0, blocked: 0, manual_review: 0, total: 0 };
-    await Promise.all(statuses.map(async (s) => {
-      const { count } = await this.client
-        .from('articles')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', s);
-      (stats[s] as number) = count ?? 0;
-      stats.total += count ?? 0;
-    }));
+    const statuses: Array<keyof ArticleStats> = [
+      'pending',
+      'approved',
+      'rejected',
+      'posted',
+      'failed',
+      'blocked',
+      'manual_review',
+    ];
+    const stats: ArticleStats = {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      posted: 0,
+      failed: 0,
+      blocked: 0,
+      manual_review: 0,
+      total: 0,
+    };
+    await Promise.all(
+      statuses.map(async (s) => {
+        const { count } = await this.client
+          .from('articles')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', s);
+        (stats[s] as number) = count ?? 0;
+        stats.total += count ?? 0;
+      }),
+    );
     return stats;
   }
 
@@ -392,8 +453,8 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ article_ids: articleIds }),
     });
@@ -410,7 +471,10 @@ export class SupabaseService {
       .order('posted_at', { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return (data ?? []).map(a => ({ ...a, post_metrics: a.post_metrics ?? [] })) as unknown as ArticleWithMetrics[];
+    return (data ?? []).map((a) => ({
+      ...a,
+      post_metrics: a.post_metrics ?? [],
+    })) as unknown as ArticleWithMetrics[];
   }
 
   async generateImage(articleId: string): Promise<{ url: string }> {
@@ -420,8 +484,8 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ article_id: articleId }),
     });
@@ -447,18 +511,47 @@ export class SupabaseService {
   }
 
   async getContentItemStats(): Promise<ContentItemStats> {
-    const statuses: Array<keyof Omit<ContentItemStats, 'total'>> = ['pending', 'rendering', 'rendered', 'posting', 'posted', 'failed', 'blocked'];
-    const stats: ContentItemStats = { total: 0, pending: 0, rendering: 0, rendered: 0, posting: 0, posted: 0, failed: 0, blocked: 0 };
-    await Promise.all(statuses.map(async s => {
-      const { count } = await this.client.from('content_items').select('*', { count: 'exact', head: true }).eq('status', s);
-      (stats[s] as number) = count ?? 0;
-      stats.total += count ?? 0;
-    }));
+    const statuses: Array<keyof Omit<ContentItemStats, 'total'>> = [
+      'pending',
+      'rendering',
+      'rendered',
+      'posting',
+      'posted',
+      'failed',
+      'blocked',
+    ];
+    const stats: ContentItemStats = {
+      total: 0,
+      pending: 0,
+      rendering: 0,
+      rendered: 0,
+      posting: 0,
+      posted: 0,
+      failed: 0,
+      blocked: 0,
+    };
+    await Promise.all(
+      statuses.map(async (s) => {
+        const { count } = await this.client
+          .from('content_items')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', s);
+        (stats[s] as number) = count ?? 0;
+        stats.total += count ?? 0;
+      }),
+    );
     return stats;
   }
 
-  async updateContentItemStatus(id: number, status: ContentItem['status'], extra: Record<string, any> = {}): Promise<void> {
-    const { error } = await this.client.from('content_items').update({ status, ...extra }).eq('id', id);
+  async updateContentItemStatus(
+    id: number,
+    status: ContentItem['status'],
+    extra: Record<string, any> = {},
+  ): Promise<void> {
+    const { error } = await this.client
+      .from('content_items')
+      .update({ status, ...extra })
+      .eq('id', id);
     if (error) throw error;
   }
 
@@ -474,21 +567,29 @@ export class SupabaseService {
 
   async getRenderQueueStats(): Promise<RenderQueueStats> {
     const [q, p] = await Promise.all([
-      this.client.from('render_queue').select('*', { count: 'exact', head: true }).eq('status', 'queued'),
-      this.client.from('render_queue').select('*', { count: 'exact', head: true }).eq('status', 'processing'),
+      this.client
+        .from('render_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'queued'),
+      this.client
+        .from('render_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'processing'),
     ]);
     return { queued: q.count ?? 0, processing: p.count ?? 0 };
   }
 
-  async triggerGeneration(contentItemId: number): Promise<{ dispatched: boolean; runUrl: string | null; channelSlug: string }> {
+  async triggerGeneration(
+    contentItemId: number,
+  ): Promise<{ dispatched: boolean; runUrl: string | null; channelSlug: string }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const res = await fetch(`${environment.supabaseUrl}/functions/v1/trigger-generation`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ content_item_id: contentItemId }),
     });
@@ -499,15 +600,17 @@ export class SupabaseService {
     return res.json();
   }
 
-  async expandBrief(contentItemId: number): Promise<{ scenes: ContentItemScene[]; status: string }> {
+  async expandBrief(
+    contentItemId: number,
+  ): Promise<{ scenes: ContentItemScene[]; status: string }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const res = await fetch(`${environment.supabaseUrl}/functions/v1/expand-brief`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ content_item_id: contentItemId }),
     });
@@ -532,7 +635,10 @@ export class SupabaseService {
   // reel gen_config → channel_configs.config (this) → channels.js code default.
   async getChannelConfig(channelKey: string): Promise<GenConfig | null> {
     const { data, error } = await this.client
-      .from('channel_configs').select('config').eq('channel_key', channelKey).maybeSingle();
+      .from('channel_configs')
+      .select('config')
+      .eq('channel_key', channelKey)
+      .maybeSingle();
     if (error) throw error;
     return (data?.config as GenConfig) ?? null;
   }
@@ -540,7 +646,10 @@ export class SupabaseService {
   async upsertChannelConfig(channelKey: string, config: GenConfig): Promise<void> {
     const { error } = await this.client
       .from('channel_configs')
-      .upsert({ channel_key: channelKey, config, updated_at: new Date().toISOString() }, { onConflict: 'channel_key' });
+      .upsert(
+        { channel_key: channelKey, config, updated_at: new Date().toISOString() },
+        { onConflict: 'channel_key' },
+      );
     if (error) throw error;
   }
 
@@ -556,8 +665,8 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ rawText, country }),
     });
@@ -565,7 +674,11 @@ export class SupabaseService {
     return res.json();
   }
 
-  async generateCaptions(articleIds: string[]): Promise<{ processed: number; results: { id: string; seo_title: string }[]; errors?: { id: string; error: string }[] }> {
+  async generateCaptions(articleIds: string[]): Promise<{
+    processed: number;
+    results: { id: string; seo_title: string }[];
+    errors?: { id: string; error: string }[];
+  }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const url = `${environment.supabaseUrl}/functions/v1/generate-caption`;
@@ -574,8 +687,8 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ article_ids: articleIds }),
     });
@@ -611,9 +724,13 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  async uploadOnThisDayEventImage(postId: string, eventIndex: number, dataUrl: string): Promise<string> {
+  async uploadOnThisDayEventImage(
+    postId: string,
+    eventIndex: number,
+    dataUrl: string,
+  ): Promise<string> {
     const base64 = dataUrl.split(',')[1];
-    const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
     const path = `on-this-day/${postId}/event-${eventIndex + 1}.png`;
     const { error } = await this.client.storage
       .from('article-images')
@@ -622,8 +739,18 @@ export class SupabaseService {
     return `${environment.supabaseUrl}/storage/v1/object/public/article-images/${path}`;
   }
 
-  async queueOnThisDay(country: string, dates: string[]): Promise<{
-    results: { date: string; success: boolean; post_id?: string; events_count?: number; skipped?: boolean; error?: string }[];
+  async queueOnThisDay(
+    country: string,
+    dates: string[],
+  ): Promise<{
+    results: {
+      date: string;
+      success: boolean;
+      post_id?: string;
+      events_count?: number;
+      skipped?: boolean;
+      error?: string;
+    }[];
   }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
@@ -631,8 +758,8 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ country, dates }),
     });
@@ -640,15 +767,17 @@ export class SupabaseService {
     return res.json();
   }
 
-  async postOnThisDay(postId: string): Promise<{ success: boolean; fb_post_id?: string; error?: string }> {
+  async postOnThisDay(
+    postId: string,
+  ): Promise<{ success: boolean; fb_post_id?: string; error?: string }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const res = await fetch(`${environment.supabaseUrl}/functions/v1/post-on-this-day`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ post_id: postId }),
     });
@@ -661,7 +790,9 @@ export class SupabaseService {
   async getLongformProjects(): Promise<LongformProject[]> {
     const { data, error } = await this.client
       .from('content_items')
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
+      .select(
+        'id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at',
+      )
       .in('channel_key', LONGFORM_CHANNEL_KEYS)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -671,7 +802,9 @@ export class SupabaseService {
   async getLongformByChannel(channelKey: string): Promise<LongformProject[]> {
     const { data, error } = await this.client
       .from('content_items')
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
+      .select(
+        'id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at',
+      )
       .eq('channel_key', channelKey)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -679,10 +812,7 @@ export class SupabaseService {
   }
 
   async updateLongformStatus(id: number, status: string): Promise<void> {
-    const { error } = await this.client
-      .from('content_items')
-      .update({ status })
-      .eq('id', id);
+    const { error } = await this.client.from('content_items').update({ status }).eq('id', id);
     if (error) throw error;
   }
 
@@ -690,7 +820,9 @@ export class SupabaseService {
     const { data, error } = await this.client
       .from('content_items')
       .insert({ channel_key: channelKey, title, status: 'brief' })
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
+      .select(
+        'id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at',
+      )
       .single();
     if (error) throw error;
     return data as LongformProject;
@@ -699,7 +831,9 @@ export class SupabaseService {
   async getLongformProject(id: number): Promise<LongformProject | null> {
     const { data, error } = await this.client
       .from('content_items')
-      .select('id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at')
+      .select(
+        'id, channel_key, title, description, status, status_note, rendered_video_url, audio_plan, seo, scenes, clip_type, video_slug, parent_project_id, shot_list_meta, created_at, updated_at',
+      )
       .eq('id', id)
       .single();
     if (error) throw error;
@@ -720,7 +854,9 @@ export class SupabaseService {
   async getContentClips(projectId: number): Promise<ContentClip[]> {
     const { data, error } = await this.client
       .from('content_clips')
-      .select('id, project_id, scene_n, kind, title, visual_prompt, vo_text, audio_cue, text_overlay, duration_sec, reference_keys, clip_url, vo_url, status, fail_reason, created_at')
+      .select(
+        'id, project_id, scene_n, kind, title, visual_prompt, vo_text, audio_cue, text_overlay, duration_sec, reference_keys, clip_url, vo_url, status, fail_reason, created_at',
+      )
       .eq('project_id', projectId)
       .order('scene_n', { ascending: true });
     if (error) throw error;
@@ -737,7 +873,12 @@ export class SupabaseService {
 
   // Single-call upload — sends file as base64 to edge function, which uploads to R2 server-side.
   // Replaces the old presign+PUT+confirm three-step flow that had browser CORS issues with R2.
-  async uploadStill(projectId: number, sceneN: number, cut: string, file: File): Promise<{ id: number; clip_url: string }> {
+  async uploadStill(
+    projectId: number,
+    sceneN: number,
+    cut: string,
+    file: File,
+  ): Promise<{ id: number; clip_url: string }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
 
@@ -751,15 +892,15 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({
         action: 'upload',
         project_id: projectId,
         scene_n: sceneN,
         cut,
-        filename:     file.name,
+        filename: file.name,
         content_type: file.type || 'image/jpeg',
         image_base64,
       }),
@@ -770,60 +911,100 @@ export class SupabaseService {
   }
 
   // Kept for backward-compat — not used by dashboard anymore
-  async presignStillUpload(projectId: number, sceneN: number, cut: string, filename: string, contentType?: string): Promise<{ upload_url: string; public_url: string; key: string }> {
+  async presignStillUpload(
+    projectId: number,
+    sceneN: number,
+    cut: string,
+    filename: string,
+    contentType?: string,
+  ): Promise<{ upload_url: string; public_url: string; key: string }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const res = await fetch(`${environment.supabaseUrl}/functions/v1/upload-still`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
-      body: JSON.stringify({ action: 'presign', project_id: projectId, scene_n: sceneN, cut, filename, content_type: contentType }),
+      body: JSON.stringify({
+        action: 'presign',
+        project_id: projectId,
+        scene_n: sceneN,
+        cut,
+        filename,
+        content_type: contentType,
+      }),
     });
     const body = await res.json().catch(() => ({ error: res.statusText }));
     if (!res.ok) throw new Error(body.error ?? `presign failed (${res.status})`);
     return body;
   }
 
-  async confirmStillUpload(projectId: number, sceneN: number, cut: string, publicUrl: string): Promise<{ id: number; clip_url: string }> {
+  async confirmStillUpload(
+    projectId: number,
+    sceneN: number,
+    cut: string,
+    publicUrl: string,
+  ): Promise<{ id: number; clip_url: string }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const res = await fetch(`${environment.supabaseUrl}/functions/v1/upload-still`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
-      body: JSON.stringify({ action: 'confirm', project_id: projectId, scene_n: sceneN, cut, public_url: publicUrl }),
+      body: JSON.stringify({
+        action: 'confirm',
+        project_id: projectId,
+        scene_n: sceneN,
+        cut,
+        public_url: publicUrl,
+      }),
     });
     const body = await res.json().catch(() => ({ error: res.statusText }));
     if (!res.ok) throw new Error(body.error ?? `confirm failed (${res.status})`);
     return body;
   }
 
-  async triggerLongform(projectId: number, stage: string, assembleFlags?: string): Promise<{ dispatched: boolean; runUrl: string | null }> {
+  async triggerLongform(
+    projectId: number,
+    stage: string,
+    assembleFlags?: string,
+  ): Promise<{ dispatched: boolean; runUrl: string | null }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
     const res = await fetch(`${environment.supabaseUrl}/functions/v1/trigger-longform`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
-      body: JSON.stringify({ project_id: projectId, stage, ...(assembleFlags ? { assemble_flags: assembleFlags } : {}) }),
+      body: JSON.stringify({
+        project_id: projectId,
+        stage,
+        ...(assembleFlags ? { assemble_flags: assembleFlags } : {}),
+      }),
     });
     const body = await res.json().catch(() => ({ error: res.statusText }));
     if (!res.ok) throw new Error(body.error ?? `trigger-longform failed (${res.status})`);
     return body;
   }
 
-  async importShotlist(projectId: number, shotlistText: string): Promise<{
-    ok: boolean; title: string | null; target_duration_sec: number | null;
-    scenes_total: number; stills_inserted: number; stills_skipped: number; clips_upserted: number;
+  async importShotlist(
+    projectId: number,
+    shotlistText: string,
+  ): Promise<{
+    ok: boolean;
+    title: string | null;
+    target_duration_sec: number | null;
+    scenes_total: number;
+    stills_inserted: number;
+    stills_skipped: number;
+    clips_upserted: number;
   }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
@@ -831,8 +1012,8 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({ project_id: projectId, shotlist_text: shotlistText }),
     });
@@ -841,8 +1022,15 @@ export class SupabaseService {
     return body;
   }
 
-  async autoMatchStill(projectId: number, file: File): Promise<{
-    ok: boolean; slot: string; scene_n: number; cut: string; clip_url: string;
+  async autoMatchStill(
+    projectId: number,
+    file: File,
+  ): Promise<{
+    ok: boolean;
+    slot: string;
+    scene_n: number;
+    cut: string;
+    clip_url: string;
   }> {
     const session = await this.getSession();
     const token = session?.access_token ?? environment.supabaseAnonKey;
@@ -858,14 +1046,14 @@ export class SupabaseService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': environment.supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        apikey: environment.supabaseAnonKey,
       },
       body: JSON.stringify({
         project_id: projectId,
         image_base64,
         mime_type: file.type || 'image/jpeg',
-        filename:  file.name,
+        filename: file.name,
       }),
     });
     const body = await res.json().catch(() => ({ error: res.statusText }));

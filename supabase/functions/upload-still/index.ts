@@ -1,6 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { S3Client, PutObjectCommand } from 'https://esm.sh/@aws-sdk/client-s3@3';
 import { getSignedUrl } from 'https://esm.sh/@aws-sdk/s3-request-presigner@3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -20,7 +20,7 @@ function r2Client() {
     region: 'auto',
     endpoint: `https://${Deno.env.get('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId:     Deno.env.get('R2_ACCESS_KEY_ID')!,
+      accessKeyId: Deno.env.get('R2_ACCESS_KEY_ID')!,
       secretAccessKey: Deno.env.get('R2_SECRET_ACCESS_KEY')!,
     },
   });
@@ -38,13 +38,17 @@ Deno.serve(async (req: Request) => {
     content_type?: string;
     public_url?: string;
   };
-  try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: 'Invalid JSON' }, 400);
+  }
 
   const { action, project_id, scene_n, cut } = body;
-  if (!action)     return json({ error: 'action required: presign | confirm' }, 400);
+  if (!action) return json({ error: 'action required: presign | confirm' }, 400);
   if (!project_id) return json({ error: 'project_id required' }, 400);
   if (scene_n == null) return json({ error: 'scene_n required' }, 400);
-  if (!cut)        return json({ error: 'cut required (A|B|C|D)' }, 400);
+  if (!cut) return json({ error: 'cut required (A|B|C|D)' }, 400);
 
   const db = createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -62,28 +66,35 @@ Deno.serve(async (req: Request) => {
 
   const validStatuses = ['storyboard', 'awaiting_stills', 'awaiting_refs', 'seeding'];
   if (!validStatuses.includes(project.status)) {
-    return json({
-      error: `Project is "${project.status}" — still uploads only allowed during: ${validStatuses.join(', ')}`,
-    }, 409);
+    return json(
+      {
+        error: `Project is "${project.status}" — still uploads only allowed during: ${validStatuses.join(', ')}`,
+      },
+      409,
+    );
   }
 
   // ── UPLOAD (server-side, avoids browser CORS on R2) ─────────────────────────
   if (action === 'upload') {
-    const { filename, content_type, image_base64 } = body as typeof body & { image_base64?: string };
-    if (!filename)     return json({ error: 'filename required' }, 400);
+    const { filename, content_type, image_base64 } = body as typeof body & {
+      image_base64?: string;
+    };
+    if (!filename) return json({ error: 'filename required' }, 400);
     if (!image_base64) return json({ error: 'image_base64 required' }, 400);
 
-    const ext    = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
-    const key    = `longform/${project_id}/stills/S${String(scene_n).padStart(2,'0')}-${cut}/${Date.now()}.${ext}`;
+    const ext = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const key = `longform/${project_id}/stills/S${String(scene_n).padStart(2, '0')}-${cut}/${Date.now()}.${ext}`;
     const bucket = Deno.env.get('R2_BUCKET_RENDERED')!;
-    const mime   = content_type ?? (ext === 'png' ? 'image/png' : 'image/jpeg');
+    const mime = content_type ?? (ext === 'png' ? 'image/png' : 'image/jpeg');
 
     const binary = atob(image_base64);
-    const bytes  = new Uint8Array(binary.length);
+    const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
     try {
-      await r2Client().send(new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: mime, Body: bytes }));
+      await r2Client().send(
+        new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: mime, Body: bytes }),
+      );
     } catch (e: any) {
       return json({ error: `R2 upload failed: ${e.message}` }, 500);
     }
@@ -94,7 +105,9 @@ Deno.serve(async (req: Request) => {
     const { data: existing } = await db
       .from('content_stills')
       .select('id, status')
-      .eq('project_id', project_id).eq('scene_n', scene_n).eq('cut', cut)
+      .eq('project_id', project_id)
+      .eq('scene_n', scene_n)
+      .eq('cut', cut)
       .maybeSingle();
 
     if (existing) {
@@ -102,13 +115,25 @@ Deno.serve(async (req: Request) => {
       if (!updatable.includes(existing.status)) {
         return json({ error: `Still is "${existing.status}" — cannot overwrite` }, 409);
       }
-      await db.from('content_stills').update({ clip_url: public_url, status: 'generated' }).eq('id', existing.id);
+      await db
+        .from('content_stills')
+        .update({ clip_url: public_url, status: 'generated' })
+        .eq('id', existing.id);
       return json({ id: existing.id, clip_url: public_url, status: 'generated' });
     } else {
       const { data: inserted, error: iErr } = await db
         .from('content_stills')
-        .insert({ project_id, scene_n, cut, image_source: 'editor', clip_url: public_url, status: 'generated', motion: 'push' })
-        .select('id').single();
+        .insert({
+          project_id,
+          scene_n,
+          cut,
+          image_source: 'editor',
+          clip_url: public_url,
+          status: 'generated',
+          motion: 'push',
+        })
+        .select('id')
+        .single();
       if (iErr) return json({ error: iErr.message }, 500);
       return json({ id: inserted.id, clip_url: public_url, status: 'generated' });
     }
@@ -119,14 +144,14 @@ Deno.serve(async (req: Request) => {
     const { filename, content_type } = body;
     if (!filename) return json({ error: 'filename required for presign' }, 400);
 
-    const ext   = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
-    const key   = `longform/${project_id}/stills/S${String(scene_n).padStart(2,'0')}-${cut}/${Date.now()}.${ext}`;
+    const ext = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const key = `longform/${project_id}/stills/S${String(scene_n).padStart(2, '0')}-${cut}/${Date.now()}.${ext}`;
     const bucket = Deno.env.get('R2_BUCKET_RENDERED')!;
-    const mime  = content_type ?? (ext === 'png' ? 'image/png' : 'image/jpeg');
+    const mime = content_type ?? (ext === 'png' ? 'image/png' : 'image/jpeg');
 
     const cmd = new PutObjectCommand({
-      Bucket:      bucket,
-      Key:         key,
+      Bucket: bucket,
+      Key: key,
       ContentType: mime,
     });
 
@@ -176,9 +201,9 @@ Deno.serve(async (req: Request) => {
           scene_n,
           cut,
           image_source: 'editor',
-          clip_url:     public_url,
-          status:       'generated',
-          motion:       'push',
+          clip_url: public_url,
+          status: 'generated',
+          motion: 'push',
         })
         .select('id')
         .single();

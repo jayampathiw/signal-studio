@@ -8,19 +8,21 @@
 //
 // Usage: node apps/video/src/scripts/generate-reel.js <id> [<id> ...]
 
-import { env } from '@signal-studio/config';
 import { basename } from 'path';
-import { getChannel } from '../config/channels.js';
+
+import { env } from '@signal-studio/config';
 import { getContentItem, updateContentItem } from '@signal-studio/database/content-items';
-import { generateReelContent } from '../services/ai.js';
 import { uploadToR2 } from '@signal-studio/media/storage';
+
+import { getChannel } from '../config/channels.js';
 import { renderReel } from '../renderers/reel.js';
+import { generateReelContent } from '../services/ai.js';
 
 async function processOne(id) {
   console.log(`\n══ content_item ${id} ══`);
-  const item    = await getContentItem(id);
+  const item = await getContentItem(id);
   const channel = getChannel(item.channel_key);
-  const cfg     = channel.rendererConfig;
+  const cfg = channel.rendererConfig;
 
   await updateContentItem(id, { status: 'rendering' });
 
@@ -33,14 +35,18 @@ async function processOne(id) {
     hashtags: item.hashtags,
   };
 
-  const aiCaptionValid = item.ai_caption && typeof item.ai_caption === 'object' && item.ai_caption.intro;
+  const aiCaptionValid =
+    item.ai_caption && typeof item.ai_caption === 'object' && item.ai_caption.intro;
   const needsAi = !aiCaptionValid || (!item.narration_script && cfg.narration);
   if (needsAi) {
     console.log('[gen] calling Claude...');
-    const sourceClipsContext = (item.source_clips || []).map(c => ({ description: c.description, durationSec: c.durationSec }));
-    const firstClip  = item.source_clips?.[0] || {};
+    const sourceClipsContext = (item.source_clips || []).map((c) => ({
+      description: c.description,
+      durationSec: c.durationSec,
+    }));
+    const firstClip = item.source_clips?.[0] || {};
     const topicAnimal = firstClip.topicAnimal || null;
-    const topicAngle  = firstClip.topicAngle  || null;
+    const topicAngle = firstClip.topicAngle || null;
     if (topicAnimal) console.log(`[gen] topic: ${topicAnimal} — "${topicAngle}"`);
     ai = await generateReelContent({
       channelKey: item.channel_key,
@@ -76,7 +82,7 @@ async function processOne(id) {
     console.log('[gen] uploading to R2...');
     try {
       const bucket = env.R2_BUCKET_RENDERED || 'reels-rendered';
-      const key    = `reels/${id}/${basename(outputPath)}`;
+      const key = `reels/${id}/${basename(outputPath)}`;
       videoUrl = await uploadToR2(outputPath, { bucket, key });
       console.log(`[gen] uploaded → ${videoUrl}`);
     } catch (e) {
@@ -115,4 +121,7 @@ async function main() {
   }
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

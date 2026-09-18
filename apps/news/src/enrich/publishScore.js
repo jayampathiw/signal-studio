@@ -5,11 +5,13 @@ const CRIT_PRIORITY = { breaking: 4, alert: 3, trending: 2, standard: 1 };
 function cestTimeNow() {
   const fmt = new Intl.DateTimeFormat('fr-FR', {
     timeZone: 'Europe/Paris',
-    hour: '2-digit', minute: '2-digit', hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   });
   const parts = fmt.formatToParts(new Date());
-  const h = parts.find(p => p.type === 'hour')?.value ?? '00';
-  const m = parts.find(p => p.type === 'minute')?.value ?? '00';
+  const h = parts.find((p) => p.type === 'hour')?.value ?? '00';
+  const m = parts.find((p) => p.type === 'minute')?.value ?? '00';
   return `${h}:${m}`;
 }
 
@@ -27,7 +29,10 @@ export function nearestSlot(country, slots) {
     const slotMins = sH * 60 + sM;
     const diff = Math.abs(nowMins - slotMins);
     if (diff <= 15) inWindow = true;
-    if (diff < closestDiff) { closestDiff = diff; closest = slot; }
+    if (diff < closestDiff) {
+      closestDiff = diff;
+      closest = slot;
+    }
   }
 
   return { closest, inWindow, diffMinutes: closestDiff };
@@ -67,14 +72,9 @@ export function computeEditorialScore(article) {
 
 export function computePublishScore(article, weeklyCounts, slots) {
   const critPriority = CRIT_PRIORITY[article.criticality] ?? 1;
-  const slotFactor   = slotMatchFactor(article.pillar, article.country, slots);
-  const quotaFactor  = pillarQuotaFactor(article.pillar, article.country, weeklyCounts);
-  const recency      = recencyFactor(article.created_at);
+  const slotFactor = slotMatchFactor(article.pillar, article.country, slots);
+  const quotaFactor = pillarQuotaFactor(article.pillar, article.country, weeklyCounts);
+  const recency = recencyFactor(article.created_at);
 
-  return (
-    critPriority * 40 +
-    slotFactor   * 30 +
-    quotaFactor  * 20 +
-    recency      * 10
-  );
+  return critPriority * 40 + slotFactor * 30 + quotaFactor * 20 + recency * 10;
 }

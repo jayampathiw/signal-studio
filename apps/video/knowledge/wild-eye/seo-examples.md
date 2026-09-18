@@ -23,8 +23,6 @@ Hashtags matter less on Facebook Reels than on Instagram.
 Distribution is driven by watch-time signals, not hashtag matching.
 Use 15 hashtags for Reels (marginal benefit), 6–8 for images (sweet spot).
 
-
-
 REEL SEO PACKAGES
 
 SEO-R01 — Burrow Awakening
@@ -47,7 +45,6 @@ Why this title works:
 "She" humanises the animal immediately
 "Before the world wakes up" implies a secret — viewer feels privileged
 Present-tense intimacy ("what she does") is more compelling than past-tense event
-
 
 SEO-R02 — Dawn Emergence
 Performance: [STRONG]
@@ -83,7 +80,6 @@ Why this title works:
 Past tense implies something happened — viewer must see what
 "The sky was hunting" is unusual phrasing — stops the scroll
 Short: 5 words + emoji. Punchy.
-
 
 SEO-R04 — Storm Reel
 Performance: [STRONG]
@@ -186,7 +182,6 @@ Hashtags:
 #AnimalBabies #WildlifePhotography #NaturalHistory #PampasWildlife #FirstSteps
 #MorningWildlife #BBCEarth #NatGeoWild #WildlifeLovers #CavyFamily
 
-
 IMAGE PORTRAIT SEO PACKAGES
 Different rules apply. Shorter descriptions. End with question. Fewer hashtags.
 
@@ -226,7 +221,6 @@ Would you step out?
 Hashtags:
 #WildCavy #BurrowLife #SouthAmericanWildlife #NaturePhotography #WildlifeLovers #IntimateWildlife
 
-
 TITLE FORMULA REFERENCE
 FormulaExampleWorks becauseWhat X does (secretly)"What She Does Before the World Wakes Up"Implies private accessShe/They + simple tension"She Has Two Seconds To Drink Or Die"Immediate stakesPast-tense event implied"The Sky Was Hunting Her"Viewer must see what happenedThree short statements"No Roof. No Walls. Only Grass."Rhythm creates momentumViewer excluded"She Heard Something. We Didn't."Creates FOMOUnexpected contrast"Three Pups. One World. Zero Experience."Charming asymmetry
 Never use:
@@ -235,7 +229,6 @@ Descriptive titles ("A Cavy Waking Up in a Burrow")
 Question titles ("Did You Know Cavies Live Underground?")
 Titles over 10 words
 YouTube-style titles ("INCREDIBLE wild cavy BURROW footage!!")
-
 
 DESCRIPTION STRUCTURE (Reels)
 

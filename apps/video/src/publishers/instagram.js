@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { env } from '@signal-studio/config';
+import axios from 'axios';
 
 const IG_BASE = 'https://graph.facebook.com/v22.0';
 
@@ -13,12 +13,14 @@ export const capabilities = {
 // Two-step: create container → publish container.
 // Requires: IG_USER_ID_{envKey} and IG_ACCESS_TOKEN_{envKey} env vars.
 export async function publish(contentItem, channelConfig) {
-  const envKey  = channelConfig.platforms.instagram.envKey;
-  const userId  = env[`IG_USER_ID_${envKey}`];
-  const token   = env[`IG_ACCESS_TOKEN_${envKey}`];
+  const envKey = channelConfig.platforms.instagram.envKey;
+  const userId = env[`IG_USER_ID_${envKey}`];
+  const token = env[`IG_ACCESS_TOKEN_${envKey}`];
 
   if (!userId || !token) {
-    throw new Error(`Missing IG credentials for envKey=${envKey} (IG_USER_ID_${envKey}, IG_ACCESS_TOKEN_${envKey})`);
+    throw new Error(
+      `Missing IG credentials for envKey=${envKey} (IG_USER_ID_${envKey}, IG_ACCESS_TOKEN_${envKey})`,
+    );
   }
   if (!contentItem.rendered_video_url) {
     throw new Error(`Content item ${contentItem.id} has no rendered_video_url.`);
@@ -29,8 +31,8 @@ export async function publish(contentItem, channelConfig) {
   // Step 1: create media container
   const containerRes = await axios.post(`${IG_BASE}/${userId}/media`, null, {
     params: {
-      media_type:  'REELS',
-      video_url:   contentItem.rendered_video_url,
+      media_type: 'REELS',
+      video_url: contentItem.rendered_video_url,
       caption,
       share_to_feed: true,
       access_token: token,
@@ -67,7 +69,7 @@ async function waitForContainer(userId, creationId, token, maxWaitMs = 60_000) {
     if (status_code === 'ERROR' || status_code === 'EXPIRED') {
       throw new Error(`IG media container ${creationId} failed with status: ${status_code}`);
     }
-    await new Promise(r => setTimeout(r, 5_000));
+    await new Promise((r) => setTimeout(r, 5_000));
   }
   throw new Error(`IG media container ${creationId} did not finish within ${maxWaitMs / 1000}s`);
 }
@@ -75,7 +77,7 @@ async function waitForContainer(userId, creationId, token, maxWaitMs = 60_000) {
 function buildCaption(contentItem) {
   if (contentItem.seo?.description) {
     const { description, hashtags = [] } = contentItem.seo;
-    const hashtagLine = hashtags.map(h => `#${h.replace(/^#/, '')}`).join(' ');
+    const hashtagLine = hashtags.map((h) => `#${h.replace(/^#/, '')}`).join(' ');
     return [description, hashtagLine].filter(Boolean).join('\n\n');
   }
   const { intro, question, cta } = contentItem.ai_caption || {};

@@ -79,18 +79,19 @@ Output (stdout, JSON):
 
 ### 0.3 File locations
 
-| File | Role |
-|---|---|
-| `apps/video/scripts/create-brief.mjs` | Single source of truth — AI steps + INSERT. Called by both entry points. |
-| `packages/database/briefs.js` | `createBrief()` — pure INSERT function; called by `create-brief.mjs` after AI steps |
-| `.claude/skills/wild-eye-brief/SKILL.md` | Interactive entry point — takes user input, calls `create-brief.mjs` |
-| `.claude/commands/new-11s-reel.md` | Slash command wrapper — passes concept + `--format 11s` to the skill |
-| `.claude/commands/new-21s-reel.md` | Slash command wrapper — passes concept + `--format 21s` to the skill |
-| `.claude/commands/new-portrait.md` | Slash command wrapper — passes concept + `--format portrait` to the skill |
+| File                                     | Role                                                                                |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| `apps/video/scripts/create-brief.mjs`    | Single source of truth — AI steps + INSERT. Called by both entry points.            |
+| `packages/database/briefs.js`            | `createBrief()` — pure INSERT function; called by `create-brief.mjs` after AI steps |
+| `.claude/skills/wild-eye-brief/SKILL.md` | Interactive entry point — takes user input, calls `create-brief.mjs`                |
+| `.claude/commands/new-11s-reel.md`       | Slash command wrapper — passes concept + `--format 11s` to the skill                |
+| `.claude/commands/new-21s-reel.md`       | Slash command wrapper — passes concept + `--format 21s` to the skill                |
+| `.claude/commands/new-portrait.md`       | Slash command wrapper — passes concept + `--format portrait` to the skill           |
 
 ### 0.4 AI steps — shared prompt
 
 The AI steps in Phase 1 use the same system context for both entry points:
+
 - `apps/video/knowledge/<channel>/house-style.md` — species rules, format guidance, scheduling rules
 - `apps/video/knowledge/<channel>/script-library.md` — proven title patterns
 
@@ -170,6 +171,7 @@ export async function createBrief(params) { ... }
 ```
 
 SQL executed:
+
 ```sql
 INSERT INTO content_items (
   channel_key, format,
@@ -189,6 +191,7 @@ No `niche`, `style`, `language`, `source_type`, `source_clips`, `target_platform
 ### 0.7 Result
 
 On success, a row exists in `content_items`:
+
 ```
 channel_key  = 'wildlife/intimacy/EN'
 format       = '11s'
@@ -199,6 +202,7 @@ slot         = 'Fri 23:00 BST'
 scenes       = '[]'
 status_note  = NULL
 ```
+
 This row is now ready to be picked up by the generation agent (`wild-eye-reel` skill).
 
 ---
@@ -209,12 +213,12 @@ Every format in every channel declares a `generationStrategy`. This is the singl
 
 ### 1.1 Strategy taxonomy
 
-| Strategy | Type | Duration | Clips | Sessions | Assembly | Narration |
-|---|---|---|---|---|---|---|
-| `image_only` | image | — | 1 image | 1 | none | none |
-| `start_frame_chain` | short video | ≤ 60s | 1–5 clips | 1 | manual (CapCut) V1 → auto V2 | optional |
-| `chapter_chain` | long-form video | 1 min – 30 min+ | 10–300+ clips | N (one per chapter) | automated (FFmpeg) | configurable |
-| `storyboard_direct` | any | any | N clips | 1+ | manual or automated | optional |
+| Strategy            | Type            | Duration        | Clips         | Sessions            | Assembly                     | Narration    |
+| ------------------- | --------------- | --------------- | ------------- | ------------------- | ---------------------------- | ------------ |
+| `image_only`        | image           | —               | 1 image       | 1                   | none                         | none         |
+| `start_frame_chain` | short video     | ≤ 60s           | 1–5 clips     | 1                   | manual (CapCut) V1 → auto V2 | optional     |
+| `chapter_chain`     | long-form video | 1 min – 30 min+ | 10–300+ clips | N (one per chapter) | automated (FFmpeg)           | configurable |
+| `storyboard_direct` | any             | any             | N clips       | 1+                  | manual or automated          | optional     |
 
 ---
 
@@ -277,6 +281,7 @@ status='rendered', rendered_video_url = final_video.mp4
 ```
 
 **Key differences from `start_frame_chain`:**
+
 - Narration script written for ALL scenes before generation begins (not per-scene during generation)
 - Audio generated separately, mixed in assembly step
 - Assembly is automated (never manual CapCut)
@@ -285,6 +290,7 @@ status='rendered', rendered_video_url = final_video.mp4
 - `target_duration_sec` stored at the content_items row level
 
 **Chapter config in `channels.js`:**
+
 ```js
 'long_form': {
   type: 'long_form',
@@ -299,6 +305,7 @@ status='rendered', rendered_video_url = final_video.mp4
 ```
 
 **`create-brief.mjs` for long-form:**
+
 ```bash
 node apps/video/scripts/create-brief.mjs \
   --channel "documentary/intimacy/EN" \
@@ -308,6 +315,7 @@ node apps/video/scripts/create-brief.mjs \
 ```
 
 **DB changes needed when implementing `chapter_chain` (not yet applied):**
+
 - `target_duration_sec integer` column on `content_items`
 - `chapters jsonb` column: `[{ n, title, status, scene_range, chapter_video_url, chapter_audio_url }]`
 - Each scene in `scenes` jsonb gains a `chapter_n` field
@@ -335,11 +343,11 @@ Continuity note: no final-frame-to-start-frame chain. Cross-scene consistency de
 
 Long-form narration is a configurable per-channel option:
 
-| Provider | How | Quality | Cost |
-|---|---|---|---|
-| `kokoro` | Kokoro TTS (local, `packages/media`) | Good, fast | Free |
+| Provider     | How                                                                          | Quality       | Cost    |
+| ------------ | ---------------------------------------------------------------------------- | ------------- | ------- |
+| `kokoro`     | Kokoro TTS (local, `packages/media`)                                         | Good, fast    | Free    |
 | `higgsfield` | `mcp__claude_ai_higgsfield__generate_audio` or `higgsfield:generate --audio` | High, natural | Credits |
-| `none` | No narration — music + natural audio only | — | Free |
+| `none`       | No narration — music + natural audio only                                    | —             | Free    |
 
 Channel config sets `narrationProvider`. The pipeline generates per-scene audio clips, then FFmpeg mixes them with the video in the chapter assembly step.
 
@@ -575,18 +583,19 @@ STOP — no upload
 
 ## 4. Status values — what each means
 
-| Status | Set by | Meaning |
-|---|---|---|
-| `brief` | User / brief command | Row exists; concept only; no scene prompts yet |
-| `storyboard` | Generation agent | Scene prompts written; storyboard image generated; awaiting generation |
-| `generating` | Generation agent | Row is claimed; per-scene generation in progress |
-| `rendered` | Generation agent | All scenes complete; SEO written; clips stored; publisher-ready |
-| `publishing` | Publish agent | Upload to platform in progress |
-| `posted` | Publish agent | Live on platform |
-| `blocked` | Generation agent | On hold — `status_note` has the reason; needs human decision before continuing |
-| `failed` | Generation or publish agent | Terminal error — `status_note` has the reason; cannot continue without intervention |
+| Status       | Set by                      | Meaning                                                                             |
+| ------------ | --------------------------- | ----------------------------------------------------------------------------------- |
+| `brief`      | User / brief command        | Row exists; concept only; no scene prompts yet                                      |
+| `storyboard` | Generation agent            | Scene prompts written; storyboard image generated; awaiting generation              |
+| `generating` | Generation agent            | Row is claimed; per-scene generation in progress                                    |
+| `rendered`   | Generation agent            | All scenes complete; SEO written; clips stored; publisher-ready                     |
+| `publishing` | Publish agent               | Upload to platform in progress                                                      |
+| `posted`     | Publish agent               | Live on platform                                                                    |
+| `blocked`    | Generation agent            | On hold — `status_note` has the reason; needs human decision before continuing      |
+| `failed`     | Generation or publish agent | Terminal error — `status_note` has the reason; cannot continue without intervention |
 
 **`status_note` field** (renamed from `status_note`):
+
 - Non-null means something needs human attention
 - `blocked` → `status_note = 'storyboard: <reason>'` or `'scene N: <reason>'`
 - `failed` → `status_note = 'generation failed: <reason>'` or `'publish failed: <reason>'`
@@ -596,22 +605,23 @@ STOP — no upload
 
 ## 5. `content_items` columns — Wild Eye relevant fields
 
-| Column | Type | Default | Set when |
-|---|---|---|---|
-| `channel_key` | text | required | Brief creation |
-| `format` | text | required | Brief creation — `'11s'` / `'21s'` / `'portrait'` |
-| `title` | text | required | Brief creation |
-| `description` | text | optional | Brief creation — working concept |
-| `status` | text | `'brief'` | Transitions through lifecycle |
-| `scenes` | jsonb | `'[]'` | Populated progressively (see §4) |
-| `status_note` | text | NULL | Human-readable reason for `blocked` or `failed`; cleared on resolution |
-| `slot` | text | optional | Brief creation — e.g. `'Fri 23:00 BST'` |
-| `scheduled_for` | timestamptz | optional | Brief creation or after rendering |
-| `seo` | jsonb | NULL | After all scenes are done (Step 5) |
-| `rendered_video_url` | text | NULL | Final step — single asset URL for publisher |
-| `rendered_at` | timestamptz | NULL | Final step |
+| Column               | Type        | Default   | Set when                                                               |
+| -------------------- | ----------- | --------- | ---------------------------------------------------------------------- |
+| `channel_key`        | text        | required  | Brief creation                                                         |
+| `format`             | text        | required  | Brief creation — `'11s'` / `'21s'` / `'portrait'`                      |
+| `title`              | text        | required  | Brief creation                                                         |
+| `description`        | text        | optional  | Brief creation — working concept                                       |
+| `status`             | text        | `'brief'` | Transitions through lifecycle                                          |
+| `scenes`             | jsonb       | `'[]'`    | Populated progressively (see §4)                                       |
+| `status_note`        | text        | NULL      | Human-readable reason for `blocked` or `failed`; cleared on resolution |
+| `slot`               | text        | optional  | Brief creation — e.g. `'Fri 23:00 BST'`                                |
+| `scheduled_for`      | timestamptz | optional  | Brief creation or after rendering                                      |
+| `seo`                | jsonb       | NULL      | After all scenes are done (Step 5)                                     |
+| `rendered_video_url` | text        | NULL      | Final step — single asset URL for publisher                            |
+| `rendered_at`        | timestamptz | NULL      | Final step                                                             |
 
 **`rendered_video_url` by format:**
+
 - `11s` reel: set to `scenes[0].clip_url` (single clip, no assembly needed)
 - `21s` reel: set to assembled video URL (NOT set until clips are stitched — see §7)
 - `portrait`: set to `scenes[0].start_frame_url` (the portrait image IS the final asset)
@@ -678,6 +688,7 @@ The `scenes` column starts as `[]` and is populated progressively. Never write b
 ```
 
 **Number of scenes by format:**
+
 - `11s` → 1 scene, `durationSec: 11`, always `scenario: 3`, `transition: 'fresh'`
 - `21s` → 3 scenes, `durationSec: 7` each — scenarios set per-scene by brief expansion
 - `portrait` → 1 scene; `video_prompt` omitted (no video generated)
@@ -712,11 +723,13 @@ No start frame generation. Storyboard panel is passed directly to video generati
 ```jsonc
 {
   "n": 2,
-  "camera": "side angle", "scenario": 1, "transition": "panel",
+  "camera": "side angle",
+  "scenario": 1,
+  "transition": "panel",
   "storyboard_url": "https://cdn.higgsfield.ai/storyboard-abc123.jpg",
   "higgsfield_video_job": "vid_job_xyz789",
   "clip_url": "https://cdn.higgsfield.ai/clip-xyz789.mp4",
-  "scene_status": "video_done"
+  "scene_status": "video_done",
   // no start_frame_url, no end_frame_url, no final_frame_url
 }
 ```
@@ -728,40 +741,46 @@ No start frame generation. Storyboard panel is passed directly to video generati
 Start frame generated fresh per scene. No end frame. `final_frame_url` extracted after video and used ONLY as character reference for the NEXT scene's start frame generation — never as a visual start frame.
 
 After start frame + vision gate pass:
+
 ```jsonc
 {
   "n": 2,
-  "camera": "overhead top-down", "scenario": 2, "transition": "fresh",
+  "camera": "overhead top-down",
+  "scenario": 2,
+  "transition": "fresh",
   "higgsfield_image_job": "img_job_abc123",
   "start_frame_url": "https://cdn.higgsfield.ai/frame-abc123.jpg",
   "vision_check": {
     "status": "pass",
     "score": 8,
     "attempts": 1,
-    "issues": []
+    "issues": [],
   },
-  "scene_status": "image_done"
+  "scene_status": "image_done",
 }
 ```
 
 After video:
+
 ```jsonc
 {
   "n": 2,
-  "camera": "overhead top-down", "scenario": 2, "transition": "fresh",
+  "camera": "overhead top-down",
+  "scenario": 2,
+  "transition": "fresh",
   "higgsfield_image_job": "img_job_abc123",
   "start_frame_url": "https://cdn.higgsfield.ai/frame-abc123.jpg",
   "vision_check": {
     "status": "pass",
     "score": 8,
     "attempts": 1,
-    "issues": []
+    "issues": [],
   },
   "higgsfield_video_job": "vid_job_xyz789",
   "clip_url": "https://cdn.higgsfield.ai/clip-xyz789.mp4",
   "final_frame_url": "https://cdn.higgsfield.ai/final-xyz789.jpg",
   // final_frame_url → character reference only when generating next scene's start frame
-  "scene_status": "video_done"
+  "scene_status": "video_done",
 }
 ```
 
@@ -772,6 +791,7 @@ After video:
 All start frames are generated first (across ALL scenes), then videos are generated. Each video receives both a start frame and an end frame. The end frame of scene N = the start frame of scene N+1.
 
 Generation order for a 3-scene Scenario 3 video:
+
 ```
 Phase A — all start frames first:
   Scene 1: generate start frame (SF1) from image_prompt
@@ -785,40 +805,46 @@ Phase B — all videos:
 ```
 
 After start frame + vision gate pass (Phase A complete for this scene):
+
 ```jsonc
 {
   "n": 1,
-  "camera": "side angle", "scenario": 3, "transition": "fresh",
+  "camera": "side angle",
+  "scenario": 3,
+  "transition": "fresh",
   "higgsfield_image_job": "img_job_sf1",
   "start_frame_url": "https://cdn.higgsfield.ai/sf1.jpg",
   "vision_check": {
     "status": "pass",
     "score": 9,
     "attempts": 1,
-    "issues": []
+    "issues": [],
   },
-  "scene_status": "image_done"
+  "scene_status": "image_done",
 }
 ```
 
 After video (Phase B complete for this scene):
+
 ```jsonc
 {
   "n": 1,
-  "camera": "side angle", "scenario": 3, "transition": "fresh",
+  "camera": "side angle",
+  "scenario": 3,
+  "transition": "fresh",
   "higgsfield_image_job": "img_job_sf1",
   "start_frame_url": "https://cdn.higgsfield.ai/sf1.jpg",
   "vision_check": {
     "status": "pass",
     "score": 9,
     "attempts": 1,
-    "issues": []
+    "issues": [],
   },
   "end_frame_url": "https://cdn.higgsfield.ai/sf2.jpg",
   // end_frame_url = scenes[1].start_frame_url — the EXACT frame this clip ends on
   "higgsfield_video_job": "vid_job_xyz789",
   "clip_url": "https://cdn.higgsfield.ai/clip-xyz789.mp4",
-  "scene_status": "video_done"
+  "scene_status": "video_done",
   // no final_frame_url needed — end point was predetermined, not extracted
 }
 ```
@@ -837,8 +863,8 @@ Portrait has no video step. Terminal `scene_status` is `image_done`, not `video_
     "storyboard_url": "https://cdn.higgsfield.ai/portrait-preview.jpg",
     "higgsfield_image_job": "img_job_abc123",
     "start_frame_url": "https://cdn.higgsfield.ai/portrait-abc123.jpg",
-    "scene_status": "image_done"
-  }
+    "scene_status": "image_done",
+  },
 ]
 ```
 
@@ -863,21 +889,25 @@ Portrait has no video step. Terminal `scene_status` is `image_done`, not `video_
 ## 7. Step-by-step generation flow
 
 ### Step 1 — Session start
+
 1. Read `apps/video/knowledge/wild-eye/house-style.md`
 2. Read `apps/video/knowledge/wild-eye/script-library.md`
 3. Invoke `higgsfield-credit-guard` → balance check; get session config (`videoResolution`, `imageResolution`, `model`)
 4. Cloud mode: confirm Supabase project `nnxtvbolhuvihlpwppbj`
 
 ### Step 2 — Load and validate brief
+
 ```sql
 SELECT * FROM content_items
 WHERE channel_key = 'wildlife/intimacy/EN' AND status = 'brief'
 ORDER BY created_at ASC LIMIT 1;
 -- Or: WHERE id = $id
 ```
+
 Confirm `format` is `'11s'` / `'21s'` / `'portrait'`. If not, STOP.
 
 Load format rules from house-style:
+
 - `11s` → Formula A, 1 scene, `durationSec: 11`
 - `21s` → Formula B, 3 scenes, `durationSec: 7` each
 - `portrait` → single extreme-close-up image, no video
@@ -887,6 +917,7 @@ Load format rules from house-style:
 For each scene (1 scene for 11s/portrait, 3 for 21s):
 
 **3a. Image prompt** — flowing prose, photorealistic, mood-led. Must include:
+
 - Specific location (burrow interior / grassland / water's edge)
 - Directional light quality ("warm amber shaft catching only the eye")
 - Subject detail (fur texture, eye catching light)
@@ -900,42 +931,50 @@ For each scene (1 scene for 11s/portrait, 3 for 21s):
 Substitutions: `exposed roots → tangled root structures` · `predawn → cool morning light` · `toe pads → small paws` · `nose leather → muzzle detail` · `iris texture → eye catching light`
 
 **3d. Write to DB:**
+
 ```sql
 UPDATE content_items
 SET scenes = $scenesArray,
     status = 'storyboard'
 WHERE id = $id;
 ```
+
 Each scene object: `{ n, image_prompt, video_prompt, scene_status: 'pending' }` (portrait omits `video_prompt`).
 
 ### Step 4 — Storyboard image
 
 **4a. Compose storyboard prompt:**
+
 - `11s` / `portrait`: single panel
 - `21s`: 3-panel horizontal grid; each panel includes that scene's core visual + label ("Scene 1: 7s")
 - Total prompt under 400 words; 2K resolution; 9:16 aspect ratio
 
 **4b. Generate:**
+
 - Cloud: `higgsfield:generate --type image --wait`
 - Interactive: `mcp__claude_ai_higgsfield__generate_image`
 
 **4c. Vision quality gate — storyboard (Tier 2):**
 
 Invoke `image-quality-gate` agent with:
+
 - `imageUrl`: storyboard URL
 - `imagePrompt`: combined scene descriptions
 - `checkType`: `'storyboard'`
 - `channelRules`: house-style.md content
 
 Result is **advisory** for storyboard (never blocks):
+
 - Issues are noted in `status_note` for human awareness
 - Generation continues regardless — storyboard is the human review point
 
 **4d. Decision gate:**
+
 - **Interactive:** show storyboard + vision gate issues to user, wait for approval. User may edit scene prompts → redo Step 3 → regenerate (cheap: 1 image, not N videos).
 - **Cloud:** if vision gate flagged issues → `status_note = 'storyboard advisory: <issues>'` (non-blocking). Any missing cavy or prohibited content → `status = 'blocked'`, STOP.
 
 **4d. Write storyboard URL:**
+
 ```sql
 UPDATE content_items
 SET scenes = jsonb_set(scenes, '{0,storyboard_url}', '"<url>"')
@@ -943,9 +982,11 @@ WHERE id = $id;
 ```
 
 ### Step 5 — Claim row (concurrency guard)
+
 ```sql
 UPDATE content_items SET status = 'generating' WHERE id = $id;
 ```
+
 Any other session seeing `status = 'generating'` will not pick this row.
 
 ### Step 6 — Per-scene generation
@@ -953,12 +994,15 @@ Any other session seeing `status = 'generating'` will not pick this row.
 Iterate scenes in order n=1 → n=2 → n=3.
 
 #### 6a. Skip if done
+
 If `scene.scene_status === 'video_done'` (reel) or `'image_done'` (portrait), skip this scene. Enables idempotent resume after crash.
 
 #### 6b. Credit re-check (cloud only)
+
 Run `higgsfield account balance`. If < 50 credits → STOP, leave `status = 'generating'` (locked), output warning.
 
 #### 6c. Start-frame image generation
+
 - Prompt: `scene.image_prompt`
 - Reference: `prevFinalFrameUrl` (scene N-1's `final_frame_url`; absent for scene 1)
 - Resolution: 2K, aspect ratio: 9:16
@@ -966,10 +1010,12 @@ Run `higgsfield account balance`. If < 50 credits → STOP, leave `status = 'gen
 - **Interactive:** `mcp__claude_ai_higgsfield__generate_image` with reference image
 
 **Blocked/rights handling:**
+
 1. On blocked: call `reveal_generation` / `higgsfield generate reveal`, wait 5s, re-poll
 2. After 2 failures: write `scene_status = 'blocked'` to scenes, set `status_note = 'scene N image blocked: <reason>'`, set `status = 'blocked'`, STOP
 
 **Write immediately after success (don't wait for video):**
+
 ```sql
 UPDATE content_items
 SET scenes = jsonb_set(
@@ -978,11 +1024,13 @@ SET scenes = jsonb_set(
 ) || jsonb_set(scenes, '{N-1,scene_status}', '"image_done"')
 WHERE id = $id;
 ```
+
 (N-1 = zero-based index)
 
 #### 6d. Vision quality gate — start frame (Tier 2, hard gate)
 
 Invoke `image-quality-gate` agent with:
+
 - `imageUrl`: `scene.start_frame_url`
 - `imagePrompt`: `scene.image_prompt`
 - `checkType`: `'start_frame'`
@@ -992,13 +1040,14 @@ Invoke `image-quality-gate` agent with:
 
 **Result handling:**
 
-| Result | Action |
-|---|---|
-| `pass` (score ≥ 7) | Write `vision_check` to DB → proceed to continuity check (6e) |
-| `retry` (score < 7, attempt < 2) | Regenerate start frame → re-run vision gate (attempt++) |
+| Result                             | Action                                                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `pass` (score ≥ 7)                 | Write `vision_check` to DB → proceed to continuity check (6e)                                               |
+| `retry` (score < 7, attempt < 2)   | Regenerate start frame → re-run vision gate (attempt++)                                                     |
 | `blocked` (score < 7, attempt ≥ 2) | Write `scene_status='blocked'`, `status='blocked'`, `status_note='scene N vision gate: <top issue>'` → STOP |
 
 **Write vision_check to DB immediately on pass:**
+
 ```sql
 UPDATE content_items
 SET scenes = jsonb_set(scenes, '{N-1,vision_check}',
@@ -1010,7 +1059,9 @@ WHERE id = $id;
 This is a **hard gate** — no video credits are spent until the start frame passes.
 
 #### 6e. Continuity check (Tier 2 — all channels)
+
 Invoke `continuity-checker` agent with:
+
 - `startFrame`: `scene.start_frame_url`
 - `scenePrompt`: `scene.video_prompt`
 - `prevFinalFrame`: `prevFinalFrameUrl` (omit for scene 1)
@@ -1026,12 +1077,14 @@ Result: `{ conflict: 'none' | 'soft' | 'hard', reason: '...' }`
 For scenes where `scenario = 3` and this is NOT the last scene, generate the end frame before the video. The end frame = the next scene's start frame URL (which is generated in the NEXT scene's 6c step).
 
 **Generation order for Scenario 3:**
+
 - Phase A (all scenes): run steps 6a → 6c → 6d (vision gate) → 6e (continuity) for ALL scenes first → collect all `start_frame_url` values
 - Phase B (all scenes): generate videos using `start_frame_url[N]` as start and `start_frame_url[N+1]` as end
 
 **Vision gate for end frames** — if a separately generated end frame is used (not next scene's start frame), run `image-quality-gate` with `checkType: 'end_frame'` before the video call. Same pass/retry/blocked logic as 6d.
 
 #### 6g. Video generation (reel formats only — skip for portrait)
+
 - Start image: `scene.start_frame_url`
 - Model: Seedance 2.0 (default); resolution: 720p (cloud) / 1080p (interactive)
 - Natural audio ON; NO music score; NO drone unless scene explicitly earns it
@@ -1042,6 +1095,7 @@ For scenes where `scenario = 3` and this is NOT the last scene, generate the end
 **Blocked handling:** same as 6c — reveal → retry → blocked.
 
 **Write immediately after success:**
+
 ```sql
 UPDATE content_items
 SET scenes = <updated scenes with higgsfield_video_job, clip_url, final_frame_url, scene_status='video_done'>
@@ -1049,6 +1103,7 @@ WHERE id = $id;
 ```
 
 #### 6h. Chain to next scene
+
 Set `prevFinalFrameUrl = scene.final_frame_url`. This becomes the reference image for scene N+1's start frame (Scenario 2) or character reference for next start frame generation (Scenario 3).
 
 ### Step 7 — SEO (after all scenes terminal)
@@ -1061,6 +1116,7 @@ Portrait terminal check: scene 1 has `scene_status = 'image_done'`.
 Invoke `seo-writer` subagent (Tier 2) with: title, description, narration, format, channel=Wild Capture.
 
 Store result:
+
 ```sql
 UPDATE content_items
 SET seo = '{ "title": "...", "description": "...", "hashtags": ["..."] }'
@@ -1068,6 +1124,7 @@ WHERE id = $id;
 ```
 
 ### Step 8 — Set rendered_video_url
+
 ```
 11s   → rendered_video_url = scenes[0].clip_url
 21s   → rendered_video_url = NULL (clips need assembly first — see §7)
@@ -1075,6 +1132,7 @@ portrait → rendered_video_url = scenes[0].start_frame_url
 ```
 
 ### Step 9 — Persist
+
 ```sql
 UPDATE content_items SET
   status = 'rendered',
@@ -1086,6 +1144,7 @@ WHERE id = $id;
 **STOP. Do not upload. Do not publish.**
 
 ### Step 10 — Report
+
 ```
 ✅ Wild Eye reel C-{id} rendered
 Format: {format}  |  Scenes: {n}  |  Channel: Wild Capture
@@ -1101,20 +1160,20 @@ Next: upload clips, then run publish.js when ready.
 
 ## 8. Format-specific summary
 
-| Property | 11s reel | 21s reel | portrait |
-|---|---|---|---|
-| Scenes | 1 | 3 | 1 |
-| `video_prompt` in scenes | ✅ | ✅ | ❌ (omitted) |
-| Storyboard image | Single panel | 3-panel grid | Single panel |
-| Start-frame generated | ✅ | ✅ (×3) | ✅ |
-| Video generated | ✅ | ✅ (×3) | ❌ |
-| Terminal `scene_status` | `video_done` | `video_done` | `image_done` |
-| Assembly needed | No | Yes | No |
-| `rendered_video_url` set by agent | `scenes[0].clip_url` | NULL | `scenes[0].start_frame_url` |
-| Facebook post type | Reel (video) | Reel (video, after assembly) | Photo |
-| Continuity chain | N/A (1 scene) | `final_frame_url` → next scene | N/A |
-| Narration | No | Yes (caption in description) | No |
-| SEO hashtag count | 15–20 | 15–20 | 6–8 |
+| Property                          | 11s reel             | 21s reel                       | portrait                    |
+| --------------------------------- | -------------------- | ------------------------------ | --------------------------- |
+| Scenes                            | 1                    | 3                              | 1                           |
+| `video_prompt` in scenes          | ✅                   | ✅                             | ❌ (omitted)                |
+| Storyboard image                  | Single panel         | 3-panel grid                   | Single panel                |
+| Start-frame generated             | ✅                   | ✅ (×3)                        | ✅                          |
+| Video generated                   | ✅                   | ✅ (×3)                        | ❌                          |
+| Terminal `scene_status`           | `video_done`         | `video_done`                   | `image_done`                |
+| Assembly needed                   | No                   | Yes                            | No                          |
+| `rendered_video_url` set by agent | `scenes[0].clip_url` | NULL                           | `scenes[0].start_frame_url` |
+| Facebook post type                | Reel (video)         | Reel (video, after assembly)   | Photo                       |
+| Continuity chain                  | N/A (1 scene)        | `final_frame_url` → next scene | N/A                         |
+| Narration                         | No                   | Yes (caption in description)   | No                          |
+| SEO hashtag count                 | 15–20                | 15–20                          | 6–8                         |
 
 ---
 
@@ -1123,6 +1182,7 @@ Next: upload clips, then run publish.js when ready.
 The cloud agent STOPS at Step 9 with 3 individual clips stored in `scenes[0,1,2].clip_url`. The `rendered_video_url` is NULL.
 
 **V1 manual assembly path:**
+
 1. Download 3 clips from Higgsfield CDN
 2. Stitch in CapCut / FFmpeg: `ffmpeg -concat -i scene1.mp4 -i scene2.mp4 -i scene3.mp4 output.mp4`
 3. Upload assembled video to Higgsfield or R2
@@ -1136,16 +1196,16 @@ FFmpeg is available on `ubuntu-latest` runners. Auto-stitch as a post-generation
 
 ## 10. Error states and recovery
 
-| Error condition | What agent writes | `status` | `status_note` | Recovery |
-|---|---|---|---|---|
-| Credit < 50 at session start | nothing | unchanged (`brief`) | not set | Top up Higgsfield, re-run |
-| Credit < 50 mid-run | nothing (row stays `generating`) | `generating` | not set | Top up, re-run (idempotent — done scenes skipped) |
-| Storyboard generation blocked | nothing to scenes | `blocked` | `'storyboard: <reason>'` | Review, optionally regenerate, clear `status_note`, reset to `brief` |
-| Storyboard continuity conflict (cloud) | storyboard_url written | `blocked` | `'storyboard: <conflict>'` | Revise prompts, clear thread, reset to `brief`, re-run |
-| Start-frame image blocked (2 retries exhausted) | `scene_status='blocked'` in scenes | `blocked` | `'scene N image blocked: <reason>'` | Revise image_prompt, clear thread, reset to `storyboard`, re-run (done scenes skipped) |
-| Continuity hard conflict | `scene_status='image_done'` retained | `blocked` | `'scene N continuity: <reason>'` | Accept or regenerate, clear thread, reset to `storyboard`, re-run |
-| Video generation blocked (2 retries) | `scene_status='blocked'` in scenes | `blocked` | `'scene N video blocked: <reason>'` | Revise video_prompt, clear thread, reset to `storyboard`, re-run |
-| SEO agent fails | scenes complete; seo=NULL | remains `generating` | not set | Re-run (Step 7 re-invokes seo-writer; all scenes already done) |
+| Error condition                                 | What agent writes                    | `status`             | `status_note`                       | Recovery                                                                               |
+| ----------------------------------------------- | ------------------------------------ | -------------------- | ----------------------------------- | -------------------------------------------------------------------------------------- |
+| Credit < 50 at session start                    | nothing                              | unchanged (`brief`)  | not set                             | Top up Higgsfield, re-run                                                              |
+| Credit < 50 mid-run                             | nothing (row stays `generating`)     | `generating`         | not set                             | Top up, re-run (idempotent — done scenes skipped)                                      |
+| Storyboard generation blocked                   | nothing to scenes                    | `blocked`            | `'storyboard: <reason>'`            | Review, optionally regenerate, clear `status_note`, reset to `brief`                   |
+| Storyboard continuity conflict (cloud)          | storyboard_url written               | `blocked`            | `'storyboard: <conflict>'`          | Revise prompts, clear thread, reset to `brief`, re-run                                 |
+| Start-frame image blocked (2 retries exhausted) | `scene_status='blocked'` in scenes   | `blocked`            | `'scene N image blocked: <reason>'` | Revise image_prompt, clear thread, reset to `storyboard`, re-run (done scenes skipped) |
+| Continuity hard conflict                        | `scene_status='image_done'` retained | `blocked`            | `'scene N continuity: <reason>'`    | Accept or regenerate, clear thread, reset to `storyboard`, re-run                      |
+| Video generation blocked (2 retries)            | `scene_status='blocked'` in scenes   | `blocked`            | `'scene N video blocked: <reason>'` | Revise video_prompt, clear thread, reset to `storyboard`, re-run                       |
+| SEO agent fails                                 | scenes complete; seo=NULL            | remains `generating` | not set                             | Re-run (Step 7 re-invokes seo-writer; all scenes already done)                         |
 
 **Idempotency guarantee:** re-running a `storyboard` or `generating` row always skips scenes with `scene_status = 'video_done'` or `'image_done'`. No credits are spent on completed work.
 
@@ -1165,6 +1225,7 @@ When the upload/publish agent picks up a `rendered` row, it reads:
 ```
 
 The publisher:
+
 - For `11s` / `portrait`: uses `rendered_video_url` directly (always set by agent)
 - For `21s`: checks `rendered_video_url !== NULL` before posting; blocks if NULL (assembly not done)
 - Reads `channelConfig.formats[format].type` (`'reel'` vs `'image'`) to choose FB Graph endpoint

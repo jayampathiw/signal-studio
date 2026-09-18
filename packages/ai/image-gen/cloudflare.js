@@ -18,7 +18,7 @@ export async function generateWithCloudflare(prompt) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ prompt }),
-    }
+    },
   );
 
   if (!res.ok) {

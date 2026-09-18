@@ -8,11 +8,10 @@ import { resolve, join } from 'path';
 const target = process.argv[2];
 const casesDir = resolve('evals/cases');
 
-const apps = target
-  ? [target]
-  : readdirSync(casesDir).filter((d) => !d.startsWith('.'));
+const apps = target ? [target] : readdirSync(casesDir).filter((d) => !d.startsWith('.'));
 
-let passed = 0, failed = 0;
+let passed = 0,
+  failed = 0;
 
 for (const app of apps) {
   const appCasesDir = join(casesDir, app);

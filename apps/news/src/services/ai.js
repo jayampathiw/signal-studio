@@ -1,8 +1,8 @@
 // News-specific AI functions — caption, SEO, image prompt, On This Day.
 // Uses the shared @signal-studio/ai client and model; adds news-domain prompting on top.
 import Anthropic from '@anthropic-ai/sdk';
-import { env } from '@signal-studio/config';
 import { MODEL, parseResponse } from '@signal-studio/ai';
+import { env } from '@signal-studio/config';
 
 let _client = null;
 function getClient() {
@@ -356,12 +356,18 @@ export const SEED_COMMENT_TEMPLATES = {
   FR: [
     { id: 'fr_01', t: '💬 Et vous ? {topic_noun} — votre réaction en commentaire 👇' },
     { id: 'fr_02', t: 'Pour ou contre ? {topic_noun} en débat — votre verdict 👇' },
-    { id: 'fr_03', t: 'Est-ce que ça vous touche directement ? {topic_noun} — on vous lit tous 👇' },
+    {
+      id: 'fr_03',
+      t: 'Est-ce que ça vous touche directement ? {topic_noun} — on vous lit tous 👇',
+    },
     { id: 'fr_04', t: 'Un mot pour décrire la situation : {topic_noun} — répondez ici 👇' },
     { id: 'fr_05', t: '🗣️ La parole est à vous. {topic_noun} — votre avis compte.' },
     { id: 'fr_06', t: 'Vous êtes surpris(e) par {topic_noun} ? Dites-le en commentaire 👇' },
-    { id: 'fr_07', t: '💬 {topic_noun} — d\'accord ou pas ? Un commentaire suffit.' },
-    { id: 'fr_08', t: 'Dans votre quotidien, {topic_noun} ça change quoi ? Répondez ci-dessous 👇' },
+    { id: 'fr_07', t: "💬 {topic_noun} — d'accord ou pas ? Un commentaire suffit." },
+    {
+      id: 'fr_08',
+      t: 'Dans votre quotidien, {topic_noun} ça change quoi ? Répondez ci-dessous 👇',
+    },
     { id: 'fr_09', t: 'Bonne ou mauvaise nouvelle ? {topic_noun} — votre verdict 👇' },
     { id: 'fr_10', t: 'On débat : {topic_noun} — pour ou contre en commentaire 👇' },
   ],
@@ -371,7 +377,7 @@ export const SEED_COMMENT_TEMPLATES = {
     { id: 'it_03', t: 'Vi riguarda da vicino? {topic_noun} — rispondete qui sotto 👇' },
     { id: 'it_04', t: 'Una parola su {topic_noun} — scrivetela qui 👇' },
     { id: 'it_05', t: '🗣️ Vi leggiamo tutti. {topic_noun} — cosa ne pensate?' },
-    { id: 'it_06', t: 'Siete d\'accordo? {topic_noun} — dite la vostra 👇' },
+    { id: 'it_06', t: "Siete d'accordo? {topic_noun} — dite la vostra 👇" },
     { id: 'it_07', t: '💬 {topic_noun} — buona o cattiva notizia? Un commento qui sotto.' },
     { id: 'it_08', t: 'Nella vostra vita di tutti i giorni, {topic_noun} che effetto fa? 👇' },
     { id: 'it_09', t: 'Un commento vale più di un like. {topic_noun} — scriveteci 👇' },
@@ -382,11 +388,18 @@ export const SEED_COMMENT_TEMPLATES = {
 function pickEligibleTemplates(country, recentIds) {
   const pool = SEED_COMMENT_TEMPLATES[country] || [];
   const recent = new Set(recentIds);
-  const eligible = pool.filter(t => !recent.has(t.id));
+  const eligible = pool.filter((t) => !recent.has(t.id));
   return eligible.length > 0 ? eligible : pool;
 }
 
-export async function generateCaption(article, captionLanguage, pageName, pageHashtag, recentSeedTemplateIds = [], options = {}) {
+export async function generateCaption(
+  article,
+  captionLanguage,
+  pageName,
+  pageHashtag,
+  recentSeedTemplateIds = [],
+  options = {},
+) {
   const client = getClient();
   const summary = (article.summary || 'Non disponible').slice(0, 1500);
 
@@ -394,18 +407,21 @@ export async function generateCaption(article, captionLanguage, pageName, pageHa
   const isHistorical = options.historical === true;
 
   const isIdentityLang = captionLanguage === 'italiano' || captionLanguage === 'français';
-  const ctaInstruction = {
-    'français': `Suivez ${pageName} pour rester informé de l'actualité française — chaque jour.`,
-    'italiano': `Segui ${pageName} per restare informato sull'attualità italiana — ogni giorno.`,
-    'English': `Follow ${pageName} to stay informed — every day.`,
-    'svenska': `Följ ${pageName} för att hålla dig informerad — varje dag.`,
-  }[captionLanguage] ?? `Suivez ${pageName} pour rester informé — chaque jour.`;
-  const identityModeChoices = captionLanguage === 'italiano'
-    ? '• ORGOGLIO — risultato sportivo, eccellenza italiana, record, premio\n• RESILIENZA — crisi economica, carovita, difficoltà collettiva\n• DIBATTITO — riforma controversa, tema divisivo, dibattito parlamentare\n• PATRIMONIO — storia, arte, cultura, anniversario, tradizione'
-    : '• FIERTÉ — victoire française, excellence culturelle, reconnaissance internationale\n• RÉSISTANCE — crise économique, hausse des prix, difficulté sociale\n• DÉBAT — réforme controversée, sujet clivant, débat parlementaire\n• PATRIMOINE — histoire, art, culture, anniversaire, tradition régionale';
-  const identityModeList = captionLanguage === 'italiano'
-    ? 'ORGOGLIO|RESILIENZA|DIBATTITO|PATRIMONIO'
-    : 'FIERTÉ|RÉSISTANCE|DÉBAT|PATRIMOINE';
+  const ctaInstruction =
+    {
+      français: `Suivez ${pageName} pour rester informé de l'actualité française — chaque jour.`,
+      italiano: `Segui ${pageName} per restare informato sull'attualità italiana — ogni giorno.`,
+      English: `Follow ${pageName} to stay informed — every day.`,
+      svenska: `Följ ${pageName} för att hålla dig informerad — varje dag.`,
+    }[captionLanguage] ?? `Suivez ${pageName} pour rester informé — chaque jour.`;
+  const identityModeChoices =
+    captionLanguage === 'italiano'
+      ? '• ORGOGLIO — risultato sportivo, eccellenza italiana, record, premio\n• RESILIENZA — crisi economica, carovita, difficoltà collettiva\n• DIBATTITO — riforma controversa, tema divisivo, dibattito parlamentare\n• PATRIMONIO — storia, arte, cultura, anniversario, tradizione'
+      : '• FIERTÉ — victoire française, excellence culturelle, reconnaissance internationale\n• RÉSISTANCE — crise économique, hausse des prix, difficulté sociale\n• DÉBAT — réforme controversée, sujet clivant, débat parlementaire\n• PATRIMOINE — histoire, art, culture, anniversaire, tradition régionale';
+  const identityModeList =
+    captionLanguage === 'italiano'
+      ? 'ORGOGLIO|RESILIENZA|DIBATTITO|PATRIMONIO'
+      : 'FIERTÉ|RÉSISTANCE|DÉBAT|PATRIMOINE';
   const modeStep = (() => {
     if (!isIdentityLang) return '';
     if (forcedMode) {
@@ -414,17 +430,18 @@ export async function generateCaption(article, captionLanguage, pageName, pageHa
     return `\nÉTAPE 0 — MODE IDENTITAIRE (choisir avant de rédiger, voir Section 6) :\n${identityModeChoices}\nSi aucun mode ne s'applique (fait divers neutre, international pur, judiciaire) : identity_mode = null.\nLe mode est la lentille éditoriale pour l'ENSEMBLE du post — pas un ajout en fin de texte.\n`;
   })();
   const hookInstruction = isHistorical
-    ? (captionLanguage === 'italiano'
-        ? 'apertura celebrativa — data + luogo + momento iconico. Esempio : « Berlino, 9 luglio 2006 — la notte che gli italiani non dimenticheranno mai. » MAI tensione o conflitto.'
-        : 'ouverture célébratoire — date + lieu + moment iconique. Exemple : « Stade de France, 12 juillet 1998 — la nuit où la France est devenue championne du monde. » JAMAIS tension ou conflit.')
+    ? captionLanguage === 'italiano'
+      ? 'apertura celebrativa — data + luogo + momento iconico. Esempio : « Berlino, 9 luglio 2006 — la notte che gli italiani non dimenticheranno mai. » MAI tensione o conflitto.'
+      : 'ouverture célébratoire — date + lieu + moment iconique. Exemple : « Stade de France, 12 juillet 1998 — la nuit où la France est devenue championne du monde. » JAMAIS tension ou conflit.'
     : isIdentityLang
       ? "si mode identitaire actif : cadrer en termes d'identité nationale (Section 6) ; sinon : tension/conflit central avec acteur nommé"
       : 'tension/conflit central avec acteur nommé si possible';
-  const questionGuide = captionLanguage === 'italiano'
-    ? `ORGOGLIO → "Di cosa sei più orgoglioso/a dell'Italia ?" ; RESILIENZA → "Come stai affrontando questo ?" ; DIBATTITO → "Cosa dice questo dell'Italia che vogliamo ?" ; PATRIMONIO → "Cosa trasmetti di italiano ai tuoi figli ?" ; null → domanda chiusa o binaria`
-    : captionLanguage === 'français'
-    ? `FIERTÉ → "Qu'est-ce qui vous rend le plus fier(ère) d'être français(e) ?" ; RÉSISTANCE → "Comment vous en sortez-vous ?" ; DÉBAT → "Qu'est-ce que cela dit de la France que nous voulons ?" ; PATRIMOINE → "Quel est votre patrimoine français préféré ?" ; null → fermée ou binaire`
-    : 'fermée ou binaire (pas ouverte seule)';
+  const questionGuide =
+    captionLanguage === 'italiano'
+      ? `ORGOGLIO → "Di cosa sei più orgoglioso/a dell'Italia ?" ; RESILIENZA → "Come stai affrontando questo ?" ; DIBATTITO → "Cosa dice questo dell'Italia che vogliamo ?" ; PATRIMONIO → "Cosa trasmetti di italiano ai tuoi figli ?" ; null → domanda chiusa o binaria`
+      : captionLanguage === 'français'
+        ? `FIERTÉ → "Qu'est-ce qui vous rend le plus fier(ère) d'être français(e) ?" ; RÉSISTANCE → "Comment vous en sortez-vous ?" ; DÉBAT → "Qu'est-ce que cela dit de la France que nous voulons ?" ; PATRIMOINE → "Quel est votre patrimoine français préféré ?" ; null → fermée ou binaire`
+        : 'fermée ou binaire (pas ouverte seule)';
   const peopleNoun = captionLanguage === 'italiano' ? 'gli italiani' : 'les Français';
   const structureBlock = isHistorical
     ? `Structure du post (dans l'ordre, sans labels visibles dans le texte) :
@@ -451,9 +468,10 @@ export async function generateCaption(article, captionLanguage, pageName, pageHa
     model: MODEL,
     max_tokens: 1400,
     system: [{ type: 'text', text: CONTENT_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-    messages: [{
-      role: 'user',
-      content: `OUTPUT FORMAT: you must respond with ONLY a raw JSON object. No markdown, no text before or after, no code fences. Start your response with { and end with }.
+    messages: [
+      {
+        role: 'user',
+        content: `OUTPUT FORMAT: you must respond with ONLY a raw JSON object. No markdown, no text before or after, no code fences. Start your response with { and end with }.
 ${modeStep}
 Rédige un post Facebook complet pour ${pageName} en ${captionLanguage}.
 Hashtag fixe de la page : ${pageHashtag || '#' + pageName.replace(/\s+/g, '')}
@@ -464,13 +482,16 @@ JSON attendu :
 ${jsonSchema}
 
 Templates éligibles pour le seed_comment (choisir un parmi ces IDs, remplir {topic_noun} en ${captionLanguage}) :
-${pickEligibleTemplates(article.country, recentSeedTemplateIds).map(t => `[${t.id}] "${t.t}"`).join('\n')}
+${pickEligibleTemplates(article.country, recentSeedTemplateIds)
+  .map((t) => `[${t.id}] "${t.t}"`)
+  .join('\n')}
 
 Article :
 Titre : ${article.title}
 Source : ${article.source}
 Résumé : ${summary}`,
-    }],
+      },
+    ],
   });
   const response = parseResponse(raw);
 
@@ -486,7 +507,8 @@ Résumé : ${summary}`,
       question: '',
       cta: '',
       hashtags: [],
-      seed_comment: '💬 Et vous, qu\'en pensez-vous ? Est-ce que cette nouvelle vous surprend ? Répondez en commentaire — on lit tout. 👇',
+      seed_comment:
+        "💬 Et vous, qu'en pensez-vous ? Est-ce que cette nouvelle vous surprend ? Répondez en commentaire — on lit tout. 👇",
       seed_comment_template_id: null,
       story_category: 'Société',
       recommended_format: 'image',
@@ -517,7 +539,12 @@ export function sanitizeSeoDescription(desc) {
   if (lastTerm > 50) return candidate.slice(0, lastTerm + 1);
   const lastSpace = candidate.lastIndexOf(' ');
   if (lastSpace > 50) {
-    return candidate.slice(0, lastSpace).trim().replace(/[,;:—–-]+$/, '') + '.';
+    return (
+      candidate
+        .slice(0, lastSpace)
+        .trim()
+        .replace(/[,;:—–-]+$/, '') + '.'
+    );
   }
   return candidate.replace(/[,;:—–-]+$/, '') + '.';
 }
@@ -530,9 +557,10 @@ export async function generateSEOContent(article, captionLanguage) {
     model: MODEL,
     max_tokens: 200,
     system: [{ type: 'text', text: CONTENT_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-    messages: [{
-      role: 'user',
-      content: `Génère un seo_title et une seo_description pour cet article.
+    messages: [
+      {
+        role: 'user',
+        content: `Génère un seo_title et une seo_description pour cet article.
 
 RAPPEL CRITIQUE — appliquer dans cet ordre :
 1. seo_title ≤ 60 caractères (compter avant de répondre). Se termine sur un mot entier.
@@ -546,7 +574,8 @@ Article:
 Titre: ${article.title}
 Source: ${article.source}
 Résumé: ${summary}`,
-    }],
+      },
+    ],
   });
   const response = parseResponse(raw);
 
@@ -567,7 +596,8 @@ Résumé: ${summary}`,
   };
 }
 
-const ENGLISH_STOPWORDS = /\b(the|and|of|for|has|have|will|with|this|that|are|was|were|been|being)\b/i;
+const ENGLISH_STOPWORDS =
+  /\b(the|and|of|for|has|have|will|with|this|that|are|was|were|been|being)\b/i;
 const LANG_ENFORCE = new Set(['français', 'italiano']);
 
 export async function generateImagePrompt(article, captionLanguage = '') {
@@ -583,9 +613,10 @@ export async function generateImagePrompt(article, captionLanguage = '') {
     const raw = await client.messages.create({
       model: MODEL,
       max_tokens: 700,
-      messages: [{
-        role: 'user',
-        content: `Generate a cinematic AI image prompt AND a short image headline for this news article.
+      messages: [
+        {
+          role: 'user',
+          content: `Generate a cinematic AI image prompt AND a short image headline for this news article.
 
 Return JSON only: {"image_prompt": "...", "image_headline": "..."}
 
@@ -633,7 +664,8 @@ STEP 2 · Write the image_prompt:
 
 Article title: ${article.title}
 Summary: ${summary}`,
-      }],
+        },
+      ],
     });
     const response = parseResponse(raw);
 
@@ -655,7 +687,9 @@ Summary: ${summary}`,
     }
 
     if (!enforceLocal || !ENGLISH_STOPWORDS.test(lastResult.imageHeadline)) break;
-    console.error(`  image_headline retry ${attempt + 1}: English detected in "${lastResult.imageHeadline}" (lang: ${captionLanguage})`);
+    console.error(
+      `  image_headline retry ${attempt + 1}: English detected in "${lastResult.imageHeadline}" (lang: ${captionLanguage})`,
+    );
   }
 
   return lastResult;
@@ -665,16 +699,27 @@ Summary: ${summary}`,
 // production template ready to paste into Midjourney or DALL-E.
 export function formatImagePrompt(basePrompt, overlayText, watermarkFile) {
   const lightingPatterns = [
-    /golden hour/i, /fluorescent lighting/i, /fire glow/i, /morning light/i,
-    /studio lights?/i, /overhead lighting/i, /stormy (?:sky|lighting)/i,
-    /cold blue.{0,20}grading/i, /warm golden.{0,20}light/i,
-    /dramatic.{0,30}lighting/i, /cinematic lighting/i, /chiaroscuro/i,
+    /golden hour/i,
+    /fluorescent lighting/i,
+    /fire glow/i,
+    /morning light/i,
+    /studio lights?/i,
+    /overhead lighting/i,
+    /stormy (?:sky|lighting)/i,
+    /cold blue.{0,20}grading/i,
+    /warm golden.{0,20}light/i,
+    /dramatic.{0,30}lighting/i,
+    /cinematic lighting/i,
+    /chiaroscuro/i,
   ];
 
   let lightingContext = 'the lighting of the scene';
   for (const pattern of lightingPatterns) {
     const match = basePrompt.match(pattern);
-    if (match) { lightingContext = match[0].toLowerCase(); break; }
+    if (match) {
+      lightingContext = match[0].toLowerCase();
+      break;
+    }
   }
 
   return `[ORIGINAL PROMPT]
@@ -694,21 +739,38 @@ Add ${watermarkFile} watermark, bottom-right, small, 70% opacity.`;
 
 // Selects the 3-5 most significant historical events for today's date (from Wikipedia)
 // and writes a full Facebook post package + per-event image prompts.
-export async function filterAndWriteOnThisDayEvents(rawEvents, country, language, pageName, pageHashtag, date = new Date()) {
+export async function filterAndWriteOnThisDayEvents(
+  rawEvents,
+  country,
+  language,
+  pageName,
+  pageHashtag,
+  date = new Date(),
+) {
   const client = getClient();
 
-  const day   = date.toLocaleDateString(country === 'IT' ? 'it-IT' : 'fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
-  const intro_header = country === 'IT'
-    ? `📅 Accadde oggi in Italia — ${day}`
-    : `📅 Il était une fois en France — ${day}`;
-  const cta_line = country === 'IT'
-    ? `👉 Segui ${pageName} per scoprire la storia italiana — ogni giorno.\n\n${pageHashtag}`
-    : `👉 Suivez ${pageName} pour découvrir l'histoire française — chaque jour.\n\n${pageHashtag}`;
-  const question_guide = country === 'IT'
-    ? 'Una domanda chiusa che invita a commentare (es: "Sapevi di questo momento storico?", "Quale evento ti ha sorpreso di più?")'
-    : 'Une question fermée qui invite à commenter (ex: "Le saviez-vous ?", "Quel événement vous a le plus surpris ?")';
+  const day = date.toLocaleDateString(country === 'IT' ? 'it-IT' : 'fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  });
+  const intro_header =
+    country === 'IT'
+      ? `📅 Accadde oggi in Italia — ${day}`
+      : `📅 Il était une fois en France — ${day}`;
+  const cta_line =
+    country === 'IT'
+      ? `👉 Segui ${pageName} per scoprire la storia italiana — ogni giorno.\n\n${pageHashtag}`
+      : `👉 Suivez ${pageName} pour découvrir l'histoire française — chaque jour.\n\n${pageHashtag}`;
+  const question_guide =
+    country === 'IT'
+      ? 'Una domanda chiusa che invita a commentare (es: "Sapevi di questo momento storico?", "Quale evento ti ha sorpreso di più?")'
+      : 'Une question fermée qui invite à commenter (ex: "Le saviez-vous ?", "Quel événement vous a le plus surpris ?")';
 
-  const eventList = rawEvents.slice(0, 60).map(e => `[${e.year}] ${e.text}`).join('\n');
+  const eventList = rawEvents
+    .slice(0, 60)
+    .map((e) => `[${e.year}] ${e.text}`)
+    .join('\n');
 
   const prompt = `You are a social media editor for "${pageName}", a Facebook page dedicated to ${country === 'IT' ? 'Italian' : 'French'} national pride and history (35+ diaspora audience).
 

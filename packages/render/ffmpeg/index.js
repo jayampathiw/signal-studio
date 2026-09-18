@@ -1,10 +1,12 @@
-import { registerEngine } from '@signal-studio/render-core/engine';
-import { buildSceneClip } from './kenburns.js';
-import { concatClips } from './concat.js';
-import { join } from 'path';
-import { mkdirSync } from 'fs';
 import { execFile } from 'child_process';
+import { mkdirSync } from 'fs';
+import { join } from 'path';
 import { promisify } from 'util';
+
+import { registerEngine } from '@signal-studio/render-core/engine';
+
+import { concatClips } from './concat.js';
+import { buildSceneClip } from './kenburns.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -17,9 +19,7 @@ const ffmpegEngine = {
 
     // 1. Build one clip per scene (Ken Burns on images, pass-through on video clips)
     const clipPaths = await Promise.all(
-      timeline.scenes.map((scene, i) =>
-        buildSceneClip(scene, join(outputDir, `scene_${i}.mp4`))
-      )
+      timeline.scenes.map((scene, i) => buildSceneClip(scene, join(outputDir, `scene_${i}.mp4`))),
     );
 
     // 2. Concat all scene clips

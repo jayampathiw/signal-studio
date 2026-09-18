@@ -1,6 +1,7 @@
 import { getArticleById, updateArticle } from '@signal-studio/database/articles';
-import { generateImagePrompt, formatImagePrompt } from '../services/ai.js';
+
 import { SOURCES } from '../config/sources.js';
+import { generateImagePrompt, formatImagePrompt } from '../services/ai.js';
 
 const ids = process.argv.slice(2);
 if (ids.length === 0) {
@@ -25,7 +26,11 @@ for (const id of ids) {
     }
 
     const imageResult = await generateImagePrompt(article, config.captionLanguage);
-    const formatted = formatImagePrompt(imageResult.prompt, imageResult.imageHeadline, config.watermarkFile);
+    const formatted = formatImagePrompt(
+      imageResult.prompt,
+      imageResult.imageHeadline,
+      config.watermarkFile,
+    );
 
     await updateArticle(id, {
       image_prompt: imageResult.prompt,

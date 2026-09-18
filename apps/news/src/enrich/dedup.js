@@ -1,9 +1,16 @@
 function normalize(text) {
-  return text.toLowerCase().replace(/[^a-z0-9àâäéèêëïîôùûüç]/g, ' ').trim();
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9àâäéèêëïîôùûüç]/g, ' ')
+    .trim();
 }
 
 function tokenize(text) {
-  return new Set(normalize(text).split(/\s+/).filter(w => w.length > 2));
+  return new Set(
+    normalize(text)
+      .split(/\s+/)
+      .filter((w) => w.length > 2),
+  );
 }
 
 export function similarity(a, b) {
@@ -11,17 +18,19 @@ export function similarity(a, b) {
   const tb = tokenize(b);
   if (!ta.size || !tb.size) return 0;
   let intersection = 0;
-  for (const t of ta) { if (tb.has(t)) intersection++; }
+  for (const t of ta) {
+    if (tb.has(t)) intersection++;
+  }
   return intersection / (ta.size + tb.size - intersection);
 }
 
 export function deduplicate(articles, existingTitles = []) {
-  const seen = existingTitles.map(t => normalize(t));
+  const seen = existingTitles.map((t) => normalize(t));
   const result = [];
 
   for (const article of articles) {
     const norm = normalize(article.title || '');
-    const isDup = seen.some(s => similarity(norm, s) > 0.6);
+    const isDup = seen.some((s) => similarity(norm, s) > 0.6);
     if (!isDup) {
       seen.push(norm);
       result.push(article);

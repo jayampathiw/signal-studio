@@ -7,6 +7,7 @@
     "apps/news",
     "apps/video",
     "apps/dashboard",
+    "projects/assemblex-factory/pilot",
     "packages/ai",
     "packages/render/core",
     "packages/render/ffmpeg",
@@ -25,9 +26,26 @@
     "trending-pages": "node apps/news/src/scrapers/trending-pages.js",
     "video": "node apps/video/src/pipeline.js",
     "evals": "node evals/run.js",
-    "bootstrap": "node scripts/bootstrap.js"
+    "bootstrap": "node scripts/bootstrap.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "vitest run && pnpm --filter @assemblex/pilot test"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.17.1",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.7",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^4.1.11"
   }
 }

@@ -39,7 +39,10 @@ export function parseShotList(text) {
   if (gadIdx !== -1) {
     for (let i = gadIdx + 1; i < lines.length; i++) {
       const t = lines[i].trim();
-      if (!t) { if (globalArtDirection) break; continue; }
+      if (!t) {
+        if (globalArtDirection) break;
+        continue;
+      }
       if (/^Per-scene format/i.test(t) || RE_SCENE.test(t) || /^(COLD OPEN|ACT )/i.test(t)) break;
       globalArtDirection += (globalArtDirection ? ' ' : '') + t;
     }
@@ -47,14 +50,31 @@ export function parseShotList(text) {
 
   const scenes = [];
   let cur = null;
-  const push = () => { if (cur) { scenes.push(cur); cur = null; } };
+  const push = () => {
+    if (cur) {
+      scenes.push(cur);
+      cur = null;
+    }
+  };
 
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
 
-    if (title === null) { const m = line.match(RE_TITLE); if (m) { title = m[1].trim(); continue; } }
-    if (targetDurationSec === null) { const m = line.match(RE_TARGET); if (m) { targetDurationSec = Number(m[1]); continue; } }
+    if (title === null) {
+      const m = line.match(RE_TITLE);
+      if (m) {
+        title = m[1].trim();
+        continue;
+      }
+    }
+    if (targetDurationSec === null) {
+      const m = line.match(RE_TARGET);
+      if (m) {
+        targetDurationSec = Number(m[1]);
+        continue;
+      }
+    }
 
     const sm = line.match(RE_SCENE);
     if (sm) {
@@ -82,10 +102,15 @@ export function parseShotList(text) {
     }
 
     if (!cur) continue;
-    if (line.includes('🎬')) { cur.visual_prompt = stripTag(line, '🎬'); }
-    else if (line.includes('🎙️')) { cur.vo_text = dequote(stripTag(line, '🎙️')); }
-    else if (line.includes('🔊')) { cur.audio_cue = stripTag(line, '🔊'); }
-    else if (line.includes('📝')) { cur.text_overlay = stripTag(line, '📝'); }
+    if (line.includes('🎬')) {
+      cur.visual_prompt = stripTag(line, '🎬');
+    } else if (line.includes('🎙️')) {
+      cur.vo_text = dequote(stripTag(line, '🎙️'));
+    } else if (line.includes('🔊')) {
+      cur.audio_cue = stripTag(line, '🔊');
+    } else if (line.includes('📝')) {
+      cur.text_overlay = stripTag(line, '📝');
+    }
   }
   push();
 

@@ -1,46 +1,51 @@
-import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
+
 import { classifyArticle } from '../enrich/criticality.js';
-import { validateArticle } from '../validators/contentValidator.js';
 import { similarity } from '../enrich/dedup.js';
 import { computeEditorialScore } from '../enrich/publishScore.js';
+import { validateArticle } from '../validators/contentValidator.js';
 
 const FB_BASE = 'https://graph.facebook.com/v22.0';
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 const COMPETITOR_PAGES = {
   FR: [
-    { name: 'BFM TV',          slug: 'BFMTV' },
-    { name: 'France Info',     slug: 'franceinfo' },
-    { name: 'Le Monde',        slug: 'lemonde.fr' },
-    { name: 'Le Figaro',       slug: 'lefigaro' },
-    { name: '20 Minutes',      slug: '20minutes' },
-    { name: 'France 24',       slug: 'france24' },
-    { name: "L'Obs",           slug: 'lenouvelobservateur' },
-    { name: 'Libération',      slug: 'liberation.fr' },
-    { name: 'LCI',             slug: 'LCI' },
-    { name: 'CNews',           slug: 'CNEWS' },
+    { name: 'BFM TV', slug: 'BFMTV' },
+    { name: 'France Info', slug: 'franceinfo' },
+    { name: 'Le Monde', slug: 'lemonde.fr' },
+    { name: 'Le Figaro', slug: 'lefigaro' },
+    { name: '20 Minutes', slug: '20minutes' },
+    { name: 'France 24', slug: 'france24' },
+    { name: "L'Obs", slug: 'lenouvelobservateur' },
+    { name: 'Libération', slug: 'liberation.fr' },
+    { name: 'LCI', slug: 'LCI' },
+    { name: 'CNews', slug: 'CNEWS' },
     { name: 'Huffpost France', slug: 'huffpostfrance' },
-    { name: 'Konbini News',    slug: 'konbininews' },
+    { name: 'Konbini News', slug: 'konbininews' },
   ],
   IT: [
-    { name: 'ANSA',                slug: 'ansa.it' },
+    { name: 'ANSA', slug: 'ansa.it' },
     { name: 'Corriere della Sera', slug: 'corriere' },
-    { name: 'La Repubblica',       slug: 'larepubblica' },
-    { name: 'La Stampa',           slug: 'lastampa' },
+    { name: 'La Repubblica', slug: 'larepubblica' },
+    { name: 'La Stampa', slug: 'lastampa' },
     { name: 'Il Fatto Quotidiano', slug: 'ilfattoquotidiano' },
-    { name: 'TGcom24',             slug: 'tgcom24' },
-    { name: 'Sky TG24',            slug: 'skytg24' },
-    { name: 'Fanpage',             slug: 'fanpage.it' },
-    { name: 'Open',                slug: 'open.online' },
-    { name: 'Il Post',             slug: 'ilpost' },
+    { name: 'TGcom24', slug: 'tgcom24' },
+    { name: 'Sky TG24', slug: 'skytg24' },
+    { name: 'Fanpage', slug: 'fanpage.it' },
+    { name: 'Open', slug: 'open.online' },
+    { name: 'Il Post', slug: 'ilpost' },
   ],
 };
 
 async function fetchPagePosts(slug, token) {
   const since = Math.floor((Date.now() - 48 * 60 * 60 * 1000) / 1000);
   const fields = [
-    'id', 'message', 'story', 'created_time', 'full_picture',
+    'id',
+    'message',
+    'story',
+    'created_time',
+    'full_picture',
     'attachments{title,description,url,media}',
     'reactions.summary(total_count)',
     'comments.summary(total_count)',
@@ -56,9 +61,9 @@ async function fetchPagePosts(slug, token) {
 
 function engagementScore(post) {
   const reactions = post.reactions?.summary?.total_count ?? 0;
-  const comments  = post.comments?.summary?.total_count ?? 0;
-  const shares    = post.shares?.count ?? 0;
-  return reactions + comments + (shares * 2);
+  const comments = post.comments?.summary?.total_count ?? 0;
+  const shares = post.shares?.count ?? 0;
+  return reactions + comments + shares * 2;
 }
 
 function extractAttachmentUrl(post) {
@@ -97,7 +102,8 @@ async function getRecentArticles(country) {
 function isDuplicate(article, recentArticles) {
   for (const existing of recentArticles) {
     if (article.original_url && existing.original_url === article.original_url) return true;
-    if (existing.title && article.title && similarity(existing.title, article.title) > 0.7) return true;
+    if (existing.title && article.title && similarity(existing.title, article.title) > 0.7)
+      return true;
   }
   return false;
 }
@@ -123,11 +129,13 @@ async function run() {
       try {
         const posts = await fetchPagePosts(page.slug, token);
         const ranked = posts
-          .map(p => ({ ...p, _page: page.name, _score: engagementScore(p) }))
+          .map((p) => ({ ...p, _page: page.name, _score: engagementScore(p) }))
           .sort((a, b) => b._score - a._score)
           .slice(0, 3);
         allPosts.push(...ranked);
-        console.log(`  ✓ ${page.name}: ${posts.length} posts fetched, top score=${ranked[0]?._score ?? 0}`);
+        console.log(
+          `  ✓ ${page.name}: ${posts.length} posts fetched, top score=${ranked[0]?._score ?? 0}`,
+        );
       } catch (err) {
         const status = err.response?.status;
         const msg = err.response?.data?.error?.message || err.message;
@@ -148,14 +156,14 @@ async function run() {
       console.log(`  ${i + 1}. [${p._page}] score=${p._score} "${title}"`);
     });
 
-    const signals = top.map(p => ({
+    const signals = top.map((p) => ({
       country,
-      signal_type:      'fb_page',
-      query:            p._page,
-      source_page:      p._page,
-      title:            extractTitle(p) ?? '(no title)',
-      snippet:          extractSnippet(p),
-      url:              extractAttachmentUrl(p),
+      signal_type: 'fb_page',
+      query: p._page,
+      source_page: p._page,
+      title: extractTitle(p) ?? '(no title)',
+      snippet: extractSnippet(p),
+      url: extractAttachmentUrl(p),
       engagement_total: p._score,
     }));
 
@@ -175,10 +183,10 @@ async function run() {
 
       const article = {
         country,
-        source:       post._page,
+        source: post._page,
         title,
         original_url: url,
-        summary:      extractSnippet(post) || '',
+        summary: extractSnippet(post) || '',
         published_at: new Date(post.created_time).toISOString(),
       };
 
@@ -189,13 +197,17 @@ async function run() {
 
       if (check.severity === 'absolute' || check.severity === 'manual_review') continue;
 
-      const editorial_score = computeEditorialScore({ ...article, priority_score, created_at: new Date().toISOString() });
+      const editorial_score = computeEditorialScore({
+        ...article,
+        priority_score,
+        created_at: new Date().toISOString(),
+      });
       const row = {
         ...article,
         criticality,
         priority_score,
         editorial_score,
-        status:        check.valid ? 'pending' : 'blocked',
+        status: check.valid ? 'pending' : 'blocked',
         boost_eligible: check.boostEligible !== false,
       };
       if (!check.valid && check.reason) row.blocked_reason = check.reason;
@@ -213,10 +225,12 @@ async function run() {
     totalArticles += saved;
   }
 
-  console.log(`\n[trending-pages] Done — ${totalSignals} signals stored, ${totalArticles} articles added`);
+  console.log(
+    `\n[trending-pages] Done — ${totalSignals} signals stored, ${totalArticles} articles added`,
+  );
 }
 
-run().catch(err => {
+run().catch((err) => {
   console.error('TRENDING-PAGES FAILED:', err);
   process.exit(1);
 });

@@ -22,18 +22,18 @@ function daysUntilAnniversary(anniversaryMMDD, today) {
 // Returns null if every topic for this country has been queued recently.
 export function pickNextTopic(country, queuedTopicIds, today = new Date()) {
   const queued = new Set(queuedTopicIds);
-  const candidates = HISTORICAL_STORIES
-    .filter(t => t.country === country && !queued.has(t.id))
-    .map(t => ({ topic: t, daysUntil: daysUntilAnniversary(t.anniversary_date, today) }));
+  const candidates = HISTORICAL_STORIES.filter(
+    (t) => t.country === country && !queued.has(t.id),
+  ).map((t) => ({ topic: t, daysUntil: daysUntilAnniversary(t.anniversary_date, today) }));
 
   if (candidates.length === 0) return null;
 
   const upcoming = candidates
-    .filter(c => c.daysUntil !== null && c.daysUntil <= ANNIVERSARY_WINDOW_DAYS)
+    .filter((c) => c.daysUntil !== null && c.daysUntil <= ANNIVERSARY_WINDOW_DAYS)
     .sort((a, b) => a.daysUntil - b.daysUntil);
   if (upcoming.length > 0) return upcoming[0].topic;
 
-  const evergreen = candidates.filter(c => c.daysUntil === null);
+  const evergreen = candidates.filter((c) => c.daysUntil === null);
   if (evergreen.length > 0) {
     return evergreen[Math.floor(Math.random() * evergreen.length)].topic;
   }

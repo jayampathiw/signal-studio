@@ -1,8 +1,17 @@
+import type { HighlightBox, ZoomRegion } from '@signal-studio/types/timeline';
 import { useEffect, useRef, useState } from 'react';
-import { AbsoluteFill, Img, continueRender, delayRender, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+import {
+  AbsoluteFill,
+  Img,
+  continueRender,
+  delayRender,
+  interpolate,
+  useCurrentFrame,
+  useVideoConfig,
+} from 'remotion';
+
 import { PALETTE } from './palette';
 import { resolveAsset } from '../resolve-asset';
-import type { HighlightBox, ZoomRegion } from '@signal-studio/types/timeline';
 
 type Props = {
   imageUrl: string;
@@ -75,10 +84,11 @@ export const DocumentHighlight: React.FC<Props> = ({ imageUrl, highlights, zoomF
   const highlightsWithOpacity = (highlights ?? []).map((h) => {
     const fromFrame = h.fromSec * fps;
     const toFrame = h.toSec * fps;
-    const opacity = interpolate(frame, [fromFrame, Math.max(toFrame, fromFrame + 1)], [0, 1], {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    }) * (h.opacity ?? 0.8);
+    const opacity =
+      interpolate(frame, [fromFrame, Math.max(toFrame, fromFrame + 1)], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }) * (h.opacity ?? 0.8);
     return { h, opacity };
   });
 
@@ -118,26 +128,35 @@ export const DocumentHighlight: React.FC<Props> = ({ imageUrl, highlights, zoomF
     <AbsoluteFill style={{ backgroundColor: PALETTE.background, overflow: 'hidden' }}>
       {/* Single shared transform so the image and the highlight box move in lockstep —
           applying it separately to each would let them drift out of alignment. */}
-      <AbsoluteFill style={{ transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`, transformOrigin: '0 0' }}>
+      <AbsoluteFill
+        style={{
+          transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+          transformOrigin: '0 0',
+        }}
+      >
         {imageUrl && (
-          <Img src={resolvedUrl} style={{ width: frameWidth, height: frameHeight, objectFit: 'contain' }} />
-        )}
-        {naturalSize && highlightsWithOpacity.map(({ h, opacity }, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: page.left + h.x * page.width,
-              top: page.top + h.y * page.height,
-              width: h.width * page.width,
-              height: h.height * page.height,
-              background: PALETTE.highlight,
-              opacity,
-              mixBlendMode: 'multiply',
-              boxShadow: `0 0 0 3px ${PALETTE.highlight}`,
-            }}
+          <Img
+            src={resolvedUrl}
+            style={{ width: frameWidth, height: frameHeight, objectFit: 'contain' }}
           />
-        ))}
+        )}
+        {naturalSize &&
+          highlightsWithOpacity.map(({ h, opacity }, i) => (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                left: page.left + h.x * page.width,
+                top: page.top + h.y * page.height,
+                width: h.width * page.width,
+                height: h.height * page.height,
+                background: PALETTE.highlight,
+                opacity,
+                mixBlendMode: 'multiply',
+                boxShadow: `0 0 0 3px ${PALETTE.highlight}`,
+              }}
+            />
+          ))}
       </AbsoluteFill>
     </AbsoluteFill>
   );

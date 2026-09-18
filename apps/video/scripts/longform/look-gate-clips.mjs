@@ -1,5 +1,7 @@
 // DEPRECATED — the video-clip validation pool is not used in the stills-only pipeline (see docs/longform-final-plan.md).
-console.error('DEPRECATED: look-gate-clips.mjs is not used in the current pipeline.\nThe longform pipeline is stills-only with manual image approval gates. See docs/longform-final-plan.md.');
+console.error(
+  'DEPRECATED: look-gate-clips.mjs is not used in the current pipeline.\nThe longform pipeline is stills-only with manual image approval gates. See docs/longform-final-plan.md.',
+);
 process.exit(1);
 
 // Phase 5B — Interactive look-gate (docs/long-form-pipeline-plan.md §5).
@@ -20,44 +22,54 @@ process.exit(1);
 //   (a) --list   → prints all validating clips with their frame paths (for Claude to review)
 //   (b) --scene N --status passed|failed [--reason "..."] → updates one clip after review
 
-import { parseArgs } from 'util';
-import { getServiceClient } from '@signal-studio/database';
 import { existsSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { parseArgs } from 'util';
+
+import { getServiceClient } from '@signal-studio/database';
 
 const { values } = parseArgs({
   options: {
-    project:       { type: 'string' },
-    scene:         { type: 'string' },
-    status:        { type: 'string' },  // 'passed' or 'failed'
-    reason:        { type: 'string', default: '' },
-    list:          { type: 'boolean', default: false },
-    'frames-dir':  { type: 'string', default: 'temp/longform/frames' },
+    project: { type: 'string' },
+    scene: { type: 'string' },
+    status: { type: 'string' }, // 'passed' or 'failed'
+    reason: { type: 'string', default: '' },
+    list: { type: 'boolean', default: false },
+    'frames-dir': { type: 'string', default: 'temp/longform/frames' },
   },
   strict: false,
 });
 
-if (!values.project) { console.error('Error: --project <id> required'); process.exit(2); }
-const projectId  = Number(values.project);
-const framesDir  = values['frames-dir'];
+if (!values.project) {
+  console.error('Error: --project <id> required');
+  process.exit(2);
+}
+const projectId = Number(values.project);
+const framesDir = values['frames-dir'];
 const db = getServiceClient();
 
 async function main() {
   if (values.scene && values.status) {
     // Update mode: set outcome for one clip after visual review.
-    const sceneN  = Number(values.scene);
+    const sceneN = Number(values.scene);
     const newStatus = values.status === 'passed' ? 'passed' : 'failed';
     const retryCount = newStatus === 'failed' ? undefined : null;
 
-    const { data: clip } = await db.from('content_clips')
-      .select('id, retry_count').eq('project_id', projectId).eq('scene_n', sceneN).single();
-    if (!clip) { console.error(`scene ${sceneN} not found`); process.exit(1); }
+    const { data: clip } = await db
+      .from('content_clips')
+      .select('id, retry_count')
+      .eq('project_id', projectId)
+      .eq('scene_n', sceneN)
+      .single();
+    if (!clip) {
+      console.error(`scene ${sceneN} not found`);
+      process.exit(1);
+    }
 
     const update = {
-      status:      newStatus,
-      fail_reason: newStatus === 'failed'
-        ? `[look-gate] ${values.reason || 'failed look-gate review'}`
-        : null,
+      status: newStatus,
+      fail_reason:
+        newStatus === 'failed' ? `[look-gate] ${values.reason || 'failed look-gate review'}` : null,
     };
     if (newStatus === 'failed') update.retry_count = (clip.retry_count || 0) + 1;
     await db.from('content_clips').update(update).eq('id', clip.id);
@@ -66,9 +78,12 @@ async function main() {
   }
 
   // List mode: show validating clips + frame paths.
-  const { data: clips, error } = await db.from('content_clips')
+  const { data: clips, error } = await db
+    .from('content_clips')
     .select('scene_n, visual_prompt, vo_text, reference_keys, fail_reason, clip_url')
-    .eq('project_id', projectId).eq('kind', 'clip').eq('status', 'validating')
+    .eq('project_id', projectId)
+    .eq('kind', 'clip')
+    .eq('status', 'validating')
     .order('scene_n');
   if (error) throw new Error(error.message);
 
@@ -86,9 +101,9 @@ async function main() {
     let framePaths = [];
     if (existsSync(sceneDir)) {
       framePaths = readdirSync(sceneDir)
-        .filter(f => f.endsWith('.jpg'))
+        .filter((f) => f.endsWith('.jpg'))
         .sort()
-        .map(f => join(sceneDir, f));
+        .map((f) => join(sceneDir, f));
     }
 
     console.log(`── SCENE ${clip.scene_n} ──────────────────────────────────────────────`);
@@ -107,8 +122,15 @@ async function main() {
   }
 
   console.log('To update a clip after review:');
-  console.log(`  node apps/video/scripts/longform/look-gate-clips.mjs --project ${projectId} --scene N --status passed`);
-  console.log(`  node apps/video/scripts/longform/look-gate-clips.mjs --project ${projectId} --scene N --status failed --reason "wrong sport"`);
+  console.log(
+    `  node apps/video/scripts/longform/look-gate-clips.mjs --project ${projectId} --scene N --status passed`,
+  );
+  console.log(
+    `  node apps/video/scripts/longform/look-gate-clips.mjs --project ${projectId} --scene N --status failed --reason "wrong sport"`,
+  );
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

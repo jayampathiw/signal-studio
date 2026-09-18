@@ -10,28 +10,35 @@
 //   node apps/video/scripts/longform/generate-captions.mjs --dir content/longform/son-also-saves
 //   node apps/video/scripts/longform/generate-captions.mjs --dir content/longform/son-also-saves --scenes 1-12
 
-import { parseArgs } from 'util';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { parseArgs } from 'util';
+
 import { generateWordTimestamps } from '@signal-studio/media/subtitles';
-import { parseShotlistV2 } from '../../src/longform/parse-shotlist-v2.js';
+
 import { chunkCaptions } from '../../src/longform/captions.js';
+import { parseShotlistV2 } from '../../src/longform/parse-shotlist-v2.js';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
 
 const { values } = parseArgs({
   options: {
-    dir:      { type: 'string' },
+    dir: { type: 'string' },
     shotlist: { type: 'string' },
-    scenes:   { type: 'string' },
+    scenes: { type: 'string' },
   },
   strict: false,
 });
 
-if (!values.dir) { console.error('--dir <project-dir> required'); process.exit(2); }
+if (!values.dir) {
+  console.error('--dir <project-dir> required');
+  process.exit(2);
+}
 const projectDir = resolve(REPO_ROOT, values.dir);
-const shotlistPath = values.shotlist ? resolve(values.shotlist) : join(projectDir, 'shotlist-v2.md');
+const shotlistPath = values.shotlist
+  ? resolve(values.shotlist)
+  : join(projectDir, 'shotlist-v2.md');
 const voDir = join(projectDir, 'vo');
 const captionsPath = join(projectDir, 'captions.json');
 
@@ -61,15 +68,25 @@ async function main() {
 
   for (const scene of scenes) {
     const n = pad2(scene.scene_n);
-    if (!scene.vo_text) { console.log(`S${n}  no VO text — skipped`); continue; }
+    if (!scene.vo_text) {
+      console.log(`S${n}  no VO text — skipped`);
+      continue;
+    }
 
     const voPath = join(voDir, `S${n}.wav`);
-    if (!existsSync(voPath)) { console.log(`S${n}  no VO audio — skipped`); continue; }
+    if (!existsSync(voPath)) {
+      console.log(`S${n}  no VO audio — skipped`);
+      continue;
+    }
 
     // Bias on the FULL scene narration now (not just a short target phrase) —
     // captions need every word transcribed accurately, not just the ones a
     // single isolated Tier-2 accent used to target.
-    const words = await generateWordTimestamps(voPath, join(voDir, `S${n}.words.json`), titleCase(scene.vo_text));
+    const words = await generateWordTimestamps(
+      voPath,
+      join(voDir, `S${n}.words.json`),
+      titleCase(scene.vo_text),
+    );
     const chunks = chunkCaptions(scene.vo_text, words);
 
     captions[`S${n}`] = chunks.map((c) => ({
@@ -92,4 +109,7 @@ async function main() {
   console.log(`\nWrote ${captionsPath}`);
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('FATAL:', e.message);
+  process.exit(1);
+});

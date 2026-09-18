@@ -1,7 +1,7 @@
-import * as facebook  from './facebook.js';
+import * as facebook from './facebook.js';
 import * as instagram from './instagram.js';
-import * as youtube   from './youtube.js';
-import * as tiktok    from './tiktok.js';
+import * as tiktok from './tiktok.js';
+import * as youtube from './youtube.js';
 
 const PUBLISHERS = {
   facebook,
@@ -28,7 +28,10 @@ export async function publishToAll(contentItem, channelConfig) {
       continue;
     }
     try {
-      const { postId, postedAt, platformUrl } = await PUBLISHERS[platform].publish(contentItem, channelConfig);
+      const { postId, postedAt, platformUrl } = await PUBLISHERS[platform].publish(
+        contentItem,
+        channelConfig,
+      );
       results.push({ platform, ok: true, postId, postedAt, platformUrl });
     } catch (e) {
       results.push({ platform, ok: false, error: e.message });

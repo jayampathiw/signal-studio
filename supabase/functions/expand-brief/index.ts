@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Anthropic from 'https://esm.sh/@anthropic-ai/sdk';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -82,7 +82,12 @@ function sceneCountForFormat(format: string): number {
   return format === '21s' ? 3 : 1;
 }
 
-function userPrompt(item: { title: string | null; description: string | null; format: string | null; style: string | null }): string {
+function userPrompt(item: {
+  title: string | null;
+  description: string | null;
+  format: string | null;
+  style: string | null;
+}): string {
   const concept = item.title ?? 'Untitled concept';
   const desc = item.description ? `\nAdditional context: ${item.description}` : '';
   const format = item.format ?? '11s';
@@ -105,9 +110,7 @@ Return ONLY the JSON — no other text.`;
 function getText(res: any): string {
   const r = typeof res === 'string' ? JSON.parse(res) : res;
   // Find the text block by type — extended thinking models prepend a 'thinking' block
-  const textBlock = Array.isArray(r.content)
-    ? r.content.find((b: any) => b.type === 'text')
-    : null;
+  const textBlock = Array.isArray(r.content) ? r.content.find((b: any) => b.type === 'text') : null;
   return textBlock?.text ?? r.completion ?? r.text ?? '';
 }
 
@@ -146,13 +149,16 @@ Deno.serve(async (req: Request) => {
     .single();
 
   if (fetchErr || !item) return json({ error: fetchErr?.message ?? 'Content item not found' }, 404);
-  if (item.status !== 'brief') return json({ error: `Expected status 'brief', got '${item.status}'` }, 422);
+  if (item.status !== 'brief')
+    return json({ error: `Expected status 'brief', got '${item.status}'` }, 422);
 
   // Mark as generating so a double-click can't fire twice
   await supabase.from('content_items').update({ status: 'generating' }).eq('id', content_item_id);
 
   try {
-    const anthropicOpts: { apiKey: string; baseURL?: string } = { apiKey: Deno.env.get('ANTHROPIC_KEY')! };
+    const anthropicOpts: { apiKey: string; baseURL?: string } = {
+      apiKey: Deno.env.get('ANTHROPIC_KEY')!,
+    };
     const baseURL = Deno.env.get('ANTHROPIC_BASE_URL');
     if (baseURL) anthropicOpts.baseURL = baseURL;
     const anthropic = new Anthropic(anthropicOpts);
@@ -173,10 +179,13 @@ Deno.serve(async (req: Request) => {
       parsed = extractJson(raw) as { scenes: unknown[] };
     } catch (parseErr) {
       // Store the raw output in status_note for debugging, revert to brief
-      await supabase.from('content_items').update({
-        status: 'brief',
-        status_note: `expand-brief parse error: ${String(parseErr)}\n\nRaw:\n${raw.slice(0, 500)}`,
-      }).eq('id', content_item_id);
+      await supabase
+        .from('content_items')
+        .update({
+          status: 'brief',
+          status_note: `expand-brief parse error: ${String(parseErr)}\n\nRaw:\n${raw.slice(0, 500)}`,
+        })
+        .eq('id', content_item_id);
       return json({ error: 'Claude returned unparseable JSON', raw: raw.slice(0, 500) }, 500);
     }
 
@@ -185,22 +194,27 @@ Deno.serve(async (req: Request) => {
     }
 
     // Save scenes + advance status to storyboard
-    const { error: updateErr } = await supabase.from('content_items').update({
-      scenes: parsed.scenes,
-      status: 'storyboard',
-      status_note: null,
-    }).eq('id', content_item_id);
+    const { error: updateErr } = await supabase
+      .from('content_items')
+      .update({
+        scenes: parsed.scenes,
+        status: 'storyboard',
+        status_note: null,
+      })
+      .eq('id', content_item_id);
 
     if (updateErr) throw updateErr;
 
     return json({ scenes: parsed.scenes, status: 'storyboard' });
-
   } catch (err: unknown) {
     // Revert to brief so user can retry
-    await supabase.from('content_items').update({
-      status: 'brief',
-      status_note: `expand-brief failed: ${err instanceof Error ? err.message : String(err)}`,
-    }).eq('id', content_item_id);
+    await supabase
+      .from('content_items')
+      .update({
+        status: 'brief',
+        status_note: `expand-brief failed: ${err instanceof Error ? err.message : String(err)}`,
+      })
+      .eq('id', content_item_id);
     return json({ error: err instanceof Error ? err.message : String(err) }, 500);
   }
 });

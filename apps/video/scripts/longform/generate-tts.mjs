@@ -1,12 +1,13 @@
-import { parseArgs } from 'util';
+import { execSync } from 'child_process';
+import { mkdirSync, writeFileSync, existsSync } from 'fs';
+import { rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
-import { rm } from 'fs/promises';
-import { mkdirSync, writeFileSync, existsSync } from 'fs';
-import { execSync } from 'child_process';
+import { parseArgs } from 'util';
+
 import { getServiceClient } from '@signal-studio/database';
-import { synthesise } from '@signal-studio/media/tts';
 import { uploadToR2 } from '@signal-studio/media/storage';
+import { synthesise } from '@signal-studio/media/tts';
 
 const { values } = parseArgs({
   options: {
@@ -18,7 +19,10 @@ const { values } = parseArgs({
   strict: false,
 });
 
-if (!values.project) { console.error('Error: --project <id> required'); process.exit(2); }
+if (!values.project) {
+  console.error('Error: --project <id> required');
+  process.exit(2);
+}
 
 const projectId = Number(values.project);
 const dry = values.dry;
@@ -53,9 +57,14 @@ async function main() {
 
   const { data: rows, error } = await query;
   if (error) throw new Error(error.message);
-  if (!rows.length) { console.error('No rows with vo_text found for project', projectId); return; }
+  if (!rows.length) {
+    console.error('No rows with vo_text found for project', projectId);
+    return;
+  }
 
-  let done = 0, skipped = 0, errors = 0;
+  let done = 0,
+    skipped = 0,
+    errors = 0;
   const reportData = [];
 
   for (const row of rows) {
@@ -93,8 +102,11 @@ async function main() {
         const wpm = durationSec > 0 ? Math.round((wordCount / durationSec) * 60) : 0;
         const sceneDuration = row.duration_sec ?? null;
         reportData.push({
-          scene_n: row.scene_n, status: 'generated',
-          duration_sec: durationSec, word_count: wordCount, wpm,
+          scene_n: row.scene_n,
+          status: 'generated',
+          duration_sec: durationSec,
+          word_count: wordCount,
+          wpm,
           scene_window_sec: sceneDuration,
           over_budget: sceneDuration && durationSec > sceneDuration + 1.5,
           vo_url: url,
@@ -105,7 +117,10 @@ async function main() {
       done++;
     } catch (err) {
       console.error(`[error] ${label}: ${err.message}`);
-      await db.from('content_clips').update({ fail_reason: `tts error: ${err.message.slice(0, 200)}` }).eq('id', row.id);
+      await db
+        .from('content_clips')
+        .update({ fail_reason: `tts error: ${err.message.slice(0, 200)}` })
+        .eq('id', row.id);
       if (report) reportData.push({ scene_n: row.scene_n, status: 'error', error: err.message });
       errors++;
     } finally {
@@ -123,11 +138,16 @@ async function main() {
     console.log(`\nVO report: ${outPath}`);
     const overBudget = reportData.filter((r) => r.over_budget);
     if (overBudget.length) {
-      console.warn(`  ⚠ Over-budget scenes (VO > window+1.5s): ${overBudget.map((r) => `S${r.scene_n} (${r.duration_sec}s vs ${r.scene_window_sec}s window)`).join(', ')}`);
+      console.warn(
+        `  ⚠ Over-budget scenes (VO > window+1.5s): ${overBudget.map((r) => `S${r.scene_n} (${r.duration_sec}s vs ${r.scene_window_sec}s window)`).join(', ')}`,
+      );
     }
     const totalVo = reportData.reduce((s, r) => s + (r.duration_sec ?? 0), 0);
     console.log(`  Total VO duration: ${totalVo.toFixed(1)}s`);
   }
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

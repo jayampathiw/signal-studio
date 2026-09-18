@@ -7,15 +7,15 @@
 const PAD = 0.06;
 
 export const ANCHORS = {
-  upper_left:   { x: `w*${PAD}`,             y: `h*0.10` },
-  upper_center: { x: `(w-text_w)/2`,         y: `h*0.10` },
-  upper_right:  { x: `w-text_w-w*${PAD}`,    y: `h*0.10` },
-  left_mid:     { x: `w*${PAD}`,             y: `(h-text_h)/2` },
-  right_mid:    { x: `w-text_w-w*${PAD}`,    y: `(h-text_h)/2` },
-  center_low:   { x: `(w-text_w)/2`,         y: `h*0.60` },
-  lower_left:   { x: `w*${PAD}`,             y: `h*0.80` },
-  lower_center: { x: `(w-text_w)/2`,         y: `h*0.80` },
-  lower_right:  { x: `w-text_w-w*${PAD}`,    y: `h*0.80` },
+  upper_left: { x: `w*${PAD}`, y: `h*0.10` },
+  upper_center: { x: `(w-text_w)/2`, y: `h*0.10` },
+  upper_right: { x: `w-text_w-w*${PAD}`, y: `h*0.10` },
+  left_mid: { x: `w*${PAD}`, y: `(h-text_h)/2` },
+  right_mid: { x: `w-text_w-w*${PAD}`, y: `(h-text_h)/2` },
+  center_low: { x: `(w-text_w)/2`, y: `h*0.60` },
+  lower_left: { x: `w*${PAD}`, y: `h*0.80` },
+  lower_center: { x: `(w-text_w)/2`, y: `h*0.80` },
+  lower_right: { x: `w-text_w-w*${PAD}`, y: `h*0.80` },
 };
 
 export const DEFAULT_ANCHOR = 'lower_center';

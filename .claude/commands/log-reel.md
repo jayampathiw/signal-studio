@@ -3,10 +3,12 @@
 Log performance data for a posted Wild Capture reel.
 
 **Usage:**
+
 - `/log-reel 42 8200 47.3 11 +0.5` — log reel id 42: 8,200 views, 47.3% watch-through, 11 follows, +0.5x distribution
 - `/log-reel` — interactive mode: asks for id and metrics one by one
 
 **What it does:**
+
 1. Updates `content_items` row: `status='posted'`, stores raw metrics in a `metrics` jsonb field
 2. Appends a row to `data/reels.csv` (create if not exists):
    ```
@@ -16,6 +18,7 @@ Log performance data for a posted Wild Capture reel.
 3. Reports: "Logged C-42. follows/1k: {calc}. Distribution: {dist}."
 
 **Fields:**
+
 - `views`: total video views
 - `watch_through_pct`: % viewers who watched to the end (from Facebook Insights)
 - `follows`: follows gained from this reel

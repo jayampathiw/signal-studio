@@ -2,8 +2,12 @@ import { readFileSync } from 'fs';
 
 const ACT_MAP = {
   'COLD OPEN': 0,
-  'ACT 1': 1, 'ACT 2': 2, 'ACT 3': 3, 'ACT 4': 4, 'ACT 5': 5,
-  'OUTRO': 6,
+  'ACT 1': 1,
+  'ACT 2': 2,
+  'ACT 3': 3,
+  'ACT 4': 4,
+  'ACT 5': 5,
+  OUTRO: 6,
 };
 
 function parseTimecode(tc) {
@@ -21,7 +25,8 @@ function parseId(id) {
 
   // S01-A → scene 1, cut 'A'
   const cutMatch = id.match(/^S(\d+)-([A-D])$/i);
-  if (cutMatch) return { scene_n: Number(cutMatch[1]), cut: cutMatch[2].toUpperCase(), kind: 'still' };
+  if (cutMatch)
+    return { scene_n: Number(cutMatch[1]), cut: cutMatch[2].toUpperCase(), kind: 'still' };
 
   // S14 → editor build
   const bareMatch = id.match(/^S(\d+)$/i);
@@ -48,7 +53,10 @@ export function parsePromptsV2(filePath) {
 
     // Parse table rows (skip header/separator rows)
     if (!line.startsWith('|') || line.startsWith('|---|')) continue;
-    const cells = line.split('|').map((c) => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+    const cells = line
+      .split('|')
+      .map((c) => c.trim())
+      .filter((_, i, a) => i > 0 && i < a.length - 1);
     if (cells.length < 5) continue;
     const [idRaw, sceneLabel, timecodeRaw, notes, ...promptParts] = cells;
     const prompt = promptParts.join('|').trim();
@@ -59,7 +67,8 @@ export function parsePromptsV2(filePath) {
     if (idRaw === 'ID') continue;
 
     const timecode = parseTimecode(timecodeRaw);
-    const isReuse = notes.toLowerCase().includes('asset reuse') || notes.toLowerCase().includes('reuse');
+    const isReuse =
+      notes.toLowerCase().includes('asset reuse') || notes.toLowerCase().includes('reuse');
     const isEditorBuild = prompt === '—' || parsed.kind === 'editor_build';
 
     const row = {
@@ -89,12 +98,17 @@ export function parsePromptsV2(filePath) {
 // CLI: node parse-prompts-v2.js <path>
 if (process.argv[1].endsWith('parse-prompts-v2.js')) {
   const path = process.argv[2];
-  if (!path) { console.error('Usage: node parse-prompts-v2.js <prompts-v2.md>'); process.exit(1); }
+  if (!path) {
+    console.error('Usage: node parse-prompts-v2.js <prompts-v2.md>');
+    process.exit(1);
+  }
   const rows = parsePromptsV2(path);
   const generated = rows.filter((r) => !r.is_reuse && r.kind === 'still');
   const reuse = rows.filter((r) => r.is_reuse || r.kind === 'reuse');
   const editor = rows.filter((r) => r.kind === 'editor_build');
-  console.log(`Total rows: ${rows.length} | generated stills: ${generated.length} | reuse: ${reuse.length} | editor builds: ${editor.length}`);
+  console.log(
+    `Total rows: ${rows.length} | generated stills: ${generated.length} | reuse: ${reuse.length} | editor builds: ${editor.length}`,
+  );
   // Spot-check
   const s34c = rows.find((r) => r.id === 'S34-C');
   if (s34c) console.log('S34-C timecode:', s34c.timecode, '(expect 6:01–6:05)');

@@ -3,6 +3,7 @@
 Show the current state of the Wild Capture production queue.
 
 **Displays:**
+
 1. **Queue summary** — count by status (brief, storyboard, generating, rendered, posted)
 2. **In-flight reels** — any item currently `generating`, with which scene is active
 3. **Open threads** — all items with a non-null `status_note` (blocked on a decision)
@@ -11,6 +12,7 @@ Show the current state of the Wild Capture production queue.
 6. **Credit balance** — quick check via Higgsfield `show_plans_and_credits`
 
 **Query:**
+
 ```sql
 SELECT id, format, status, slot, scheduled_for, status_note, title, created_at
 FROM content_items
@@ -22,6 +24,7 @@ LIMIT 30;
 **Usage:** `/wild-status` — no arguments needed
 
 **Common follow-up commands:**
+
 - `/new-wild-reel [id]` to resume a stalled generation
 - `/wild-seo [id]` to add SEO to a rendered reel
 - `/log-reel [id]` to log a posted reel's performance

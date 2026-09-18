@@ -10,13 +10,14 @@
 //   node apps/video/scripts/longform/assemble-local.mjs --dir content/longform/son-also-saves --scenes 1-5
 //   node apps/video/scripts/longform/assemble-local.mjs --dir content/longform/son-also-saves --keep-tmp
 
-import { parseArgs } from 'util';
+import { execFile } from 'child_process';
 import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'fs';
+import { tmpdir } from 'os';
 import { join, resolve, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
-import { tmpdir } from 'os';
-import { execFile } from 'child_process';
+import { parseArgs } from 'util';
 import { promisify } from 'util';
+
 import { parseShotlistV2, tcToSec } from '../../src/longform/parse-shotlist-v2.js';
 import { buildTextCard, buildStillsScene } from '../../src/longform/render.js';
 
@@ -26,21 +27,26 @@ const STILL_EXTS = ['.jpeg', '.jpg', '.png'];
 
 const { values } = parseArgs({
   options: {
-    dir:        { type: 'string' },
-    shotlist:   { type: 'string' },   // override default <dir>/shotlist-v2.md
-    scenes:     { type: 'string' },   // e.g. "1-5" for partial render
-    output:     { type: 'string' },   // override final output path
+    dir: { type: 'string' },
+    shotlist: { type: 'string' }, // override default <dir>/shotlist-v2.md
+    scenes: { type: 'string' }, // e.g. "1-5" for partial render
+    output: { type: 'string' }, // override final output path
     'keep-tmp': { type: 'boolean', default: false },
-    watermark:  { type: 'string' },   // override watermark file under assets/logos/; 'none' to disable
-    'max-silent-tail': { type: 'string' },   // cap seconds of silence held after VO ends (opt-in; unset = old Math.max-only behavior)
+    watermark: { type: 'string' }, // override watermark file under assets/logos/; 'none' to disable
+    'max-silent-tail': { type: 'string' }, // cap seconds of silence held after VO ends (opt-in; unset = old Math.max-only behavior)
   },
   strict: false,
 });
 const maxSilentTail = values['max-silent-tail'] != null ? Number(values['max-silent-tail']) : null;
 
-if (!values.dir) { console.error('--dir <project-dir> required, e.g. content/longform/son-also-saves'); process.exit(2); }
+if (!values.dir) {
+  console.error('--dir <project-dir> required, e.g. content/longform/son-also-saves');
+  process.exit(2);
+}
 const projectDir = resolve(REPO_ROOT, values.dir);
-const shotlistPath = values.shotlist ? resolve(values.shotlist) : join(projectDir, 'shotlist-v2.md');
+const shotlistPath = values.shotlist
+  ? resolve(values.shotlist)
+  : join(projectDir, 'shotlist-v2.md');
 const stillsDir = join(projectDir, 'stills');
 const voDir = join(projectDir, 'vo');
 const outputDir = join(projectDir, 'output');
@@ -52,7 +58,8 @@ const keepTmp = values['keep-tmp'];
 // football/documentary/EN) — this project is file-based/no channel_key, so
 // it isn't looked up from there; hardcoded here instead. Same overlay recipe
 // as assemble-longform.mjs: 80px wide icon, 40% opacity, bottom-right.
-const watermarkFile = values.watermark === 'none' ? null : (values.watermark ?? 'underdog_archive_standalone_icon.png');
+const watermarkFile =
+  values.watermark === 'none' ? null : (values.watermark ?? 'underdog_archive_standalone_icon.png');
 const watermarkPath = watermarkFile ? resolve(REPO_ROOT, 'assets/logos', watermarkFile) : null;
 
 // Running-caption chunks from generate-captions.mjs (real Whisper word
@@ -60,7 +67,9 @@ const watermarkPath = watermarkFile ? resolve(REPO_ROOT, 'assets/logos', waterma
 // replace the shotlist's hand-authored 🔤 Tier 2 lines entirely once
 // generated — a scene with no captions.json entry yet falls back to the
 // shotlist's own script-estimate Tier 2 lines so it still renders something.
-const sceneCaptions = existsSync(captionsPath) ? JSON.parse(readFileSync(captionsPath, 'utf-8')) : {};
+const sceneCaptions = existsSync(captionsPath)
+  ? JSON.parse(readFileSync(captionsPath, 'utf-8'))
+  : {};
 
 // generate-captions.mjs measures word timestamps against a per-scene VO file
 // (t=0 at scene start), but buildStillsScene expects overlay.at_sec on the
@@ -105,7 +114,11 @@ function mergeCaptions(sceneN, fromSec, overlays) {
     at_sec: fromSec + c.at_sec,
     duration_sec: c.duration_sec,
     // Offsets (not absolute times) — see generate-captions.mjs/motion.js for why.
-    words: c.words.map((w) => ({ text: w.text, offset_start: w.offset_start, offset_end: w.offset_end })),
+    words: c.words.map((w) => ({
+      text: w.text,
+      offset_start: w.offset_start,
+      offset_end: w.offset_end,
+    })),
   }));
 
   return captionOverlays;
@@ -121,7 +134,9 @@ function parseSceneRange(str) {
 }
 const sceneRange = parseSceneRange(values.scenes);
 
-function pad2(n) { return String(n).padStart(2, '0'); }
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
 
 // Manual cut-split overrides, scene-relative seconds within the PLANNED
 // (unstretched) scene duration, one entry per cut boundary (stills.length-1
@@ -173,7 +188,9 @@ async function main() {
   if (!scenes.length) throw new Error('No scenes matched --scenes filter');
 
   const rangeLabel = sceneRange ? ` scenes ${sceneRange.from}-${sceneRange.to}` : '';
-  console.log(`"${title}"${rangeLabel} — ${scenes.length} scenes (target ${target_duration_sec}s)\n`);
+  console.log(
+    `"${title}"${rangeLabel} — ${scenes.length} scenes (target ${target_duration_sec}s)\n`,
+  );
 
   const workDir = join(tmpdir(), `longform-local-${Date.now()}`);
   mkdirSync(workDir, { recursive: true });
@@ -211,7 +228,9 @@ async function main() {
         // stills), but some carry an optional background image by convention —
         // reuse the same S{n}-A file lookup; falls back to plain black if absent.
         const bgImagePath = findStillFile(scene.scene_n, 'A');
-        process.stdout.write(`  ${label} [text_card${bgImagePath ? '+bg' : ''}] "${cardText.slice(0, 40)}" … `);
+        process.stdout.write(
+          `  ${label} [text_card${bgImagePath ? '+bg' : ''}] "${cardText.slice(0, 40)}" … `,
+        );
         const out = join(workDir, `scene_${n}.mp4`);
         await buildTextCard(cardText, scene.duration_sec, out, bgImagePath);
         scenePaths.push(out);
@@ -240,11 +259,15 @@ async function main() {
 
       const missing = stillRows.filter((s) => !s.clip_url);
       if (missing.length === stillRows.length) {
-        console.warn(`  ${label} SKIPPED — no still image(s) found in ${stillsDir} (expected S${n}-${scene.stills.map((s) => s.cut).join('/')}.[jpeg|jpg|png])`);
+        console.warn(
+          `  ${label} SKIPPED — no still image(s) found in ${stillsDir} (expected S${n}-${scene.stills.map((s) => s.cut).join('/')}.[jpeg|jpg|png])`,
+        );
         continue;
       }
       if (missing.length) {
-        console.warn(`  ${label} missing cut(s): ${missing.map((s) => s.cut).join(', ')} — rendering with the rest`);
+        console.warn(
+          `  ${label} missing cut(s): ${missing.map((s) => s.cut).join(', ')} — rendering with the rest`,
+        );
       }
 
       const fromSec = tcToSec(scene.from_tc);
@@ -266,7 +289,13 @@ async function main() {
         clip,
         voPath,
         workDir,
-        { noOverlays: false, maxSilentTail, onSceneDur: (d) => { sceneDurations[`S${n}`] = d; } },
+        {
+          noOverlays: false,
+          maxSilentTail,
+          onSceneDur: (d) => {
+            sceneDurations[`S${n}`] = d;
+          },
+        },
       );
       scenePaths.push(out);
       console.log('done' + (voPath ? '' : ' (no VO — silent)'));
@@ -280,7 +309,18 @@ async function main() {
     const listPath = join(workDir, '_concat.txt');
     const concatPath = join(workDir, 'concat.mp4');
     writeFileSync(listPath, scenePaths.map((p) => `file '${p}'`).join('\n'));
-    await execAsync('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-c', 'copy', concatPath]);
+    await execAsync('ffmpeg', [
+      '-y',
+      '-f',
+      'concat',
+      '-safe',
+      '0',
+      '-i',
+      listPath,
+      '-c',
+      'copy',
+      concatPath,
+    ]);
 
     let finalPath = concatPath;
     if (watermarkPath && existsSync(watermarkPath)) {
@@ -288,12 +328,20 @@ async function main() {
       const wmPath = join(workDir, 'watermarked.mp4');
       await execAsync('ffmpeg', [
         '-y',
-        '-i', finalPath,
-        '-i', watermarkPath,
+        '-i',
+        finalPath,
+        '-i',
+        watermarkPath,
         '-filter_complex',
         '[1:v]scale=80:-1,format=rgba,colorchannelmixer=aa=0.4[wm];[0:v][wm]overlay=W-w-20:H-h-20:format=auto',
-        '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p',
-        '-c:a', 'copy',
+        '-c:v',
+        'libx264',
+        '-preset',
+        'fast',
+        '-pix_fmt',
+        'yuv420p',
+        '-c:a',
+        'copy',
         wmPath,
       ]);
       finalPath = wmPath;
@@ -318,4 +366,7 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error('FATAL:', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('FATAL:', e.message);
+  process.exit(1);
+});

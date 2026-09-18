@@ -29,7 +29,7 @@ export function extractJson(text) {
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const candidate = fence ? fence[1] : text;
   const start = candidate.indexOf('{');
-  const end   = candidate.lastIndexOf('}');
+  const end = candidate.lastIndexOf('}');
   if (start < 0 || end < 0 || end <= start) return null;
   return candidate.slice(start, end + 1).trim();
 }
@@ -69,7 +69,13 @@ export async function chat({ system, messages, maxTokens = 1024 }) {
  *
  * @param {{ system: string, messages: Array<{role:string,content:string}>, maxTokens?: number, model?: string, timeoutMs?: number }} opts
  */
-export async function chatText({ system, messages, maxTokens = 4096, model = MODEL, timeoutMs = 120_000 }) {
+export async function chatText({
+  system,
+  messages,
+  maxTokens = 4096,
+  model = MODEL,
+  timeoutMs = 120_000,
+}) {
   const base = (env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/$/, '');
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), timeoutMs);

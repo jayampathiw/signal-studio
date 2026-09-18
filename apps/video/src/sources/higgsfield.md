@@ -10,17 +10,17 @@ Root `.mcp.json` note: Higgsfield is not listed there because it's claude.ai-hos
 
 ## Core tools used by the Wild Eye pipeline
 
-| Tool | Use case | Credit cost |
-|---|---|---|
-| `generate_image` | Start-frame images, storyboard panel, portrait final image | Low–medium |
-| `generate_video` | Per-scene video clip (Seedance 2.0 / Kling) | High |
-| `job_status` | Poll until `done` / `failed` / `blocked` | Free |
-| `reveal_generation` | Unblock a rights-verification hold | Free |
-| `models_explore` | Get model recommendation for a use case | Free |
-| `show_plans_and_credits` | Check balance before run | Free |
-| `balance` | Quick balance check | Free |
-| `virality_predictor` | Hook strength / engagement score | Medium |
-| `transactions` | Review credit spend history | Free |
+| Tool                     | Use case                                                   | Credit cost |
+| ------------------------ | ---------------------------------------------------------- | ----------- |
+| `generate_image`         | Start-frame images, storyboard panel, portrait final image | Low–medium  |
+| `generate_video`         | Per-scene video clip (Seedance 2.0 / Kling)                | High        |
+| `job_status`             | Poll until `done` / `failed` / `blocked`                   | Free        |
+| `reveal_generation`      | Unblock a rights-verification hold                         | Free        |
+| `models_explore`         | Get model recommendation for a use case                    | Free        |
+| `show_plans_and_credits` | Check balance before run                                   | Free        |
+| `balance`                | Quick balance check                                        | Free        |
+| `virality_predictor`     | Hook strength / engagement score                           | Medium      |
+| `transactions`           | Review credit spend history                                | Free        |
 
 ## Model selection for Wild Capture content
 
@@ -34,6 +34,7 @@ Always call `models_explore(action:'recommend')` before generation if unsure. Gu
 ## Critical: multi-shot vs single-shot prompting
 
 SeaDance 2.0 performs significantly **better with descriptive multi-shot prompts** than with single shots based on individual start frames alone. When generating a 21-second reel's 3 scenes:
+
 - Write prompts that describe continuous motion and camera movement, not just "a cavy sitting"
 - Specify camera moves explicitly: "slow push-in", "near-imperceptible pan left", "static hold"
 - Include audio cues in the video prompt — Seedance uses them for temporal rhythm
@@ -41,9 +42,11 @@ SeaDance 2.0 performs significantly **better with descriptive multi-shot prompts
 ## Approval modes
 
 ### Interactive sessions
+
 Set `generate_image` and `generate_video` to **"ask"** in Higgsfield MCP permissions. This prevents accidental credit burns when Claude is given broad permissions. Review each generation before approving.
 
 ### Cloud agent sessions
+
 - `generate_image`: auto-approve (storyboard images are cheap; continuity-checker gates quality)
 - `generate_video`: auto-approve ONLY if `higgsfield-credit-guard` passes and continuity-checker returned `approvedToProceed: true`
 - Default resolutions: 2K images, 720p video
@@ -51,6 +54,7 @@ Set `generate_image` and `generate_video` to **"ask"** in Higgsfield MCP permiss
 ## Rights / blocked generations
 
 When `job_status` returns `blocked` or a rights-verification warning:
+
 1. Call `mcp__claude_ai_higgsfield__reveal_generation` with the job ID
 2. Wait ~5 seconds
 3. Re-poll `job_status`
@@ -69,6 +73,7 @@ Always use 2K for storyboard images. Use 720p for video in cloud/unattended mode
 ## Style consistency across scenes
 
 The most common quality failure (from testing) is **style drift between scenes** when Claude picks different models per scene. Fix:
+
 1. Pick one model at the start of a reel run (from `models_explore`)
 2. Use that model for ALL image generations in the same reel
 3. Feed each scene's `final_frame_url` as the reference image for the next scene's start frame — this is the continuity mechanism

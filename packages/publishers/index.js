@@ -9,7 +9,8 @@ import { postToFacebook } from './facebook.js';
  */
 export async function publish({ platform, pageKey, content }) {
   switch (platform) {
-    case 'facebook': return postToFacebook(pageKey, content);
+    case 'facebook':
+      return postToFacebook(pageKey, content);
     case 'instagram': {
       const { postToInstagram } = await import('./instagram.js');
       return postToInstagram(pageKey, content);

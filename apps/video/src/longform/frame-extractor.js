@@ -6,12 +6,12 @@
 // them with the Read (image) tool since the reseller proxy can't do vision.
 
 import { execFile } from 'child_process';
-import { promisify } from 'util';
+import { createWriteStream } from 'fs';
 import { mkdtemp, mkdir } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
+import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
@@ -36,7 +36,7 @@ async function downloadTo(url, destPath) {
  */
 export async function extractFrames({ clipUrl, sceneN, frameCount = 3, outDir }) {
   // Probe the duration first so we can place frames evenly.
-  const dir = outDir ?? await mkdtemp(join(tmpdir(), `ss-clip-${sceneN}-`));
+  const dir = outDir ?? (await mkdtemp(join(tmpdir(), `ss-clip-${sceneN}-`)));
   await mkdir(dir, { recursive: true });
 
   const clipPath = join(dir, `scene_${sceneN}.mp4`);
@@ -46,22 +46,37 @@ export async function extractFrames({ clipUrl, sceneN, frameCount = 3, outDir })
   let duration = 5;
   try {
     const { stdout } = await execFileAsync('ffprobe', [
-      '-v', 'error', '-show_entries', 'format=duration',
-      '-of', 'default=noprint_wrappers=1:nokey=1', clipPath,
+      '-v',
+      'error',
+      '-show_entries',
+      'format=duration',
+      '-of',
+      'default=noprint_wrappers=1:nokey=1',
+      clipPath,
     ]);
     duration = parseFloat(stdout.trim()) || 5;
-  } catch { /* fall back to 5s */ }
+  } catch {
+    /* fall back to 5s */
+  }
 
   // Frame timestamps: evenly spaced at 10%, 50%, 90% (or more if frameCount > 3)
   const framePaths = [];
   for (let i = 0; i < frameCount; i++) {
-    const frac = frameCount === 1 ? 0.5 : i / (frameCount - 1) * 0.8 + 0.1;
+    const frac = frameCount === 1 ? 0.5 : (i / (frameCount - 1)) * 0.8 + 0.1;
     const ts = (duration * frac).toFixed(2);
     const framePath = join(dir, `frame_${String(i + 1).padStart(2, '0')}.jpg`);
     await execFileAsync('ffmpeg', [
-      '-y', '-ss', ts, '-i', clipPath,
-      '-vframes', '1', '-q:v', '3',
-      '-vf', 'scale=960:-2',   // scale to 960px wide, keep AR
+      '-y',
+      '-ss',
+      ts,
+      '-i',
+      clipPath,
+      '-vframes',
+      '1',
+      '-q:v',
+      '3',
+      '-vf',
+      'scale=960:-2', // scale to 960px wide, keep AR
       framePath,
     ]);
     framePaths.push(framePath);

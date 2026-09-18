@@ -1,7 +1,7 @@
 name: Fetch News
 
 on:
-  workflow_dispatch:   # cron moved to facebook-news-pipeline (public repo, free minutes)
+  workflow_dispatch: # cron moved to facebook-news-pipeline (public repo, free minutes)
 
 jobs:
   fetch:

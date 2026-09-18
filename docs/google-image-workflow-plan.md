@@ -34,22 +34,23 @@ Banana" (Gemini 2.5 Flash Image)**, wrapped and resold by Higgsfield. So:
 
 The pipeline was **built anticipating this move**. Concretely:
 
-| Asset | State | Relevance |
-|---|---|---|
-| `content_clips.image_source` column | Already accepts `'google'` (migration `20260702_hybrid_stills.sql`) | The routing key already exists — no schema change needed for the happy path |
-| `generate-stills.mjs` | Already **skips** `image_source='google'` rows: `"waiting for H3 workflow"` | Google rows are deliberately deferred to this workflow |
-| `prompt-sheet.mjs` | Writes a **markdown** brief per `google` scene (prompt + ref image URLs) | The **manual** ancestor of the Sheet export — generalize it |
-| `import-stills.mjs` | Uploads hand-downloaded `S<n>.png` files → R2 → marks `generated` | The **manual** ancestor of the Drive import — generalize it |
-| `content_references` | Holds the 12-image visual bible (key, url, status) | Reference conditioning source — see §7 |
+| Asset                               | State                                                                       | Relevance                                                                   |
+| ----------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `content_clips.image_source` column | Already accepts `'google'` (migration `20260702_hybrid_stills.sql`)         | The routing key already exists — no schema change needed for the happy path |
+| `generate-stills.mjs`               | Already **skips** `image_source='google'` rows: `"waiting for H3 workflow"` | Google rows are deliberately deferred to this workflow                      |
+| `prompt-sheet.mjs`                  | Writes a **markdown** brief per `google` scene (prompt + ref image URLs)    | The **manual** ancestor of the Sheet export — generalize it                 |
+| `import-stills.mjs`                 | Uploads hand-downloaded `S<n>.png` files → R2 → marks `generated`           | The **manual** ancestor of the Drive import — generalize it                 |
+| `content_references`                | Holds the 12-image visual bible (key, url, status)                          | Reference conditioning source — see §7                                      |
 
-**In short:** we already have a *3-scene manual* Google path. This plan turns it into an
-*all-stills semi-automated* Google path.
+**In short:** we already have a _3-scene manual_ Google path. This plan turns it into an
+_all-stills semi-automated_ Google path.
 
 ---
 
 ## 3. Current vs. target architecture
 
 ### Current (Higgsfield)
+
 ```
 Supabase content_clips (image_source='higgsfield')
    → generate-stills.mjs → soul.js → Higgsfield API (nano_banana_2, credits)
@@ -57,6 +58,7 @@ Supabase content_clips (image_source='higgsfield')
 ```
 
 ### Target (Google)
+
 ```
 Supabase content_clips (image_source='google')
    → export-to-sheet.mjs ──────────────► Google Sheet (one row per still + ref)
@@ -74,7 +76,7 @@ Supabase content_clips (image_source='google')
 ```
 
 **Design invariant:** **Supabase stays the single source of truth.** The Sheet + Drive are a
-*generation surface*, not a database. Every image's canonical home remains R2, referenced by
+_generation surface_, not a database. Every image's canonical home remains R2, referenced by
 `content_clips.clip_url`. This keeps `assemble-longform.mjs` **completely unchanged**.
 
 ---
@@ -121,16 +123,16 @@ These materially shape the design. Some are channel-existential.
 
 ## 5. Decisions (recommended defaults; change inline before build)
 
-- **D1 — Billing surface.** ✅ *Recommended:* proceed with the **subscription (Workspace Flows)**
+- **D1 — Billing surface.** ✅ _Recommended:_ proceed with the **subscription (Workspace Flows)**
   path as the primary, **but** treat §10 Option B (Gemini API, pay-per-image) as a first-class,
   already-scaffolded fallback so a ToS block never halts production. Keep volume/account within
   plausible personal-use bounds; do not parallelize across many rows aggressively.
-- **D2 — Reference conditioning.** ✅ *Recommended:* in spike **G0**, verify whether Flows' image
+- **D2 — Reference conditioning.** ✅ _Recommended:_ in spike **G0**, verify whether Flows' image
   step accepts Drive image inputs. If **yes** → pass ref Drive URLs per row (full consistency). If
   **no** → hybrid: generate the 12 refs + the ~6 hero-character scenes **in the Gemini app manually
   with attached refs** (as today), and Flows-automate only the **atmosphere/stadium/no-character**
   stills where consistency tolerance is high.
-- **D3 — Sheet transport.** ✅ *Recommended:* real **Google Sheets API via service account**
+- **D3 — Sheet transport.** ✅ _Recommended:_ real **Google Sheets API via service account**
   (scriptable, re-runnable). Fallback: export a CSV the user pastes once (zero API setup, but manual).
 - **D4 — Default `image_source`.** ✅ Flip `football/documentary/EN` default to `google`; keep
   `higgsfield` and `reference` routes intact for per-scene overrides.
@@ -143,24 +145,25 @@ These materially shape the design. Some are channel-existential.
 
 One row per still **and** per reference image. Columns:
 
-| Col | Name | Written by | Notes |
-|---|---|---|---|
-| A | `row_key` | export | Stable idempotency key: `29-S14` or `29-ref-goalkeeper` |
-| B | `project_id` | export | e.g. `29` |
-| C | `kind` | export | `reference` \| `still` |
-| D | `scene_or_key` | export | `S14` or `goalkeeper` |
-| E | `raw_prompt` | export | `visual_prompt` + GLOBAL ART DIRECTION prefix |
-| F | `reference_urls` | export | Space-separated Drive URLs of refs to attach (blank for refs themselves) |
-| G | `aspect_ratio` | export | `16:9` |
-| H | `gemini_prompt` | **Flows (Ask Gemini)** | Enhanced prompt — for audit/repro |
-| I | `drive_url` | **Flows (Generate + Save)** | Populated when the image is done |
-| J | `status` | export→Flows→import | `queued` → `generating` → `done` → (`imported`) |
-| K | `error` | Flows | Free text if the step failed |
+| Col | Name             | Written by                  | Notes                                                                    |
+| --- | ---------------- | --------------------------- | ------------------------------------------------------------------------ |
+| A   | `row_key`        | export                      | Stable idempotency key: `29-S14` or `29-ref-goalkeeper`                  |
+| B   | `project_id`     | export                      | e.g. `29`                                                                |
+| C   | `kind`           | export                      | `reference` \| `still`                                                   |
+| D   | `scene_or_key`   | export                      | `S14` or `goalkeeper`                                                    |
+| E   | `raw_prompt`     | export                      | `visual_prompt` + GLOBAL ART DIRECTION prefix                            |
+| F   | `reference_urls` | export                      | Space-separated Drive URLs of refs to attach (blank for refs themselves) |
+| G   | `aspect_ratio`   | export                      | `16:9`                                                                   |
+| H   | `gemini_prompt`  | **Flows (Ask Gemini)**      | Enhanced prompt — for audit/repro                                        |
+| I   | `drive_url`      | **Flows (Generate + Save)** | Populated when the image is done                                         |
+| J   | `status`         | export→Flows→import         | `queued` → `generating` → `done` → (`imported`)                          |
+| K   | `error`          | Flows                       | Free text if the step failed                                             |
 
 **Ordering rule:** references first (they must exist in Drive before stills can reference them).
 Export writes refs, waits for them to reach `done`, then writes stills with `reference_urls` filled.
 
 ### 6.2 Google Drive layout
+
 ```
 /SignalStudio-Longform/
    /29/
@@ -169,10 +172,11 @@ Export writes refs, waits for them to reach `done`, then writes stills with `ref
 ```
 
 ### 6.3 Supabase — no schema change required
+
 - `content_clips.image_source = 'google'`, `clip_url` ← R2 URL after import, `status` lifecycle unchanged.
 - `content_references` gains **no new column**; we reuse `url` (R2) and can stash the Drive URL in an
-  existing free field if one exists, else the Sheet is the Drive↔ref map. *(Confirm in G1 whether a
-  `drive_url` column on `content_references` is worth adding; optional.)*
+  existing free field if one exists, else the Sheet is the Drive↔ref map. _(Confirm in G1 whether a
+  `drive_url` column on `content_references` is worth adding; optional.)_
 
 ---
 
@@ -181,6 +185,7 @@ Export writes refs, waits for them to reach `done`, then writes stills with `ref
 Consistency across 37 stills is the single biggest quality risk in switching surfaces.
 
 **Path A — Flows accepts image inputs (verify in G0):**
+
 1. Generate the 12 refs first (as `kind='reference'` Sheet rows, no `reference_urls`).
 2. Import step records each ref's Drive URL (col I) back into the Sheet's ref rows.
 3. `export-to-sheet` for stills fills col F (`reference_urls`) with the relevant refs' **Drive URLs**.
@@ -188,6 +193,7 @@ Consistency across 37 stills is the single biggest quality risk in switching sur
    → **Full consistency, fully automated.**
 
 **Path B — Flows cannot take image inputs (fallback):**
+
 - Refs + the ~6 hero-character scenes: generate in the **Gemini app** manually with refs attached
   (today's proven method), then drop into the Drive `/stills/` folder named `S<n>.png`.
 - Atmosphere / crowd / stadium / object scenes (no recurring character): full Flows automation with a
@@ -203,6 +209,7 @@ Either way, `import-from-sheet.mjs` is oblivious to how the image was made — c
 Named `G0…G7` to sit alongside the existing `H0…H6` phases.
 
 ### G0 — Capability spike (½ day, do first) ⚠️ blocking
+
 - In Google Workspace Studio, build a **throwaway 1-row Flow**: trigger on new Sheet row → Ask Gemini
   (enhance) → Generate Image → Save to Drive → write `drive_url` + `status='done'` back.
 - **Verify the three unknowns:** (a) can the image step run on **subscription** credits at all;
@@ -211,6 +218,7 @@ Named `G0…G7` to sit alongside the existing `H0…H6` phases.
 - **Exit criteria:** one image round-trips Sheet→Drive→Sheet automatically.
 
 ### G1 — DB + channel config
+
 - `channels.js`: in `football/documentary/EN`, set the **default image routing to Google**. Concretely:
   `source`/`imageModel` stay for clips, but add an explicit `imageProvider: 'google'` (or set the
   per-still default `image_source: 'google'`) consumed by `plan.mjs`/classification so new projects
@@ -219,6 +227,7 @@ Named `G0…G7` to sit alongside the existing `H0…H6` phases.
   in the DB rather than only the Sheet.
 
 ### G2 — `export-to-sheet.mjs` (replaces the markdown prompt-sheet for google rows)
+
 - Input: `--project N`. Reads `content_clips` where `image_source='google'` + `status='pending'`,
   and `content_references`.
 - Writes/updates rows in the Google Sheet (Sheets API, service account) using `row_key` as upsert key
@@ -228,6 +237,7 @@ Named `G0…G7` to sit alongside the existing `H0…H6` phases.
 - Reuses `prompt-sheet.mjs`'s ART_DIRECTION prefixing logic (lift the shared bit into a helper).
 
 ### G3 — Workspace Studio / Flows automation (no-code, per pasted spec)
+
 - Trigger: "When a new row is added" to the project Sheet (`status='queued'`).
 - Node 1 **Ask Gemini**: turn `raw_prompt` (+ `reference_urls` context) into `gemini_prompt`, inject
   house style (16:9, cinematic grade, anonymized players — see `docs/strategic-blueprint-…` §9.2 safe
@@ -238,6 +248,7 @@ Named `G0…G7` to sit alongside the existing `H0…H6` phases.
 - Node 4 **Write back**: `drive_url` (col I), `status='done'` (or `error` on failure).
 
 ### G4 — `import-from-sheet.mjs` (generalizes `import-stills.mjs`)
+
 - Input: `--project N`. Reads Sheet rows with `status='done'` (and not yet `imported`).
 - Downloads each `drive_url` via **Drive API** (`files.get alt=media`, service account) → buffer.
 - Uploads to R2 at the **same keys the pipeline already expects**:
@@ -247,19 +258,22 @@ Named `G0…G7` to sit alongside the existing `H0…H6` phases.
 - **Idempotent**: skip rows already `generated`/`passed` (copy `import-stills.mjs` guard exactly).
 
 ### G5 — Orchestrator glue
-- Small `google-stills.mjs` (or extend the run doc) that runs `export-to-sheet` → *waits for human/
-  Flows* → `import-from-sheet`, and prints how many rows are still `queued`/`generating` so a run can
+
+- Small `google-stills.mjs` (or extend the run doc) that runs `export-to-sheet` → _waits for human/
+  Flows_ → `import-from-sheet`, and prints how many rows are still `queued`/`generating` so a run can
   be resumed across quota days.
 - `generate-stills.mjs` `google` branch: keep skipping (Flows owns generation), but update the log to
   point at the Sheet + import step instead of the old markdown brief.
 
 ### G6 — Re-insert quality gates
+
 - After import, run the existing `vision-gate.js` / `semantic-gate.js` against the R2 images (they’re
   provider-agnostic — they read a URL). Wire them into G5 so imported google images are gated exactly
   like Higgsfield ones were, preserving `validation: { look, semanticAction }`.
 - Failures → `status='failed'` + re-queue in the Sheet (reset that row to `queued`).
 
 ### G7 — Docs + rollback wiring
+
 - Update `docs/longform-29-how-we-made-it.md` STEP 3/3b/4 to describe the Google surface.
 - Keep the Higgsfield path selectable via `--source higgsfield` for one project as a live rollback
   (it still works, just needs credits).
@@ -270,8 +284,8 @@ Named `G0…G7` to sit alongside the existing `H0…H6` phases.
 
 `generate-tts.mjs`, `generate-clips.mjs`, and `assemble-longform.mjs` require **zero changes** — they
 read `clip_url`/`vo_url` from Supabase and don't care how the image was produced. This is the whole
-point of keeping Supabase as source of truth. *(Video clips remain a separate provider decision — see
-memory `project-longform-video-provider`; this plan is images only.)*
+point of keeping Supabase as source of truth. _(Video clips remain a separate provider decision — see
+memory `project-longform-video-provider`; this plan is images only.)_
 
 ---
 

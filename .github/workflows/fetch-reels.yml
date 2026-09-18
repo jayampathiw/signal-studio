@@ -1,7 +1,7 @@
 name: Fetch Reels
 
 on:
-  workflow_dispatch:   # manual trigger only — activate schedule when FB pages are created (Phase 4)
+  workflow_dispatch: # manual trigger only — activate schedule when FB pages are created (Phase 4)
   # schedule:
   #   - cron: '0 6 * * *'   # daily at 06:00 UTC
 

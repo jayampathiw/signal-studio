@@ -2,6 +2,7 @@ packages:
   - 'apps/news'
   - 'apps/video'
   - 'apps/dashboard'
+  - 'projects/assemblex-factory/pilot'
   - 'packages/ai'
   - 'packages/render/core'
   - 'packages/render/ffmpeg'

@@ -10,32 +10,32 @@ Monorepo for a multi-channel AI content publishing platform. Consolidated from `
 
 This repo is **self-contained** — all real logic lives here. Two **public** GitHub repos exist only as free-runner automation triggers, not implementation:
 
-- `reel-pipeline` (public) — hosts `generate.yml`; on dispatch it checks out *this* repo via a deploy key and runs `claude --print "run wild-eye-reel for id=N"`. The video generation logic it executes is all here (`.claude/skills`, `apps/video`).
+- `reel-pipeline` (public) — hosts `generate.yml`; on dispatch it checks out _this_ repo via a deploy key and runs `claude --print "run wild-eye-reel for id=N"`. The video generation logic it executes is all here (`.claude/skills`, `apps/video`).
 - `facebook-news-pipeline` (public) — legacy origin of the news pipeline; the live news automation now runs from this repo's own `.github/workflows/fetch-news.yml`.
 
 Public repos are used because GitHub Actions minutes are free/unlimited on them; the private logic stays here and is pulled in at runtime.
 
 ## Apps
 
-| App | Path | What it does |
-|---|---|---|
-| news | `apps/news/` | RSS/NewsAPI → Claude captions → fal.ai images → Facebook (FR, IT) |
-| video | `apps/video/` | Stock/AI-image scenes → FFmpeg or Remotion → MP4 → all platforms |
-| dashboard | `apps/dashboard/` | Angular review UI (Vercel) |
+| App       | Path              | What it does                                                      |
+| --------- | ----------------- | ----------------------------------------------------------------- |
+| news      | `apps/news/`      | RSS/NewsAPI → Claude captions → fal.ai images → Facebook (FR, IT) |
+| video     | `apps/video/`     | Stock/AI-image scenes → FFmpeg or Remotion → MP4 → all platforms  |
+| dashboard | `apps/dashboard/` | Angular review UI (Vercel)                                        |
 
 ## Shared packages
 
-| Package | Import | Does |
-|---|---|---|
-| `@signal-studio/ai` | `packages/ai/` | Claude client + image-gen provider chain |
-| `@signal-studio/render-core` | `packages/render/core/` | Engine interface + `render()` |
-| `@signal-studio/render-ffmpeg` | `packages/render/ffmpeg/` | FFmpeg + Ken Burns + concat |
-| `@signal-studio/render-remotion` | `packages/render/remotion/` | Remotion (React/TS) compositions |
-| `@signal-studio/media` | `packages/media/` | Kokoro TTS, Whisper subtitles, R2 storage |
-| `@signal-studio/database` | `packages/database/` | Supabase client + CRUD |
-| `@signal-studio/publishers` | `packages/publishers/` | Facebook / IG / YT / TT |
-| `@signal-studio/config` | `packages/config/` | Root .env loader + validation |
-| `@signal-studio/types` | `packages/types/` | Shared JSDoc typedefs |
+| Package                          | Import                      | Does                                      |
+| -------------------------------- | --------------------------- | ----------------------------------------- |
+| `@signal-studio/ai`              | `packages/ai/`              | Claude client + image-gen provider chain  |
+| `@signal-studio/render-core`     | `packages/render/core/`     | Engine interface + `render()`             |
+| `@signal-studio/render-ffmpeg`   | `packages/render/ffmpeg/`   | FFmpeg + Ken Burns + concat               |
+| `@signal-studio/render-remotion` | `packages/render/remotion/` | Remotion (React/TS) compositions          |
+| `@signal-studio/media`           | `packages/media/`           | Kokoro TTS, Whisper subtitles, R2 storage |
+| `@signal-studio/database`        | `packages/database/`        | Supabase client + CRUD                    |
+| `@signal-studio/publishers`      | `packages/publishers/`      | Facebook / IG / YT / TT                   |
+| `@signal-studio/config`          | `packages/config/`          | Root .env loader + validation             |
+| `@signal-studio/types`           | `packages/types/`           | Shared JSDoc typedefs                     |
 
 ## AI / Claude integration
 
@@ -59,6 +59,7 @@ Public repos are used because GitHub Actions minutes are free/unlimited on them;
 ## .claude skills — 3-tier architecture (AI video)
 
 Every skill/agent is exactly one tier (full spec: `docs/cloud-automation-workflow.md`):
+
 - **Tier 1** — official Higgsfield skills (`npx skills add higgsfield-ai/skills`); never modified.
 - **Tier 2** — platform-wide, apply to all channels: `higgsfield-credit-guard` skill; `image-quality-gate`, `continuity-checker`, `seo-writer`, `performance-analyst` agents.
 - **Tier 3** — one set per channel: `wild-eye-reel` (orchestrator) + `wild-eye-brief`.
@@ -77,10 +78,10 @@ Deno functions in `supabase/functions/*` called by the dashboard. Key ones: `exp
 
 ## Runtime modes
 
-| Mode | Where | How |
-|---|---|---|
-| Interactive | claude.ai / Claude Code | MCP servers; run `.claude` skills by hand |
-| Automated (news) | GitHub Actions (this repo) | `.github/workflows/fetch-news.yml`, cron 30m → `npm run news` |
+| Mode              | Where                            | How                                                                   |
+| ----------------- | -------------------------------- | --------------------------------------------------------------------- |
+| Interactive       | claude.ai / Claude Code          | MCP servers; run `.claude` skills by hand                             |
+| Automated (news)  | GitHub Actions (this repo)       | `.github/workflows/fetch-news.yml`, cron 30m → `npm run news`         |
 | Automated (video) | GitHub Actions (`reel-pipeline`) | dispatch → checkout this repo → `claude --print` runs `wild-eye-reel` |
 
 ## Facebook API
@@ -109,7 +110,7 @@ Shared across all apps: `nnxtvbolhuvihlpwppbj`
 - **SEO → publish caption mismatch (live bug).** `wild-eye-reel` writes the caption to the `seo` jsonb (`{title, description, hashtags}`), but `packages/publishers/facebook.js` still reads `ai_caption` (`{intro, question, cta}`) + the `hashtags` column. Publishing a Wild Eye reel today posts a **blank caption**. Make the publisher `seo`-aware (fallback to `ai_caption` for legacy news rows). See `docs/PROJECT-STATUS.md` §6.1.
 - **21s `rendered_video_url` is NULL until assembly.** The generator leaves it NULL for 21s (3 separate clips); `apps/video/scripts/assemble-reel.mjs` (skill Step 6.5) stitches them via FFmpeg → R2. Requires `ffmpeg` on PATH + `R2_*` env. Publishers hard-throw on missing `rendered_video_url`.
 - **Four separate secret stores.** Root `.env` (local), `signal-studio` GitHub Actions secrets (news/video workflows), Supabase edge-function secrets, and **`reel-pipeline` repo secrets** (the cloud video runner) are all independent. `trigger-generation` needs `GITHUB_PAT` (with `actions:write` on `reel-pipeline`) set in **Supabase**. `reel-pipeline` needs its own set: `SIGNAL_STUDIO_DEPLOY_KEY`, `ANTHROPIC_API_KEY`/`ANTHROPIC_BASE_URL`/`ANTHROPIC_MODEL`, `SUPABASE_MCP_TOKEN`, `HIGGSFIELD_AUTH_TOKEN`, `R2_*`. `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are auto-injected into edge functions — don't set them manually.
-- **`.env` is a template — many values are blank placeholders with inline comments** (e.g. `GITHUB_PAT=    # GitHub Personal Access Token`). Never blindly copy a `.env` value into a secret: a naive `grep|cut` captures the *comment* as the value (this is what caused the dashboard 502). Strip inline comments and verify the value is non-empty / well-formed before setting.
+- **`.env` is a template — many values are blank placeholders with inline comments** (e.g. `GITHUB_PAT=    # GitHub Personal Access Token`). Never blindly copy a `.env` value into a secret: a naive `grep|cut` captures the _comment_ as the value (this is what caused the dashboard 502). Strip inline comments and verify the value is non-empty / well-formed before setting.
 - **Cloud `claude` CLI + proxy Anthropic key.** If `ANTHROPIC_KEY` is a proxy key (non-`sk-ant-`), the `reel-pipeline` runner must **forward `ANTHROPIC_BASE_URL` + `ANTHROPIC_MODEL`** to the `claude` CLI (done in `generate.yml`'s "Run generation" env) — the CLI defaults to `api.anthropic.com` otherwise.
 - **Higgsfield CLI credentials path.** CLI v0.2.x stores auth at `~/.config/higgsfield/credentials.json` (JSON: `access_token` + `refresh_token`), **not** `~/.higgsfield/credentials`. The `HIGGSFIELD_AUTH_TOKEN` secret must hold the full `credentials.json`, restored to that path on the runner.
 - **oneprovider.dev double-encodes responses.** When `ANTHROPIC_BASE_URL` is the proxy, responses come back as a JSON string. Use `parseResponse()` (`packages/ai/claude.js`) / `getText()` (edge fns) — never read `content[0].text` raw.

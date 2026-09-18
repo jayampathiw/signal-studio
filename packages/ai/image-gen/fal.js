@@ -44,7 +44,8 @@ async function pollFalResult(resultUrl, maxWaitMs = 120_000) {
     });
     if (!res.ok) throw new Error(`fal.ai poll failed ${res.status}`);
     const data = await res.json();
-    if (data.status === 'COMPLETED') return data.output?.images?.[0]?.url ?? data.output?.image?.url;
+    if (data.status === 'COMPLETED')
+      return data.output?.images?.[0]?.url ?? data.output?.image?.url;
     if (data.status === 'FAILED') throw new Error(`fal.ai generation failed: ${data.error}`);
     await new Promise((r) => setTimeout(r, 2000));
   }

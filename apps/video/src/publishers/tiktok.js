@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { env } from '@signal-studio/config';
+import axios from 'axios';
 
 const TT_BASE = 'https://open.tiktokapis.com/v2';
 
@@ -12,7 +12,7 @@ export const capabilities = {
 // Publish a rendered reel to TikTok via the Content Posting API (URL-based upload).
 // Requires: TT_CLIENT_KEY_{envKey}, TT_CLIENT_SECRET_{envKey}, TT_ACCESS_TOKEN_{envKey}.
 export async function publish(contentItem, channelConfig) {
-  const envKey      = channelConfig.platforms.tiktok.envKey;
+  const envKey = channelConfig.platforms.tiktok.envKey;
   const accessToken = env[`TT_ACCESS_TOKEN_${envKey}`];
 
   if (!accessToken) {
@@ -29,25 +29,25 @@ export async function publish(contentItem, channelConfig) {
     `${TT_BASE}/post/publish/video/init/`,
     {
       post_info: {
-        title:             title.slice(0, 150),
-        privacy_level:     'PUBLIC_TO_EVERYONE',
-        disable_duet:      false,
-        disable_comment:   false,
-        disable_stitch:    false,
+        title: title.slice(0, 150),
+        privacy_level: 'PUBLIC_TO_EVERYONE',
+        disable_duet: false,
+        disable_comment: false,
+        disable_stitch: false,
         video_cover_timestamp_ms: 1000,
       },
       source_info: {
-        source:    'PULL_FROM_URL',
+        source: 'PULL_FROM_URL',
         video_url: contentItem.rendered_video_url,
       },
     },
     {
       headers: {
-        Authorization:  `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json; charset=UTF-8',
       },
       timeout: 30_000,
-    }
+    },
   );
 
   const publishId = initRes.data?.data?.publish_id;
@@ -59,8 +59,8 @@ export async function publish(contentItem, channelConfig) {
   await waitForPublish(publishId, accessToken);
 
   return {
-    postId:      publishId,
-    postedAt:    new Date(),
+    postId: publishId,
+    postedAt: new Date(),
     platformUrl: null, // TikTok API doesn't return a direct post URL at publish time
   };
 }
@@ -73,10 +73,10 @@ async function waitForPublish(publishId, accessToken, maxWaitMs = 90_000) {
       { publish_id: publishId },
       {
         headers: {
-          Authorization:  `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json; charset=UTF-8',
         },
-      }
+      },
     );
     const status = res.data?.data?.status;
     if (status === 'PUBLISH_COMPLETE') return;
@@ -84,7 +84,7 @@ async function waitForPublish(publishId, accessToken, maxWaitMs = 90_000) {
       const reason = res.data?.data?.fail_reason || 'unknown';
       throw new Error(`TikTok publish failed: ${reason}`);
     }
-    await new Promise(r => setTimeout(r, 5_000));
+    await new Promise((r) => setTimeout(r, 5_000));
   }
   throw new Error(`TikTok publish ${publishId} did not complete within ${maxWaitMs / 1000}s`);
 }

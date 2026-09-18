@@ -10,37 +10,46 @@
  */
 
 import { parseArgs } from 'util';
+
 import { getServiceClient } from '@signal-studio/database';
 
 const { values } = parseArgs({
   options: {
     project: { type: 'string' },
-    act:     { type: 'string' },
-    final:   { type: 'boolean', default: false },
-    status:  { type: 'boolean', default: false },
+    act: { type: 'string' },
+    final: { type: 'boolean', default: false },
+    status: { type: 'boolean', default: false },
   },
   strict: false,
 });
 
-if (!values.project) { console.error('Error: --project <id> required'); process.exit(2); }
+if (!values.project) {
+  console.error('Error: --project <id> required');
+  process.exit(2);
+}
 
 const projectId = Number(values.project);
 const db = getServiceClient();
 
-const ACT_LABELS = { '0': 'Cold Open', '6': 'Outro' };
-function actLabel(a) { return ACT_LABELS[String(a)] ?? `Act ${a}`; }
+const ACT_LABELS = { 0: 'Cold Open', 6: 'Outro' };
+function actLabel(a) {
+  return ACT_LABELS[String(a)] ?? `Act ${a}`;
+}
 
 async function getStillSummary() {
-  const { data, error } = await db.from('content_stills')
+  const { data, error } = await db
+    .from('content_stills')
     .select('scene_n, cut, act, status')
     .eq('project_id', projectId)
-    .order('act').order('scene_n');
+    .order('act')
+    .order('scene_n');
   if (error) throw new Error(error.message);
   return data ?? [];
 }
 
 async function getRefSummary() {
-  const { data, error } = await db.from('content_references')
+  const { data, error } = await db
+    .from('content_references')
     .select('key, status')
     .eq('project_id', projectId);
   if (error) throw new Error(error.message);
@@ -66,24 +75,35 @@ async function showStatus() {
 
   console.log('\n── Still status by act ──────────────────────────────');
   for (const [act, buckets] of Object.entries(acts).sort()) {
-    const total = (buckets.pending?.length ?? 0) + (buckets.generated?.length ?? 0) + (buckets.passed?.length ?? 0);
+    const total =
+      (buckets.pending?.length ?? 0) +
+      (buckets.generated?.length ?? 0) +
+      (buckets.passed?.length ?? 0);
     const ready = buckets.passed?.length ?? 0;
-    const icon = ready === total ? '✅' : (buckets.pending?.length ? '⬜' : '🟡');
+    const icon = ready === total ? '✅' : buckets.pending?.length ? '⬜' : '🟡';
     console.log(`  ${icon} ${actLabel(act)}: ${ready}/${total} passed`);
-    if (buckets.pending?.length) console.log(`     ⬜ pending: ${buckets.pending.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`);
-    if (buckets.generated?.length) console.log(`     🟡 generated (needs approve): ${buckets.generated.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`);
+    if (buckets.pending?.length)
+      console.log(
+        `     ⬜ pending: ${buckets.pending.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`,
+      );
+    if (buckets.generated?.length)
+      console.log(
+        `     🟡 generated (needs approve): ${buckets.generated.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`,
+      );
   }
 
   console.log('\n── Reference status ─────────────────────────────────');
   refs.forEach((r) => console.log(`  ${r.status === 'passed' ? '✅' : '⬜'} ${r.key}`));
 
   const allStillsPassed = stills.every((r) => r.status === 'passed');
-  const allRefsPassed   = refs.every((r) => r.status === 'passed');
+  const allRefsPassed = refs.every((r) => r.status === 'passed');
   console.log(`\nAll stills passed: ${allStillsPassed ? 'YES ✅' : 'NO ❌'}`);
-  console.log(`All refs passed:   ${allRefsPassed   ? 'YES ✅' : 'NO ❌'}`);
+  console.log(`All refs passed:   ${allRefsPassed ? 'YES ✅' : 'NO ❌'}`);
 
   if (allStillsPassed && allRefsPassed) {
-    console.log('\n✅ Ready for assembly. Run:\n  node approve-act.mjs --project ' + projectId + ' --final');
+    console.log(
+      '\n✅ Ready for assembly. Run:\n  node approve-act.mjs --project ' + projectId + ' --final',
+    );
   }
 }
 
@@ -98,14 +118,19 @@ async function checkAct(actNum) {
     process.exit(1);
   }
 
-  const pending   = actRows.filter((r) => r.status === 'pending');
+  const pending = actRows.filter((r) => r.status === 'pending');
   const generated = actRows.filter((r) => r.status === 'generated');
-  const passed    = actRows.filter((r) => r.status === 'passed');
+  const passed = actRows.filter((r) => r.status === 'passed');
 
   console.log(`\n── ${actLabel(actNum)}: ${passed.length}/${actRows.length} passed ──`);
-  if (pending.length)   console.log(`  ⬜ pending:   ${pending.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`);
-  if (generated.length) console.log(`  🟡 generated: ${generated.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}  ← run --approve-all with review-stills.mjs`);
-  if (passed.length)    console.log(`  ✅ passed:    ${passed.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`);
+  if (pending.length)
+    console.log(`  ⬜ pending:   ${pending.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`);
+  if (generated.length)
+    console.log(
+      `  🟡 generated: ${generated.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}  ← run --approve-all with review-stills.mjs`,
+    );
+  if (passed.length)
+    console.log(`  ✅ passed:    ${passed.map((r) => `S${r.scene_n}-${r.cut}`).join(', ')}`);
 
   if (pending.length || generated.length) {
     console.log(`\n❌ ${actLabel(actNum)} is not complete. Resolve the above before advancing.`);
@@ -121,7 +146,7 @@ async function finalGate() {
   const [stills, refs] = await Promise.all([getStillSummary(), getRefSummary()]);
 
   const blockedStills = stills.filter((r) => r.status !== 'passed');
-  const blockedRefs   = refs.filter((r) => r.status !== 'passed');
+  const blockedRefs = refs.filter((r) => r.status !== 'passed');
 
   if (blockedStills.length || blockedRefs.length) {
     if (blockedStills.length) {
@@ -136,25 +161,40 @@ async function finalGate() {
   }
 
   // All clear — advance project status
-  const { data: item, error: fetchErr } = await db.from('content_items')
-    .select('id, status').eq('id', projectId).single();
+  const { data: item, error: fetchErr } = await db
+    .from('content_items')
+    .select('id, status')
+    .eq('id', projectId)
+    .single();
   if (fetchErr) throw new Error(fetchErr.message);
 
   const ADVANCEABLE = ['awaiting_refs', 'awaiting_stills', 'seeding'];
   if (!ADVANCEABLE.includes(item.status)) {
-    console.log(`[skip] Project status is "${item.status}" — not advancing (already past awaiting_stills or in a running state).`);
-    console.log('\nAll stills and refs are passed. To trigger assembly:\n  curl the trigger-longform edge fn with stage=assemble');
+    console.log(
+      `[skip] Project status is "${item.status}" — not advancing (already past awaiting_stills or in a running state).`,
+    );
+    console.log(
+      '\nAll stills and refs are passed. To trigger assembly:\n  curl the trigger-longform edge fn with stage=assemble',
+    );
     return;
   }
 
-  const { error: updErr } = await db.from('content_items')
-    .update({ status: 'awaiting_stills', status_note: 'all stills and refs passed — ready for assembly' })
+  const { error: updErr } = await db
+    .from('content_items')
+    .update({
+      status: 'awaiting_stills',
+      status_note: 'all stills and refs passed — ready for assembly',
+    })
     .eq('id', projectId);
   if (updErr) throw new Error(updErr.message);
 
   console.log(`\n✅ All ${stills.length} stills + ${refs.length} refs passed.`);
   console.log(`Project ${projectId}: status → awaiting_stills`);
-  console.log('\nNext step — dispatch assembly:\n  node scripts/set-status.mjs --project ' + projectId + ' --status awaiting_stills');
+  console.log(
+    '\nNext step — dispatch assembly:\n  node scripts/set-status.mjs --project ' +
+      projectId +
+      ' --status awaiting_stills',
+  );
   console.log('  # then trigger via edge fn or dispatch longform.yml stage=assemble');
 }
 

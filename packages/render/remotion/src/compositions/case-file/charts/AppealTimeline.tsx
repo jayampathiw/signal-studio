@@ -1,5 +1,6 @@
-import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { loadFont as loadCourierPrime } from '@remotion/google-fonts/CourierPrime';
+import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+
 import { PALETTE } from '../palette';
 
 const { fontFamily: monoFont } = loadCourierPrime();
@@ -15,25 +16,42 @@ export type TimelineVisual = {
 // marker that travels the track and turns highlight-yellow on arrival — the actual
 // CMS rule (file by noon the day before coverage ends), not a generic "days" count,
 // per the verified figure used in this case's narration.
-export const AppealTimeline: React.FC<{ visual: TimelineVisual; width?: number; static?: boolean }> = ({
-  visual,
-  width = 900,
-  static: isStatic = false,
-}) => {
+export const AppealTimeline: React.FC<{
+  visual: TimelineVisual;
+  width?: number;
+  static?: boolean;
+}> = ({ visual, width = 900, static: isStatic = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const deadlineFraction = visual.deadlineFraction ?? 1;
 
-  const travel = isStatic ? deadlineFraction : interpolate(frame, [10, 2 * fps], [0, deadlineFraction], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const travel = isStatic
+    ? deadlineFraction
+    : interpolate(frame, [10, 2 * fps], [0, deadlineFraction], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
   const arrived = travel >= deadlineFraction - 0.005;
 
   return (
     <div style={{ width, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ width: '100%', height: 12, borderRadius: 6, background: PALETTE.bodyLine, position: 'relative' }}>
-        <div style={{ width: `${deadlineFraction * 100}%`, height: '100%', borderRadius: 6, background: PALETTE.folderTanBottom }} />
+      <div
+        style={{
+          width: '100%',
+          height: 12,
+          borderRadius: 6,
+          background: PALETTE.bodyLine,
+          position: 'relative',
+        }}
+      >
+        <div
+          style={{
+            width: `${deadlineFraction * 100}%`,
+            height: '100%',
+            borderRadius: 6,
+            background: PALETTE.folderTanBottom,
+          }}
+        />
         <div
           style={{
             position: 'absolute',
@@ -48,12 +66,29 @@ export const AppealTimeline: React.FC<{ visual: TimelineVisual; width?: number; 
           }}
         />
       </div>
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
-        <span style={{ fontFamily: monoFont, fontWeight: 700, fontSize: 28, color: PALETTE.supportingText }}>{visual.startLabel}</span>
-        <span style={{
-          fontFamily: monoFont, fontSize: 28, color: arrived ? PALETTE.highlight : PALETTE.paper, fontWeight: 700,
-          textAlign: 'right', maxWidth: '55%',
-        }}>
+      <div
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginTop: 24 }}
+      >
+        <span
+          style={{
+            fontFamily: monoFont,
+            fontWeight: 700,
+            fontSize: 28,
+            color: PALETTE.supportingText,
+          }}
+        >
+          {visual.startLabel}
+        </span>
+        <span
+          style={{
+            fontFamily: monoFont,
+            fontSize: 28,
+            color: arrived ? PALETTE.highlight : PALETTE.paper,
+            fontWeight: 700,
+            textAlign: 'right',
+            maxWidth: '55%',
+          }}
+        >
           {visual.deadlineLabel}
         </span>
       </div>

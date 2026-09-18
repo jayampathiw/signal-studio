@@ -1,22 +1,29 @@
-import { parseArgs } from 'util';
 import { readdirSync, readFileSync } from 'fs';
 import { resolve, extname, basename } from 'path';
+import { parseArgs } from 'util';
+
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getServiceClient } from '@signal-studio/database';
 import { env } from '@signal-studio/config';
+import { getServiceClient } from '@signal-studio/database';
 
 const { values } = parseArgs({
   options: {
     project: { type: 'string' },
-    dir:     { type: 'string' },
-    dry:     { type: 'boolean', default: false },
-    refs:    { type: 'boolean', default: false },
+    dir: { type: 'string' },
+    dry: { type: 'boolean', default: false },
+    refs: { type: 'boolean', default: false },
   },
   strict: false,
 });
 
-if (!values.project) { console.error('Error: --project <id> required'); process.exit(2); }
-if (!values.dir)     { console.error('Error: --dir <folder> required'); process.exit(2); }
+if (!values.project) {
+  console.error('Error: --project <id> required');
+  process.exit(2);
+}
+if (!values.dir) {
+  console.error('Error: --dir <folder> required');
+  process.exit(2);
+}
 
 const projectId = Number(values.project);
 const dry = values.dry;
@@ -44,7 +51,12 @@ const LEGACY_PATTERN = /^S(\d+)\./i;
 const REF_PATTERN = /^([A-Z][A-Z0-9-]+)\./;
 
 async function importRefs(dir, files, r2, counts) {
-  const refFiles = files.filter((f) => REF_PATTERN.test(basename(f)) && !V2_PATTERN.test(basename(f)) && !LEGACY_PATTERN.test(basename(f)));
+  const refFiles = files.filter(
+    (f) =>
+      REF_PATTERN.test(basename(f)) &&
+      !V2_PATTERN.test(basename(f)) &&
+      !LEGACY_PATTERN.test(basename(f)),
+  );
 
   if (!refFiles.length) {
     console.error(`[warn] No ref files found (expected e.g. GK-GILL.png, PY-OUTFIELD.png)`);
@@ -53,12 +65,18 @@ async function importRefs(dir, files, r2, counts) {
 
   for (const file of refFiles) {
     const key = basename(file).replace(/\.[^.]+$/, '');
-    const { data: row, error } = await db.from('content_references')
-      .select('id, status').eq('project_id', projectId).eq('key', key).maybeSingle();
+    const { data: row, error } = await db
+      .from('content_references')
+      .select('id, status')
+      .eq('project_id', projectId)
+      .eq('key', key)
+      .maybeSingle();
     if (error) throw new Error(error.message);
 
     if (!row) {
-      console.error(`[warn] No reference row for key "${key}" — skipped. Valid keys must be seeded first.`);
+      console.error(
+        `[warn] No reference row for key "${key}" — skipped. Valid keys must be seeded first.`,
+      );
       counts.unmatched++;
       continue;
     }
@@ -79,15 +97,19 @@ async function importRefs(dir, files, r2, counts) {
     }
 
     const buf = readFileSync(resolve(dir, file));
-    await r2.send(new PutObjectCommand({
-      Bucket: env.R2_BUCKET_RENDERED,
-      Key: r2Key,
-      Body: buf,
-      ContentType: 'image/png',
-    }));
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: env.R2_BUCKET_RENDERED,
+        Key: r2Key,
+        Body: buf,
+        ContentType: 'image/png',
+      }),
+    );
 
-    const { error: updateErr } = await db.from('content_references')
-      .update({ url: r2Url, status: 'passed' }).eq('id', row.id);
+    const { error: updateErr } = await db
+      .from('content_references')
+      .update({ url: r2Url, status: 'passed' })
+      .eq('id', row.id);
     if (updateErr) throw new Error(`DB update REF ${key}: ${updateErr.message}`);
 
     console.error(`[ref] ${key} → ${r2Url}`);
@@ -101,7 +123,11 @@ async function importStills(dir, files, r2, counts) {
     .filter((f) => V2_PATTERN.test(basename(f)))
     .map((f) => {
       const m = basename(f).match(V2_PATTERN);
-      return { file: f, scene_n: Number(m[1]), cut: m[2].toUpperCase() === 'CARD' ? 'A' : m[2].toUpperCase() };
+      return {
+        file: f,
+        scene_n: Number(m[1]),
+        cut: m[2].toUpperCase() === 'CARD' ? 'A' : m[2].toUpperCase(),
+      };
     })
     .sort((a, b) => a.scene_n - b.scene_n || a.cut.localeCompare(b.cut));
 
@@ -114,8 +140,13 @@ async function importStills(dir, files, r2, counts) {
   // ── v2 stills ──────────────────────────────────────────────────────────────
   for (const { file, scene_n, cut } of v2Files) {
     const id = `S${String(scene_n).padStart(2, '0')}-${cut}`;
-    const { data: rows, error } = await db.from('content_stills')
-      .select('id, status').eq('project_id', projectId).eq('scene_n', scene_n).eq('cut', cut).limit(1);
+    const { data: rows, error } = await db
+      .from('content_stills')
+      .select('id, status')
+      .eq('project_id', projectId)
+      .eq('scene_n', scene_n)
+      .eq('cut', cut)
+      .limit(1);
     if (error) throw new Error(error.message);
 
     if (!rows?.length) {
@@ -141,15 +172,19 @@ async function importStills(dir, files, r2, counts) {
     }
 
     const buf = readFileSync(resolve(dir, file));
-    await r2.send(new PutObjectCommand({
-      Bucket: env.R2_BUCKET_RENDERED,
-      Key: r2Key,
-      Body: buf,
-      ContentType: 'image/png',
-    }));
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: env.R2_BUCKET_RENDERED,
+        Key: r2Key,
+        Body: buf,
+        ContentType: 'image/png',
+      }),
+    );
 
-    const { error: updateErr } = await db.from('content_stills')
-      .update({ clip_url: r2Url, status: 'generated' }).eq('id', row.id);
+    const { error: updateErr } = await db
+      .from('content_stills')
+      .update({ clip_url: r2Url, status: 'generated' })
+      .eq('id', row.id);
     if (updateErr) throw new Error(`DB update ${id}: ${updateErr.message}`);
 
     console.error(`[import] ${id} → ${r2Url}`);
@@ -158,8 +193,13 @@ async function importStills(dir, files, r2, counts) {
 
   // ── legacy single-still files → content_clips ──────────────────────────────
   for (const { file, scene_n } of legacyFiles) {
-    const { data: rows, error } = await db.from('content_clips')
-      .select('id, status').eq('project_id', projectId).eq('scene_n', scene_n).eq('image_source', 'google').limit(1);
+    const { data: rows, error } = await db
+      .from('content_clips')
+      .select('id, status')
+      .eq('project_id', projectId)
+      .eq('scene_n', scene_n)
+      .eq('image_source', 'google')
+      .limit(1);
     if (error) throw new Error(error.message);
 
     if (!rows?.length) {
@@ -185,15 +225,19 @@ async function importStills(dir, files, r2, counts) {
     }
 
     const buf = readFileSync(resolve(dir, file));
-    await r2.send(new PutObjectCommand({
-      Bucket: env.R2_BUCKET_RENDERED,
-      Key: r2Key,
-      Body: buf,
-      ContentType: 'image/png',
-    }));
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: env.R2_BUCKET_RENDERED,
+        Key: r2Key,
+        Body: buf,
+        ContentType: 'image/png',
+      }),
+    );
 
-    const { error: updateErr } = await db.from('content_clips')
-      .update({ clip_url: r2Url, status: 'generated' }).eq('id', row.id);
+    const { error: updateErr } = await db
+      .from('content_clips')
+      .update({ clip_url: r2Url, status: 'generated' })
+      .eq('id', row.id);
     if (updateErr) throw new Error(`DB update S${scene_n}: ${updateErr.message}`);
 
     console.error(`[legacy] S${scene_n} → ${r2Url}`);
@@ -225,7 +269,12 @@ async function main() {
     await importStills(dir, files, r2, counts);
   }
 
-  console.error(`\nimported ${counts.imported}, skipped ${counts.skipped}, unmatched ${counts.unmatched}`);
+  console.error(
+    `\nimported ${counts.imported}, skipped ${counts.skipped}, unmatched ${counts.unmatched}`,
+  );
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

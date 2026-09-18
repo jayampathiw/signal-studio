@@ -54,7 +54,8 @@ Verdicts:
  * @returns {Promise<{ verdict: 'pass'|'retry'|'blocked', reason: string, expectedAction: string }>}
  */
 export async function semanticGate(clip) {
-  const rules = CHANNEL_RULES[clip.channel_key] ?? `CHANNEL: ${clip.channel_key}\nNo specific rules defined.`;
+  const rules =
+    CHANNEL_RULES[clip.channel_key] ?? `CHANNEL: ${clip.channel_key}\nNo specific rules defined.`;
   const userMsg = `CHANNEL RULES:\n${rules}\n\nVISUAL PROMPT:\n${clip.visual_prompt}\n\nVO TEXT:\n${clip.vo_text ?? '(none)'}`;
 
   let raw;
@@ -66,16 +67,28 @@ export async function semanticGate(clip) {
       timeoutMs: 60_000,
     });
   } catch (e) {
-    return { verdict: 'pass', reason: `gate transport error (non-blocking): ${e.message}`, expectedAction: '(unknown)' };
+    return {
+      verdict: 'pass',
+      reason: `gate transport error (non-blocking): ${e.message}`,
+      expectedAction: '(unknown)',
+    };
   }
 
   try {
     const json = JSON.parse(extractJson(raw) ?? raw);
     const verdict = ['pass', 'retry', 'blocked'].includes(json.verdict) ? json.verdict : 'pass';
-    return { verdict, reason: json.reason ?? '(no reason)', expectedAction: json.expectedAction ?? '(unknown)' };
+    return {
+      verdict,
+      reason: json.reason ?? '(no reason)',
+      expectedAction: json.expectedAction ?? '(unknown)',
+    };
   } catch {
     // Unparseable → non-blocking pass (don't let a flaky model hard-block a clip)
-    return { verdict: 'pass', reason: `gate parse error (non-blocking): ${raw?.slice(0, 100)}`, expectedAction: '(unknown)' };
+    return {
+      verdict: 'pass',
+      reason: `gate parse error (non-blocking): ${raw?.slice(0, 100)}`,
+      expectedAction: '(unknown)',
+    };
   }
 }
 

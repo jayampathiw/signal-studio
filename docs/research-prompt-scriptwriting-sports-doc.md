@@ -12,7 +12,7 @@
 
 I write narration scripts for **long-form football/sports documentary videos (8–12 minutes, ~1,100–1,600 words)** delivered by an **AI text-to-speech voice** over AI-generated visuals. The script is the single biggest quality lever I control, because I cannot rely on real match footage, player interviews, or archival audio — the words must carry everything.
 
-I need an exhaustive, evidence-based research report on **the craft of sports-documentary scriptwriting**. For every area, cite real scripts, transcribed videos, named channels, books, or screenwriting sources. Where possible, quote actual narration lines from high-performing videos and analyze *why* they work.
+I need an exhaustive, evidence-based research report on **the craft of sports-documentary scriptwriting**. For every area, cite real scripts, transcribed videos, named channels, books, or screenwriting sources. Where possible, quote actual narration lines from high-performing videos and analyze _why_ they work.
 
 ---
 
@@ -26,8 +26,8 @@ I need an exhaustive, evidence-based research report on **the craft of sports-do
 ### 2. Story architecture for a 9-minute sports doc
 
 5. Compare narrative frameworks applied to a single-match story: **3-act structure, Dan Harmon's story circle, kishōtenketsu, mystery-box, in-media-res cold open, "nested loops," documentary "thesis-question" structure**. For a known-outcome sports event (viewer may already know the score), which structures preserve tension — and how?
-6. **The known-result problem**: the score of Paraguay–Germany is public. How do great docs create suspense about events the audience already knows the outcome of? (Techniques: shift the question from *what* to *how/why*, micro-unknowns, character stakes, "you know what happened — you don't know what it cost.") Give real examples.
-7. **Beat sheet**: propose a minute-by-minute beat template for a 9-minute underdog match documentary — cold open, context, rising action, low point, climax, aftermath, reflection — with the *word count and function* of each beat, grounded in retention research.
+6. **The known-result problem**: the score of Paraguay–Germany is public. How do great docs create suspense about events the audience already knows the outcome of? (Techniques: shift the question from _what_ to _how/why_, micro-unknowns, character stakes, "you know what happened — you don't know what it cost.") Give real examples.
+7. **Beat sheet**: propose a minute-by-minute beat template for a 9-minute underdog match documentary — cold open, context, rising action, low point, climax, aftermath, reflection — with the _word count and function_ of each beat, grounded in retention research.
 8. **Where should the climax sit?** Is there evidence about placing the emotional peak at 60–70% vs 85–90% of runtime for YouTube retention vs satisfaction?
 9. **Open loops and re-hooks**: how do the best scripts plant questions early and pay them off (Chekhov details, "remember this name" devices, callbacks)? How many open loops can a 9-minute script sustain?
 10. **B-story/character thread**: single-match docs risk being play-by-play. How do top scripts weave a human throughline (one player's backstory, a nation's history, a coach's redemption) through match events without derailing pace? What's the ideal ratio of match-action narration to human-context narration?
@@ -53,14 +53,14 @@ I need an exhaustive, evidence-based research report on **the craft of sports-do
 
 22. Which script patterns **break AI voices** (Kokoro, ElevenLabs, OpenAI TTS): long subordinate clauses, ambiguous heteronyms, numerals, abbreviations, scoreboard notation ("2–1", "90+3'"), all-caps? Best practices for writing/normalizing text so TTS delivery sounds human.
 23. **Punctuation as performance direction**: how commas, em dashes, ellipses, and paragraph breaks change TTS pacing and pause length. Community-tested tricks for inserting dramatic pauses and beats (empty lines? SSML? per-sentence generation like ours?).
-24. Since our TTS can't truly "perform," how much emotion must the **words themselves** carry vs a human narrator's script? Should TTS scripts be *more* explicit about emotion ("It was cruel.") where a human would use tone alone?
+24. Since our TTS can't truly "perform," how much emotion must the **words themselves** carry vs a human narrator's script? Should TTS scripts be _more_ explicit about emotion ("It was cruel.") where a human would use tone alone?
 25. **Per-scene scripting**: we generate TTS per scene (each scene = one narration block of ~15–40 words). What are the risks of scene-chunked narration (choppy flow, lost momentum across cuts) and how do we write lines that bridge scene boundaries (sentence spillover, connective openers, motif words)?
 
 ### 6. Script ↔ visuals interplay (stills-based format)
 
 26. **Writing for images that don't move much**: when the visual is a slow zoom on a still, the words must supply motion. What narration techniques create kinetic feeling over static images (sensory verbs, spatial language, time pressure)?
 27. **The "don't describe the image" rule**: consensus on complementary vs redundant narration — should the script ever describe what's on screen? Examples of narration adding a second layer (irony, interiority, foreshadow) over an image.
-28. **Silence and music-only moments in the script**: how do top scripts *write* silence (explicit [BEAT] / no-narration scenes)? How many words-free seconds can a 9-minute video sustain, and where do they hit hardest (before/after climax)?
+28. **Silence and music-only moments in the script**: how do top scripts _write_ silence (explicit [BEAT] / no-narration scenes)? How many words-free seconds can a 9-minute video sustain, and where do they hit hardest (before/after climax)?
 29. **Text cards as script elements**: what should a text card say vs what should be narrated? Rules for card copy length, and the handoff line before/after a card.
 30. Practical **script formatting**: what does a production-ready two-column (visual | narration) or scene-table script look like for this genre? Show a template with scene type, duration, narration, and music/SFX cues.
 

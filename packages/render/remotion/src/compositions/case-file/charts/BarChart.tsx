@@ -1,5 +1,6 @@
-import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { loadFont as loadCourierPrime } from '@remotion/google-fonts/CourierPrime';
+import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+
 import { PALETTE } from '../palette';
 
 const { fontFamily: monoFont } = loadCourierPrime();
@@ -38,23 +39,50 @@ export const BarChart: React.FC<{ visual: BarChartVisual; mini?: boolean; animat
     <div style={{ display: 'flex', flexDirection: 'column', gap }}>
       {visual.bars.map((bar, i) => {
         const t = animate
-          ? interpolate(frame, [i * 10, i * 10 + growFrames], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+          ? interpolate(frame, [i * 10, i * 10 + growFrames], [0, 1], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            })
           : 1;
         const widthPct = (bar.value / max) * t * 100;
         return (
           <div key={bar.label}>
-            <div style={{ fontFamily: monoFont, fontWeight: 700, fontSize: labelFontSize, color: PALETTE.paper, marginBottom: mini ? 6 : 16 }}>
+            <div
+              style={{
+                fontFamily: monoFont,
+                fontWeight: 700,
+                fontSize: labelFontSize,
+                color: PALETTE.paper,
+                marginBottom: mini ? 6 : 16,
+              }}
+            >
               {bar.label}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: mini ? 12 : 24 }}>
-              <div style={{ width: trackWidth, height: barHeight, background: PALETTE.backgroundShadow, borderRadius: 6, overflow: 'hidden' }}>
-                <div style={{ width: `${widthPct}%`, height: '100%', background: PALETTE.highlight }} />
+              <div
+                style={{
+                  width: trackWidth,
+                  height: barHeight,
+                  background: PALETTE.backgroundShadow,
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{ width: `${widthPct}%`, height: '100%', background: PALETTE.highlight }}
+                />
               </div>
-              <span style={{
-                fontFamily: monoFont, fontSize: valueFontSize, color: PALETTE.highlight, fontWeight: 700,
-                minWidth: mini ? 48 : 110,
-              }}>
-                {Math.round(bar.value * t)}{visual.unit ?? ''}
+              <span
+                style={{
+                  fontFamily: monoFont,
+                  fontSize: valueFontSize,
+                  color: PALETTE.highlight,
+                  fontWeight: 700,
+                  minWidth: mini ? 48 : 110,
+                }}
+              >
+                {Math.round(bar.value * t)}
+                {visual.unit ?? ''}
               </span>
             </div>
           </div>

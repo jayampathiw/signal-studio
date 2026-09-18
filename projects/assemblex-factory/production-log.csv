@@ -1,0 +1,4 @@
+date,week,post_id,shot_id,attempt,credits_used,accepted,reject_reason,clip_file
+2026-09-17T14:41:09.401Z,2026-W38,standalone_sample-001,s1,1,0,true,,s1.mp4
+2026-09-17T14:41:09.588Z,2026-W38,standalone_sample-001,s2,1,0,true,,s2.mp4
+2026-09-17T14:41:09.723Z,2026-W38,standalone_sample-001,s3,1,0,true,,s3.mp4

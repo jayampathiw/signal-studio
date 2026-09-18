@@ -17,27 +17,67 @@ type Stage = {
 };
 
 const STAGES: Stage[] = [
-  { key: 'brief',                    icon: '1', label: 'Brief',            description: 'Project created. Waiting for shot list.' },
-  { key: 'storyboard',               icon: '2', label: 'Storyboard',       description: 'Shot list imported. Upload your generated still images.' },
-  { key: 'awaiting_refs',            icon: '3', label: 'Gate 2 — Refs',    description: 'Review reference images and approve.',
-    action: { label: 'Approve refs → Stills', stage: 'tts' } },
-  { key: 'awaiting_stills',          icon: '4', label: 'Gate 3 — Stills',  description: 'Review all scene stills and approve.',
-    action: { label: 'Approve stills → Render', stage: 'assemble' } },
-  { key: 'rendering',                icon: '5', label: 'Rendering',        description: 'FFmpeg is assembling the final video.' },
-  { key: 'rendered',                 icon: '6', label: 'Rendered',         description: 'Video assembled. Ready for final review.' },
-  { key: 'awaiting_final_approval',  icon: '7', label: 'Gate 4 — Review',  description: 'Watch the video and approve to publish.' },
-  { key: 'publishing',               icon: '8', label: 'Publishing',       description: 'Uploading to YouTube / Facebook.' },
-  { key: 'posted',                   icon: '✓',  label: 'Posted',          description: 'Live on all configured platforms.' },
+  {
+    key: 'brief',
+    icon: '1',
+    label: 'Brief',
+    description: 'Project created. Waiting for shot list.',
+  },
+  {
+    key: 'storyboard',
+    icon: '2',
+    label: 'Storyboard',
+    description: 'Shot list imported. Upload your generated still images.',
+  },
+  {
+    key: 'awaiting_refs',
+    icon: '3',
+    label: 'Gate 2 — Refs',
+    description: 'Review reference images and approve.',
+    action: { label: 'Approve refs → Stills', stage: 'tts' },
+  },
+  {
+    key: 'awaiting_stills',
+    icon: '4',
+    label: 'Gate 3 — Stills',
+    description: 'Review all scene stills and approve.',
+    action: { label: 'Approve stills → Render', stage: 'assemble' },
+  },
+  {
+    key: 'rendering',
+    icon: '5',
+    label: 'Rendering',
+    description: 'FFmpeg is assembling the final video.',
+  },
+  {
+    key: 'rendered',
+    icon: '6',
+    label: 'Rendered',
+    description: 'Video assembled. Ready for final review.',
+  },
+  {
+    key: 'awaiting_final_approval',
+    icon: '7',
+    label: 'Gate 4 — Review',
+    description: 'Watch the video and approve to publish.',
+  },
+  {
+    key: 'publishing',
+    icon: '8',
+    label: 'Publishing',
+    description: 'Uploading to YouTube / Facebook.',
+  },
+  { key: 'posted', icon: '✓', label: 'Posted', description: 'Live on all configured platforms.' },
 ];
 
-const STATUS_ORDER = STAGES.map(s => s.key);
+const STATUS_ORDER = STAGES.map((s) => s.key);
 
 // Map transient/error statuses to the nearest display stage
 const STATUS_ALIAS: Record<string, string> = {
-  scripting:  'storyboard',
-  seeding:    'awaiting_refs',
-  rendering:  'rendering',
-  failed:     'rendering',   // show rendering stage highlighted when failed during assemble
+  scripting: 'storyboard',
+  seeding: 'awaiting_refs',
+  rendering: 'rendering',
+  failed: 'rendering', // show rendering stage highlighted when failed during assemble
 };
 
 function stageIndex(status: string) {
@@ -49,46 +89,82 @@ function stageIndex(status: string) {
 @Component({
   selector: 'app-longform-detail',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, LongformWorkbenchComponent, LongformScriptComponent, LongformFinalReviewComponent, LongformAudioComponent, ShortsSoundDesignComponent],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    RouterLink,
+    LongformWorkbenchComponent,
+    LongformScriptComponent,
+    LongformFinalReviewComponent,
+    LongformAudioComponent,
+    ShortsSoundDesignComponent,
+  ],
   template: `
     <!-- Navbar -->
-    <nav style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;">
+    <nav
+      style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:100;"
+    >
       <div style="display:flex;align-items:center;gap:24px;">
-        <span style="font-size:13px;font-weight:600;color:#e2e8f0;letter-spacing:.5px;">SIGNAL STUDIO</span>
+        <span style="font-size:13px;font-weight:600;color:#e2e8f0;letter-spacing:.5px;"
+          >SIGNAL STUDIO</span
+        >
         <div style="display:flex;gap:4px;">
-          <a routerLink="/reels"    style="padding:4px 12px;border-radius:6px;font-size:12px;color:#64748b;text-decoration:none;">Reels</a>
-          <a routerLink="/articles" style="padding:4px 12px;border-radius:6px;font-size:12px;color:#64748b;text-decoration:none;">Articles</a>
-          <a routerLink="/longform" style="padding:4px 12px;border-radius:6px;font-size:12px;color:#e2e8f0;text-decoration:none;background:#1e1e1e;">Longform</a>
+          <a
+            routerLink="/reels"
+            style="padding:4px 12px;border-radius:6px;font-size:12px;color:#64748b;text-decoration:none;"
+            >Reels</a
+          >
+          <a
+            routerLink="/articles"
+            style="padding:4px 12px;border-radius:6px;font-size:12px;color:#64748b;text-decoration:none;"
+            >Articles</a
+          >
+          <a
+            routerLink="/longform"
+            style="padding:4px 12px;border-radius:6px;font-size:12px;color:#e2e8f0;text-decoration:none;background:#1e1e1e;"
+            >Longform</a
+          >
         </div>
       </div>
     </nav>
 
     <div style="max-width:960px;margin:0 auto;padding:32px 20px;">
-
       <!-- Loading -->
       @if (loading()) {
-        <div style="text-align:center;padding:80px 0;color:#475569;font-size:14px;">Loading project…</div>
+        <div style="text-align:center;padding:80px 0;color:#475569;font-size:14px;">
+          Loading project…
+        </div>
       }
 
       <!-- Error -->
       @if (error()) {
-        <div style="padding:16px;border-radius:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;font-size:13px;">
+        <div
+          style="padding:16px;border-radius:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;font-size:13px;"
+        >
           {{ error() }}
         </div>
       }
 
       @if (!loading() && project()) {
-
         <!-- Failed banner -->
         @if (project()!.status === 'failed') {
-          <div style="margin-bottom:20px;padding:12px 16px;border-radius:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);display:flex;align-items:flex-start;gap:12px;">
+          <div
+            style="margin-bottom:20px;padding:12px 16px;border-radius:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);display:flex;align-items:flex-start;gap:12px;"
+          >
             <span style="font-size:16px;flex-shrink:0;">❌</span>
             <div>
-              <div style="font-size:13px;font-weight:600;color:#f87171;margin-bottom:4px;">Pipeline run failed</div>
-              <div style="font-size:11px;color:#94a3b8;font-family:monospace;word-break:break-all;">{{ project()!.status_note }}</div>
-              <button (click)="retryAssemble()" [disabled]="advancing()"
-                      style="margin-top:10px;padding:6px 14px;border-radius:6px;background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;font-size:11px;font-weight:600;cursor:pointer;"
-                      [style.opacity]="advancing() ? '0.5' : '1'">
+              <div style="font-size:13px;font-weight:600;color:#f87171;margin-bottom:4px;">
+                Pipeline run failed
+              </div>
+              <div style="font-size:11px;color:#94a3b8;font-family:monospace;word-break:break-all;">
+                {{ project()!.status_note }}
+              </div>
+              <button
+                (click)="retryAssemble()"
+                [disabled]="advancing()"
+                style="margin-top:10px;padding:6px 14px;border-radius:6px;background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;font-size:11px;font-weight:600;cursor:pointer;"
+                [style.opacity]="advancing() ? '0.5' : '1'"
+              >
                 {{ advancing() ? 'Resetting…' : '↺ Retry assemble' }}
               </button>
             </div>
@@ -97,41 +173,61 @@ function stageIndex(status: string) {
 
         <!-- Rendering in-progress banner -->
         @if (project()!.status === 'rendering') {
-          <div style="margin-bottom:20px;padding:12px 16px;border-radius:8px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);display:flex;align-items:center;gap:12px;">
+          <div
+            style="margin-bottom:20px;padding:12px 16px;border-radius:8px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);display:flex;align-items:center;gap:12px;"
+          >
             <div class="spinner-sm"></div>
-            <div style="font-size:13px;color:#93c5fd;">FFmpeg assembly in progress — this page will refresh automatically every 30s</div>
+            <div style="font-size:13px;color:#93c5fd;">
+              FFmpeg assembly in progress — this page will refresh automatically every 30s
+            </div>
           </div>
         }
 
         <!-- Back link + title -->
         <div style="margin-bottom:24px;">
-          <a [routerLink]="backLink()" style="font-size:12px;color:#475569;text-decoration:none;">← Back to videos</a>
+          <a [routerLink]="backLink()" style="font-size:12px;color:#475569;text-decoration:none;"
+            >← Back to videos</a
+          >
           <div style="display:flex;align-items:center;gap:10px;margin:8px 0 4px;">
             <h1 style="margin:0;font-size:22px;font-weight:700;color:#e2e8f0;">
               {{ project()!.title ?? 'Untitled Project #' + project()!.id }}
             </h1>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;"
-                  [style.color]="project()!.clip_type === 'short' ? '#f59e0b' : '#60a5fa'"
-                  [style.background]="project()!.clip_type === 'short' ? 'rgba(245,158,11,.12)' : 'rgba(96,165,250,.12)'">
+            <span
+              style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;"
+              [style.color]="project()!.clip_type === 'short' ? '#f59e0b' : '#60a5fa'"
+              [style.background]="
+                project()!.clip_type === 'short' ? 'rgba(245,158,11,.12)' : 'rgba(96,165,250,.12)'
+              "
+            >
               {{ project()!.clip_type === 'short' ? '⚡ Short' : '🎬 Long-form' }}
             </span>
           </div>
           <div style="font-size:12px;color:#475569;">
             #{{ project()!.id }}
-            @if (project()!.video_slug) { · {{ project()!.video_slug }} }
-            · {{ project()!.channel_key }} · created {{ project()!.created_at | date:'dd MMM yyyy' }}
+            @if (project()!.video_slug) {
+              · {{ project()!.video_slug }}
+            }
+            · {{ project()!.channel_key }} · created
+            {{ project()!.created_at | date: 'dd MMM yyyy' }}
             @if (project()!.clip_type === 'short' && project()!.parent_project_id) {
               · Short of
-              <a [routerLink]="['/longform/video', project()!.parent_project_id]" style="color:#60a5fa;text-decoration:none;">#{{ project()!.parent_project_id }}</a>
+              <a
+                [routerLink]="['/longform/video', project()!.parent_project_id]"
+                style="color:#60a5fa;text-decoration:none;"
+                >#{{ project()!.parent_project_id }}</a
+              >
             }
           </div>
         </div>
 
         <!-- Stage tracker -->
-        <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-
+        <div
+          style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:20px 24px;margin-bottom:24px;"
+        >
           <!-- Horizontal strip -->
-          <div style="display:flex;align-items:flex-start;overflow-x:auto;padding-bottom:4px;gap:0;">
+          <div
+            style="display:flex;align-items:flex-start;overflow-x:auto;padding-bottom:4px;gap:0;"
+          >
             @for (stage of stages; track stage.key; let i = $index) {
               @let sIdx = currentStageIndex();
               @let done = i < sIdx;
@@ -139,24 +235,34 @@ function stageIndex(status: string) {
               @let future = i > sIdx;
 
               <!-- Stage node -->
-              <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;min-width:72px;max-width:88px;opacity:1;"
-                   [style.opacity]="future ? '0.35' : '1'">
-                <div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;flex-shrink:0;"
-                     [style.background]="done ? '#16a34a' : active ? '#2563eb' : '#1a1a1a'"
-                     [style.border]="active ? '2px solid #3b82f6' : done ? '2px solid #16a34a' : '2px solid #262626'"
-                     [style.color]="(done || active) ? 'white' : '#475569'">
+              <div
+                style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;min-width:72px;max-width:88px;opacity:1;"
+                [style.opacity]="future ? '0.35' : '1'"
+              >
+                <div
+                  style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s;flex-shrink:0;"
+                  [style.background]="done ? '#16a34a' : active ? '#2563eb' : '#1a1a1a'"
+                  [style.border]="
+                    active ? '2px solid #3b82f6' : done ? '2px solid #16a34a' : '2px solid #262626'
+                  "
+                  [style.color]="done || active ? 'white' : '#475569'"
+                >
                   {{ done ? '✓' : stage.icon }}
                 </div>
-                <div style="margin-top:6px;font-size:10px;font-weight:600;text-align:center;line-height:1.3;word-break:break-word;padding:0 4px;"
-                     [style.color]="active ? '#e2e8f0' : done ? '#4ade80' : '#475569'">
+                <div
+                  style="margin-top:6px;font-size:10px;font-weight:600;text-align:center;line-height:1.3;word-break:break-word;padding:0 4px;"
+                  [style.color]="active ? '#e2e8f0' : done ? '#4ade80' : '#475569'"
+                >
                   {{ stage.label }}
                 </div>
               </div>
 
               <!-- Connector between nodes -->
               @if (i < stages.length - 1) {
-                <div style="flex:1;height:2px;min-width:12px;margin-top:14px;flex-shrink:1;"
-                     [style.background]="i < sIdx ? '#16a34a' : '#262626'"></div>
+                <div
+                  style="flex:1;height:2px;min-width:12px;margin-top:14px;flex-shrink:1;"
+                  [style.background]="i < sIdx ? '#16a34a' : '#262626'"
+                ></div>
               }
             }
           </div>
@@ -165,68 +271,108 @@ function stageIndex(status: string) {
           @let activeStage = stages[currentStageIndex()];
           @if (activeStage) {
             <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;">
-              <div style="font-size:12px;color:#64748b;margin-bottom:10px;">{{ activeStage.description }}</div>
+              <div style="font-size:12px;color:#64748b;margin-bottom:10px;">
+                {{ activeStage.description }}
+              </div>
 
               <!-- Storyboard: advance to Gate 3 once stills are uploaded -->
               @if (activeStage.key === 'storyboard') {
-                @let stillsRemaining = (workbenchRef?.totalSlots() ?? 0) - (workbenchRef?.uploadedCount() ?? 0);
-                <button (click)="advanceToStills()"
-                        [disabled]="advancing() || stillsRemaining > 0"
-                        style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
-                        [style.opacity]="advancing() || stillsRemaining > 0 ? '0.5' : '1'"
-                        [style.cursor]="stillsRemaining > 0 ? 'not-allowed' : 'pointer'">
+                @let stillsRemaining =
+                  (workbenchRef?.totalSlots() ?? 0) - (workbenchRef?.uploadedCount() ?? 0);
+                <button
+                  (click)="advanceToStills()"
+                  [disabled]="advancing() || stillsRemaining > 0"
+                  style="padding:8px 18px;border-radius:8px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                  [style.opacity]="advancing() || stillsRemaining > 0 ? '0.5' : '1'"
+                  [style.cursor]="stillsRemaining > 0 ? 'not-allowed' : 'pointer'"
+                >
                   {{ advancing() ? 'Advancing…' : 'Next →' }}
                 </button>
                 @if (stillsRemaining > 0) {
                   <div style="margin-top:6px;font-size:11px;color:#64748b;">
-                    Upload {{ stillsRemaining }} more still{{ stillsRemaining === 1 ? '' : 's' }} before advancing.
+                    Upload {{ stillsRemaining }} more still{{ stillsRemaining === 1 ? '' : 's' }}
+                    before advancing.
                   </div>
                 }
               }
 
               <!-- Shot list upload (brief stage only) -->
               @if (activeStage.key === 'brief') {
-                <div style="padding:16px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;">
-                  <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px;">Upload shot list</div>
+                <div
+                  style="padding:16px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;"
+                >
+                  <div
+                    style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px;"
+                  >
+                    Upload shot list
+                  </div>
                   <div style="font-size:11px;color:#475569;margin-bottom:12px;line-height:1.5;">
-                    Upload a <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px;color:#94a3b8;">.md</code> file in the standard silenced-shotlist format.
-                    The parser will create <strong style="color:#64748b;">content_stills</strong> and <strong style="color:#64748b;">content_clips</strong> rows and advance the project to <em>storyboard</em>.
+                    Upload a
+                    <code
+                      style="background:#1a1a1a;padding:1px 5px;border-radius:3px;color:#94a3b8;"
+                      >.md</code
+                    >
+                    file in the standard silenced-shotlist format. The parser will create
+                    <strong style="color:#64748b;">content_stills</strong> and
+                    <strong style="color:#64748b;">content_clips</strong> rows and advance the
+                    project to <em>storyboard</em>.
                   </div>
 
-                  <label style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:7px;background:#1a1a1a;border:1px solid #262626;font-size:12px;color:#94a3b8;cursor:pointer;">
+                  <label
+                    style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:7px;background:#1a1a1a;border:1px solid #262626;font-size:12px;color:#94a3b8;cursor:pointer;"
+                  >
                     📄 Choose shot list (.md)
-                    <input type="file" accept=".md,text/markdown" style="display:none;"
-                           (change)="onShotlistFileSelect($event)" />
+                    <input
+                      type="file"
+                      accept=".md,text/markdown"
+                      style="display:none;"
+                      (change)="onShotlistFileSelect($event)"
+                    />
                   </label>
 
                   @if (shotlistPreview()) {
-                    <div style="margin-top:12px;padding:10px 12px;background:#111;border:1px solid #1e293b;border-radius:6px;">
-                      <div style="font-size:11px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Preview</div>
+                    <div
+                      style="margin-top:12px;padding:10px 12px;background:#111;border:1px solid #1e293b;border-radius:6px;"
+                    >
+                      <div
+                        style="font-size:11px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;"
+                      >
+                        Preview
+                      </div>
                       @if (shotlistPreview()!.title) {
-                        <div style="font-size:12px;color:#e2e8f0;margin-bottom:4px;">{{ shotlistPreview()!.title }}</div>
+                        <div style="font-size:12px;color:#e2e8f0;margin-bottom:4px;">
+                          {{ shotlistPreview()!.title }}
+                        </div>
                       }
                       <div style="font-size:11px;color:#64748b;">
                         {{ shotlistPreview()!.scenes }} scenes ·
                         @if (shotlistPreview()!.duration) {
-                          {{ shotlistPreview()!.duration }}s ({{ (shotlistPreview()!.duration! / 60 | number:'1.0-1') }}m) ·
+                          {{ shotlistPreview()!.duration }}s ({{
+                            shotlistPreview()!.duration! / 60 | number: '1.0-1'
+                          }}m) ·
                         }
-                        {{ shotlistPreview()!.stills }} generated stills · {{ shotlistPreview()!.editorBuilds }} editor builds
+                        {{ shotlistPreview()!.stills }} generated stills ·
+                        {{ shotlistPreview()!.editorBuilds }} editor builds
                       </div>
                     </div>
                   }
 
                   @if (shotlistFile()) {
-                    <button (click)="importShotlist()"
-                            [disabled]="importing()"
-                            style="margin-top:12px;padding:7px 16px;border-radius:7px;background:#7c3aed;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
-                            [style.opacity]="importing() ? '0.5' : '1'">
+                    <button
+                      (click)="importShotlist()"
+                      [disabled]="importing()"
+                      style="margin-top:12px;padding:7px 16px;border-radius:7px;background:#7c3aed;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                      [style.opacity]="importing() ? '0.5' : '1'"
+                    >
                       {{ importing() ? 'Importing…' : 'Import shot list' }}
                     </button>
                   }
 
                   @if (importResult()) {
-                    <div style="margin-top:8px;font-size:12px;"
-                         [style.color]="importResult()!.ok ? '#4ade80' : '#f87171'">
+                    <div
+                      style="margin-top:8px;font-size:12px;"
+                      [style.color]="importResult()!.ok ? '#4ade80' : '#f87171'"
+                    >
                       {{ importResult()!.message }}
                     </div>
                   }
@@ -234,26 +380,35 @@ function stageIndex(status: string) {
               }
 
               @if (activeStage.action) {
-                <button (click)="triggerStage(activeStage.action!.stage)"
-                        [disabled]="triggering()"
-                        style="margin-top:10px;padding:7px 16px;border-radius:7px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
-                        [style.opacity]="triggering() ? '0.5' : '1'">
+                <button
+                  (click)="triggerStage(activeStage.action!.stage)"
+                  [disabled]="triggering()"
+                  style="margin-top:10px;padding:7px 16px;border-radius:7px;background:#2563eb;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;"
+                  [style.opacity]="triggering() ? '0.5' : '1'"
+                >
                   {{ triggering() ? 'Dispatching…' : activeStage.action!.label }}
                 </button>
               }
 
               @if (triggerResult()) {
-                <div style="margin-top:8px;font-size:12px;"
-                     [style.color]="triggerResult()!.ok ? '#4ade80' : '#f87171'">
+                <div
+                  style="margin-top:8px;font-size:12px;"
+                  [style.color]="triggerResult()!.ok ? '#4ade80' : '#f87171'"
+                >
                   {{ triggerResult()!.message }}
                   @if (triggerResult()!.ok && triggerResult()!.runUrl) {
-                    · <a [href]="triggerResult()!.runUrl" target="_blank" style="color:#60a5fa;">View run ↗</a>
+                    ·
+                    <a [href]="triggerResult()!.runUrl" target="_blank" style="color:#60a5fa;"
+                      >View run ↗</a
+                    >
                   }
                 </div>
               }
 
               @if (project()!.status_note) {
-                <div style="margin-top:6px;font-size:11px;color:#64748b;font-family:monospace;background:#0d0d0d;padding:8px 10px;border-radius:6px;max-height:80px;overflow:auto;">
+                <div
+                  style="margin-top:6px;font-size:11px;color:#64748b;font-family:monospace;background:#0d0d0d;padding:8px 10px;border-radius:6px;max-height:80px;overflow:auto;"
+                >
                   {{ project()!.status_note }}
                 </div>
               }
@@ -276,43 +431,62 @@ function stageIndex(status: string) {
           <app-longform-final-review
             [project]="project()!"
             (published)="onPublished()"
-            (rerendering)="onRerendering()" />
+            (rerendering)="onRerendering()"
+          />
         }
 
         <!-- Generic video + SEO (rendered / publishing / posted) -->
         @if (isSimpleVideoState()) {
-          <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+          <div
+            style="background:#111;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden;margin-bottom:24px;"
+          >
             <div style="padding:16px 20px;border-bottom:1px solid #1a1a1a;">
-              <h2 style="margin:0;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">Video</h2>
+              <h2
+                style="margin:0;font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;"
+              >
+                Video
+              </h2>
             </div>
             @if (project()!.rendered_video_url) {
-              <video [src]="project()!.rendered_video_url!"
-                     controls
-                     preload="metadata"
-                     style="width:100%;display:block;background:#000;max-height:540px;">
-              </video>
+              <video
+                [src]="project()!.rendered_video_url!"
+                controls
+                preload="metadata"
+                style="width:100%;display:block;background:#000;max-height:540px;"
+              ></video>
             } @else {
-              <div style="padding:40px 0;text-align:center;color:#475569;font-size:13px;">Video URL not set yet.</div>
+              <div style="padding:40px 0;text-align:center;color:#475569;font-size:13px;">
+                Video URL not set yet.
+              </div>
             }
           </div>
 
           @if (project()!.seo) {
             <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:20px;">
-              <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;">SEO</div>
+              <div
+                style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;"
+              >
+                SEO
+              </div>
               <div style="margin-bottom:10px;">
                 <div style="font-size:10px;color:#475569;margin-bottom:3px;">Title</div>
                 <div style="font-size:14px;color:#e2e8f0;">{{ project()!.seo!.title }}</div>
               </div>
               <div style="margin-bottom:10px;">
                 <div style="font-size:10px;color:#475569;margin-bottom:3px;">Description</div>
-                <div style="font-size:13px;color:#94a3b8;white-space:pre-wrap;">{{ project()!.seo!.description }}</div>
+                <div style="font-size:13px;color:#94a3b8;white-space:pre-wrap;">
+                  {{ project()!.seo!.description }}
+                </div>
               </div>
               @if (project()!.seo!.hashtags?.length) {
                 <div>
                   <div style="font-size:10px;color:#475569;margin-bottom:6px;">Hashtags</div>
                   <div style="display:flex;flex-wrap:wrap;gap:6px;">
                     @for (tag of project()!.seo!.hashtags; track tag) {
-                      <span style="padding:2px 8px;background:#1e1e1e;border-radius:4px;font-size:12px;color:#60a5fa;">#{{ tag }}</span>
+                      <span
+                        style="padding:2px 8px;background:#1e1e1e;border-radius:4px;font-size:12px;color:#60a5fa;"
+                        >#{{ tag }}</span
+                      >
                     }
                   </div>
                 </div>
@@ -332,33 +506,44 @@ function stageIndex(status: string) {
     </div>
     <style>
       .spinner-sm {
-        width: 14px; height: 14px;
-        border: 2px solid rgba(147,197,253,.3);
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(147, 197, 253, 0.3);
         border-top-color: #93c5fd;
         border-radius: 50%;
-        animation: spin .8s linear infinite;
+        animation: spin 0.8s linear infinite;
         flex-shrink: 0;
       }
-      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   `,
 })
 export class LongformDetailComponent implements OnInit, OnDestroy {
   @ViewChild(LongformWorkbenchComponent) workbenchRef?: LongformWorkbenchComponent;
 
-  project    = signal<LongformProject | null>(null);
-  loading    = signal(true);
-  error      = signal<string | null>(null);
+  project = signal<LongformProject | null>(null);
+  loading = signal(true);
+  error = signal<string | null>(null);
   triggering = signal(false);
   triggerResult = signal<{ ok: boolean; message: string; runUrl?: string | null } | null>(null);
-  advancing  = signal(false);
+  advancing = signal(false);
   private pollTimer: ReturnType<typeof setInterval> | null = null;
 
   // Shot list upload
-  shotlistFile     = signal<File | null>(null);
-  shotlistPreview  = signal<{ title: string | null; scenes: number; stills: number; editorBuilds: number; duration: number | null } | null>(null);
-  importing        = signal(false);
-  importResult     = signal<{ ok: boolean; message: string } | null>(null);
+  shotlistFile = signal<File | null>(null);
+  shotlistPreview = signal<{
+    title: string | null;
+    scenes: number;
+    stills: number;
+    editorBuilds: number;
+    duration: number | null;
+  } | null>(null);
+  importing = signal(false);
+  importResult = signal<{ ok: boolean; message: string } | null>(null);
 
   stages = STAGES;
 
@@ -387,7 +572,10 @@ export class LongformDetailComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (!id) { this.router.navigate(['/longform']); return; }
+    if (!id) {
+      this.router.navigate(['/longform']);
+      return;
+    }
     try {
       this.project.set(await this.svc.getLongformProject(id));
       if (!this.project()) this.error.set('Project not found.');
@@ -416,7 +604,10 @@ export class LongformDetailComponent implements OnInit, OnDestroy {
   }
 
   private stopPoll() {
-    if (this.pollTimer != null) { clearInterval(this.pollTimer); this.pollTimer = null; }
+    if (this.pollTimer != null) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
   }
 
   async onRerendering() {
@@ -456,10 +647,10 @@ export class LongformDetailComponent implements OnInit, OnDestroy {
       const editorMatches = text.match(/EDITOR (BUILD|GRAPHIC)/g) ?? [];
       const stillMatches = text.match(/🖼️\s+STILL\s+[A-D]:/g) ?? [];
       this.shotlistPreview.set({
-        title:        titleM ? titleM[1].trim() : null,
-        duration:     durM ? Number(durM[1]) : null,
-        scenes:       sceneMatches.length,
-        stills:       stillMatches.length - editorMatches.length,
+        title: titleM ? titleM[1].trim() : null,
+        duration: durM ? Number(durM[1]) : null,
+        scenes: sceneMatches.length,
+        stills: stillMatches.length - editorMatches.length,
         editorBuilds: editorMatches.length,
       });
     };

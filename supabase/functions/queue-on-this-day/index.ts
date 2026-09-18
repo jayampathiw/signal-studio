@@ -21,7 +21,7 @@ const corsHeaders = {
 const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 
 const PAGE_CONFIG: Record<string, { language: string; pageName: string; pageHashtag: string }> = {
-  IT: { language: 'italiano', pageName: 'Vivere in Italia',   pageHashtag: '#ItaliaOggi' },
+  IT: { language: 'italiano', pageName: 'Vivere in Italia', pageHashtag: '#ItaliaOggi' },
   FR: { language: 'français', pageName: "France Aujourd'hui", pageHashtag: '#FranceAujourdhui' },
 };
 
@@ -32,7 +32,8 @@ Deno.serve(async (req: Request) => {
   } catch (err: any) {
     console.error('Unhandled:', err?.message);
     return new Response(JSON.stringify({ error: err?.message ?? 'Internal server error' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
@@ -40,7 +41,8 @@ Deno.serve(async (req: Request) => {
 async function handleRequest(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
@@ -48,7 +50,8 @@ async function handleRequest(req: Request): Promise<Response> {
   const country = (body.country ?? '').toUpperCase() as 'IT' | 'FR';
   if (!['IT', 'FR'].includes(country)) {
     return new Response(JSON.stringify({ error: 'country must be IT or FR' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
@@ -75,7 +78,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
   // Process all dates in parallel (Wikipedia + Claude, no images)
   const results = await Promise.allSettled(
-    dates.map(date => processDate(supabase, country, cfg, date)),
+    dates.map((date) => processDate(supabase, country, cfg, date)),
   );
 
   const out = results.map((r, i) =>
@@ -92,9 +95,16 @@ async function handleRequest(req: Request): Promise<Response> {
 async function processDate(
   supabase: ReturnType<typeof createClient>,
   country: string,
-  cfg: typeof PAGE_CONFIG['IT'],
+  cfg: (typeof PAGE_CONFIG)['IT'],
   date: string,
-): Promise<{ date: string; success: boolean; post_id?: string; events_count?: number; skipped?: boolean; error?: string }> {
+): Promise<{
+  date: string;
+  success: boolean;
+  post_id?: string;
+  events_count?: number;
+  skipped?: boolean;
+  error?: string;
+}> {
   // Duplicate check
   const { data: existing } = await supabase
     .from('on_this_day_posts')
@@ -108,8 +118,8 @@ async function processDate(
   // Wikipedia
   const targetDate = new Date(date + 'T00:00:00Z');
   const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
-  const day   = String(targetDate.getUTCDate()).padStart(2, '0');
-  const lang  = country === 'IT' ? 'it' : 'fr';
+  const day = String(targetDate.getUTCDate()).padStart(2, '0');
+  const lang = country === 'IT' ? 'it' : 'fr';
 
   const wikiRes = await fetch(
     `https://${lang}.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`,
@@ -117,18 +127,31 @@ async function processDate(
   );
   if (!wikiRes.ok) throw new Error(`Wikipedia ${wikiRes.status} for ${date}`);
   const wikiData = await wikiRes.json();
-  const rawEvents: { year: number; text: string }[] = (wikiData.events ?? [])
-    .map((e: any) => ({ year: Number(e.year), text: String(e.text ?? '') }));
+  const rawEvents: { year: number; text: string }[] = (wikiData.events ?? []).map((e: any) => ({
+    year: Number(e.year),
+    text: String(e.text ?? ''),
+  }));
 
   // Claude
-  const dateObj     = new Date(date + 'T00:00:00Z');
-  const dayLabel    = dateObj.toLocaleDateString(country === 'IT' ? 'it-IT' : 'fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
-  const introHeader = country === 'IT' ? `📅 Accadde oggi in Italia — ${dayLabel}` : `📅 Il était une fois en France — ${dayLabel}`;
-  const ctaLine     = country === 'IT'
-    ? `👉 Segui ${cfg.pageName} per scoprire la storia italiana — ogni giorno.\n\n${cfg.pageHashtag}`
-    : `👉 Suivez ${cfg.pageName} pour découvrir l'histoire française — chaque jour.\n\n${cfg.pageHashtag}`;
+  const dateObj = new Date(date + 'T00:00:00Z');
+  const dayLabel = dateObj.toLocaleDateString(country === 'IT' ? 'it-IT' : 'fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  });
+  const introHeader =
+    country === 'IT'
+      ? `📅 Accadde oggi in Italia — ${dayLabel}`
+      : `📅 Il était une fois en France — ${dayLabel}`;
+  const ctaLine =
+    country === 'IT'
+      ? `👉 Segui ${cfg.pageName} per scoprire la storia italiana — ogni giorno.\n\n${cfg.pageHashtag}`
+      : `👉 Suivez ${cfg.pageName} pour découvrir l'histoire française — chaque jour.\n\n${cfg.pageHashtag}`;
 
-  const eventList = rawEvents.slice(0, 60).map(e => `[${e.year}] ${e.text}`).join('\n');
+  const eventList = rawEvents
+    .slice(0, 60)
+    .map((e) => `[${e.year}] ${e.text}`)
+    .join('\n');
 
   const prompt = `You are a social media editor for "${cfg.pageName}", a Facebook page dedicated to ${country === 'IT' ? 'Italian' : 'French'} national pride and history (35+ diaspora audience).
 
@@ -173,17 +196,25 @@ Return ONLY valid JSON starting with {:
   const parsed = JSON.parse(jsonMatch[0]);
 
   const events = (parsed.events ?? []).map((e: any) => ({
-    year: e.year, title: e.title, summary: e.summary, image_prompt: e.image_prompt, image_url: null,
+    year: e.year,
+    title: e.title,
+    summary: e.summary,
+    image_prompt: e.image_prompt,
+    image_url: null,
   }));
 
-  const title = country === 'IT'
-    ? `Accadde oggi in Italia — ${dayLabel}`
-    : `Il était une fois en France — ${dayLabel}`;
+  const title =
+    country === 'IT'
+      ? `Accadde oggi in Italia — ${dayLabel}`
+      : `Il était une fois en France — ${dayLabel}`;
 
   const { data: inserted, error: insertErr } = await supabase
     .from('on_this_day_posts')
     .insert({
-      country, post_date: date, title, events,
+      country,
+      post_date: date,
+      title,
+      events,
       ai_caption: { intro: parsed.intro, question: parsed.question, cta: parsed.cta },
       hashtags: parsed.hashtags ?? [],
       status: 'pending',

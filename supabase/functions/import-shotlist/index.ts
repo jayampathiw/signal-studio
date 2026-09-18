@@ -84,7 +84,12 @@ function parseSceneTable(text: string): SceneRow[] {
   if (lines.length < 2) return [];
 
   const cells = (line: string) =>
-    line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+    line
+      .trim()
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map((c) => c.trim());
 
   const columns = cells(lines[0]).map((c) => c.toLowerCase().replace(/\s+/g, '_'));
   const isSeparator = (line: string) => cells(line).every((c) => /^:?-+:?$/.test(c));
@@ -94,7 +99,9 @@ function parseSceneTable(text: string): SceneRow[] {
     if (isSeparator(line)) continue;
     const values = cells(line);
     const row: SceneRow = {};
-    columns.forEach((col, i) => { row[col] = (values[i] ?? '').trim(); });
+    columns.forEach((col, i) => {
+      row[col] = (values[i] ?? '').trim();
+    });
     rows.push(row);
   }
   return rows;
@@ -118,7 +125,15 @@ function stripQuotes(s: string): string {
 // long-form, `heartbeat_layer` for Shorts) feeds the continuous background
 // bed, merged from per-scene rows into segments here.
 
-const LONGFORM_MUSIC_BEDS = new Set(['somber', 'tension', 'drone', 'release', 'reflective', 'hum_only', 'silence']);
+const LONGFORM_MUSIC_BEDS = new Set([
+  'somber',
+  'tension',
+  'drone',
+  'release',
+  'reflective',
+  'hum_only',
+  'silence',
+]);
 // Only these 5 have an actual bed audio file (manifest.json) — hum_only/silence
 // have no track to apply a gain to, so they never get the flat-default fallback.
 const GAIN_BEARING_BEDS = new Set(['somber', 'tension', 'drone', 'release', 'reflective']);
@@ -146,7 +161,10 @@ function mergeConsecutive<T>(
   let current: { value: T; startIdx: number; endIdx: number } | null = null;
   rows.forEach((row, i) => {
     const v = getValue(row);
-    if (v === null || v === undefined) { current = null; return; }
+    if (v === null || v === undefined) {
+      current = null;
+      return;
+    }
     if (current && current.value === v) {
       current.endIdx = i;
     } else {
@@ -181,7 +199,10 @@ function buildLongformAudioPlan(rows: SceneAudioRow[]): Record<string, unknown>[
 // Shorts: music_bed (optional — blank = no bed) + heartbeat_layer, both
 // scene-referenced (start_scene/end_scene, not seconds — timecodes are
 // optional for Shorts until cutting is locked).
-function buildShortsSoundDesign(rows: SceneAudioRow[]): { bed: Record<string, unknown>[]; heartbeat: Record<string, unknown>[] } {
+function buildShortsSoundDesign(rows: SceneAudioRow[]): {
+  bed: Record<string, unknown>[];
+  heartbeat: Record<string, unknown>[];
+} {
   const bedRuns = mergeConsecutive(rows, (r) => r.musicBed);
   const heartbeatRuns = mergeConsecutive(rows, (r) => (r.heartbeat ? 'yes' : null));
   return {
@@ -209,7 +230,8 @@ interface ParsedShotlist {
 
 function parseShotlist(text: string): ParsedShotlist {
   const header = parseHeader(text);
-  const clipType = header.clip_type === 'short' ? 'short' : header.clip_type === 'long_form' ? 'long_form' : null;
+  const clipType =
+    header.clip_type === 'short' ? 'short' : header.clip_type === 'long_form' ? 'long_form' : null;
   const scenes = parseSceneTable(text);
   return {
     header,
@@ -252,15 +274,17 @@ Deno.serve(async (req: Request) => {
     .eq('id', projectId)
     .maybeSingle();
   if (projErr || !project) return json({ error: 'Project not found' }, 404);
-  if (project.status !== 'brief') return json({ error: `Project must be in 'brief' status (current: ${project.status})` }, 409);
+  if (project.status !== 'brief')
+    return json({ error: `Project must be in 'brief' status (current: ${project.status})` }, 409);
 
   const parsed = parseShotlist(shotlistText);
   if (!parsed.header.clip_type) {
-    return json({ error: "Shot list header is missing clip_type: long_form | short" }, 400);
+    return json({ error: 'Shot list header is missing clip_type: long_form | short' }, 400);
   }
   if (!parsed.title) return json({ error: 'Shot list header is missing title:' }, 400);
   if (!parsed.videoSlug) return json({ error: 'Shot list header is missing video_slug:' }, 400);
-  if (!parsed.scenes.length) return json({ error: 'No scene rows found — check the pipe-table formatting' }, 400);
+  if (!parsed.scenes.length)
+    return json({ error: 'No scene rows found — check the pipe-table formatting' }, 400);
 
   // Shorts must resolve their parent long-form project by video_slug.
   let parentProjectId: number | null = null;
@@ -274,7 +298,10 @@ Deno.serve(async (req: Request) => {
       .eq('video_slug', parsed.parentVideoSlug)
       .maybeSingle();
     if (!parent) {
-      return json({ error: `Parent video "${parsed.parentVideoSlug}" not found — import/create it first.` }, 404);
+      return json(
+        { error: `Parent video "${parsed.parentVideoSlug}" not found — import/create it first.` },
+        404,
+      );
     }
     parentProjectId = (parent as { id: number }).id;
   }
@@ -284,9 +311,12 @@ Deno.serve(async (req: Request) => {
     for (const row of parsed.scenes) {
       const bed = (row.music_bed ?? '').toLowerCase().trim();
       if (!LONGFORM_MUSIC_BEDS.has(bed)) {
-        return json({
-          error: `Scene ${row.scene_id || '?'}: music_bed must be one of ${[...LONGFORM_MUSIC_BEDS].join(', ')} (got "${row.music_bed ?? ''}")`,
-        }, 400);
+        return json(
+          {
+            error: `Scene ${row.scene_id || '?'}: music_bed must be one of ${[...LONGFORM_MUSIC_BEDS].join(', ')} (got "${row.music_bed ?? ''}")`,
+          },
+          400,
+        );
       }
     }
   }
@@ -323,9 +353,10 @@ Deno.serve(async (req: Request) => {
       tier_overlay: row.tier_overlay || null,
       pattern_interrupt_check: row.pattern_interrupt_check || null,
       shorts_source_flag: row.shorts_source_flag || null,
-      sfx: (musicBed || musicGainDb != null || heartbeat)
-        ? { music_bed: musicBed, music_gain_db: musicGainDb, heartbeat_layer: heartbeat || null }
-        : null,
+      sfx:
+        musicBed || musicGainDb != null || heartbeat
+          ? { music_bed: musicBed, music_gain_db: musicGainDb, heartbeat_layer: heartbeat || null }
+          : null,
     });
 
     if (!isTextCard) {
@@ -337,7 +368,7 @@ Deno.serve(async (req: Request) => {
         start_sec: startSec,
         end_sec: endSec,
         image_source: imageSource,
-        reuse_of: assetType === 'reused_crop' ? (row.asset_ref || null) : null,
+        reuse_of: assetType === 'reused_crop' ? row.asset_ref || null : null,
         prompt: row.asset_ref || null,
         asset_type: assetType,
         asset_ref: row.asset_ref || null,
@@ -358,7 +389,10 @@ Deno.serve(async (req: Request) => {
       .eq('scene_n', r.scene_n)
       .eq('cut', r.cut)
       .maybeSingle();
-    if (existing) { stillsSkipped++; continue; }
+    if (existing) {
+      stillsSkipped++;
+      continue;
+    }
     const { error } = await supabase.from('content_stills').insert(row);
     if (error) return json({ error: `Insert S${r.scene_n}: ${error.message}` }, 500);
     stillsInserted++;
@@ -374,31 +408,35 @@ Deno.serve(async (req: Request) => {
       .eq('scene_n', r.scene_n)
       .maybeSingle();
     if (existing) {
-      await supabase.from('content_clips').update(row).eq('id', (existing as { id: number }).id);
+      await supabase
+        .from('content_clips')
+        .update(row)
+        .eq('id', (existing as { id: number }).id);
     } else {
       await supabase.from('content_clips').insert(row);
     }
   }
 
   // Update project: clip_type, video_slug, parent link, header meta, advance to storyboard.
-  const shotListMeta = parsed.clipType === 'long_form'
-    ? {
-        mode: parsed.header.mode ?? null,
-        match_metadata: parsed.header.match_metadata ?? null,
-        fact_check_source: parsed.header.fact_check_source ?? null,
-        global_art_direction: parsed.header.global_art_direction ?? null,
-      }
-    : {
-        shorts_role: parsed.header.shorts_role ?? null,
-        hook_formula: parsed.header.hook_formula ?? null,
-        stakes_clause: parsed.header.stakes_clause ?? null,
-        related_video_link_set: parsed.header.related_video_link_set ?? null,
-        posting_dates: parsed.header.posting_dates ?? null,
-        language: parsed.header.language ?? null,
-        match_metadata: parsed.header.match_metadata ?? null,
-        fact_check_source: parsed.header.fact_check_source ?? null,
-        sound_design: buildShortsSoundDesign(sceneAudioRows),
-      };
+  const shotListMeta =
+    parsed.clipType === 'long_form'
+      ? {
+          mode: parsed.header.mode ?? null,
+          match_metadata: parsed.header.match_metadata ?? null,
+          fact_check_source: parsed.header.fact_check_source ?? null,
+          global_art_direction: parsed.header.global_art_direction ?? null,
+        }
+      : {
+          shorts_role: parsed.header.shorts_role ?? null,
+          hook_formula: parsed.header.hook_formula ?? null,
+          stakes_clause: parsed.header.stakes_clause ?? null,
+          related_video_link_set: parsed.header.related_video_link_set ?? null,
+          posting_dates: parsed.header.posting_dates ?? null,
+          language: parsed.header.language ?? null,
+          match_metadata: parsed.header.match_metadata ?? null,
+          fact_check_source: parsed.header.fact_check_source ?? null,
+          sound_design: buildShortsSoundDesign(sceneAudioRows),
+        };
 
   const projectUpdate: Record<string, unknown> = {
     status: 'storyboard',
@@ -409,9 +447,13 @@ Deno.serve(async (req: Request) => {
     title: parsed.title,
   };
   if (parsed.targetDurationSec) projectUpdate.target_duration_sec = parsed.targetDurationSec;
-  if (parsed.clipType === 'long_form') projectUpdate.audio_plan = buildLongformAudioPlan(sceneAudioRows);
+  if (parsed.clipType === 'long_form')
+    projectUpdate.audio_plan = buildLongformAudioPlan(sceneAudioRows);
 
-  const { error: updateErr } = await supabase.from('content_items').update(projectUpdate).eq('id', projectId);
+  const { error: updateErr } = await supabase
+    .from('content_items')
+    .update(projectUpdate)
+    .eq('id', projectId);
   if (updateErr) return json({ error: `Project update: ${updateErr.message}` }, 500);
 
   return json({

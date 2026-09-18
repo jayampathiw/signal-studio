@@ -69,3 +69,12 @@ content/shorts/*/src/*.mp4
 content/shorts/*/vertical-assets/
 content/shorts/*/vo-overrides/
 content/shorts/_final-review/
+
+# AssembleX pilot bridge (P0.8) — generated media, regenerable from pack.json
+projects/**/clips/
+projects/**/vo/
+projects/**/out/
+projects/**/qa/
+projects/**/stills/
+projects/**/refs/
+projects/assemblex-factory/pilot/public/staged/

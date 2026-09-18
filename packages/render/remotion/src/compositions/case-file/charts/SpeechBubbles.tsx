@@ -1,5 +1,6 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 import { loadFont as loadCourierPrime } from '@remotion/google-fonts/CourierPrime';
+import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+
 import { PALETTE } from '../palette';
 
 const { fontFamily: monoFont } = loadCourierPrime();
@@ -50,7 +51,14 @@ export const SpeechBubbles: React.FC<{ visual: SpeechBubblesVisual }> = ({ visua
   });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: PALETTE.background, justifyContent: 'center', alignItems: 'center', opacity }}>
+    <AbsoluteFill
+      style={{
+        backgroundColor: PALETTE.background,
+        justifyContent: 'center',
+        alignItems: 'center',
+        opacity,
+      }}
+    >
       <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
         <div style={bubbleStyle(false)}>
           <div style={labelStyle(false)}>{visual.leftLabel}</div>
@@ -64,14 +72,23 @@ export const SpeechBubbles: React.FC<{ visual: SpeechBubblesVisual }> = ({ visua
 
       <div style={{ marginTop: 48, transform: `scale(${indicatorScale})` }}>
         {visual.matched ? (
-          <div style={{
-            width: 72, height: 72, borderRadius: '50%', background: PALETTE.highlight,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: '50%',
+              background: PALETTE.highlight,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <span style={{ fontSize: 40, color: PALETTE.background, fontWeight: 700 }}>✓</span>
           </div>
         ) : (
-          <span style={{ fontFamily: monoFont, fontSize: 22, color: PALETTE.supportingText }}>NO MATCH — SCAM CALLER CAN'T KNOW THIS</span>
+          <span style={{ fontFamily: monoFont, fontSize: 22, color: PALETTE.supportingText }}>
+            NO MATCH — SCAM CALLER CAN'T KNOW THIS
+          </span>
         )}
       </div>
     </AbsoluteFill>

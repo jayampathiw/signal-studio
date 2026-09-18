@@ -34,7 +34,13 @@ export function runPool(items, worker, { limit = 8, onSettle } = {}) {
           )
           .then((r) => {
             results.push(r);
-            if (onSettle) { try { onSettle(r); } catch { /* non-fatal */ } }
+            if (onSettle) {
+              try {
+                onSettle(r);
+              } catch {
+                /* non-fatal */
+              }
+            }
             active--;
             pump();
           });

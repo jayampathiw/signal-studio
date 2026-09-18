@@ -83,7 +83,11 @@ async function postArticle(
   article: { id: string; ai_caption: any; original_url: string; country: string; status: string },
 ): Promise<{ id: string; success: boolean; fb_post_id?: string; error?: string }> {
   if (article.status !== 'approved') {
-    return { id: article.id, success: false, error: `Article status is '${article.status}', must be 'approved'` };
+    return {
+      id: article.id,
+      success: false,
+      error: `Article status is '${article.status}', must be 'approved'`,
+    };
   }
 
   const captionText: string | undefined = article.ai_caption?.text;
@@ -92,10 +96,14 @@ async function postArticle(
   }
 
   const pageId = Deno.env.get(`FB_PAGE_ID_${article.country}`);
-  const token  = Deno.env.get(`FB_ACCESS_TOKEN_${article.country}`);
+  const token = Deno.env.get(`FB_ACCESS_TOKEN_${article.country}`);
 
   if (!pageId || !token) {
-    return { id: article.id, success: false, error: `Missing Facebook credentials for country: ${article.country}` };
+    return {
+      id: article.id,
+      success: false,
+      error: `Missing Facebook credentials for country: ${article.country}`,
+    };
   }
 
   try {
@@ -118,7 +126,10 @@ async function postArticle(
     }
 
     const fbPostId: string = fbData.id;
-    await supabase.from('articles').update({ status: 'posted', fb_post_id: fbPostId }).eq('id', article.id);
+    await supabase
+      .from('articles')
+      .update({ status: 'posted', fb_post_id: fbPostId })
+      .eq('id', article.id);
     return { id: article.id, success: true, fb_post_id: fbPostId };
   } catch (err: any) {
     await supabase.from('articles').update({ status: 'failed' }).eq('id', article.id);

@@ -1,7 +1,12 @@
 import { Composition } from 'remotion';
-import { NewsCard } from './compositions/NewsCard';
-import { CaseFile, totalCaseFileFrames, type CaseFileProps } from './compositions/case-file/CaseFile';
+
 import { CarouselSlide } from './compositions/carousel/CarouselSlide';
+import {
+  CaseFile,
+  totalCaseFileFrames,
+  type CaseFileProps,
+} from './compositions/case-file/CaseFile';
+import { NewsCard } from './compositions/NewsCard';
 
 // Register all Remotion compositions here.
 // Each composition corresponds to one content format / template.
@@ -30,13 +35,19 @@ export const RemotionRoot: React.FC = () => (
       // Episode length varies per case — derive total frames from the scenes
       // passed in at render time instead of a fixed durationInFrames.
       calculateMetadata={async ({ props }) => ({
-        durationInFrames: totalCaseFileFrames((props as CaseFileProps).scenes ?? [], 30, (props as CaseFileProps).caseMeta?.showOutro ?? true),
+        durationInFrames: totalCaseFileFrames(
+          (props as CaseFileProps).scenes ?? [],
+          30,
+          (props as CaseFileProps).caseMeta?.showOutro ?? true,
+        ),
       })}
-      defaultProps={{
-        caseMeta: null,
-        watermarkUrl: '',
-        scenes: [],
-      } satisfies CaseFileProps}
+      defaultProps={
+        {
+          caseMeta: null,
+          watermarkUrl: '',
+          scenes: [],
+        } satisfies CaseFileProps
+      }
     />
     <Composition
       id="CaseFileVertical"
@@ -45,13 +56,19 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
       calculateMetadata={async ({ props }) => ({
-        durationInFrames: totalCaseFileFrames((props as CaseFileProps).scenes ?? [], 30, (props as CaseFileProps).caseMeta?.showOutro ?? true),
+        durationInFrames: totalCaseFileFrames(
+          (props as CaseFileProps).scenes ?? [],
+          30,
+          (props as CaseFileProps).caseMeta?.showOutro ?? true,
+        ),
       })}
-      defaultProps={{
-        caseMeta: null,
-        watermarkUrl: '',
-        scenes: [],
-      } satisfies CaseFileProps}
+      defaultProps={
+        {
+          caseMeta: null,
+          watermarkUrl: '',
+          scenes: [],
+        } satisfies CaseFileProps
+      }
     />
     <Composition
       id="CarouselSlide"
