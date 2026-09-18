@@ -8,12 +8,21 @@ import { env } from '@signal-studio/config';
 import { uploadToR2 } from '@signal-studio/media/storage';
 
 const { values } = parseArgs({
-  options: { check: { type: 'boolean', default: false } },
+  options: {
+    check: { type: 'boolean', default: false },
+    dir: { type: 'string' },
+  },
   strict: false,
 });
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
-const KIT_DIR = resolve(REPO_ROOT, 'content/audio-kit');
+// audio-kit moved to the signal-studio-workspace repo (P0.4) — pass --dir or
+// set AUDIO_KIT_DIR to a local checkout of
+// projects/underdog-archive/audio-kit there. Falls back to the old in-repo
+// path for anyone who hasn't migrated.
+const KIT_DIR = resolve(
+  values.dir ?? process.env.AUDIO_KIT_DIR ?? resolve(REPO_ROOT, 'content/audio-kit'),
+);
 const MANIFEST_PATH = resolve(KIT_DIR, 'manifest.json');
 
 // Local files live in one subfolder per `kind` — beds/ for continuous music

@@ -19,7 +19,13 @@ const AR = 44100;
 const AC = 2;
 const SFX_GAIN_DB = -14;
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
-const MANIFEST_PATH = resolve(REPO_ROOT, 'content/audio-kit/manifest.json');
+// audio-kit moved to the signal-studio-workspace repo (P0.4) — point
+// AUDIO_KIT_DIR at a local checkout of projects/underdog-archive/audio-kit
+// there. Falls back to the old in-repo path for anyone who hasn't migrated.
+const AUDIO_KIT_DIR = process.env.AUDIO_KIT_DIR
+  ? resolve(process.env.AUDIO_KIT_DIR)
+  : resolve(REPO_ROOT, 'content/audio-kit');
+const MANIFEST_PATH = resolve(AUDIO_KIT_DIR, 'manifest.json');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,8 +57,9 @@ function probeDuration(path) {
 export function loadManifest() {
   if (!existsSync(MANIFEST_PATH)) {
     throw new Error(
-      'Audio kit manifest not found. ' +
-        'Run: node apps/video/scripts/longform/import-audio-kit.mjs (F1-8)',
+      `Audio kit manifest not found at ${MANIFEST_PATH}. ` +
+        'Set AUDIO_KIT_DIR to a local checkout of signal-studio-workspace/projects/underdog-archive/audio-kit, ' +
+        'or run: node apps/video/scripts/longform/import-audio-kit.mjs (F1-8)',
     );
   }
   return JSON.parse(readFileSync(MANIFEST_PATH, 'utf-8'));
