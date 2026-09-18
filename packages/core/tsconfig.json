@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "checkJs": false,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src/**/*", "scripts/**/*"]
+}

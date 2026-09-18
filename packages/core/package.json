@@ -1,0 +1,24 @@
+{
+  "name": "@signal-studio/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "ss": "./src/cli/ss.ts"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "schemas:json": "node --experimental-strip-types scripts/export-json-schema.ts"
+  },
+  "exports": {
+    "./schemas": "./src/schemas/index.ts",
+    "./state": "./src/state/index.ts",
+    "./runner": "./src/runner/index.ts",
+    "./resolve": "./src/resolve.ts"
+  },
+  "dependencies": {
+    "@signal-studio/shared": "workspace:*",
+    "zod": "^3.23.0",
+    "zod-to-json-schema": "^3.25.2"
+  }
+}

@@ -18,6 +18,9 @@ const TS_PROJECTS = [
   'apps/dashboard/tsconfig.app.json',
   'apps/dashboard/tsconfig.spec.json',
   'packages/shared/tsconfig.json',
+  'packages/core/tsconfig.json',
+  'packages/db/tsconfig.json',
+  'packages/providers/tsconfig.json',
   'projects/assemblex-factory/pilot/tsconfig.json',
 ];
 

@@ -641,39 +641,42 @@ Goal: one Mode C post rendered `_fb` + `_ig` with no manual editing; published ~
 
 ### P1 — Core domain and the IR
 
-- [ ] **P1.1 Schemas** (`packages/core/src/schemas/`)
-  - [ ] `manifest.v1.ts`: `version`, `projectRef`, `template`, `inputs{jobs[]}`, `script{shots[]}` / `shots[]` (text, image, clip, speed, trim_in_s, overlay_*, voiceover_text, ig_optional, audio{…}, fact_confidence, verify), `visual{mode}`, `audio{voice, speed, music{file|mood, gain_db, duck}}`, `end_card`, `watermark`, `outputs[]`, `captions{…}`, `disclosure`, `gates[]`, `publish[]`
-  - [ ] `project.v1.ts`: `slug`, `orgId`, `brand{fonts, colours, watermark, musicBeds[]}`, `defaults{template, voice, speed, outputs}`, `gates`, `publishTargets[]`, `promptPack`, `providers{tts, captions, image, stock, storage, publish}`
-  - [ ] `timeline.v1.ts`: port `packages/types/timeline.js` to zod + add `playbackRate`, `overlay{text,inSec,outSec}`, `voStartSec`, `music.duckUnderVoice`, `watermark.text`, `outputId`
-  - [ ] `ss validate` command skeleton that loads + parses a manifest and prints zod issues with paths
-  - [ ] Export JSON Schema for all three (`npm run schemas:json`) into `docs/schemas/`
-  - [ ] Unit tests: each example manifest parses; 10 negative cases (wrong enum, missing clip for clips-overlay, outputs empty, etc.)
-- [ ] **P1.2 State machine** (`packages/core/src/state/`)
-  - [ ] Job statuses: `created, awaiting_assets, queued, dispatched, running, awaiting_review:<gate>, delivered, published, failed, cancelled`
-  - [ ] Stage statuses: `pending, running, skipped, done, failed, warning`
-  - [ ] Transition table as data; `assertTransition(from, to)` throws with both names
-  - [ ] `failed` payload `{stage, error, retryable}`
-  - [ ] Unit tests: every legal transition passes; every illegal pair throws (generated from the table)
-- [ ] **P1.3 Stage runner** (`packages/core/src/runner/`)
-  - [ ] `StageDefinition {name, inputsHash(job), run(ctx)}`; ordered registry
-  - [ ] Hash-keyed skip: compare `job_stages.inputs_hash` with current; skip when equal and status `done`
-  - [ ] Writes `job_stages` rows (start/end, hash, outputs, warnings) and streams `job_log`
-  - [ ] Multi-output: `compile` and `render` iterate `manifest.outputs[]`
-  - [ ] Cancellation token checked between stages
-  - [ ] Unit tests with fake stages: full run, resume after crash, skip on unchanged hash, failure mid-way
-- [ ] **P1.4 Resolver** (`packages/core/src/resolve.ts`)
-  - [ ] `resolveJob(project, manifest, env) → ResolvedJob` (frozen object); precedence manifest > project > env defaults
-  - [ ] Provider selection resolved to concrete provider ids
-  - [ ] Snapshot test per example
-- [ ] **P1.5 DB migration** (`packages/db/migrations/2026xxxx_engine_core.sql`)
-  - [ ] Tables: `orgs`, `projects`, `jobs`, `job_stages`, `artifacts`, `job_log` — all with `org_id`, `created_at/updated_at`, indexes on `(org_id, status)`
-  - [ ] RLS: enable; policies `org_id = auth.jwt() ->> 'org_id'`; service role bypass
-  - [ ] pg-boss schema created by pg-boss itself on first `start()` — document, do not hand-write
-  - [ ] Repositories in `packages/db/src/repos/` (typed, no raw SQL outside)
-  - [ ] Seed script: org 1 + the four projects from `project.yaml` files
-  - [ ] Apply to the **`dev`** Supabase project (create it now); keep `prod` untouched until P4
-- [ ] **P1.6 Provider contracts** (`packages/providers/src/contracts.ts` + `fakes/`)
-  - [ ] Interfaces from §2.4 as TS types + zod for return shapes
+- [x] **P1.1 Schemas** (`packages/core/src/schemas/`) (2026-09-18)
+  - [x] `manifest.v1.ts` — all listed fields present. Two shape decisions made where the plan didn't pin one (documented in the file's own header comment, not silently): `shots[]` lives at the top level, not nested under a `script` key (the "/" read as noting two possible spots, not both existing — top-level matches the pilot's proven Pack shape); `gates[]`/`publish[]` are plain string-name lists, not objects — the actual gate logic and publish credentials live in `packages/providers`/`project.v1.ts`, this only names which ones apply. A `.superRefine` enforces the one real cross-field rule implied by the plan's own negative-case list: `clips-overlay` mode requires every shot to carry a `clip`
+  - [x] `project.v1.ts` — all listed fields present
+  - [x] `timeline.v1.ts` — ported every JSDoc typedef from `packages/types/timeline.js` to zod one-for-one, plus the six new fields the plan calls out (`playbackRate`, `overlay{text,inSec,outSec}`, `voStartSec`, `music.duckUnderVoice`, `watermark.text`, `outputId`)
+  - [x] `ss validate <manifest.json>` skeleton in `packages/core/src/cli/ss.ts` — loads, parses, prints zod issues with paths, exit 1 on failure. Note: §2.5 says `ss`'s real home is `apps/worker` (Phase 2) — this is intentionally just the P1.1 skeleton, to be moved/expanded there, not a conflicting decision
+  - [x] `npm run schemas:json` (`packages/core/scripts/export-json-schema.ts`, using `zod-to-json-schema`) writes `docs/schemas/{manifest,project,timeline}.v1.json` — ran once, files committed
+  - [x] Unit tests — manifest.v1: 7 cases (valid, defaults, wrong version literal, empty outputs, 7-shots-fails-max-6, missing `visual.mode`, the clips-overlay/clip cross-field rule both ways). timeline.v1: 6 cases (valid, defaults, bad aspectRatio, the new-fields round-trip, negative duration). All green
+- [x] **P1.2 State machine** (`packages/core/src/state/`) (2026-09-18)
+  - [x] Job statuses exactly as listed, `awaiting_review:<gate>` modeled as a template-literal family (`awaiting_review:${string}`) rather than one fixed value, checked against a base `awaiting_review` row in the transition table
+  - [x] Stage statuses exactly as listed
+  - [x] `JOB_TRANSITIONS`/`STAGE_TRANSITIONS` tables as plain data; `assertJobTransition`/`assertStageTransition` throw with both state names
+  - [~] `failed` payload `{stage, error, retryable}` — the _type_ (`FailedPayload`) is defined; nothing in P1.2 yet actually constructs and stores one (that's the stage runner's job, P1.3, which currently only threads the raw error message through `job_log`, not this shaped payload) — flagged as a loose end for whoever wires job-failure handling into the API/worker in P2
+  - [x] Unit tests generated from the tables themselves (every table entry checked for the legal direction, every non-listed pair checked for the illegal direction) — 5 tests, all green
+- [x] **P1.3 Stage runner** (`packages/core/src/runner/`) (2026-09-18)
+  - [x] `StageDefinition {name, inputsHash(job), run(ctx)}` + ordered registry (`StageRunner.register()`, chainable)
+  - [x] Hash-keyed skip: compares the injected store's `getLastRun` hash+status against the current `inputsHash(job)`; skips only when both match
+  - [x] Store interface (`JobStageStore`) covers start/end recording + `log()` streaming — this package doesn't depend on `@signal-studio/db` itself (avoids a cycle); `packages/db`'s `JobStagesRepo` implements it against real tables
+  - [x] `multiOutput: true` stages run once per `manifest.outputs[]`, `ctx.outputId` set accordingly
+  - [x] Cancellation token (`cancelled: () => boolean`) checked before every stage; throws `CancelledError`
+  - [x] Unit tests with an in-memory fake store: full run, hash-unchanged skip, hash-changed re-run, resume-after-crash (a `failed` record doesn't block a re-run), failure mid-way (later stages don't run, failed status recorded), multi-output fan-out, cancellation — 7 tests, all green
+- [x] **P1.4 Resolver** (`packages/core/src/resolve.ts`) (2026-09-18)
+  - [x] `resolveJob(project, manifest, env) → ResolvedJob`, `Object.freeze`d; precedence manifest > project > env implemented for `voice`/`speed`/`outputs`; `gates` are additive (project ∪ manifest, not overriding) since a project can mandate gates regardless of what a manifest asks for — a deliberate deviation from strict "highest wins" precedence, flagged here since the plan doesn't say either way
+  - [x] `providers` copied straight from the project (provider _selection_ is a project-level config in this schema, not something a manifest overrides — manifest.v1 has no `providers` field to override with)
+  - [x] Snapshot-style test per example (manifest + project pair, full object equality) — 3 tests, all green
+- [~] **P1.5 DB migration** (`packages/db/migrations/20260918_engine_core.sql`) (2026-09-18) — schema, RLS, and repos done; **not applied to any Supabase project** (see below)
+  - [x] Tables `orgs, projects, jobs, job_stages, artifacts, job_log`, all with `org_id`, `created_at`/`updated_at`, `(org_id, status)` indexes where a status column exists (`projects`/`artifacts`/`job_log` don't have a `status` column, so their index is `(org_id, job_id)`/`(org_id)` instead — noted rather than forcing a column that doesn't apply)
+  - [x] RLS enabled on all six tables; `org_id = auth.jwt() ->> 'org_id'` policy on each; service role bypass is Supabase's standard behavior (no explicit bypass policy needed)
+  - [x] Documented, not hand-written: pg-boss's own schema (comment at the top of the migration file)
+  - [x] Repositories in `packages/db/src/repos/`: `OrgsRepo`, `ProjectsRepo`, `JobsRepo`, `JobStagesRepo` (implements `@signal-studio/core`'s `JobStageStore` contract directly — this is what the real stage runner is injected with), `ArtifactsRepo`. `JobStagesRepo`/`ArtifactsRepo` take `orgId` at construction (one instance per resolved job) since `JobStageStore`'s interface, shared with the in-memory test fake in `packages/core`, doesn't carry `orgId` through every call but the tables are `NOT NULL org_id`
+  - [~] Seed script (`packages/db/scripts/seed.ts`) — **only seeds project.yaml files that actually validate against `project.v1`**. As of this commit exactly one `project.yaml` exists in the repo (`projects/assemblex-factory/project.yaml`), and it's the pilot bridge's own ad-hoc `{voice, speed, music_gain_db, watermark_text}` shape, not `project.v1` (no `slug`/`orgId`/`defaults`/`providers`) — so running the script today seeds the org and 0 projects, with a clear per-file validation error printed. **Did not fabricate the plan's "four projects"** — they don't exist as real files yet; real seed data lands once the workspace repo has real `project.yaml` files in the `project.v1` shape
+  - [ ] Apply to the **`dev`** Supabase project — **not attempted.** Creating a new Supabase project is an external account action or is not shown to you first; needs your go-ahead (and its `ENGINE_SUPABASE_URL`/`ENGINE_SUPABASE_SERVICE_ROLE_KEY`, which `packages/db/src/client.ts` reads — deliberately separate env var names from the legacy `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` so nothing can point at the wrong database by accident)
+- [x] **P1.6 Provider contracts** (`packages/providers/src/contracts.ts` + `fakes/`) (2026-09-18)
+  - [x] All seven interfaces from §2.4 (LLM, TTS, Captions, Image, Stock, Storage, Publish) as TS interfaces, each paired with a zod schema for its return shape
+  - [x] `NotImplementedProviderError` + `assertImplemented(role, providerId, implemented)` — fails at validation time given a set of implemented ids, per §2.4's Instagram/TikTok requirement ("fail at validation, not mid-run"); the actual "which ids are implemented" set is a P2.4/P3.4 concern (concrete provider registration), not this file's
+  - [x] `fakes/` — one fake per role (`fakeLlmProvider`, `fakeTtsProvider`, `fakeCaptionsProvider`, `fakeImageProvider`, `fakeStockProvider`, `fakeStorageProvider`, `fakePublishProvider`), deterministic, no network/filesystem access — matches §2.4's launch-set `*-fake` (CI) entries
+  - [x] Unit tests: every fake's result validated against its contract's zod schema, plus `assertImplemented`'s pass/throw paths — 9 tests, all green
   - [ ] Fakes: `tts-fake` (silent WAV, 0.4 s/word), `llm-fake` (canned JSON), `image-fake` (solid PNG), `stock-fake`, `storage-local`, `publish-fake`
   - [ ] Contract test harness: `runContractTests(provider)` reusable by every real provider
 

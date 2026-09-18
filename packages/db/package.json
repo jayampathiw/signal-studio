@@ -1,0 +1,20 @@
+{
+  "name": "@signal-studio/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+  },
+  "exports": {
+    "./repos": "./src/repos/index.ts"
+  },
+  "dependencies": {
+    "@signal-studio/core": "workspace:*",
+    "@supabase/supabase-js": "^2.45.0",
+    "js-yaml": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9"
+  }
+}

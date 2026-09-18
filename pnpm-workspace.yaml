@@ -13,3 +13,6 @@ packages:
   - 'packages/config'
   - 'packages/types'
   - 'packages/shared'
+  - 'packages/core'
+  - 'packages/db'
+  - 'packages/providers'

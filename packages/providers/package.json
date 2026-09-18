@@ -1,0 +1,16 @@
+{
+  "name": "@signal-studio/providers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+  },
+  "exports": {
+    "./contracts": "./src/contracts.ts",
+    "./fakes": "./src/fakes/index.ts"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  }
+}

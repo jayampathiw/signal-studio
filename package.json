@@ -16,7 +16,11 @@
     "packages/database",
     "packages/publishers",
     "packages/config",
-    "packages/types"
+    "packages/types",
+    "packages/shared",
+    "packages/core",
+    "packages/db",
+    "packages/providers"
   ],
   "scripts": {
     "news": "node apps/news/src/pipeline.js",
@@ -32,13 +36,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "node scripts/typecheck.mjs",
-    "test": "vitest run && pnpm --filter @assemblex/pilot test"
+    "test": "vitest run && pnpm --filter '!dashboard' -r --if-present run test"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.1",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import-x": "^4.17.1",
