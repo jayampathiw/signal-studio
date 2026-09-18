@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import yaml from 'js-yaml';
+import { load as loadYaml } from 'js-yaml';
 import { Project } from '@signal-studio/core/schemas';
 
 import { createEngineClient } from '../src/client.ts';
@@ -47,7 +47,7 @@ async function main() {
   const files = await findProjectYamlFiles(dir);
   let seeded = 0;
   for (const file of files) {
-    const raw = yaml.load(await readFile(file, 'utf8'));
+    const raw = loadYaml(await readFile(file, 'utf8'));
     const result = Project.safeParse(raw);
     if (!result.success) {
       console.error(`Skipping ${file} — does not match project.v1 schema:`);
