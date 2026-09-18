@@ -2,7 +2,7 @@
 
 > **Status: Finalised 2026-06-22. This is the definitive reference.**
 > Applies to all channels on this platform. Wild Eye (Wild Capture) is the first implementation.
-> Implementation artifacts: `.claude/skills/wild-eye-reel/SKILL.md`, `docs/wild-eye/integration-and-video-pipeline.md`
+> Implementation artifacts: `.claude/skills/wild-eye-reel/SKILL.md`; an earlier draft of this doc's material also lived at `docs/wild-eye/integration-and-video-pipeline.md`, archived to `signal-studio-workspace/docs/archive/wild-eye/` in P0.6 (superseded by this file)
 
 ---
 
