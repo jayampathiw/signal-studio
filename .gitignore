@@ -2,6 +2,9 @@
 .env
 .env.local
 
+# Windows/WSL zone-identifier artefacts on downloaded files
+*:Zone.Identifier
+
 # Dependencies
 node_modules/
 **/node_modules/
