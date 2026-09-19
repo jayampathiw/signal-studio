@@ -568,13 +568,24 @@ async function applySoundDesign({
       premix,
       '-af',
       [
-        'loudnorm=I=-14:TP=-1.0:LRA=11:linear=true',
-        `measured_I=${stats.input_i}`,
-        `measured_TP=${stats.input_tp}`,
-        `measured_LRA=${stats.input_lra}`,
-        `measured_thresh=${stats.input_thresh}`,
-        `offset=${stats.target_offset}`,
-      ].join(':'),
+        [
+          'loudnorm=I=-14:TP=-1.0:LRA=11:linear=true',
+          `measured_I=${stats.input_i}`,
+          `measured_TP=${stats.input_tp}`,
+          `measured_LRA=${stats.input_lra}`,
+          `measured_thresh=${stats.input_thresh}`,
+          `offset=${stats.target_offset}`,
+        ].join(':'),
+        // linear-mode loudnorm applies a single computed gain with no lookahead
+        // limiter, so it can still overshoot its own TP target on transient-heavy
+        // material (observed: -0.96 dBTP against a -1.0 ceiling). Hard-limit as a
+        // safety net. Target -2.0 dBTP here, not -1.0: the final mux below
+        // re-encodes this PCM master to AAC, and lossy encoding reliably adds
+        // inter-sample peak overshoot from reconstruction-filter ringing —
+        // limiting to exactly -1.0 pre-encode still measured -0.97 post-encode.
+        // 0.79433 is the linear amplitude for -2.0 dBTP.
+        'alimiter=limit=0.79433:level=false',
+      ].join(','),
       '-ar',
       String(AR),
       '-ac',
