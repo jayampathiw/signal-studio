@@ -4,13 +4,24 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "test:real": "PROVIDERS_REAL=1 node --experimental-strip-types --test src/**/*.test.ts"
   },
   "exports": {
     "./contracts": "./src/contracts.ts",
-    "./fakes": "./src/fakes/index.ts"
+    "./fakes": "./src/fakes/index.ts",
+    "./llm-anthropic": "./src/llm-anthropic.ts",
+    "./storage-local": "./src/storage-local.ts",
+    "./storage-r2": "./src/storage-r2.ts",
+    "./tts-kokoro-js": "./src/tts-kokoro-js.ts",
+    "./tts-kokoro-py": "./src/tts-kokoro-py.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1078.0",
+    "@aws-sdk/s3-request-presigner": "^3.1078.0",
+    "@huggingface/transformers": "^3.5.1",
+    "@signal-studio/media": "workspace:*",
+    "kokoro-js": "^1.2.1",
     "zod": "^3.23.0"
   }
 }

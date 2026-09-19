@@ -14,6 +14,7 @@ export const schema = {
     // Claude routing
     'ANTHROPIC_BASE_URL',
     'ANTHROPIC_MODEL',
+    'ANTHROPIC_PROXY_DOUBLE_ENCODED',
     // Image fallbacks
     'CF_ACCOUNT_ID',
     'CF_API_TOKEN',
