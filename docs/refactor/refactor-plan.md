@@ -501,7 +501,7 @@ How to use this section:
 | Phase                              | %       | Done / Partial / Todo |
 | ---------------------------------- | ------- | --------------------- |
 | P0.8 — Pilot bridge                | 86%     | 47 / 7 / 5            |
-| P0 — Safety net & hygiene          | 66%     | 35 / 8 / 16           |
+| P0 — Safety net & hygiene          | 84%     | 43 / 11 / 4           |
 | P1 — Core domain / IR              | 76%     | 35 / 1 / 11           |
 | P2 — `clips-overlay` + M1 runtime  | 0%      | 0 / 0 / 55            |
 | P3 — Remaining templates/providers | 0%      | 0 / 0 / 43            |
@@ -509,9 +509,9 @@ How to use this section:
 | P5 — Dashboard rebuild             | 0%      | 0 / 0 / 26            |
 | P6 — Split & hand-over kit         | 0%      | 0 / 0 / 20            |
 | Track C — Claude Code layer        | 0%      | 0 / 0 / 8             |
-| **Overall (weighted)**             | **36%** | **125 / 350**         |
+| **Overall (weighted)**             | **39%** | **134.5 / 349**       |
 
-The three phases actually worked on (P0.8, P0, P1) are 66–86% each and cover 47% of the plan's total items; the remaining gaps there are mostly known/small (T-P production posts, R2/secrets that needed you, a couple of intentional deviations — see each phase's notes). Phases 2–6 and Track C — the template engine, worker, Docker, dashboard rebuild, and the engine/workspace split — are untouched. As of 2026-09-19.
+The three phases actually worked on (P0.8, P0, P1) are 76–86% each and cover 47% of the plan's total items; the remaining gaps there are mostly known/small (T-P production posts, R2/secrets that needed you, a couple of intentional deviations — see each phase's notes). Phases 2–6 and Track C — the template engine, worker, Docker, dashboard rebuild, and the engine/workspace split — are untouched. As of 2026-09-19 (updated: P0's TEST GATES closed, Shorts audio bug fixed, R2 upload done, branch protection tried and reverted).
 
 ---
 
