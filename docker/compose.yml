@@ -1,0 +1,41 @@
+# P2.6 — local compose for the worker (+ api once P2.7 exists). Per the
+# plan's own P2.6 bullet, this is "used fully in P4" (production worker
+# deploy) — right now `ss` only has `validate`, so `worker`'s default command
+# below is deliberately the one real thing you can exercise today. The `api`
+# service is commented out entirely rather than pointing at a command that
+# doesn't exist yet (apps/api is P2.7) — an "it's here but broken" service
+# is worse than an honest gap.
+#
+# Usage today:
+#   docker compose -f docker/compose.yml run --rm worker validate /manifests/example.json
+#
+# Once P2.5 lands `ss run-local`/`ss run-job`/`ss worker`, update `command:`
+# below accordingly — the image itself (built from this same Dockerfile)
+# doesn't need to change.
+
+services:
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: signal-studio-worker:dev
+    # No default command — ss has no bare-invocation behavior worth
+    # defaulting to yet. Pass one explicitly, e.g. `run --rm worker validate
+    # /manifests/example.json`.
+    env_file:
+      - ../.env
+    volumes:
+      # Mount a local manifests/project dir in to validate/run against,
+      # without baking project content into the image.
+      - ../projects:/repo/projects:ro
+
+  # api:
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile
+  #   image: signal-studio-worker:dev
+  #   command: ['node', '--experimental-strip-types', 'apps/api/src/index.ts']
+  #   ports:
+  #     - '3000:3000'
+  #   env_file:
+  #     - ../.env

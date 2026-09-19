@@ -1,0 +1,60 @@
+name: Build worker image
+
+on:
+  push:
+    branches: [main, refactor]
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/signal-studio-worker
+          tags: |
+            type=raw,value=dev,enable={{is_default_branch}}
+            type=sha,format=short
+            type=ref,event=tag
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # This repo is public, so a package pushed to ghcr.io via GITHUB_TOKEN
+      # defaults to public visibility — the plan calls for this image to be
+      # private. Best-effort: GITHUB_TOKEN may not carry enough scope to
+      # change a user-owned package's visibility (only to publish/delete
+      # versions of it); if this step fails, set it to private once manually
+      # via the package's GitHub Settings page or `gh api --method PATCH
+      # /user/packages/container/signal-studio-worker -f visibility=private`
+      # with a PAT that has package admin rights. Unverified — no real push
+      # has happened yet to confirm either way.
+      - name: Set package visibility to private
+        continue-on-error: true
+        run: |
+          gh api --method PATCH \
+            "/user/packages/container/signal-studio-worker" \
+            -f visibility=private
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
