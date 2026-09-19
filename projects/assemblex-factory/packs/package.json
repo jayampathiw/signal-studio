@@ -1,0 +1,17 @@
+{
+  "name": "@assemblex/packs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test *.test.ts"
+  },
+  "exports": {
+    "./blbl.v1": "./blbl.v1.ts",
+    "./pack.schema": "./pack.schema.ts"
+  },
+  "dependencies": {
+    "@signal-studio/core": "workspace:*",
+    "zod": "^3.23.0"
+  }
+}

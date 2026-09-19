@@ -314,6 +314,15 @@ importers:
 
   packages/types: {}
 
+  projects/assemblex-factory/packs:
+    dependencies:
+      '@signal-studio/core':
+        specifier: workspace:*
+        version: link:../../../packages/core
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+
   projects/assemblex-factory/pilot:
     dependencies:
       '@huggingface/transformers':

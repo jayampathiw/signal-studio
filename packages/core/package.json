@@ -14,7 +14,8 @@
     "./schemas": "./src/schemas/index.ts",
     "./state": "./src/state/index.ts",
     "./runner": "./src/runner/index.ts",
-    "./resolve": "./src/resolve.ts"
+    "./resolve": "./src/resolve.ts",
+    "./stages/assets": "./src/stages/assets.ts"
   },
   "dependencies": {
     "@signal-studio/shared": "workspace:*",

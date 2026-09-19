@@ -2,6 +2,7 @@ packages:
   - 'apps/video'
   - 'apps/dashboard'
   - 'projects/assemblex-factory/pilot'
+  - 'projects/assemblex-factory/packs'
   - 'packages/ai'
   - 'packages/render/core'
   - 'packages/render/ffmpeg'
