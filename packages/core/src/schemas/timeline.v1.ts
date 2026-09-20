@@ -44,6 +44,11 @@ export const MusicTrack = z.object({
   // Ducks under any active narration window, per the same ramped-gain
   // behavior the pilot bridge's Post/Compilation compositions implement.
   duckUnderVoice: z.boolean().default(true),
+  // P2.1 addition: the pilot bridge's manifest-level music.gain_db had no
+  // home here until clips-overlay (the first real Timeline consumer) needed
+  // it to reproduce the pilot's mix. -18 matches both the pilot's and
+  // manifest.v1's ManifestAudio.music default.
+  gainDb: z.number().default(-18),
 });
 
 export const CtaOverlay = z.object({
@@ -58,7 +63,9 @@ export const Watermark = z.object({
   // Text watermark, as an alternative/addition to an image path (e.g. the
   // pilot bridge's plain "AI visualisation" text watermark).
   text: z.string().optional(),
-  position: z.enum(['bottom-right', 'bottom-left']),
+  // 'top-left' added in P2.1 — the pilot bridge's Watermark.tsx always
+  // rendered there; the other two positions predate any real caller.
+  position: z.enum(['bottom-right', 'bottom-left', 'top-left']),
   opacity: z.number().min(0).max(1),
 });
 
@@ -95,6 +102,16 @@ export const TimelineScene = z.object({
   // When narration starts, scene-relative seconds (mirrors the pilot's
   // overlay_in_s-driven VO start).
   voStartSec: z.number().optional(),
+  // P2.1 additions, discovered necessary building the first real template
+  // (clips-overlay) against this schema:
+  // How far into `source`'s own file to start playback (seconds) — the
+  // `assets` stage normalises a clip's scale/fps/codec but doesn't trim it,
+  // so a per-shot in-point still has to travel through to render time.
+  trimInSec: z.number().min(0).default(0),
+  // Mute `source`'s own audio track (e.g. a shot whose manifest Shot sets
+  // audio.strip_native_audio) — distinct from narrationPath, which is
+  // always audible.
+  sourceMuted: z.boolean().default(false),
 });
 
 export const Timeline = z.object({

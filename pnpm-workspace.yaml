@@ -16,3 +16,4 @@ packages:
   - 'packages/core'
   - 'packages/db'
   - 'packages/providers'
+  - 'packages/templates/clips-overlay'

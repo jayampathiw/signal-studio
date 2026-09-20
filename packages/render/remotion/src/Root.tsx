@@ -6,6 +6,11 @@ import {
   totalCaseFileFrames,
   type CaseFileProps,
 } from './compositions/case-file/CaseFile';
+import {
+  ClipsOverlay,
+  totalClipsOverlayFrames,
+  type ClipsOverlayProps,
+} from './compositions/clips-overlay/ClipsOverlay';
 import { NewsCard } from './compositions/NewsCard';
 
 // Register all Remotion compositions here.
@@ -85,6 +90,25 @@ export const RemotionRoot: React.FC = () => (
         watermarkUrl: '',
         showFolder: false,
       }}
+    />
+    <Composition
+      id="ClipsOverlay"
+      component={ClipsOverlay}
+      fps={30}
+      width={1080}
+      height={1920}
+      // Variable length: total shot screen-time + end-card duration.
+      calculateMetadata={async ({ props }) => ({
+        durationInFrames: totalClipsOverlayFrames(props as ClipsOverlayProps, 30),
+      })}
+      defaultProps={
+        {
+          scenes: [],
+          musicGainDb: -18,
+          musicDuck: true,
+          musicFadeOutSecs: 1.5,
+        } satisfies ClipsOverlayProps
+      }
     />
     {/* Add: DocumentaryScene, ReelTemplate, etc. as built */}
   </>

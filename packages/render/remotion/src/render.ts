@@ -1,10 +1,20 @@
-import { mkdirSync, copyFileSync, rmSync } from 'fs';
-import { join, basename } from 'path';
+import { mkdirSync, copyFileSync, rmSync, readdirSync } from 'fs';
+import { join, basename, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 import { registerEngine } from '@signal-studio/render-core/engine';
-import type { Timeline } from '@signal-studio/types/timeline';
+// timeline.v1 (zod) — a strict superset of every field this file and its
+// compositions actually read (contentId/aspectRatio/scenes/watermark/
+// template/caseMeta all carry over from the old @signal-studio/types
+// version, which this replaces per P2.1: "compositions read only
+// timeline.v1"), plus the fields P1.1/P2.1 added specifically for
+// clips-overlay (playbackRate, overlay, voStartSec, trimInSec, sourceMuted,
+// music.gainDb, cta, watermark.position 'top-left').
+import type { TimelineT as Timeline } from '@signal-studio/core/schemas';
+
+const FONTS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'fonts');
 
 const isRemoteUrl = (p: string) => /^https?:\/\//i.test(p);
 
@@ -23,6 +33,7 @@ const remotionEngine = {
     rmSync(stagingDir, { recursive: true, force: true });
     mkdirSync(stagingDir, { recursive: true });
     const assetRefs = stageLocalAssets(timeline, stagingDir);
+    stageFonts(stagingDir);
 
     try {
       const bundled = await bundle({
@@ -64,10 +75,16 @@ registerEngine(remotionEngine);
 export default remotionEngine;
 
 function resolveComposition(timeline: Timeline): string {
-  // TODO: expand as more compositions are registered in Root.tsx
   if (timeline.template === 'case-file')
     return timeline.aspectRatio === '9:16' ? 'CaseFileVertical' : 'CaseFile';
-  return 'NewsCard';
+  if (timeline.template === 'clips-overlay') return 'ClipsOverlay';
+  if (timeline.template === 'news-card') return 'NewsCard';
+  // No silent NewsCard fallback (P2.1) — an unrecognised template is a real
+  // bug (a manifest/compile() producing a template this file doesn't know
+  // about yet), not something to paper over by rendering the wrong content.
+  throw new Error(
+    `No Remotion composition registered for timeline.template "${timeline.template}"`,
+  );
 }
 
 // Copies every local (non-http) asset path referenced by the timeline into stagingDir
@@ -91,8 +108,22 @@ function stageLocalAssets(timeline: Timeline, stagingDir: string): Map<string, s
   }
   if (timeline.watermark?.path && !isRemoteUrl(timeline.watermark.path))
     stage(timeline.watermark.path);
+  if (timeline.music?.path && !isRemoteUrl(timeline.music.path)) stage(timeline.music.path);
 
   return refs;
+}
+
+// Fonts aren't referenced by path in any Timeline field (they're a
+// composition-internal concern, loaded via loadFont()+staticFile() inside
+// FactOverlay/EndCard) — copied unconditionally into every render's staging
+// dir, unlike stageLocalAssets' per-timeline asset refs, under a fixed
+// `fonts/` subpath so staticFile('fonts/<name>') always resolves.
+function stageFonts(stagingDir: string): void {
+  const fontsOut = join(stagingDir, 'fonts');
+  mkdirSync(fontsOut, { recursive: true });
+  for (const name of readdirSync(FONTS_DIR)) {
+    copyFileSync(join(FONTS_DIR, name), join(fontsOut, name));
+  }
 }
 
 function sanitize(name: string): string {
@@ -128,6 +159,28 @@ function timelineToProps(
         words: scene.words ?? null,
         narrationUrl: toAssetRef(scene.narrationPath, assetRefs),
       })),
+    };
+  }
+
+  if (timeline.template === 'clips-overlay') {
+    return {
+      scenes: timeline.scenes.map((scene) => ({
+        id: scene.id,
+        durationSecs: scene.durationSecs,
+        clipUrl: toAssetRef(scene.source?.localPath, assetRefs),
+        trimInSec: scene.trimInSec,
+        playbackRate: scene.playbackRate,
+        sourceMuted: scene.sourceMuted,
+        overlay: scene.overlay,
+        narrationUrl: scene.narrationPath ? toAssetRef(scene.narrationPath, assetRefs) : undefined,
+        voStartSec: scene.voStartSec,
+      })),
+      musicUrl: timeline.music ? toAssetRef(timeline.music.path, assetRefs) : undefined,
+      musicGainDb: timeline.music?.gainDb ?? -18,
+      musicDuck: timeline.music?.duckUnderVoice ?? true,
+      musicFadeOutSecs: timeline.music?.fadeOutSecs ?? 1.5,
+      cta: timeline.cta,
+      watermarkText: timeline.watermark?.text,
     };
   }
 

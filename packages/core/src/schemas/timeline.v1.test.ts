@@ -49,6 +49,20 @@ test('overlay/voStartSec/music.duckUnderVoice/watermark.text round-trip', () => 
   assert.equal(result.outputId, 'ig');
 });
 
+test('P2.1 additions: trimInSec/sourceMuted default, music.gainDb default, watermark top-left', () => {
+  const result = Timeline.parse(
+    validTimeline({
+      scenes: [{ id: 's1', durationSecs: 8 }],
+      music: { path: 'bed.mp3', fadeOutSecs: 1 },
+      watermark: { text: 'AI visualisation', position: 'top-left', opacity: 0.85 },
+    }),
+  );
+  assert.equal(result.scenes[0].trimInSec, 0);
+  assert.equal(result.scenes[0].sourceMuted, false);
+  assert.equal(result.music?.gainDb, -18);
+  assert.equal(result.watermark?.position, 'top-left');
+});
+
 test('negative durationSecs fails', () => {
   assert.equal(
     Timeline.safeParse(validTimeline({ scenes: [{ id: 's1', durationSecs: -1 }] })).success,
