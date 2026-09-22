@@ -1,0 +1,19 @@
+{
+  "name": "@signal-studio/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'",
+    "dev": "node --experimental-strip-types src/index.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "@hono/zod-openapi": "^0.19.10",
+    "@signal-studio/core": "workspace:*",
+    "@signal-studio/db": "workspace:*",
+    "@signal-studio/providers": "workspace:*",
+    "hono": "^4.13.8",
+    "zod": "^3.23.0"
+  }
+}

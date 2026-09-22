@@ -7,3 +7,5 @@ export type { JobRow } from './jobs.ts';
 export { JobStagesRepo } from './job-stages.ts';
 export { ArtifactsRepo } from './artifacts.ts';
 export type { ArtifactRow } from './artifacts.ts';
+export { ApiKeysRepo, hashApiKey } from './api-keys.ts';
+export type { ApiKeyRow } from './api-keys.ts';

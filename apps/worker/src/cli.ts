@@ -1,11 +1,18 @@
 #!/usr/bin/env node
 import { parseFlags, requireFlag } from './args.ts';
+import { markFailedCommand } from './commands/mark-failed.ts';
 import { runJob } from './commands/run-job.ts';
 import { runLocal } from './commands/run-local.ts';
 import { uploadCommand } from './commands/upload.ts';
 import { validateCommand } from './commands/validate.ts';
 import { workerCommand } from './commands/worker.ts';
-import { realRunJobDeps, realRunLocalDeps, realUploadDeps, realWorkerDeps } from './deps.ts';
+import {
+  realMarkFailedDeps,
+  realRunJobDeps,
+  realRunLocalDeps,
+  realUploadDeps,
+  realWorkerDeps,
+} from './deps.ts';
 import { createLogger, type LogLevel } from './logger.ts';
 
 /**
@@ -80,9 +87,28 @@ async function main(): Promise<number> {
       return 0;
     }
 
+    case 'mark-failed': {
+      await markFailedCommand(
+        {
+          jobId: requireFlag(flags, 'id'),
+          runUrl: typeof flags['run-url'] === 'string' ? flags['run-url'] : undefined,
+        },
+        realMarkFailedDeps(),
+        logger,
+      );
+      return 0;
+    }
+
     default:
       logger.error(`Unknown command: ${command ?? '(none)'}`, {
-        available: ['validate <manifest.json>', 'run-local', 'run-job', 'upload', 'worker'],
+        available: [
+          'validate <manifest.json>',
+          'run-local',
+          'run-job',
+          'upload',
+          'worker',
+          'mark-failed',
+        ],
       });
       return 1;
   }

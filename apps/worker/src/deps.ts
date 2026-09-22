@@ -6,6 +6,7 @@ import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 // Side-effect import: registers the 'remotion' engine with render-core.
 import '@signal-studio/render-remotion';
 
+import type { MarkFailedDeps } from './commands/mark-failed.ts';
 import type { RunJobDeps } from './commands/run-job.ts';
 import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
@@ -54,6 +55,14 @@ export function realUploadDeps(): UploadDeps {
     projectsRepo: new ProjectsRepo(client),
     createArtifactsRepo: (orgId: string) => new ArtifactsRepo(client, orgId),
     createStorage: createStorageProviderFor,
+  };
+}
+
+export function realMarkFailedDeps(): MarkFailedDeps {
+  const client = createEngineClient();
+  return {
+    jobsRepo: new JobsRepo(client),
+    createArtifactsRepo: (orgId: string) => new ArtifactsRepo(client, orgId),
   };
 }
 

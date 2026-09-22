@@ -42,4 +42,33 @@ export class JobsRepo {
     if (error) throw new Error(`JobsRepo.getById: ${error.message}`);
     return data as JobRow | null;
   }
+
+  // P2.7 addition: `GET /jobs?project=` needs to list every job for one
+  // project, scoped to the caller's org (API-key auth resolves org_id, never
+  // trusts a caller-supplied one) — no lookup here did that before.
+  async listByProject(orgId: string, projectId: string): Promise<JobRow[]> {
+    const { data, error } = await this.client
+      .from('jobs')
+      .select()
+      .eq('org_id', orgId)
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(`JobsRepo.listByProject: ${error.message}`);
+    return data as JobRow[];
+  }
+
+  // P2.7 addition: the `github` dispatcher's own "sets `dispatched`
+  // atomically" requirement — a plain `updateStatus` can't express "only if
+  // still `queued`", which matters once more than one dispatcher instance
+  // could race on the same job. Returns whether *this* call won the race.
+  async markDispatched(jobId: string): Promise<boolean> {
+    const { data, error } = await this.client
+      .from('jobs')
+      .update({ status: 'dispatched', updated_at: new Date().toISOString() })
+      .eq('id', jobId)
+      .eq('status', 'queued')
+      .select('id');
+    if (error) throw new Error(`JobsRepo.markDispatched: ${error.message}`);
+    return (data as unknown[]).length > 0;
+  }
 }

@@ -1,0 +1,52 @@
+name: Run job
+
+# P2.7 — dispatched by apps/api's `github` dispatcher (POST /jobs/:id/dispatch)
+# via workflow_dispatch, or manually for debugging. Runs inside the same
+# worker image image.yml builds (ghcr.io/<owner>/signal-studio-worker:dev),
+# so `ss run-job` has the exact runtime (ffmpeg, python TTS/whisper, the
+# baked-in kokoro-js model) already verified in P2.6.
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: 'Job UUID to run (from the jobs table)'
+        required: true
+        type: string
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/signal-studio-worker:dev
+    steps:
+      # No actions/checkout here — the image already has the repo baked in
+      # at build time (docker/Dockerfile's `COPY . .`); checking out again
+      # would just diverge from the exact code this image's node_modules
+      # were installed against.
+      - name: ss run-job --id
+        run: node --experimental-strip-types apps/worker/src/cli.ts run-job --id "${{ inputs.job_id }}"
+        env:
+          ENGINE_SUPABASE_URL: ${{ secrets.ENGINE_SUPABASE_URL }}
+          ENGINE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.ENGINE_SUPABASE_SERVICE_ROLE_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL }}
+          R2_BUCKET_RENDERED: ${{ secrets.R2_BUCKET_RENDERED }}
+
+      # `run-job.ts` itself already marks the job `failed` on any error it
+      # can catch — this step is the safety net for what it *can't* catch
+      # (image pull failure, an OOM kill, a crash before its own try/catch
+      # is entered), so a job can never be stuck mid-flight with no record
+      # of why. Also records this run's URL as an artifact — satisfies "on
+      # failure PATCH job failed with run URL" without a new DB column.
+      - name: Force-mark failed + record run URL
+        if: failure()
+        run: |
+          node --experimental-strip-types apps/worker/src/cli.ts mark-failed \
+            --id "${{ inputs.job_id }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          ENGINE_SUPABASE_URL: ${{ secrets.ENGINE_SUPABASE_URL }}
+          ENGINE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.ENGINE_SUPABASE_SERVICE_ROLE_KEY }}

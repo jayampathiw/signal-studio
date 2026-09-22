@@ -26,6 +26,7 @@ const TS_PROJECTS = [
   'packages/templates/clips-overlay/tsconfig.json',
   'packages/templates/compilation/tsconfig.json',
   'apps/worker/tsconfig.json',
+  'apps/api/tsconfig.json',
 ];
 
 const root = path.resolve(import.meta.dirname, '..');
