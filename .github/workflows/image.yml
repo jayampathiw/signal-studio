@@ -26,8 +26,16 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/signal-studio-worker
+          # `dev` intentionally has no `enable={{is_default_branch}}` guard —
+          # a real bug caught during P2's T-L gate work: this repo's GitHub
+          # default branch is `main`, not `refactor`, so that guard meant
+          # `:dev` had *never* actually been pushed, only `sha-<hash>` tags
+          # (silent — nothing had ever tried to `docker pull ...:dev` until
+          # now). This job's own `on: push: branches:` already scopes it to
+          # exactly `main`/`refactor`, so tagging `dev` unconditionally on
+          # every run here is correct, not a workaround.
           tags: |
-            type=raw,value=dev,enable={{is_default_branch}}
+            type=raw,value=dev
             type=sha,format=short
             type=ref,event=tag
 
