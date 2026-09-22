@@ -37,6 +37,22 @@ COPY packages/shared/package.json packages/shared/package.json
 COPY packages/core/package.json packages/core/package.json
 COPY packages/db/package.json packages/db/package.json
 COPY packages/providers/package.json packages/providers/package.json
+COPY packages/templates/clips-overlay/package.json packages/templates/clips-overlay/package.json
+COPY packages/templates/compilation/package.json packages/templates/compilation/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY apps/api/package.json apps/api/package.json
+# ^ Real bug caught by actually running `ss run-local` inside this image for
+# P2's T-L gate: this hardcoded COPY-per-package list (chosen over copying
+# every package.json in one shot so an app-code-only change doesn't bust the
+# deps layer's cache) is exactly as fragile as it looks — every package
+# added after P2.6 first wrote this file (P2.1's/P2.2's templates, P2.5's
+# apps/worker, P2.7's apps/api) was silently missing from `pnpm install`
+# here, so their `node_modules` — including `@signal-studio/core` itself —
+# never existed at all inside the image, even though the runtime stage's
+# later `COPY . .` brought over their real source. `ss validate` (P2.6's own
+# smoke test) never caught this because it only touches `packages/core`
+# directly. Whoever adds the next new workspace package needs to add its
+# `package.json` here too, or hit this same failure.
 
 # --ignore-scripts: the dashboard's Angular postinstall and any other
 # package-side build scripts aren't needed for a worker image; the worker
