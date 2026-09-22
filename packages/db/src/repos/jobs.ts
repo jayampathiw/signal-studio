@@ -1,6 +1,6 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ManifestT } from '@signal-studio/core/schemas';
 import type { JobStatus } from '@signal-studio/core/state';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type JobRow = {
   id: string;

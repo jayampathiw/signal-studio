@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import type { JobStageStore, StageRunRecord } from '@signal-studio/core/runner';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Implements @signal-studio/core's JobStageStore contract against the

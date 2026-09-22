@@ -1,6 +1,5 @@
-import type { Context, Next } from 'hono';
-
 import { hashApiKey, type ApiKeysRepo } from '@signal-studio/db/repos';
+import type { Context, Next } from 'hono';
 
 export type AuthVariables = { orgId: string };
 

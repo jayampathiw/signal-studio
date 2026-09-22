@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
+import type { TimelineT as Timeline } from '@signal-studio/core/schemas';
 import { registerEngine } from '@signal-studio/render-core/engine';
 // timeline.v1 (zod) — a strict superset of every field this file and its
 // compositions actually read (contentId/aspectRatio/scenes/watermark/
@@ -12,7 +13,6 @@ import { registerEngine } from '@signal-studio/render-core/engine';
 // timeline.v1"), plus the fields P1.1/P2.1 added specifically for
 // clips-overlay (playbackRate, overlay, voStartSec, trimInSec, sourceMuted,
 // music.gainDb, cta, watermark.position 'top-left').
-import type { TimelineT as Timeline } from '@signal-studio/core/schemas';
 
 const FONTS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'fonts');
 

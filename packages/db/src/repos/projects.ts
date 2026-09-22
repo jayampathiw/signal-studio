@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ProjectT } from '@signal-studio/core/schemas';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type ProjectRow = {
   id: string;

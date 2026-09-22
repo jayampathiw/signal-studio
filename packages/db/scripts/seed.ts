@@ -1,8 +1,8 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { load as loadYaml } from 'js-yaml';
 import { Project } from '@signal-studio/core/schemas';
+import { load as loadYaml } from 'js-yaml';
 
 import { createEngineClient } from '../src/client.ts';
 import { OrgsRepo, ProjectsRepo } from '../src/repos/index.ts';

@@ -1,6 +1,6 @@
+import type { StorageProvider } from '@signal-studio/providers/contracts';
 import { createLocalStorageProvider } from '@signal-studio/providers/storage-local';
 import { createR2StorageProvider, readR2ConfigFromEnv } from '@signal-studio/providers/storage-r2';
-import type { StorageProvider } from '@signal-studio/providers/contracts';
 
 /**
  * Identical to `apps/worker/src/storage.ts` — deliberately duplicated rather

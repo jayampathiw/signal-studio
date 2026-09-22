@@ -1,11 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { createAssetsStage } from '@signal-studio/core/stages/assets';
-import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/tts';
-import { Manifest, Project, type TimelineT } from '@signal-studio/core/schemas';
 import { resolveJob } from '@signal-studio/core/resolve';
 import { StageRunner, type Job, type JobStageStore } from '@signal-studio/core/runner';
+import { Manifest, Project, type TimelineT } from '@signal-studio/core/schemas';
+import { createAssetsStage } from '@signal-studio/core/stages/assets';
+import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/tts';
 
 import type { Logger } from '../logger.ts';
 

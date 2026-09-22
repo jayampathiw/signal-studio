@@ -1,5 +1,5 @@
-import { execFile } from 'node:child_process';
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
@@ -7,8 +7,8 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 
-import { StageRunner, type Job, type JobStageStore, type StageRunRecord } from '../runner/index.ts';
 import { createAssetsStage, MissingAssetsError } from './assets.ts';
+import { StageRunner, type Job, type JobStageStore, type StageRunRecord } from '../runner/index.ts';
 
 const execFileAsync = promisify(execFile);
 
