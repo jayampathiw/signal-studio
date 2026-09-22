@@ -1,16 +1,43 @@
-# AssembleX Factory — project config (pilot bridge, P0.8-04)
-#
-# `voice` is provisional: bm_george, matching the placeholder pack's default.
-# The listening test (3 voices on the same sentence — see samples generated
-# during P0.8-04) still needs a human ear; swap `voice` below if a different
-# one wins and re-run `npm run tts` (cache key includes voice, so it will
-# regenerate only what changed).
+# AssembleX Factory — project config, in the engine's project.v1 shape
+# (P2.8). Replaces the pilot bridge's older ad-hoc {voice, speed, music,
+# fonts} shape at this same path (P0.8-04) — packages/db/scripts/seed.ts
+# already scans for and seeds any project.yaml matching this schema; this
+# is the first real one. The pilot's own props.ts doesn't actually read
+# this file (only references it in a comment), so nothing breaks by
+# changing its shape here.
 
-voice: bm_george
-speed: 1.0
-music:
-  gain_db: -18
-  duck: true
-fonts:
-  - family: Inter
-    weight: 800
+slug: assemblex-factory
+orgId: 6e95f606-17df-41df-8908-d46541032932 # the real org-1 row in signal-studio-engine-dev
+
+brand:
+  fonts:
+    - Inter
+  colours: []
+  musicBeds: []
+
+defaults:
+  template: clips-overlay
+  # Provisional — same as the pilot bridge's own placeholder default. The
+  # 3-voice listening test (bm_george/am_michael/af_heart, samples
+  # generated during P0.8-04) still hasn't had a final human pick; swap
+  # this if/when one does.
+  voice: bm_george
+  speed: 1.0
+  outputs:
+    - fb
+    - ig
+
+gates: []
+
+# Empty on purpose, not an oversight: publishing for this project is
+# manual (a human posts the rendered video), per the plan's own "publish
+# targets manual" — there's no credentialRef-driven automated publish
+# target to configure yet.
+publishTargets: []
+
+providers:
+  tts: kokoro-js
+  captions: whisper
+  image: fal
+  storage: r2
+  publish: facebook

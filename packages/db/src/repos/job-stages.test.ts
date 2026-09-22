@@ -59,6 +59,17 @@ test('recordStart includes org_id and the composite onConflict key', async () =>
   assert.equal(options.onConflict, 'job_id,stage_name,output_id');
 });
 
+test('recordStart writes output_id "" (not null) when no outputId given', async () => {
+  const { client, calls } = makeFakeClient();
+  const repo = new JobStagesRepo(client, 'org-1');
+
+  await repo.recordStart('job-1', 'assets');
+
+  const call = calls.find((c) => c.table === 'job_stages' && c.method === 'upsert');
+  const [values] = call!.args as [Record<string, unknown>];
+  assert.equal(values.output_id, '');
+});
+
 test('recordEnd includes org_id and the resolved hash/status', async () => {
   const { client, calls } = makeFakeClient();
   const repo = new JobStagesRepo(client, 'org-1');
@@ -84,7 +95,12 @@ test('log includes org_id', async () => {
   assert.equal(values.message, 'hello');
 });
 
-test('getLastRun uses .is(output_id, null) when no outputId given, not .eq', async () => {
+test('getLastRun filters output_id to "" (not null) when no outputId given', async () => {
+  // P2.8 fix: `.is('output_id', null)` never actually worked as a uniqueness
+  // filter against a real Postgres NOT NULL DEFAULT '' column — see
+  // 20260922_job_stages_output_id_not_null.sql for the real bug this
+  // uncovered. `''` is the canonical "no output" value everywhere else in
+  // this codebase (StageRunner's own `outputId ?? ''` key convention).
   const { client, calls } = makeFakeClient();
   const repo = new JobStagesRepo(client, 'org-1');
 
@@ -92,7 +108,7 @@ test('getLastRun uses .is(output_id, null) when no outputId given, not .eq', asy
 
   const call = calls.find((c) => c.table === 'job_stages' && c.method === 'maybeSingle');
   const [filters] = call!.args as [Record<string, unknown>];
-  assert.equal(filters.output_id, null);
+  assert.equal(filters.output_id, '');
 });
 
 test('P2.5: getLastRun returns outputs from the row, so a skip can still feed compile()', async () => {

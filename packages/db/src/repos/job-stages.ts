@@ -25,14 +25,18 @@ export class JobStagesRepo implements JobStageStore {
     stageName: string,
     outputId?: string,
   ): Promise<StageRunRecord | null> {
-    let query = this.client
+    // P2.8 fix: `output_id` is `NOT NULL DEFAULT ''` now (see
+    // 20260922_job_stages_output_id_not_null.sql for why plain `NULL`
+    // never actually worked here) — `''` for "no output", matching the
+    // convention the JS side (`StageRunner`, the in-memory test fake)
+    // already used everywhere else.
+    const { data, error } = await this.client
       .from('job_stages')
       .select('inputs_hash, status, outputs')
       .eq('job_id', jobId)
-      .eq('stage_name', stageName);
-    query = outputId ? query.eq('output_id', outputId) : query.is('output_id', null);
-
-    const { data, error } = await query.maybeSingle();
+      .eq('stage_name', stageName)
+      .eq('output_id', outputId ?? '')
+      .maybeSingle();
     if (error) throw new Error(`JobStagesRepo.getLastRun: ${error.message}`);
     if (!data) return null;
     // P2.5: `outputs` travels back through here too — a skip (unchanged
@@ -51,7 +55,7 @@ export class JobStagesRepo implements JobStageStore {
         org_id: this.orgId,
         job_id: jobId,
         stage_name: stageName,
-        output_id: outputId ?? null,
+        output_id: outputId ?? '',
         status: 'running',
         started_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -72,7 +76,7 @@ export class JobStagesRepo implements JobStageStore {
         org_id: this.orgId,
         job_id: jobId,
         stage_name: stageName,
-        output_id: outputId ?? null,
+        output_id: outputId ?? '',
         status: result.status,
         inputs_hash: result.hash,
         outputs: result.outputs ?? null,
