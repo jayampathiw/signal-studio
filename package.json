@@ -30,7 +30,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "node scripts/typecheck.mjs",
-    "test": "vitest run && pnpm --filter '!dashboard' -r --if-present run test && node --experimental-strip-types --test scripts/golden/*.test.ts"
+    "test": "vitest run && pnpm --filter '!dashboard' -r --if-present run test && node --experimental-strip-types --test 'scripts/golden/*.test.ts'"
   },
   "engines": {
     "node": ">=20"

@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'"
   },
   "exports": {
-    "./repos": "./src/repos/index.ts"
+    "./repos": "./src/repos/index.ts",
+    "./client": "./src/client.ts"
   },
   "dependencies": {
     "@signal-studio/core": "workspace:*",

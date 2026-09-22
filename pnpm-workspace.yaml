@@ -1,6 +1,7 @@
 packages:
   - 'apps/video'
   - 'apps/dashboard'
+  - 'apps/worker'
   - 'projects/assemblex-factory/pilot'
   - 'projects/assemblex-factory/packs'
   - 'packages/ai'

@@ -94,3 +94,23 @@ test('getLastRun uses .is(output_id, null) when no outputId given, not .eq', asy
   const [filters] = call!.args as [Record<string, unknown>];
   assert.equal(filters.output_id, null);
 });
+
+test('P2.5: getLastRun returns outputs from the row, so a skip can still feed compile()', async () => {
+  // A dedicated fake here (rather than makeFakeClient, whose maybeSingle
+  // always returns null data) — every chain method returns the same object
+  // so a real prior row can flow through to the final maybeSingle() call.
+  const chain = {
+    select: () => chain,
+    eq: () => chain,
+    is: () => chain,
+    maybeSingle: async () => ({
+      data: { inputs_hash: 'h1', status: 'done', outputs: { durations: { s1: 4 } } },
+      error: null,
+    }),
+  };
+  const client = { from: () => chain };
+  const repo = new JobStagesRepo(client as never, 'org-1');
+
+  const result = await repo.getLastRun('job-1', 'assets');
+  assert.deepEqual(result, { hash: 'h1', status: 'done', outputs: { durations: { s1: 4 } } });
+});

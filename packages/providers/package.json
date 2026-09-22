@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/**/*.test.ts",
-    "test:real": "PROVIDERS_REAL=1 node --experimental-strip-types --test src/**/*.test.ts"
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'",
+    "test:real": "PROVIDERS_REAL=1 node --experimental-strip-types --test 'src/**/*.test.ts'"
   },
   "exports": {
     "./contracts": "./src/contracts.ts",

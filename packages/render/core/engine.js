@@ -10,10 +10,19 @@
 
 /**
  * @callback RenderFn
- * @param {import('@signal-studio/types/timeline').Timeline} timeline
+ * @param {import('@signal-studio/core/schemas').TimelineT} timeline
  * @param {{ outputDir: string }} opts
  * @returns {Promise<string>} absolute path to the rendered MP4
  */
+
+// P2.5: was `@signal-studio/types/timeline`'s JSDoc typedef — render.ts
+// itself switched to the zod-inferred TimelineT at P2.1 ("timeline.v1 —
+// a strict superset of every field..."), but this contract type (what
+// `registerEngine()`'s parameter is actually checked against) was never
+// updated to match, so the mismatch stayed invisible until something
+// outside packages/render/remotion's own (deliberately excluded, see
+// scripts/typecheck.mjs) tsconfig imported it transitively and forced a
+// real check — apps/worker's `deps.ts` did exactly that.
 
 /** @type {Map<string, RenderEngine>} */
 const registry = new Map();

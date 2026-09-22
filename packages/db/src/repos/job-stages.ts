@@ -27,7 +27,7 @@ export class JobStagesRepo implements JobStageStore {
   ): Promise<StageRunRecord | null> {
     let query = this.client
       .from('job_stages')
-      .select('inputs_hash, status')
+      .select('inputs_hash, status, outputs')
       .eq('job_id', jobId)
       .eq('stage_name', stageName);
     query = outputId ? query.eq('output_id', outputId) : query.is('output_id', null);
@@ -35,7 +35,14 @@ export class JobStagesRepo implements JobStageStore {
     const { data, error } = await query.maybeSingle();
     if (error) throw new Error(`JobStagesRepo.getLastRun: ${error.message}`);
     if (!data) return null;
-    return { hash: data.inputs_hash, status: data.status as StageRunRecord['status'] };
+    // P2.5: `outputs` travels back through here too — a skip (unchanged
+    // hash) now hands the caller the same outputs a fresh run would have,
+    // per `StageRunner.run()`'s own doc comment.
+    return {
+      hash: data.inputs_hash,
+      status: data.status as StageRunRecord['status'],
+      outputs: data.outputs ?? undefined,
+    };
   }
 
   async recordStart(jobId: string, stageName: string, outputId?: string): Promise<void> {

@@ -141,4 +141,10 @@ FROM runtime AS prewarm
 RUN node --experimental-strip-types docker/warm-kokoro-js.mjs
 
 FROM prewarm AS final
-ENTRYPOINT ["node", "--experimental-strip-types", "packages/core/src/cli/ss.ts"]
+# P2.5: apps/worker/src/cli.ts is now the full `ss` command set (validate,
+# run-local, run-job, upload, worker) — packages/core/src/cli/ss.ts (what
+# this pointed at when P2.6 first built this image) only ever implemented
+# `validate`, since packages/core deliberately can't depend on
+# @signal-studio/db/providers/render/templates. `ss validate` itself is
+# unchanged behavior either way.
+ENTRYPOINT ["node", "--experimental-strip-types", "apps/worker/src/cli.ts"]

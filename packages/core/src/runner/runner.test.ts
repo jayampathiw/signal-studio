@@ -22,7 +22,11 @@ function makeFakeStore() {
     },
     async recordStart() {},
     async recordEnd(jobId, stage, result, outputId) {
-      runs.set(key(jobId, stage, outputId), { hash: result.hash, status: result.status });
+      runs.set(key(jobId, stage, outputId), {
+        hash: result.hash,
+        status: result.status,
+        outputs: result.outputs,
+      });
     },
     async log(jobId, stage, message) {
       logs.push(`${jobId}/${stage}: ${message}`);
@@ -133,6 +137,40 @@ test('multiOutput stage runs once per manifest output', async () => {
 
   await runner.run(job({ manifest: { outputs: ['fb', 'ig'] } }));
   assert.deepEqual(seen, ['fb', 'ig']);
+});
+
+test('P2.5: run() returns fresh outputs, keyed by stage:outputId', async () => {
+  const { store } = makeFakeStore();
+  const runner = new StageRunner(store)
+    .register({
+      name: 'assets',
+      inputsHash: () => 'h1',
+      run: async () => ({ outputs: { durations: { s1: 4 } } }),
+    })
+    .register({
+      name: 'render',
+      multiOutput: true,
+      inputsHash: () => 'h2',
+      run: async (ctx) => ({ outputs: { path: `${ctx.outputId}.mp4` } }),
+    });
+
+  const outputs = await runner.run(job({ manifest: { outputs: ['fb', 'ig'] } }));
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
+  assert.deepEqual(outputs.get('render:fb'), { path: 'fb.mp4' });
+  assert.deepEqual(outputs.get('render:ig'), { path: 'ig.mp4' });
+});
+
+test('P2.5: run() recovers outputs from a skipped (unchanged-hash) stage, not just a fresh run', async () => {
+  const { store } = makeFakeStore();
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => ({ outputs: { durations: { s1: 4 } } }),
+  });
+
+  await runner.run(job());
+  const outputs = await runner.run(job()); // second run: hash unchanged -> skipped
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
 });
 
 test('cancellation token is checked before each stage', async () => {

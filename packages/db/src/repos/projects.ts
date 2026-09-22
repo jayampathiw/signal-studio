@@ -37,4 +37,17 @@ export class ProjectsRepo {
     if (error) throw new Error(`ProjectsRepo.getBySlug: ${error.message}`);
     return data as ProjectRow | null;
   }
+
+  // P2.5 addition: `ss run-job` resolves a job's project by `JobRow.project_id`
+  // (the DB foreign key), not by slug — this repo had no lookup for that
+  // until run-job needed one.
+  async getById(projectId: string): Promise<ProjectRow | null> {
+    const { data, error } = await this.client
+      .from('projects')
+      .select()
+      .eq('id', projectId)
+      .maybeSingle();
+    if (error) throw new Error(`ProjectsRepo.getById: ${error.message}`);
+    return data as ProjectRow | null;
+  }
 }

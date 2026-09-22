@@ -9,6 +9,7 @@
     "./timeline": "./timeline.js"
   },
   "dependencies": {
+    "@signal-studio/core": "workspace:*",
     "@signal-studio/types": "workspace:*"
   }
 }

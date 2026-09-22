@@ -7,7 +7,7 @@
     "ss": "./src/cli/ss.ts"
   },
   "scripts": {
-    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'",
     "schemas:json": "node --experimental-strip-types scripts/export-json-schema.ts"
   },
   "exports": {
@@ -15,7 +15,8 @@
     "./state": "./src/state/index.ts",
     "./runner": "./src/runner/index.ts",
     "./resolve": "./src/resolve.ts",
-    "./stages/assets": "./src/stages/assets.ts"
+    "./stages/assets": "./src/stages/assets.ts",
+    "./stages/tts": "./src/stages/tts.ts"
   },
   "dependencies": {
     "@signal-studio/shared": "workspace:*",

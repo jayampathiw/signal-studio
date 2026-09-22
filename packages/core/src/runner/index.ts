@@ -30,6 +30,15 @@ export type StageDefinition = {
 export type StageRunRecord = {
   hash: string;
   status: 'done' | 'failed';
+  // P2.5 addition: without this, a caller composing one stage's output into
+  // the next (e.g. the `assets` stage's measured clip durations feeding
+  // `compile()`) has no way to read it back once the stage is *skipped*
+  // (unchanged hash) — only a fresh run's `result.outputs` was ever
+  // reachable before. Optional so implementations/fakes written before this
+  // addition (this file's own tests, `JobStagesRepo` pre-P2.5) don't need to
+  // change to keep compiling; `run()` below treats a missing value the same
+  // as "no outputs to hand back on skip".
+  outputs?: unknown;
 };
 
 export type JobStageStore = {
@@ -68,18 +77,28 @@ export class StageRunner {
     return this;
   }
 
-  async run(job: Job, cancelled: () => boolean = () => false): Promise<void> {
+  // Returns every stage's outputs (fresh or recovered from a skip), keyed
+  // `${stageName}:${outputId ?? ''}` — the same composite key the store
+  // itself keys runs by. Callers that need to feed one stage's output into
+  // the next (e.g. `ss run-local`/`ss run-job` building `compile()`'s
+  // `shotAssets` from the `assets` stage) read this instead of re-deriving
+  // it, so it's always correct whether or not the stage actually re-ran.
+  async run(job: Job, cancelled: () => boolean = () => false): Promise<Map<string, unknown>> {
+    const outputs = new Map<string, unknown>();
+
     for (const stage of this.stages) {
       const outputIds = stage.multiOutput ? job.manifest.outputs : [undefined];
 
       for (const outputId of outputIds) {
         if (cancelled()) throw new CancelledError(stage.name);
 
+        const key = `${stage.name}:${outputId ?? ''}`;
         const hash = stage.inputsHash(job);
         const last = await this.store.getLastRun(job.id, stage.name, outputId);
 
         if (last && last.status === 'done' && last.hash === hash) {
           await this.store.log(job.id, stage.name, `skipped (unchanged, hash=${hash})`);
+          if (last.outputs !== undefined) outputs.set(key, last.outputs);
           continue;
         }
 
@@ -88,6 +107,7 @@ export class StageRunner {
 
         try {
           const result = await stage.run({ job, outputId, cancelled });
+          if (result?.outputs !== undefined) outputs.set(key, result.outputs);
           await this.store.recordEnd(
             job.id,
             stage.name,
@@ -102,5 +122,7 @@ export class StageRunner {
         }
       }
     }
+
+    return outputs;
   }
 }

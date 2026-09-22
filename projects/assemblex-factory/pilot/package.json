@@ -11,7 +11,7 @@
     "render:compilation": "node --experimental-strip-types scripts/render-compilation.ts",
     "captions": "node --experimental-strip-types scripts/captions.ts",
     "log": "node --experimental-strip-types scripts/log.ts",
-    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'",
     "studio": "npx remotion studio src/index.ts"
   },
   "dependencies": {
