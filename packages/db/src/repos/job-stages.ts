@@ -26,7 +26,7 @@ export class JobStagesRepo implements JobStageStore {
     outputId?: string,
   ): Promise<StageRunRecord | null> {
     // P2.8 fix: `output_id` is `NOT NULL DEFAULT ''` now (see
-    // 20260922_job_stages_output_id_not_null.sql for why plain `NULL`
+    // 20260922100000_job_stages_output_id_not_null.sql for why plain `NULL`
     // never actually worked here) — `''` for "no output", matching the
     // convention the JS side (`StageRunner`, the in-memory test fake)
     // already used everywhere else.

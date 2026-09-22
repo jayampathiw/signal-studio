@@ -23,7 +23,7 @@ export class ApiKeysRepo {
   }
 
   // Returns the raw key exactly once — only its hash is ever persisted
-  // (see 20260922_api_keys.sql's own header). Caller must show/copy it
+  // (see 20260922090000_api_keys.sql's own header). Caller must show/copy it
   // immediately; there's no way to recover it later.
   async create(orgId: string, name: string): Promise<{ row: ApiKeyRow; rawKey: string }> {
     const rawKey = `sk_${randomBytes(24).toString('hex')}`;

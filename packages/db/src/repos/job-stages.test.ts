@@ -98,7 +98,7 @@ test('log includes org_id', async () => {
 test('getLastRun filters output_id to "" (not null) when no outputId given', async () => {
   // P2.8 fix: `.is('output_id', null)` never actually worked as a uniqueness
   // filter against a real Postgres NOT NULL DEFAULT '' column — see
-  // 20260922_job_stages_output_id_not_null.sql for the real bug this
+  // 20260922100000_job_stages_output_id_not_null.sql for the real bug this
   // uncovered. `''` is the canonical "no output" value everywhere else in
   // this codebase (StageRunner's own `outputId ?? ''` key convention).
   const { client, calls } = makeFakeClient();
