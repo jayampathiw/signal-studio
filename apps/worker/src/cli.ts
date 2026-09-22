@@ -7,6 +7,7 @@ import { uploadCommand } from './commands/upload.ts';
 import { validateCommand } from './commands/validate.ts';
 import { workerCommand } from './commands/worker.ts';
 import {
+  fakeRunLocalDeps,
   realMarkFailedDeps,
   realRunJobDeps,
   realRunLocalDeps,
@@ -49,7 +50,11 @@ async function main(): Promise<number> {
           workDir: typeof flags['work-dir'] === 'string' ? flags['work-dir'] : undefined,
           contentId: typeof flags['content-id'] === 'string' ? flags['content-id'] : undefined,
         },
-        realRunLocalDeps(),
+        // --fake: swaps TTS synthesis + the Remotion render for instant
+        // stand-ins (assets still run for real) — P2's T-L gate wants
+        // examples/clips-overlay runnable in under 3 minutes, which the
+        // real kokoro-js/Remotion path can't do on its own.
+        flags.fake === true ? fakeRunLocalDeps() : realRunLocalDeps(),
         logger,
       );
       logger.info('done', { outputs: result.outputs });

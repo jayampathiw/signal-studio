@@ -791,12 +791,12 @@ Goal: one Mode C post rendered `_fb` + `_ig` with no manual editing; published ~
 
 **TEST GATES — P2**
 
-- [ ] **T-L (Local)**
-  - [ ] `ss run-local` on the pilot pack (via adapter) → `_fb`/`_ig`; `golden/check.mjs` passes against the P0.8 pilot references
-  - [ ] `ss run-local` on `examples/clips-overlay` with fakes < 3 min
-  - [ ] `docker run … ss run-local` produces the same golden-passing output inside the container
-  - [ ] Re-run with no changes → all stages `skipped`
-  - [ ] Compilation from 3 local packs → 90–120 s file, title plates visible, one end card
+- [~] **T-L (Local)** (2026-09-22)
+  - [x] `ss run-local` on the pilot pack (via adapter) → `_fb`/`_ig`; `golden/check.mjs` passes against the P0.8 pilot references — ran fresh via the real CLI, both outputs formally checked with `scripts/golden/check.mjs` against `golden/pilot-clips-overlay-{fb,ig}/golden.json`: **PASS** on every metric (duration, resolution, fps, LUFS, true peak, scene cuts, all 10 frame pHashes) for both.
+  - [x] `ss run-local` on `examples/clips-overlay` with fakes < 3 min — new `examples/clips-overlay/` fixture (a real 3s synthetic `ffmpeg -f lavfi` clip + valid `manifest.json`/`project.json`). Added a `--fake` flag to `run-local` (`apps/worker/src/deps.ts`'s `fakeRunLocalDeps()`) that swaps TTS synthesis + the Remotion render for instant stand-ins while the `assets` stage still runs for real (fast on a 3s clip) — the CLI had no fakes path before this. Real timed run: **4.5s** total, well under the 3-minute target.
+  - [~] `docker run … ss run-local` produces the same golden-passing output inside the container — not yet re-verified since `ENTRYPOINT` moved to `apps/worker`'s CLI (P2.5); `image.yml` has rebuilt `:dev` on every push since including this session's latest, so the image itself should already have everything needed (ffmpeg, kokoro-js baked in, the new `--fake` flag) — running it is the next concrete step.
+  - [x] Re-run with no changes → all stages `skipped` — **verified for real against the live DB**, not just the unit tests that already covered this (`runner.test.ts`): re-ran a `StageRunner` for the real job from P2.8's end-to-end test, with a `synthesise` stand-in that throws if ever called and no real `workDir` on disk at all. Both `assets` and `tts` came back `skipped`, recovering their real prior measured outputs (durations) from `job_stages` — proof the skip path never touched ffmpeg or kokoro-js, only read from Postgres.
+  - [~] Compilation from 3 local packs → 90–120 s file, title plates visible, one end card — ran a real 3-episode compilation (same real pilot footage reused per episode — no second/third distinct real episode exists yet, same honest stand-in P2.2's own real-verification used for 2 episodes). Result: 12 scenes (3× title + 3 shots), **76.5s** — mechanically correct (1 shared end card, 3 title plates, crossfade math holds — same formula already verified in P2.2) but **short of the 90–120s target**, purely because the only available real footage per "episode" is ~24s; not a flaw in the compilation logic. Hit one real, transient failure first (a Remotion frame-render timeout) caused by a stray leftover Node process from an earlier test still running in the background — killed it, retried clean, succeeded.
 - [ ] **T-G (GitHub)**
   - [ ] `image.yml` publishes `:dev`
   - [ ] `curl -X POST …/engine-api/jobs` with the pilot manifest → `awaiting_assets`; upload clips → `queued` → `run-job.yml` runs → `delivered`; `GET /jobs/:id` returns signed URLs; downloaded MP4 passes golden check

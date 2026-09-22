@@ -1,0 +1,21 @@
+{
+  "version": "1",
+  "projectRef": "examples-clips-overlay",
+  "template": "clips-overlay",
+  "visual": { "mode": "clips-overlay" },
+  "shots": [
+    {
+      "id": "s1",
+      "clip": "s1.mp4",
+      "overlay_text": "Example shot",
+      "overlay_in_s": 0.4,
+      "overlay_out_s": 2.0,
+      "voiceover_text": "This is an example voiceover line."
+    }
+  ],
+  "end_card": {
+    "subject": "Example subject",
+    "disclosure": "AI visualisation"
+  },
+  "outputs": ["fb"]
+}

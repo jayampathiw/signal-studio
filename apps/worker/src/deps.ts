@@ -1,3 +1,8 @@
+import { createHash } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+
 import { createEngineClient } from '@signal-studio/db/client';
 import { ArtifactsRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
 import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
@@ -32,6 +37,32 @@ function realRender() {
 
 export function realRunLocalDeps(): RunLocalDeps {
   return { synthesise: realTts(), compileClipsOverlay, render: realRender() };
+}
+
+// P2's T-L gate ("ss run-local on examples/clips-overlay with fakes <
+// 3 min"): the `assets` stage still runs for real (ffmpeg is fast against a
+// tiny synthetic clip), but TTS synthesis and the Remotion render — the two
+// genuinely slow, model/browser-loading steps — are swapped for instant
+// stand-ins. This is for checking the pipeline's own wiring quickly during
+// development, not for judging real output quality.
+export function fakeRunLocalDeps(): RunLocalDeps {
+  return {
+    async synthesise({ text }) {
+      const wavPath = path.join(
+        os.tmpdir(),
+        `fake-tts-${createHash('sha256').update(text).digest('hex').slice(0, 12)}.wav`,
+      );
+      await writeFile(wavPath, Buffer.alloc(44)); // a WAV header's worth of silence
+      return { wavPath, durationSec: 2 };
+    },
+    compileClipsOverlay,
+    async render(timeline, opts) {
+      await mkdir(opts.outputDir, { recursive: true });
+      const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
+      await writeFile(outputPath, `fake render of ${timeline.scenes.length} scene(s)`);
+      return outputPath;
+    },
+  };
 }
 
 export function realRunJobDeps(): RunJobDeps {
