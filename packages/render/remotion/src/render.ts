@@ -78,6 +78,7 @@ function resolveComposition(timeline: Timeline): string {
   if (timeline.template === 'case-file')
     return timeline.aspectRatio === '9:16' ? 'CaseFileVertical' : 'CaseFile';
   if (timeline.template === 'clips-overlay') return 'ClipsOverlay';
+  if (timeline.template === 'compilation') return 'Compilation';
   if (timeline.template === 'news-card') return 'NewsCard';
   // No silent NewsCard fallback (P2.1) — an unrecognised template is a real
   // bug (a manifest/compile() producing a template this file doesn't know
@@ -168,6 +169,32 @@ function timelineToProps(
         id: scene.id,
         durationSecs: scene.durationSecs,
         clipUrl: toAssetRef(scene.source?.localPath, assetRefs),
+        trimInSec: scene.trimInSec,
+        playbackRate: scene.playbackRate,
+        sourceMuted: scene.sourceMuted,
+        overlay: scene.overlay,
+        narrationUrl: scene.narrationPath ? toAssetRef(scene.narrationPath, assetRefs) : undefined,
+        voStartSec: scene.voStartSec,
+      })),
+      musicUrl: timeline.music ? toAssetRef(timeline.music.path, assetRefs) : undefined,
+      musicGainDb: timeline.music?.gainDb ?? -18,
+      musicDuck: timeline.music?.duckUnderVoice ?? true,
+      musicFadeOutSecs: timeline.music?.fadeOutSecs ?? 1.5,
+      cta: timeline.cta,
+      watermarkText: timeline.watermark?.text,
+    };
+  }
+
+  if (timeline.template === 'compilation') {
+    return {
+      scenes: timeline.scenes.map((scene) => ({
+        id: scene.id,
+        sceneType: scene.sceneType,
+        durationSecs: scene.durationSecs,
+        captionText: scene.captionText,
+        clipUrl: scene.source?.localPath
+          ? toAssetRef(scene.source.localPath, assetRefs)
+          : undefined,
         trimInSec: scene.trimInSec,
         playbackRate: scene.playbackRate,
         sourceMuted: scene.sourceMuted,

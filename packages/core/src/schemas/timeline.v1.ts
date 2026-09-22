@@ -112,6 +112,12 @@ export const TimelineScene = z.object({
   // audio.strip_native_audio) — distinct from narrationPath, which is
   // always audible.
   sourceMuted: z.boolean().default(false),
+  // P2.2 addition: the `compilation` template injects text-only title-plate
+  // scenes (no `source`) between episodes, flattened into the same `scenes`
+  // array rather than adding a separate nested "episodes" concept to this
+  // schema — 'title' is exactly those synthetic scenes; every real shot
+  // (from clips-overlay or any other per-episode template) is 'shot'.
+  sceneType: z.enum(['shot', 'title']).default('shot'),
 });
 
 export const Timeline = z.object({

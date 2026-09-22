@@ -24,6 +24,7 @@ const TS_PROJECTS = [
   'projects/assemblex-factory/pilot/tsconfig.json',
   'projects/assemblex-factory/packs/tsconfig.json',
   'packages/templates/clips-overlay/tsconfig.json',
+  'packages/templates/compilation/tsconfig.json',
 ];
 
 const root = path.resolve(import.meta.dirname, '..');

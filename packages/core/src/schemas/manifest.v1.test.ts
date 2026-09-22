@@ -65,6 +65,12 @@ test('clips-overlay mode requires a clip on every shot', () => {
   assert.equal(result.success, false);
 });
 
+test('P2.2 addition: compilationTargetS is optional, accepted when set', () => {
+  assert.equal(Manifest.safeParse(validManifest()).success, true);
+  const result = Manifest.parse(validManifest({ compilationTargetS: 90 }));
+  assert.equal(result.compilationTargetS, 90);
+});
+
 test('non-clips-overlay mode allows a shot with no clip/image', () => {
   const result = Manifest.safeParse(
     validManifest({

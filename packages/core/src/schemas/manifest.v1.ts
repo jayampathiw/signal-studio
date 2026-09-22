@@ -116,6 +116,14 @@ export const Manifest = z
     disclosure: z.boolean().default(true),
     gates: z.array(z.string()).default([]),
     publish: z.array(z.string()).default([]),
+    // P2.2 addition: a soft duration target for the `compilation` template
+    // only (the pilot bridge's `Pack.compilation_target_s`, ported up from
+    // per-episode-pack to manifest.v1 since a compilation manifest is its
+    // own job, not one of the episodes being compiled). Optional and
+    // unenforced by this schema — `compile()` warns rather than fails when
+    // the compiled scenes exceed it, same as the pilot's own
+    // render-compilation.ts did.
+    compilationTargetS: z.number().positive().optional(),
   })
   .superRefine((manifest, ctx) => {
     // clips-overlay is the only template that requires every shot to carry

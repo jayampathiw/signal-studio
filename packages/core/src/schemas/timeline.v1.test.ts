@@ -63,6 +63,20 @@ test('P2.1 additions: trimInSec/sourceMuted default, music.gainDb default, water
   assert.equal(result.watermark?.position, 'top-left');
 });
 
+test('P2.2 addition: sceneType defaults to shot, title accepted', () => {
+  const result = Timeline.parse(
+    validTimeline({
+      scenes: [
+        { id: 's1', durationSecs: 8 },
+        { id: 'title-0', durationSecs: 1.2, sceneType: 'title', captionText: 'Episode 1' },
+      ],
+    }),
+  );
+  assert.equal(result.scenes[0].sceneType, 'shot');
+  assert.equal(result.scenes[1].sceneType, 'title');
+  assert.equal(result.scenes[1].captionText, 'Episode 1');
+});
+
 test('negative durationSecs fails', () => {
   assert.equal(
     Timeline.safeParse(validTimeline({ scenes: [{ id: 's1', durationSecs: -1 }] })).success,

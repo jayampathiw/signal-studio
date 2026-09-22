@@ -11,6 +11,11 @@ import {
   totalClipsOverlayFrames,
   type ClipsOverlayProps,
 } from './compositions/clips-overlay/ClipsOverlay';
+import {
+  Compilation,
+  totalCompilationFrames,
+  type CompilationProps,
+} from './compositions/compilation/Compilation';
 import { NewsCard } from './compositions/NewsCard';
 
 // Register all Remotion compositions here.
@@ -108,6 +113,25 @@ export const RemotionRoot: React.FC = () => (
           musicDuck: true,
           musicFadeOutSecs: 1.5,
         } satisfies ClipsOverlayProps
+      }
+    />
+    <Composition
+      id="Compilation"
+      component={Compilation}
+      fps={30}
+      width={1080}
+      height={1920}
+      // Variable length: sum of crossfade-adjusted episode spans + end card.
+      calculateMetadata={async ({ props }) => ({
+        durationInFrames: totalCompilationFrames(props as CompilationProps, 30),
+      })}
+      defaultProps={
+        {
+          scenes: [],
+          musicGainDb: -18,
+          musicDuck: true,
+          musicFadeOutSecs: 1.5,
+        } satisfies CompilationProps
       }
     />
     {/* Add: DocumentaryScene, ReelTemplate, etc. as built */}
