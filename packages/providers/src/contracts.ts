@@ -107,6 +107,16 @@ export interface PublishProvider {
     video: string;
     caption: string;
     scheduleAt?: string;
+    // P3.5 additions — additive/optional, existing callers unaffected.
+    title?: string;
+    // Real, currently-documented AI-disclosure flag for YouTube
+    // (`status.containsSyntheticMedia` on the Video resource — verified
+    // against Google's own discovery doc, not guessed). **No equivalent
+    // exists in Meta's Graph API for a Page video post** — Facebook's
+    // AI-disclosure is a manual Meta Business Suite step, not an API
+    // parameter (see `publish-facebook.ts`'s own header); this flag is
+    // simply ignored there, not silently mis-mapped to something else.
+    aiDisclosure?: boolean;
   }): Promise<PublishResultT>;
 }
 

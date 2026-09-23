@@ -20,7 +20,9 @@
     "./stock-pexels": "./src/stock-pexels.ts",
     "./image-fal": "./src/image-fal.ts",
     "./image-user": "./src/image-user.ts",
-    "./captions-faster-whisper": "./src/captions-faster-whisper.ts"
+    "./captions-faster-whisper": "./src/captions-faster-whisper.ts",
+    "./publish-facebook": "./src/publish-facebook.ts",
+    "./publish-youtube": "./src/publish-youtube.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1078.0",

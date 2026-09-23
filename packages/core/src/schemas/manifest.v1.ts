@@ -75,6 +75,13 @@ export const Captions = z
     facebook_question: z.string().optional(),
     instagram: z.string().optional(),
     youtube_shorts_title: z.string().optional(),
+    // P3.5 addition — the plan's own `publish-youtube` bullet needs a real
+    // description body, and manifest.v1 only ever had a title field for
+    // YouTube; `youtube_shorts_title` alone left the `publish` stage no
+    // honest way to build a description without guessing between the
+    // Facebook/Instagram caption bodies (which are written for different
+    // platforms' tone/length).
+    youtube_description: z.string().optional(),
     hashtags_facebook: z.array(z.string()).default([]),
     hashtags_instagram: z.array(z.string()).default([]),
   })

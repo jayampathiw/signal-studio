@@ -16,7 +16,8 @@
     "./runner": "./src/runner/index.ts",
     "./resolve": "./src/resolve.ts",
     "./stages/assets": "./src/stages/assets.ts",
-    "./stages/tts": "./src/stages/tts.ts"
+    "./stages/tts": "./src/stages/tts.ts",
+    "./stages/publish": "./src/stages/publish.ts"
   },
   "dependencies": {
     "@signal-studio/shared": "workspace:*",
