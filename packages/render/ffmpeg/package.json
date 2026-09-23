@@ -1,10 +1,26 @@
 {
   "name": "@signal-studio/render-ffmpeg",
   "version": "0.1.0",
+  "private": true,
   "type": "module",
-  "main": "index.js",
+  "main": "src/render.ts",
+  "exports": {
+    ".": "./src/render.ts",
+    "./motion": "./src/motion.ts",
+    "./captions": "./src/captions.ts",
+    "./map-audio-cues": "./src/map-audio-cues.ts",
+    "./audio-mix": "./src/audio-mix.ts",
+    "./stills-render": "./src/stills-render.ts",
+    "./placement": "./src/placement.ts",
+    "./fonts": "./src/fonts.ts",
+    "./text-metrics": "./src/text-metrics.ts"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'"
+  },
   "dependencies": {
+    "@signal-studio/core": "workspace:*",
     "@signal-studio/render-core": "workspace:*",
-    "@signal-studio/types": "workspace:*"
+    "fontkit": "^2.0.4"
   }
 }

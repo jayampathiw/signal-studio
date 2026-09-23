@@ -1,0 +1,17 @@
+{
+  "name": "@signal-studio/template-stills-kenburns",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'"
+  },
+  "exports": {
+    "./compile": "./src/compile.ts",
+    "./parsers/parse-shotlist-v2": "./src/parsers/parse-shotlist-v2.ts"
+  },
+  "dependencies": {
+    "@signal-studio/core": "workspace:*",
+    "@signal-studio/render-ffmpeg": "workspace:*"
+  }
+}

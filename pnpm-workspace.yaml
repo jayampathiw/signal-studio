@@ -20,3 +20,4 @@ packages:
   - 'packages/providers'
   - 'packages/templates/clips-overlay'
   - 'packages/templates/compilation'
+  - 'packages/templates/stills-kenburns'

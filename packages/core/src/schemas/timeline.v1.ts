@@ -75,6 +75,70 @@ export const TimelineOverlay = z.object({
   outSec: z.number(),
 });
 
+// P3.1 additions — the `stills-kenburns` template's own scene shape: a
+// scene there is 1+ still-image "cuts" (each its own Ken Burns motion,
+// optional colour grade, and crop position) concatenated together, not one
+// `source`. Field names/values mirror `apps/video/src/longform/{motion,
+// render}.js`'s existing shapes closely (camelCased) — this is a port, not
+// a redesign; every motion/regrade/transition value below is one this
+// engine's filter-building code already implements.
+export const KenBurnsCut = z.object({
+  imagePath: z.string(),
+  motion: z
+    .enum(['push', 'micro_push', 'pull', 'smash', 'pan_lr', 'pan_rl', 'parallax', 'hold', 'static'])
+    .default('push'),
+  regrade: z.enum(['warm_amber', 'cold_blue']).optional(),
+  // 0..1 horizontal crop-window offset (0.5 = center) — for a portrait crop
+  // out of an off-center source image.
+  cropX: z.number().min(0).max(1).default(0.5),
+  transition: z.enum(['cut', 'dissolve']).default('cut'),
+  durationSecs: z.number().positive(),
+});
+
+// A tier-2 caption-chunk word, timed relative to the overlay's own atSec
+// (not absolute) — see motion.js's buildCaptionAccent for why.
+export const KenBurnsCaptionWord = z.object({
+  text: z.string(),
+  offsetStartSec: z.number(),
+  offsetEndSec: z.number(),
+});
+
+// Discriminated on `format`: 'tiered' is the hero-card (tier 1) / running-
+// caption (tier 2) system; 'legacy' is the older single-drawtext shape
+// (`style` one of small_cream/lower_third/stamp). Both are real, both still
+// render through motion.js's `buildDrawtext` today.
+export const KenBurnsOverlay = z.object({
+  format: z.enum(['tiered', 'legacy']),
+  tier: z.union([z.literal(1), z.literal(2)]).optional(),
+  text: z.string().optional(),
+  amberWord: z.string().optional(),
+  zone: z.string().optional(),
+  atSec: z.number().optional(),
+  durationSec: z.number().optional(),
+  words: z.array(KenBurnsCaptionWord).optional(),
+  style: z.enum(['small_cream', 'lower_third', 'stamp']).optional(),
+});
+
+// One-shot SFX cue, absolute-seconds within its scene (already resolved
+// from the shotlist's 🔊 free-text cue via map-audio-cues.ts at compile
+// time — the render engine never re-interprets raw cue text).
+export const KenBurnsSfxCue = z.object({
+  key: z.string(),
+  atSec: z.number().default(0),
+  holdSec: z.number().optional(),
+});
+
+// The `stills-kenburns` music-bed schedule — the top-level counterpart to
+// the old per-project `audio-plan.json`. `track` is an audio-kit manifest
+// key, or the literals 'hum_only' (ambience-only, no distinct bed) /
+// 'silence' (a hard gap).
+export const KenBurnsMusicSegment = z.object({
+  fromSec: z.number(),
+  toSec: z.number(),
+  track: z.string(),
+  gainDb: z.number().default(-23),
+});
+
 export const TimelineScene = z.object({
   id: z.string(),
   durationSecs: z.number().positive(),
@@ -118,6 +182,21 @@ export const TimelineScene = z.object({
   // schema — 'title' is exactly those synthetic scenes; every real shot
   // (from clips-overlay or any other per-episode template) is 'shot'.
   sceneType: z.enum(['shot', 'title']).default('shot'),
+  // P3.1 additions — see the schemas' own header comments just above. All
+  // optional/absent for every existing template (clips-overlay,
+  // compilation); only `stills-kenburns`'s `render-ffmpeg` engine reads
+  // them. `cuts` present means "this is a multi-still Ken Burns scene, not
+  // a single `source`"; absent (title cards, and every other template)
+  // means the existing `source`/`captionText`-driven rendering applies
+  // unchanged.
+  cuts: z.array(KenBurnsCut).optional(),
+  kenBurnsOverlays: z.array(KenBurnsOverlay).optional(),
+  sfx: z.array(KenBurnsSfxCue).optional(),
+  // A still-image background for an otherwise-blank text-card scene (e.g. a
+  // title card with its own baked-in graphic) — distinct from `cuts`
+  // (an animated Ken Burns scene) and from `source` (used by other
+  // templates' own scene shape).
+  bgImagePath: z.string().optional(),
 });
 
 export const Timeline = z.object({
@@ -132,7 +211,13 @@ export const Timeline = z.object({
   // Which manifest output variant (e.g. 'fb', 'ig') this timeline instance
   // was resolved for, when a manifest declares more than one.
   outputId: z.string().optional(),
+  // P3.1 addition — `stills-kenburns`'s music-bed schedule; see
+  // KenBurnsMusicSegment's own header comment.
+  musicPlan: z.array(KenBurnsMusicSegment).optional(),
 });
 
 export type TimelineT = z.infer<typeof Timeline>;
 export type TimelineSceneT = z.infer<typeof TimelineScene>;
+export type KenBurnsCutT = z.infer<typeof KenBurnsCut>;
+export type KenBurnsOverlayT = z.infer<typeof KenBurnsOverlay>;
+export type KenBurnsMusicSegmentT = z.infer<typeof KenBurnsMusicSegment>;

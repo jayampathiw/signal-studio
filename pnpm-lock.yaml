@@ -313,12 +313,15 @@ importers:
 
   packages/render/ffmpeg:
     dependencies:
+      '@signal-studio/core':
+        specifier: workspace:*
+        version: link:../../core
       '@signal-studio/render-core':
         specifier: workspace:*
         version: link:../core
-      '@signal-studio/types':
-        specifier: workspace:*
-        version: link:../../types
+      fontkit:
+        specifier: ^2.0.4
+        version: 2.0.4
 
   packages/render/remotion:
     dependencies:
@@ -386,6 +389,15 @@ importers:
       '@signal-studio/core':
         specifier: workspace:*
         version: link:../../core
+
+  packages/templates/stills-kenburns:
+    dependencies:
+      '@signal-studio/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@signal-studio/render-ffmpeg':
+        specifier: workspace:*
+        version: link:../../render/ffmpeg
 
   packages/types: {}
 

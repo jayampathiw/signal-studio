@@ -25,6 +25,8 @@ const TS_PROJECTS = [
   'projects/assemblex-factory/packs/tsconfig.json',
   'packages/templates/clips-overlay/tsconfig.json',
   'packages/templates/compilation/tsconfig.json',
+  'packages/templates/stills-kenburns/tsconfig.json',
+  'packages/render/ffmpeg/tsconfig.json',
   'apps/worker/tsconfig.json',
   'apps/api/tsconfig.json',
 ];
