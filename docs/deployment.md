@@ -109,6 +109,21 @@ file.
 ## CI (`image.yml`)
 
 Builds and pushes `ghcr.io/<owner>/signal-studio-worker:{sha,dev}` on push
-to `refactor`/`main` and on tags. Private image (this repo's own visibility).
-Not yet exercised end-to-end (needs a real push to trigger it) — see
-`docs/refactor/refactor-plan.md`'s P2.6 entry for what's verified vs. not.
+to `refactor`/`main` and on tags. Exercised for real repeatedly since
+P2.6 — `:dev` genuinely pulls and runs (a `:dev`-tagging bug and a
+Dockerfile deps-list gap were both found and fixed doing this; see
+`docs/refactor/refactor-plan.md`'s T-L gate entry). Image visibility on
+GHCR: the "set to private" step's real result is unverified (see the
+same P2.6 entry) — this repo being public, the package may currently be
+public too.
+
+## Run job (`run-job.yml`) — real Actions cost
+
+A real `workflow_dispatch`-triggered end-to-end run (`ss upload` × 3 →
+dispatch → `ss run-job` inside this image → `delivered`, 2026-09-23,
+see the plan's T-G entry) took **5m51s** wall-clock inside the
+container job (`run_duration_ms: 356000` via the Actions API). Billable
+minutes reported as `0` — this repo is public, and GitHub Actions
+minutes are free/unlimited on public repos (same reason the two
+trigger-only repos in `CLAUDE.md`'s "Trigger repos" section exist), so
+there's no real cost to track here as long as this repo stays public.
