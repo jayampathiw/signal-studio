@@ -26,6 +26,7 @@ const TS_PROJECTS = [
   'packages/templates/clips-overlay/tsconfig.json',
   'packages/templates/compilation/tsconfig.json',
   'packages/templates/stills-kenburns/tsconfig.json',
+  'packages/templates/shorts-916/tsconfig.json',
   'packages/render/ffmpeg/tsconfig.json',
   'apps/worker/tsconfig.json',
   'apps/api/tsconfig.json',

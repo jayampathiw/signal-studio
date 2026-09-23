@@ -18,9 +18,25 @@ import { registerEngine } from '@signal-studio/render-core/engine';
 import type { TimelineT } from '@signal-studio/core/schemas';
 
 import { buildAudioMix } from './audio-mix.ts';
+import { buildEndCardScene } from './end-card.ts';
+import { applySoundDesign } from './sound-design-mix.ts';
 import { buildStillsScene, buildTextCard } from './stills-render.ts';
 
 const execFileAsync = promisify(execFile);
+
+// `stills-kenburns` (16:9 long-form) and `shorts-916` (9:16 portrait) both
+// dispatch through this same engine (see this file's own top header) — the
+// output frame size has to follow the Timeline's own `aspectRatio` rather
+// than a single hardcoded default. `1:1` has no real caller yet; falls back
+// to the 16:9 frame size rather than inventing an untested square format.
+function resolveFormat(aspectRatio: TimelineT['aspectRatio']): {
+  width: number;
+  height: number;
+  fps: number;
+} {
+  if (aspectRatio === '9:16') return { width: 1080, height: 1920, fps: 25 };
+  return { width: 1920, height: 1080, fps: 25 };
+}
 
 const ffmpegEngine = {
   name: 'ffmpeg',
@@ -29,6 +45,7 @@ const ffmpegEngine = {
     mkdirSync(opts.outputDir, { recursive: true });
     const workDir = path.join(opts.outputDir, `_work_${timeline.contentId}`);
     mkdirSync(workDir, { recursive: true });
+    const format = resolveFormat(timeline.aspectRatio);
 
     try {
       const scenePaths: string[] = [];
@@ -40,11 +57,29 @@ const ffmpegEngine = {
             scene.kenBurnsOverlays ?? [],
             scene.narrationPath,
             workDir,
+            format,
+          );
+          scenePaths.push(out);
+        } else if (scene.endCard) {
+          const out = await buildEndCardScene(
+            scene.id,
+            scene.endCard.title,
+            scene.endCard.subtitle,
+            scene.durationSecs,
+            scene.narrationPath,
+            workDir,
+            format,
           );
           scenePaths.push(out);
         } else {
           const out = path.join(workDir, `${scene.id}.mp4`);
-          await buildTextCard(scene.captionText ?? '', scene.durationSecs, out, scene.bgImagePath);
+          await buildTextCard(
+            scene.captionText ?? '',
+            scene.durationSecs,
+            out,
+            scene.bgImagePath,
+            format,
+          );
           scenePaths.push(out);
         }
       }
@@ -87,6 +122,15 @@ const ffmpegEngine = {
           gain_db: seg.gainDb,
         }));
         await buildAudioMix({ concatPath, clips, audioPlan, outputPath: mixedPath, workDir });
+        finalPath = mixedPath;
+      } else if (timeline.soundDesign?.layers.length) {
+        const mixedPath = path.join(workDir, 'sound_design_mixed.mp4');
+        await applySoundDesign({
+          videoPath: finalPath,
+          layers: timeline.soundDesign.layers,
+          outputPath: mixedPath,
+          workDir,
+        });
         finalPath = mixedPath;
       }
 

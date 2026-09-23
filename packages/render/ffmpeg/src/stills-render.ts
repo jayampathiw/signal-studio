@@ -167,6 +167,8 @@ function toEngineOverlay(ov: KenBurnsOverlay): Overlay {
     amberWord: ov.amberWord,
     durationSec: ov.durationSec,
     zone: ov.zone,
+    y: ov.y,
+    fadeIn: ov.fadeIn,
   };
 }
 

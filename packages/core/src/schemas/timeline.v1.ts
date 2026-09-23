@@ -117,6 +117,14 @@ export const KenBurnsOverlay = z.object({
   durationSec: z.number().optional(),
   words: z.array(KenBurnsCaptionWord).optional(),
   style: z.enum(['small_cream', 'lower_third', 'stamp']).optional(),
+  // Tier-1 hero-card overrides — an explicit pixel `y` (rather than the
+  // zone-derived default) and a fade-in override. P3.2 addition: needed for
+  // `shorts-916`'s multi-line wrapped hook overlays, where each wrapped
+  // line is its own tier-1 overlay at its own explicit y — motion.ts's
+  // `buildHeroCard` already supported both (see its own `TieredHeroOverlay`
+  // type), this schema just never exposed them until now.
+  y: z.string().optional(),
+  fadeIn: z.number().optional(),
 });
 
 // One-shot SFX cue, absolute-seconds within its scene (already resolved
@@ -137,6 +145,42 @@ export const KenBurnsMusicSegment = z.object({
   toSec: z.number(),
   track: z.string(),
   gainDb: z.number().default(-23),
+});
+
+// P3.2 addition — `shorts-916`'s two-line navy end card (v2 spec: title
+// larger/cream, platform-neutral CTA smaller/amber). Kept as its own
+// distinct field rather than folded into the existing `title` `sceneType` /
+// `captionText`/`bgImagePath` text-card shape those already cover — a
+// title-card scene is single-line white-on-black, this is two independently
+// sized/colored lines on a fixed navy background, and forcing it through the
+// same fields would mean overloading `captionText` with an implicit
+// title+subtitle split syntax nothing else needs.
+export const EndCardV2 = z.object({
+  title: z.string(),
+  subtitle: z.string(),
+});
+
+// P3.2 addition — one layer of `shorts-916`'s scene-aware layered sound
+// design (hum/bed/heartbeat/hit), already resolved to absolute timeline
+// seconds by `compile()` (see that package's own header for why — the
+// original `assemble-short-rewrite.mjs` computed these against each scene's
+// ACTUAL rendered duration, which `compile()` now bakes into every scene's
+// `durationSecs` up front, the same architectural shift P3.1 made for
+// VO-reconciliation). `kind: 'oneshot'` layers (the musical hit) have no
+// `endSec` — they're a single one-shot audio file placed at `startSec`, not
+// a looped bed with a window.
+export const SoundDesignLayer = z.object({
+  kind: z.enum(['loop', 'oneshot']),
+  key: z.string(),
+  startSec: z.number(),
+  endSec: z.number().optional(),
+  gainDb: z.number(),
+  fadeInSec: z.number().optional(),
+  fadeOutSec: z.number().optional(),
+});
+
+export const SoundDesign = z.object({
+  layers: z.array(SoundDesignLayer),
 });
 
 export const TimelineScene = z.object({
@@ -197,6 +241,11 @@ export const TimelineScene = z.object({
   // (an animated Ken Burns scene) and from `source` (used by other
   // templates' own scene shape).
   bgImagePath: z.string().optional(),
+  // P3.2 addition — see EndCardV2's own header comment. Present only on
+  // `shorts-916` end-card scenes; mutually exclusive with `cuts`/`source` in
+  // practice (the render engine checks `cuts` first, so this only takes
+  // effect on scenes with no `cuts`).
+  endCard: EndCardV2.optional(),
 });
 
 export const Timeline = z.object({
@@ -214,6 +263,10 @@ export const Timeline = z.object({
   // P3.1 addition — `stills-kenburns`'s music-bed schedule; see
   // KenBurnsMusicSegment's own header comment.
   musicPlan: z.array(KenBurnsMusicSegment).optional(),
+  // P3.2 addition — `shorts-916`'s layered sound design; see SoundDesign's
+  // own header comment. Mutually exclusive with `musicPlan` in practice
+  // (different templates use different mixing paths in `render-ffmpeg`).
+  soundDesign: SoundDesign.optional(),
 });
 
 export type TimelineT = z.infer<typeof Timeline>;
@@ -221,3 +274,5 @@ export type TimelineSceneT = z.infer<typeof TimelineScene>;
 export type KenBurnsCutT = z.infer<typeof KenBurnsCut>;
 export type KenBurnsOverlayT = z.infer<typeof KenBurnsOverlay>;
 export type KenBurnsMusicSegmentT = z.infer<typeof KenBurnsMusicSegment>;
+export type SoundDesignLayerT = z.infer<typeof SoundDesignLayer>;
+export type EndCardV2T = z.infer<typeof EndCardV2>;

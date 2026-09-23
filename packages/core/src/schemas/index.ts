@@ -8,6 +8,9 @@ export {
   KenBurnsCut,
   KenBurnsOverlay,
   KenBurnsMusicSegment,
+  EndCardV2,
+  SoundDesign,
+  SoundDesignLayer,
 } from './timeline.v1.ts';
 export type {
   TimelineT,
@@ -15,4 +18,6 @@ export type {
   KenBurnsCutT,
   KenBurnsOverlayT,
   KenBurnsMusicSegmentT,
+  EndCardV2T,
+  SoundDesignLayerT,
 } from './timeline.v1.ts';

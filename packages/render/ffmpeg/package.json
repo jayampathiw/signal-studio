@@ -11,6 +11,8 @@
     "./map-audio-cues": "./src/map-audio-cues.ts",
     "./audio-mix": "./src/audio-mix.ts",
     "./stills-render": "./src/stills-render.ts",
+    "./end-card": "./src/end-card.ts",
+    "./sound-design-mix": "./src/sound-design-mix.ts",
     "./placement": "./src/placement.ts",
     "./fonts": "./src/fonts.ts",
     "./text-metrics": "./src/text-metrics.ts"

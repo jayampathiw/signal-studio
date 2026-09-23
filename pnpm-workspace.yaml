@@ -21,3 +21,4 @@ packages:
   - 'packages/templates/clips-overlay'
   - 'packages/templates/compilation'
   - 'packages/templates/stills-kenburns'
+  - 'packages/templates/shorts-916'
