@@ -115,21 +115,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip3 install --break-system-packages --no-cache-dir \
     torch --extra-index-url https://download.pytorch.org/whl/cpu
 
-# **Deliberate deviation from the plan's literal P2.6 bullet, flagged rather
-# than silently resolved**: the plan names `faster-whisper` explicitly, but
-# nothing in this repo actually imports it — the code that runs today
-# (packages/media/subtitles.js) shells out to the `openai-whisper` CLI
-# instead. faster-whisper's `ctranslate2` dependency is genuinely heavy, and
-# installing an unused package works directly against this same P2.6
-# bullet's other requirement (image size ≤3GB) — measured cost of adding it
-# back is worth checking before doing so. Installing only what real code
-# exercises (`kokoro`, `piper-tts`, `openai-whisper`) plus their real
-# dependencies; `faster-whisper` can be added back the day
-# `subtitles.js` is actually migrated to it.
+# `faster-whisper` was deliberately dropped at P2.6 (nothing imported it
+# yet — see that commit's own note) and is **added back here at P3.4**, now
+# that `packages/providers/src/captions-faster-whisper.ts` is a real
+# consumer (`packages/media/captions_faster_whisper.py`). `openai-whisper`
+# stays too — `packages/media/subtitles.js` still shells out to it and
+# hasn't been migrated off yet (that migration is P3.7's "delete the old
+# world," not this provider's job); both coexist until then.
 RUN pip3 install --break-system-packages --no-cache-dir \
     kokoro \
     piper-tts \
     openai-whisper \
+    faster-whisper \
     soundfile \
     numpy \
     && find /usr/lib/python3*/ -name '__pycache__' -exec rm -rf {} + 2>/dev/null; \
