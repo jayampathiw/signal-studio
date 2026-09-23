@@ -24,7 +24,17 @@ jobs:
       # at build time (docker/Dockerfile's `COPY . .`); checking out again
       # would just diverge from the exact code this image's node_modules
       # were installed against.
+      # Real bug found running this for real (T-G gate, 2026-09-23):
+      # `container:` jobs force every step's cwd to the mounted
+      # `/__w/<owner>/<repo>` checkout path, ignoring the image's own
+      # `WORKDIR /repo` — even with no `actions/checkout` step, so nothing
+      # exists there. Confirmed via a real dispatched run failing with
+      # `Cannot find module '/__w/signal-studio/signal-studio/apps/worker/
+      # src/cli.ts'` even though that file is real and present at `/repo/...`
+      # inside the image. `working-directory: /repo` overrides Actions'
+      # default back to where the image's own files actually live.
       - name: ss run-job --id
+        working-directory: /repo
         run: node --experimental-strip-types apps/worker/src/cli.ts run-job --id "${{ inputs.job_id }}"
         env:
           ENGINE_SUPABASE_URL: ${{ secrets.ENGINE_SUPABASE_URL }}
@@ -43,6 +53,7 @@ jobs:
       # failure PATCH job failed with run URL" without a new DB column.
       - name: Force-mark failed + record run URL
         if: failure()
+        working-directory: /repo
         run: |
           node --experimental-strip-types apps/worker/src/cli.ts mark-failed \
             --id "${{ inputs.job_id }}" \
