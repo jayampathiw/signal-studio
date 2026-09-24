@@ -27,6 +27,8 @@ const TS_PROJECTS = [
   'packages/templates/compilation/tsconfig.json',
   'packages/templates/stills-kenburns/tsconfig.json',
   'packages/templates/shorts-916/tsconfig.json',
+  'packages/templates/case-file/tsconfig.json',
+  'packages/templates/carousel/tsconfig.json',
   'packages/render/ffmpeg/tsconfig.json',
   'apps/worker/tsconfig.json',
   'apps/api/tsconfig.json',

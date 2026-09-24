@@ -168,6 +168,12 @@ importers:
       '@signal-studio/render-remotion':
         specifier: workspace:*
         version: link:../../packages/render/remotion
+      '@signal-studio/template-carousel':
+        specifier: workspace:*
+        version: link:../../packages/templates/carousel
+      '@signal-studio/template-case-file':
+        specifier: workspace:*
+        version: link:../../packages/templates/case-file
       '@signal-studio/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -374,6 +380,18 @@ importers:
       pino-pretty:
         specifier: ^13.1.3
         version: 13.1.3
+
+  packages/templates/carousel:
+    dependencies:
+      '@signal-studio/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  packages/templates/case-file:
+    dependencies:
+      '@signal-studio/core':
+        specifier: workspace:*
+        version: link:../../core
 
   packages/templates/clips-overlay:
     dependencies:

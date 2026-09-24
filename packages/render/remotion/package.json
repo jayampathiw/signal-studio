@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "type": "module",
   "main": "src/render.ts",
+  "exports": {
+    ".": "./src/render.ts",
+    "./render-stills": "./src/render-stills.ts"
+  },
   "devDependencies": {
     "@remotion/cli": "^4.0.0",
     "@remotion/google-fonts": "4.0.481",

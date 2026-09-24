@@ -20,4 +20,9 @@ export type {
   KenBurnsMusicSegmentT,
   EndCardV2T,
   SoundDesignLayerT,
+  CaptionWordT,
+  HighlightBoxT,
+  CaseMetaT,
 } from './timeline.v1.ts';
+export { CarouselSlide, CarouselOutput } from './carousel.v1.ts';
+export type { CarouselSlideT, CarouselOutputT } from './carousel.v1.ts';

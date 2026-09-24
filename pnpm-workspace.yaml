@@ -22,3 +22,5 @@ packages:
   - 'packages/templates/compilation'
   - 'packages/templates/stills-kenburns'
   - 'packages/templates/shorts-916'
+  - 'packages/templates/case-file'
+  - 'packages/templates/carousel'

@@ -36,6 +36,11 @@ export const CaseMeta = z.object({
   caseId: z.string(),
   sourceCitation: z.string().optional(),
   specimen: z.boolean().optional(),
+  // P3.3 addition: CaseFile.tsx already reads `caseMeta.showOutro` (defaults
+  // true there) but this schema never had the field — a real gap, not a new
+  // behavior. Making it explicit here so `compile()` can set it instead of
+  // relying on the composition's own silent default.
+  showOutro: z.boolean().optional(),
 });
 
 export const MusicTrack = z.object({
@@ -276,3 +281,6 @@ export type KenBurnsOverlayT = z.infer<typeof KenBurnsOverlay>;
 export type KenBurnsMusicSegmentT = z.infer<typeof KenBurnsMusicSegment>;
 export type SoundDesignLayerT = z.infer<typeof SoundDesignLayer>;
 export type EndCardV2T = z.infer<typeof EndCardV2>;
+export type CaptionWordT = z.infer<typeof CaptionWord>;
+export type HighlightBoxT = z.infer<typeof HighlightBox>;
+export type CaseMetaT = z.infer<typeof CaseMeta>;
