@@ -6,12 +6,27 @@ import { resolveJob } from '@signal-studio/core/resolve';
 import { StageRunner, type Job, type JobStageStore } from '@signal-studio/core/runner';
 import type { TimelineT, ProjectT } from '@signal-studio/core/schemas';
 import { createAssetsStage } from '@signal-studio/core/stages/assets';
+import { createPublishStage, type PublishFn } from '@signal-studio/core/stages/publish';
 import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/tts';
 import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
 import type { ArtifactsRepo, JobRow, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
-import type { StorageProvider } from '@signal-studio/providers/contracts';
+import type { PublishProvider, StorageProvider } from '@signal-studio/providers/contracts';
 
 import type { Logger } from '../logger.ts';
+
+// **Deliberate, flagged convention**: nothing in `manifest.v1`/`project.v1`
+// pins how a rendered `outputId` ('fb'/'ig', the short codes every real
+// pack/manifest in this repo uses — see `docs/refactor/refactor-plan.md`'s
+// P3.5 entry) maps to a `publish[]` platform name ('facebook'/'instagram').
+// This is that mapping, made explicit here rather than guessed silently
+// inline. `'yt'` is included even though no real example uses it yet, for
+// the same reason `publish-youtube.ts` already exists — so a future
+// 9:16/16:9 output pair with a YouTube leg doesn't need this map touched.
+const OUTPUT_TO_PLATFORM: Record<string, string> = {
+  fb: 'facebook',
+  ig: 'instagram',
+  yt: 'youtube',
+};
 
 /**
  * P2.5 — `ss run-job --id`: the DB-backed counterpart to `run-local`. Same
@@ -38,6 +53,21 @@ import type { Logger } from '../logger.ts';
  * only marks a job `awaiting_review:<firstGate>` when gates are present,
  * exactly as the state machine's own transition table allows; it does not
  * evaluate anything.
+ *
+ * **P3.5's "not wired" gap closed here**: once every output has rendered,
+ * and only when the job has *no* gates (a gated job stops at
+ * `awaiting_review:<gate>` — publishing before a human review clears would
+ * defeat the point of the gate, and no real gate-approval path exists yet
+ * to unblock it from there), this registers `createPublishStage()` on the
+ * same `StageRunner` and runs it. `publish` dispatches each
+ * `manifest.publish[]` platform to a real `PublishProvider` (`deps.
+ * createPublishProviderFor`), resolving each platform's `pageRef` from
+ * `project.publishTargets[]` and each platform's rendered video URL from
+ * `OUTPUT_TO_PLATFORM`'s reverse of the outputId it was just uploaded
+ * under. Re-registering on the *same* runner (rather than a fresh one)
+ * means the stage store's usual "skip if inputs unchanged" behavior also
+ * covers publish — a retried job with nothing new to publish won't
+ * double-post.
  */
 
 export type RunJobOptions = {
@@ -64,6 +94,7 @@ export type RunJobDeps = {
     },
   ) => TimelineT;
   render: (timeline: TimelineT, opts: { outputDir: string }) => Promise<string>;
+  createPublishProviderFor: (platform: string, credentialRef: string) => PublishProvider;
   fetchFn?: typeof fetch;
 };
 
@@ -187,6 +218,7 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
     }
 
     const renderOutDir = path.join(tmpDir, 'out');
+    const renderedVideoUrls: Record<string, string> = {};
     for (const outputId of resolvedJob.outputs) {
       const timeline = deps.compileClipsOverlay(resolvedJob, {
         contentId: `${job.id}_${outputId}`,
@@ -199,6 +231,40 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
       const { url } = await storage.put({ localPath, key });
       await artifactsRepo.record(job.id, 'render', 'video', url, { outputId });
       logger.info(`uploaded ${outputId}`, { url });
+
+      const platform = OUTPUT_TO_PLATFORM[outputId];
+      if (platform) renderedVideoUrls[platform] = url;
+    }
+
+    // Publish only fires for a gate-free job — see this file's own header
+    // for why a gated job stops at `awaiting_review` instead.
+    if (resolvedJob.gates.length === 0 && job.manifest.publish.length > 0) {
+      const publishTargets: Record<string, string> = {};
+      for (const target of project.publishTargets) {
+        publishTargets[target.platform] = target.credentialRef;
+      }
+
+      const publish: PublishFn = async (args) => {
+        const credentialRef = publishTargets[args.platform];
+        // createPublishStage itself already throws a clearer error when a
+        // platform has no configured publishTarget at all — this can only
+        // be reached once that check has already passed.
+        return deps.createPublishProviderFor(args.platform, credentialRef).post(args);
+      };
+
+      runner.register(createPublishStage({ publish, publishTargets, renderedVideoUrls }));
+      const publishOutputs = await runner.run(stageJob);
+      const posts = publishOutputs.get('publish:') as
+        { posts: Record<string, { postId: string; url?: string }> } | undefined;
+      if (posts) {
+        for (const [platform, post] of Object.entries(posts.posts)) {
+          await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
+            platform,
+            postId: post.postId,
+          });
+          logger.info(`published ${platform}`, post);
+        }
+      }
     }
 
     if (resolvedJob.gates.length > 0) {

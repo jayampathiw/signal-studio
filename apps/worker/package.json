@@ -17,6 +17,7 @@
     "@signal-studio/render-remotion": "workspace:*",
     "@signal-studio/template-clips-overlay": "workspace:*",
     "@signal-studio/template-compilation": "workspace:*",
+    "googleapis": "^144.0.0",
     "pg-boss": "^10.1.5"
   }
 }

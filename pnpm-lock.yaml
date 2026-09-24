@@ -210,6 +210,9 @@ importers:
       '@signal-studio/template-compilation':
         specifier: workspace:*
         version: link:../../packages/templates/compilation
+      googleapis:
+        specifier: ^144.0.0
+        version: 144.0.0
       pg-boss:
         specifier: ^10.1.5
         version: 10.4.2

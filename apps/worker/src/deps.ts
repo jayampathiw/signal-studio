@@ -16,6 +16,7 @@ import type { RunJobDeps } from './commands/run-job.ts';
 import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
 import type { WorkerDeps } from './commands/worker.ts';
+import { createPublishProviderFor } from './publish.ts';
 import { createStorageProviderFor } from './storage.ts';
 
 /**
@@ -76,6 +77,7 @@ export function realRunJobDeps(): RunJobDeps {
     synthesise: realTts(),
     compileClipsOverlay,
     render: realRender(),
+    createPublishProviderFor,
   };
 }
 
