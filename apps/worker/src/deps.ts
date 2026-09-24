@@ -10,6 +10,7 @@ import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 import { getEngine } from '@signal-studio/render-core/engine';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
+import { compile as compileCompilation } from '@signal-studio/template-compilation/compile';
 import { compile as compileShorts916 } from '@signal-studio/template-shorts-916/compile';
 import { compile as compileStillsKenburns } from '@signal-studio/template-stills-kenburns/compile';
 import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
@@ -91,6 +92,7 @@ export function realRunJobDeps(): RunJobDeps {
     compileCaseFile,
     compileStillsKenburns,
     compileShorts916,
+    compileCompilation,
     parseShotlistV2,
     render: realRender(),
     renderFfmpeg: realRenderFfmpeg(),

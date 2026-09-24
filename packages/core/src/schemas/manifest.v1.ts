@@ -80,6 +80,14 @@ export const Shot = z.object({
   zoomTo: ShotZoomRegion.optional(),
   holdExtraSecs: z.number().optional(),
   waveformOverlay: z.boolean().optional(),
+  // P3.7 addition — `compilation`-only field. A compilation job's shots
+  // are still every episode's own flat `clips-overlay`-shaped shots (each
+  // needs a `clip`, `overlay_text`, etc., same as any other clips-overlay
+  // job), just all pooled into one manifest's `shots[]` instead of N
+  // separate manifests — `episodeRef` (matching one of `manifest.
+  // compilation.episodes[].ref`) is the only thing that says which episode
+  // a given shot belongs to.
+  episodeRef: z.string().optional(),
 });
 
 export const ManifestAudio = z.object({
@@ -235,6 +243,18 @@ export const Shorts916Config = z.object({
   sound_design: Shorts916SoundDesignConfig.optional(),
 });
 
+// P3.7 addition — `compilation`'s own top-level config: just the ordered
+// list of episodes this job compiles (`ref` matches shots' own
+// `episodeRef`; `title` becomes that episode's title-plate caption, per
+// `packages/templates/compilation/src/compile.ts`'s own `CompilationEpisode
+// .title`). Everything else `compile()` needs (the one shared end card,
+// music, watermark, soft duration target) already has a manifest-level
+// field of its own (`end_card`/`audio.music`/`watermark`/
+// `compilationTargetS`) — no need to duplicate any of them here.
+export const CompilationConfig = z.object({
+  episodes: z.array(z.object({ ref: z.string().min(1), title: z.string().min(1) })).min(1),
+});
+
 export const Manifest = z
   .object({
     version: z.literal('1'),
@@ -282,6 +302,7 @@ export const Manifest = z
     case_file: CaseFileConfig.optional(),
     stillsKenburns: StillsKenburnsConfig.optional(),
     shorts916: Shorts916Config.optional(),
+    compilation: CompilationConfig.optional(),
   })
   .superRefine((manifest, ctx) => {
     // `stills-kenburns`/`shorts-916` carry their scenes in their own
@@ -303,23 +324,62 @@ export const Manifest = z
     // legitimately use image/text-only shots. Its shot-count cap (6) is
     // also scoped here, not schema-wide — see the `shots` field's own
     // comment for why.
-    if (manifest.visual.mode !== 'clips-overlay') return;
-    if (manifest.shots.length > 6) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['shots'],
-        message: 'clips-overlay supports at most 6 shots',
-      });
-    }
-    manifest.shots.forEach((shot, i) => {
-      if (!shot.clip) {
+    if (manifest.visual.mode === 'clips-overlay') {
+      if (manifest.shots.length > 6) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ['shots', i, 'clip'],
-          message: 'clip is required for every shot when visual.mode is "clips-overlay"',
+          path: ['shots'],
+          message: 'clips-overlay supports at most 6 shots',
         });
       }
-    });
+      manifest.shots.forEach((shot, i) => {
+        if (!shot.clip) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['shots', i, 'clip'],
+            message: 'clip is required for every shot when visual.mode is "clips-overlay"',
+          });
+        }
+      });
+    }
+
+    // `compilation`'s shots are every episode's own flat clips-overlay-
+    // shaped shots pooled into one manifest — same `clip`-required rule as
+    // `clips-overlay` (each episode compiles via the same `compile()`), no
+    // 6-shot cap (a real compilation spans many episodes' worth of shots),
+    // plus `episodeRef` naming which episode each shot belongs to.
+    if (manifest.visual.mode === 'compilation') {
+      if (!manifest.compilation) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['compilation'],
+          message: 'manifest.compilation is required when visual.mode is "compilation"',
+        });
+      }
+      const validRefs = new Set(manifest.compilation?.episodes.map((e) => e.ref) ?? []);
+      manifest.shots.forEach((shot, i) => {
+        if (!shot.clip) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['shots', i, 'clip'],
+            message: 'clip is required for every shot when visual.mode is "compilation"',
+          });
+        }
+        if (!shot.episodeRef) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['shots', i, 'episodeRef'],
+            message: 'episodeRef is required for every shot when visual.mode is "compilation"',
+          });
+        } else if (validRefs.size > 0 && !validRefs.has(shot.episodeRef)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['shots', i, 'episodeRef'],
+            message: `episodeRef "${shot.episodeRef}" does not match any manifest.compilation.episodes[].ref`,
+          });
+        }
+      });
+    }
   });
 
 export type ShotT = z.infer<typeof Shot>;

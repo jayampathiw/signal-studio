@@ -21,6 +21,10 @@ import type { PublishProvider, StorageProvider } from '@signal-studio/providers/
 import { probeDuration } from '@signal-studio/render-ffmpeg/stills-render';
 import type { CaseFileCompileParams } from '@signal-studio/template-case-file/compile';
 import type {
+  CompilationEpisode,
+  CompileParams as CompilationCompileParams,
+} from '@signal-studio/template-compilation/compile';
+import type {
   ResolvedSceneVo,
   ShortsCompileParams,
 } from '@signal-studio/template-shorts-916/compile';
@@ -146,6 +150,10 @@ export type RunJobDeps = {
   compileCaseFile: (params: CaseFileCompileParams) => TimelineT;
   compileStillsKenburns: (params: StillsKenburnsCompileParams) => TimelineT;
   compileShorts916: (params: ShortsCompileParams) => TimelineT;
+  compileCompilation: (
+    episodes: CompilationEpisode[],
+    params: CompilationCompileParams,
+  ) => TimelineT;
   parseShotlistV2: (text: string) => ParsedShotlist;
   render: (timeline: TimelineT, opts: { outputDir: string }) => Promise<string>;
   // Used by `render-ffmpeg`-based templates (`stills-kenburns`,
@@ -587,11 +595,134 @@ const shorts916Handler: TemplateHandler = {
   },
 };
 
+// ---- compilation ----
+
+// Ported from `clips-overlay`'s own (unexported) `END_CARD_DURATION_SECS` —
+// `compilation`'s own `compile()` takes a ready-built `CtaOverlayT` rather
+// than building one itself, so the handler needs this literal too.
+const COMPILATION_CTA_DURATION_SECS = 1.5;
+
+const compilationHandler: TemplateHandler = {
+  async compileOutputs(ctx) {
+    const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
+    const config = job.manifest.compilation;
+    if (!config) {
+      throw new Error('run-job: compilation jobs require manifest.compilation');
+    }
+    if (!job.manifest.end_card) {
+      throw new Error(
+        'run-job: compilation jobs require manifest.end_card (the one shared end card for the whole compilation)',
+      );
+    }
+
+    // Every shot across every episode is pooled into one manifest's
+    // `shots[]` (schema-enforced: each needs a real `clip` + an
+    // `episodeRef`) — assets/tts run ONCE over all of them, exactly like
+    // `clipsOverlayHandler`'s own ingestion, before any per-episode
+    // grouping happens.
+    for (const shot of job.manifest.shots) {
+      if (!shot.clip) continue;
+      await downloadRawAsset(
+        storage,
+        job.id,
+        shot.id,
+        shot.clip,
+        path.join(tmpDir, 'clips', 'raw'),
+        fetchFn,
+      );
+    }
+
+    const stageJob: Job = { id: job.id, manifest: job.manifest, workDir: tmpDir };
+    runner.register(createAssetsStage()).register(
+      createTtsStage({
+        synthesise: deps.synthesise,
+        voice: resolvedJob.voice,
+        speed: resolvedJob.speed,
+      }),
+    );
+    const stageOutputs = await runner.run(stageJob);
+    const assetsOut = stageOutputs.get('assets:') as
+      { durations: Record<string, number> } | undefined;
+    if (!assetsOut) throw new Error('run-job: assets stage produced no outputs');
+    const ttsOut = stageOutputs.get('tts:') as { durations: Record<string, number> } | undefined;
+
+    const shotAssets: Record<string, { clipPath: string; durationS: number }> = {};
+    for (const shot of job.manifest.shots) {
+      if (!shot.clip) continue;
+      shotAssets[shot.id] = {
+        clipPath: path.join(tmpDir, 'clips', shot.clip),
+        durationS: assetsOut.durations[shot.id],
+      };
+    }
+    const shotVoiceovers: Record<string, { path: string; durationS: number }> = {};
+    for (const shot of job.manifest.shots) {
+      const durationS = ttsOut?.durations[shot.id];
+      if (durationS !== undefined) {
+        shotVoiceovers[shot.id] = { path: path.join(tmpDir, 'vo', `${shot.id}.wav`), durationS };
+      }
+    }
+
+    const music = job.manifest.audio.music.file
+      ? {
+          path: job.manifest.audio.music.file,
+          fadeOutSecs: 1.5,
+          duckUnderVoice: job.manifest.audio.music.duck,
+          gainDb: job.manifest.audio.music.gain_db,
+        }
+      : undefined;
+    const cta = {
+      line1: job.manifest.end_card.subject,
+      line2: job.manifest.end_card.disclosure,
+      durationSecs: COMPILATION_CTA_DURATION_SECS,
+      position: 'end' as const,
+    };
+    const watermark = {
+      text: job.manifest.watermark.text,
+      position: 'top-left' as const,
+      opacity: 0.85,
+    };
+
+    const timelines: Record<string, TimelineT> = {};
+    for (const outputId of resolvedJob.outputs) {
+      const episodes: CompilationEpisode[] = config.episodes.map((ep) => {
+        const episodeShots = job.manifest.shots.filter((s) => s.episodeRef === ep.ref);
+        // A fabricated per-episode `ResolvedJob` — `compileClipsOverlay`
+        // only ever reads `resolvedJob.manifest.shots`/`.visual.mode`, so
+        // this doesn't need to be a real, independently-dispatched job,
+        // just that same shape scoped to one episode's shots.
+        const episodeResolvedJob: ResolvedJob = {
+          ...resolvedJob,
+          manifest: { ...job.manifest, shots: episodeShots, visual: { mode: 'clips-overlay' } },
+        };
+        return {
+          title: ep.title,
+          timeline: deps.compileClipsOverlay(episodeResolvedJob, {
+            contentId: `${job.id}_${outputId}_${ep.ref}`,
+            outputId,
+            shotAssets,
+            shotVoiceovers,
+          }),
+        };
+      });
+      timelines[outputId] = deps.compileCompilation(episodes, {
+        contentId: `${job.id}_${outputId}`,
+        outputId,
+        music,
+        cta,
+        watermark,
+        targetSeconds: job.manifest.compilationTargetS,
+      });
+    }
+    return { timelines, engine: 'remotion' };
+  },
+};
+
 const TEMPLATE_HANDLERS: Record<string, TemplateHandler> = {
   'clips-overlay': clipsOverlayHandler,
   'case-file': caseFileHandler,
   'stills-kenburns': stillsKenburnsHandler,
   'shorts-916': shorts916Handler,
+  compilation: compilationHandler,
 };
 
 export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logger): Promise<void> {
@@ -670,7 +801,19 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
       // clips-overlay's `cta` just above.
       const outroDurationSec =
         timeline.template === 'case-file' && timeline.caseMeta?.showOutro !== false ? 2.5 : 0;
-      const extraDurationSec = ctaDurationSec + outroDurationSec;
+      // Real bug found running the compilation handler for real (2026-09-24):
+      // `Compilation.tsx`'s own `totalCompilationFrames()` doesn't just sum
+      // every scene's `durationSecs` — each 'title' scene's own Sequence
+      // ends `CROSSFADE_FRAMES` (6, i.e. 0.2s @ 30fps — duplicated here,
+      // not exported by `render-remotion`) early so the episode body
+      // crossfades in underneath it, shortening the real total by that
+      // much per episode. Small enough (0.2s/episode) to slip under the
+      // `qa` stage's 1.0s default duration tolerance rather than fail
+      // outright — found by computing the exact figure, not by a failure.
+      const titlePlateCount = timeline.scenes.filter((s) => s.sceneType === 'title').length;
+      const compilationCrossfadeSec =
+        timeline.template === 'compilation' ? titlePlateCount * (6 / REMOTION_FPS) : 0;
+      const extraDurationSec = ctaDurationSec + outroDurationSec - compilationCrossfadeSec;
       outputExpected[outputId] = {
         durationSec: scenesDurationSec + extraDurationSec,
         aspectRatio: timeline.aspectRatio,

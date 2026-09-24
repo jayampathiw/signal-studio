@@ -111,8 +111,8 @@ test('runLocal: throws a clear error for a non-clips-overlay template', async ()
     const manifest = {
       version: '1',
       projectRef: 'test-project',
-      template: 'compilation',
-      visual: { mode: 'compilation' },
+      template: 'stills-kenburns',
+      visual: { mode: 'stills-kenburns' },
       shots: [{ id: 's1', image: 'still.jpg', overlay_out_s: 1, voiceover_text: 'x' }],
       end_card: { subject: 'x', disclosure: 'x' },
       outputs: ['fb'],
