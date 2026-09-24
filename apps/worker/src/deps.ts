@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import { createEngineClient } from '@signal-studio/db/client';
 import { ArtifactsRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
+import { createAnthropicProvider } from '@signal-studio/providers/llm-anthropic';
 import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 import { getEngine } from '@signal-studio/render-core/engine';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
@@ -17,6 +18,8 @@ import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
 import type { WorkerDeps } from './commands/worker.ts';
 import { createPublishProviderFor } from './publish.ts';
+import { detectBlackFrames, measureVideo } from './qa-measure.ts';
+import { createVisionCheck } from './qa-vision.ts';
 import { createStorageProviderFor } from './storage.ts';
 
 /**
@@ -78,6 +81,13 @@ export function realRunJobDeps(): RunJobDeps {
     compileClipsOverlay,
     render: realRender(),
     createPublishProviderFor,
+    measureVideo,
+    detectBlackFrames,
+    // `createAnthropicProvider()` validates `ANTHROPIC_KEY` at construction
+    // time — deferred inside this closure so it's only ever called (and
+    // only ever needs that env var) for a job whose project actually has
+    // `qa.visionCheck` set; every other job never touches this at all.
+    visionCheck: (localPath: string) => createVisionCheck(createAnthropicProvider())(localPath),
   };
 }
 

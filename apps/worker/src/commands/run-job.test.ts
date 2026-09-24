@@ -69,6 +69,7 @@ const baseProject = {
     storage: 'local',
     publish: 'facebook',
   },
+  qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
 };
 
 type FakeDeps = RunJobDeps & {
@@ -84,6 +85,17 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
   const stageStore = new Map<
     string,
     { hash: string; status: 'done' | 'failed'; outputs?: unknown }
+  >();
+  const qaMeasurements = new Map<
+    string,
+    {
+      durationSec: number;
+      width: number;
+      height: number;
+      fps: number;
+      integratedLufs: number;
+      truePeakDb: number;
+    }
   >();
 
   return {
@@ -149,6 +161,20 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
       await mkdir(opts.outputDir, { recursive: true });
       const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
       await writeFile(outputPath, 'fake-mp4-bytes');
+      // Fed to the fake `measureVideo`/`detectBlackFrames` below, keyed by
+      // this exact path — the fake render's own `timeline` is the only
+      // place that knows what a real ffprobe measurement of its (fake)
+      // output "should" say, since nothing here actually renders pixels.
+      qaMeasurements.set(outputPath, {
+        durationSec:
+          timeline.scenes.reduce((sum, s) => sum + s.durationSecs, 0) +
+          (timeline.cta?.durationSecs ?? 0),
+        width: 1080,
+        height: 1920,
+        fps: 30,
+        integratedLufs: -14,
+        truePeakDb: -3,
+      });
       return outputPath;
     },
     createPublishProviderFor: (platform: string) =>
@@ -158,6 +184,12 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
           return { postId: 'p1', url: 'https://facebook.com/p1' };
         },
       }) as never,
+    measureVideo: async (localPath: string) => {
+      const m = qaMeasurements.get(localPath);
+      if (!m) throw new Error(`no fake qa measurement recorded for ${localPath}`);
+      return m;
+    },
+    detectBlackFrames: async () => [],
     fetchFn: (async () => {
       const bytes = await readFile(clipPath);
       return new Response(bytes, { status: 200 });
@@ -233,6 +265,36 @@ test('runJob: skips publish entirely when publish[] is empty', async () => {
     await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
 
     assert.deepEqual(deps.statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+    assert.equal(deps.publishCalls.length, 0);
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});
+
+test('runJob: a qa stage failure marks the job failed and blocks publish', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-test-'));
+  try {
+    const clipPath = path.join(workDir, 's1.mp4');
+    await makeSyntheticClip(clipPath);
+
+    const deps = fakeDeps(clipPath, { publish: ['facebook'] });
+    // Real render duration is correct; simulate a real render/measurement
+    // mismatch (e.g. a truncated file) by reporting a wildly wrong duration.
+    deps.measureVideo = async () => ({
+      durationSec: 0.1,
+      width: 1080,
+      height: 1920,
+      fps: 30,
+      integratedLufs: -14,
+      truePeakDb: -3,
+    });
+
+    await assert.rejects(
+      () => runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' })),
+      /qa stage failed.*duration/,
+    );
+
+    assert.deepEqual(deps.statusUpdates, ['queued', 'dispatched', 'running', 'failed']);
     assert.equal(deps.publishCalls.length, 0);
   } finally {
     await rm(workDir, { recursive: true, force: true });

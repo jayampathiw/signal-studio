@@ -7,12 +7,32 @@ import { StageRunner, type Job, type JobStageStore } from '@signal-studio/core/r
 import type { TimelineT, ProjectT } from '@signal-studio/core/schemas';
 import { createAssetsStage } from '@signal-studio/core/stages/assets';
 import { createPublishStage, type PublishFn } from '@signal-studio/core/stages/publish';
+import {
+  createQaStage,
+  type QaBlackSegment,
+  type QaMeasurement,
+} from '@signal-studio/core/stages/qa';
 import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/tts';
 import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
 import type { ArtifactsRepo, JobRow, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
 import type { PublishProvider, StorageProvider } from '@signal-studio/providers/contracts';
 
 import type { Logger } from '../logger.ts';
+
+// **Deliberate, flagged convention**: `Timeline.aspectRatio` names a ratio,
+// not pixels — nothing else in `timeline.v1`/`manifest.v1` pins the actual
+// canonical resolution per ratio, so the `qa` stage's "resolution" check
+// needs its own explicit mapping. `fps: 30` is specific to this file's own
+// `clips-overlay`-via-Remotion path (every real golden reference rendered
+// through `render-remotion` in this repo measures 30fps) — a future
+// ffmpeg-engine template wired into a real job would need its own 25fps
+// expectation here, not this same constant.
+const CANONICAL_RESOLUTION: Record<string, { width: number; height: number }> = {
+  '16:9': { width: 1920, height: 1080 },
+  '9:16': { width: 1080, height: 1920 },
+  '1:1': { width: 1080, height: 1080 },
+};
+const EXPECTED_FPS = 30;
 
 // **Deliberate, flagged convention**: nothing in `manifest.v1`/`project.v1`
 // pins how a rendered `outputId` ('fb'/'ig', the short codes every real
@@ -68,6 +88,17 @@ const OUTPUT_TO_PLATFORM: Record<string, string> = {
  * means the stage store's usual "skip if inputs unchanged" behavior also
  * covers publish — a retried job with nothing new to publish won't
  * double-post.
+ *
+ * **P3.6's `qa` stage runs right after every output renders, before the
+ * gates/publish decision** — a QA failure marks the job `failed` the same
+ * way any other stage failure does, so it blocks both a gated job's
+ * `awaiting_review` transition and a gate-free job's publish. `measure`/
+ * `detectBlackFrames`/`visionCheck` are real ffprobe/ffmpeg/Anthropic calls
+ * (`deps`, wired in `apps/worker/src/qa-measure.ts`/`qa-vision.ts`) against
+ * the *local* rendered file still on disk from this same run — no need to
+ * re-download from R2 for a check that just happened to produce the file
+ * it's checking. `visionCheck` is only passed through to the stage at all
+ * when `project.qa.visionCheck` is set; otherwise it's omitted entirely.
  */
 
 export type RunJobOptions = {
@@ -95,6 +126,12 @@ export type RunJobDeps = {
   ) => TimelineT;
   render: (timeline: TimelineT, opts: { outputDir: string }) => Promise<string>;
   createPublishProviderFor: (platform: string, credentialRef: string) => PublishProvider;
+  measureVideo: (localPath: string) => Promise<QaMeasurement>;
+  detectBlackFrames: (localPath: string) => Promise<QaBlackSegment[]>;
+  // Only ever called when `project.qa.visionCheck` is true — omitted from
+  // most jobs' path entirely, not just short-circuited, so a missing
+  // ANTHROPIC_KEY never breaks a job that doesn't use it.
+  visionCheck?: (localPath: string) => Promise<{ ok: boolean; notes: string }>;
   fetchFn?: typeof fetch;
 };
 
@@ -219,6 +256,16 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
 
     const renderOutDir = path.join(tmpDir, 'out');
     const renderedVideoUrls: Record<string, string> = {};
+    const outputLocalPaths: Record<string, string> = {};
+    const outputExpected: Record<
+      string,
+      {
+        durationSec: number;
+        aspectRatio: string;
+        highlights: Array<{ x: number; y: number; width: number; height: number }>;
+        ignoreBlackAfterSec?: number;
+      }
+    > = {};
     for (const outputId of resolvedJob.outputs) {
       const timeline = deps.compileClipsOverlay(resolvedJob, {
         contentId: `${job.id}_${outputId}`,
@@ -227,6 +274,25 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
         shotVoiceovers,
       });
       const localPath = await deps.render(timeline, { outputDir: renderOutDir });
+      outputLocalPaths[outputId] = localPath;
+      // Real bug found running this for real (P3.6, 2026-09-24): the
+      // actual rendered duration also includes `timeline.cta`'s own
+      // duration (the end card) — `ClipsOverlay.tsx`'s own
+      // `totalClipsOverlayFrames()` adds it separately from
+      // `scenes[].durationSecs`, so omitting it here made every real
+      // render "fail" QA's duration check by exactly the end card's length.
+      const scenesDurationSec = timeline.scenes.reduce((sum, s) => sum + s.durationSecs, 0);
+      const ctaDurationSec = timeline.cta?.durationSecs ?? 0;
+      outputExpected[outputId] = {
+        durationSec: scenesDurationSec + ctaDurationSec,
+        aspectRatio: timeline.aspectRatio,
+        highlights: timeline.scenes.flatMap((s) => s.highlights ?? []),
+        // The end card (`EndCard.tsx`) is a deliberately near-black
+        // (`#0B0B0F`) closing frame — `blackdetect` can't tell that apart
+        // from an actual broken/missing-asset frame by darkness alone, and
+        // the first real run of this wiring flagged exactly that.
+        ignoreBlackAfterSec: ctaDurationSec > 0 ? scenesDurationSec : undefined,
+      };
       const key = `jobs/${job.id}/rendered/${outputId}.mp4`;
       const { url } = await storage.put({ localPath, key });
       await artifactsRepo.record(job.id, 'render', 'video', url, { outputId });
@@ -235,6 +301,36 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
       const platform = OUTPUT_TO_PLATFORM[outputId];
       if (platform) renderedVideoUrls[platform] = url;
     }
+
+    // QA runs for every output before gates/publish — a failure here marks
+    // the whole job `failed`, the same as any other stage failure, and
+    // blocks both the gates transition and publish below.
+    runner.register(
+      createQaStage({
+        measure: (outputId) => deps.measureVideo(outputLocalPaths[outputId]),
+        detectBlackFrames: (outputId) => deps.detectBlackFrames(outputLocalPaths[outputId]),
+        expected: (outputId) => {
+          const canonical =
+            CANONICAL_RESOLUTION[outputExpected[outputId].aspectRatio] ??
+            CANONICAL_RESOLUTION['9:16'];
+          return {
+            durationSec: outputExpected[outputId].durationSec,
+            width: canonical.width,
+            height: canonical.height,
+            fps: EXPECTED_FPS,
+            targetLufs: project.qa.targetLufs,
+            maxTruePeakDb: project.qa.maxTruePeakDb,
+            highlights: outputExpected[outputId].highlights,
+            ignoreBlackAfterSec: outputExpected[outputId].ignoreBlackAfterSec,
+          };
+        },
+        visionCheck:
+          project.qa.visionCheck && deps.visionCheck
+            ? (outputId) => deps.visionCheck!(outputLocalPaths[outputId])
+            : undefined,
+      }),
+    );
+    await runner.run(stageJob);
 
     // Publish only fires for a gate-free job — see this file's own header
     // for why a gated job stops at `awaiting_review` instead.

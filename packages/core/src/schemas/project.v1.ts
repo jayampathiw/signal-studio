@@ -39,6 +39,22 @@ export const ProjectProviders = z.object({
   publish: z.string(),
 });
 
+// P3.6 addition — the plan's own "qa stage" bullet names checks ("vs
+// project target") without pinning field names, so this is that file's own
+// decision. `targetLufs`/`maxTruePeakDb` default to -14/-1.0, the exact
+// values `packages/render/ffmpeg/src/audio-mix.ts`'s own `loudnorm` calls
+// already target — but see `qa.ts`'s own header for why LUFS is checked as
+// a wide-tolerance warning, not a tight target: integrated loudness swings
+// legitimately with how much silence a video has between narration beats,
+// so a fixed close target would false-positive on quieter, slower-paced
+// content. `visionCheck` opts into the optional `llm-anthropic` frame
+// spot-check — off by default since it costs a real API call per job.
+export const ProjectQa = z.object({
+  targetLufs: z.number().default(-14),
+  maxTruePeakDb: z.number().default(-1.0),
+  visionCheck: z.boolean().default(false),
+});
+
 export const Project = z.object({
   slug: z.string().min(1),
   orgId: z.string().min(1),
@@ -48,6 +64,7 @@ export const Project = z.object({
   publishTargets: z.array(PublishTarget).default([]),
   promptPack: z.string().optional(),
   providers: ProjectProviders,
+  qa: ProjectQa.default({ targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false }),
 });
 
 export type ProjectT = z.infer<typeof Project>;

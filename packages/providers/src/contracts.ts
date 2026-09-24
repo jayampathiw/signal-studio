@@ -18,7 +18,20 @@ export const LlmResult = z.object({
 });
 export type LlmResultT = z.infer<typeof LlmResult>;
 
-export type LlmMessage = { role: 'user' | 'assistant'; content: string };
+// P3.6 addition — a plain string is still the common case, but the `qa`
+// stage's optional vision spot-check needs to send image content blocks
+// too. Widened to Anthropic's own real Messages API content-block shape
+// (a subset — just the two block types this repo actually sends) rather
+// than a bespoke one, since `llm-anthropic.ts` forwards `content` verbatim
+// into the request body with no translation step.
+export type LlmContentBlock =
+  | { type: 'text'; text: string }
+  | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } };
+
+export type LlmMessage = {
+  role: 'user' | 'assistant';
+  content: string | LlmContentBlock[];
+};
 
 export interface LlmProvider {
   complete(args: {

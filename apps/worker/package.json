@@ -18,6 +18,7 @@
     "@signal-studio/template-clips-overlay": "workspace:*",
     "@signal-studio/template-compilation": "workspace:*",
     "googleapis": "^144.0.0",
-    "pg-boss": "^10.1.5"
+    "pg-boss": "^10.1.5",
+    "zod": "^3.23.0"
   }
 }

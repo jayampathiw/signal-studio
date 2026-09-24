@@ -29,6 +29,7 @@ const TEST_PROJECT: ProjectT = {
     storage: 'r2',
     publish: 'facebook',
   },
+  qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
 };
 
 async function loadResolvedJob() {
