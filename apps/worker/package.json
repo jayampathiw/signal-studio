@@ -19,6 +19,7 @@
     "@signal-studio/template-case-file": "workspace:*",
     "@signal-studio/template-clips-overlay": "workspace:*",
     "@signal-studio/template-compilation": "workspace:*",
+    "@signal-studio/template-shorts-916": "workspace:*",
     "@signal-studio/template-stills-kenburns": "workspace:*",
     "googleapis": "^144.0.0",
     "pg-boss": "^10.1.5",

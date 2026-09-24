@@ -167,6 +167,74 @@ export const StillsKenburnsConfig = z.object({
   aspectRatio: z.enum(['16:9', '9:16']).default('16:9'),
 });
 
+// P3.7 addition — `shorts-916`'s own top-level config, mirroring
+// `packages/templates/shorts-916/src/compile.ts`'s own `ShortsConfig`/
+// `ShortsSceneConfig`/`ShortsSoundDesignConfig` types exactly (this schema
+// is the manifest-input mirror of that compile-time type, same relationship
+// `CaseFileConfig`/`StillsKenburnsConfig` already have to their templates).
+// Like `stills-kenburns`, this template doesn't reuse `shots[]` at all —
+// its scenes carry their own bespoke shape (hook text, sound-design layer
+// config, end-card-v2 fields) `shots[]` has no room for. `images` maps each
+// scene's own image/image2 *key* (this file's convention: `S{scene number
+// zero-padded}-{A|B}`, e.g. "S01-A") to the filename it was uploaded under —
+// same convention `StillsKenburnsConfig.stillImages` already established,
+// reused here rather than invented fresh. A scene's `image`/`image2` string
+// in `scenes[]` below is expected to BE one of these keys, not a real path —
+// `run-job.ts`'s handler resolves it; `compile()` never touches storage.
+export const Shorts916SoundDesignConfig = z.object({
+  hum: z.object({ key: z.string().min(1), gain_db: z.number().optional() }).optional(),
+  bed: z
+    .object({
+      key: z.string().min(1),
+      gain_db: z.number().optional(),
+      start_scene: z.number().int().positive(),
+      end_scene: z.number().int().positive().nullable().optional(),
+      fade_in_sec: z.number().optional(),
+      resume_gain_db: z.number().optional(),
+      resume_fade_in_sec: z.number().optional(),
+    })
+    .optional(),
+  heartbeat: z
+    .object({
+      key: z.string().min(1),
+      gain_db: z.number().optional(),
+      start_scene: z.number().int().positive(),
+      start_offset_sec: z.number().optional(),
+      end_scene: z.number().int().positive(),
+      fade_in_sec: z.number().optional(),
+    })
+    .optional(),
+  hit: z.object({ key: z.string().min(1), gain_db: z.number().optional() }).optional(),
+});
+
+export const Shorts916SceneConfig = z.object({
+  image: z.string().optional(),
+  image2: z.string().optional(),
+  motion: z.string().optional(),
+  motion2: z.string().optional(),
+  regrade: z.enum(['warm_amber', 'cold_blue']).nullable().optional(),
+  regrade2: z.enum(['warm_amber', 'cold_blue']).nullable().optional(),
+  crop_x: z.number().min(0).max(1).optional(),
+  crop_x2: z.number().min(0).max(1).optional(),
+  vo: z.string().optional(),
+  vo_parts: z.array(z.string()).optional(),
+  pause_sec: z.number().positive().optional(),
+  target_duration_sec: z.number().positive(),
+  hook: z.object({ amber_word: z.string().optional() }).optional(),
+  end_card_v2: z.boolean().optional(),
+  title: z.string().optional(),
+  subtitle: z.string().optional(),
+  hit_on_start: z.boolean().optional(),
+});
+
+export const Shorts916Config = z.object({
+  output: z.string().min(1),
+  voice: z.string().optional(),
+  images: z.record(z.string(), z.string()).default({}),
+  scenes: z.array(Shorts916SceneConfig).min(1),
+  sound_design: Shorts916SoundDesignConfig.optional(),
+});
+
 export const Manifest = z
   .object({
     version: z.literal('1'),
@@ -213,16 +281,21 @@ export const Manifest = z
     compilationTargetS: z.number().positive().optional(),
     case_file: CaseFileConfig.optional(),
     stillsKenburns: StillsKenburnsConfig.optional(),
+    shorts916: Shorts916Config.optional(),
   })
   .superRefine((manifest, ctx) => {
-    // `stills-kenburns` carries its scenes in `stillsKenburns.shotlistText`
-    // instead of `shots[]` — every other template still needs at least one
-    // shot (the `shots[].min(1)` rule moved here, see that field's comment).
-    if (manifest.visual.mode !== 'stills-kenburns' && manifest.shots.length === 0) {
+    // `stills-kenburns`/`shorts-916` carry their scenes in their own
+    // top-level config block instead of `shots[]` — every other template
+    // still needs at least one shot (the `shots[].min(1)` rule moved here,
+    // see that field's comment).
+    const usesOwnSceneShape =
+      manifest.visual.mode === 'stills-kenburns' || manifest.visual.mode === 'shorts-916';
+    if (!usesOwnSceneShape && manifest.shots.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['shots'],
-        message: 'at least one shot is required (except for visual.mode "stills-kenburns")',
+        message:
+          'at least one shot is required (except for visual.mode "stills-kenburns"/"shorts-916")',
       });
     }
     // clips-overlay is the only template that requires every shot to carry

@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 import { Manifest } from '@signal-studio/core/schemas';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
+import { compile as compileShorts916 } from '@signal-studio/template-shorts-916/compile';
 import { compile as compileStillsKenburns } from '@signal-studio/template-stills-kenburns/compile';
 import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
@@ -165,6 +166,9 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
     },
     compileStillsKenburns: () => {
       throw new Error('compileStillsKenburns: not exercised by these clips-overlay tests');
+    },
+    compileShorts916: () => {
+      throw new Error('compileShorts916: not exercised by these clips-overlay tests');
     },
     parseShotlistV2: () => {
       throw new Error('parseShotlistV2: not exercised by these clips-overlay tests');
@@ -435,6 +439,9 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
       compileStillsKenburns: () => {
         throw new Error('compileStillsKenburns: not exercised by this case-file test');
       },
+      compileShorts916: () => {
+        throw new Error('compileShorts916: not exercised by this case-file test');
+      },
       parseShotlistV2: () => {
         throw new Error('parseShotlistV2: not exercised by this case-file test');
       },
@@ -487,8 +494,8 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
   const manifest = Manifest.parse({
     version: '1',
     projectRef: 'test-project',
-    template: 'shorts-916',
-    visual: { mode: 'shorts-916' },
+    template: 'compilation',
+    visual: { mode: 'compilation' },
     shots: [{ id: 's1', text: 'x' }],
     outputs: ['fb'],
     gates: [],
@@ -521,7 +528,7 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
             slug: 'test-project',
             orgId: 'org-test',
             defaults: {
-              template: 'shorts-916',
+              template: 'compilation',
               voice: 'bm_george',
               speed: 1,
               outputs: ['fb'],
@@ -553,6 +560,9 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
     compileStillsKenburns: () => {
       throw new Error('unreachable');
     },
+    compileShorts916: () => {
+      throw new Error('unreachable');
+    },
     parseShotlistV2: () => {
       throw new Error('unreachable');
     },
@@ -571,7 +581,7 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
 
   await assert.rejects(
     () => runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' })),
-    /unsupported visual\.mode "shorts-916"/,
+    /unsupported visual\.mode "compilation"/,
   );
 });
 
@@ -731,6 +741,9 @@ test('runJob: stills-kenburns handler compiles, renders (real render-ffmpeg), an
         throw new Error('compileCaseFile: not exercised by this stills-kenburns test');
       },
       compileStillsKenburns,
+      compileShorts916: () => {
+        throw new Error('compileShorts916: not exercised by this stills-kenburns test');
+      },
       parseShotlistV2,
       render: async () => {
         throw new Error('render (remotion): not exercised by this stills-kenburns test');
@@ -743,6 +756,209 @@ test('runJob: stills-kenburns handler compiles, renders (real render-ffmpeg), an
           durationSec: timeline.scenes.reduce((sum, s) => sum + s.durationSecs, 0),
           width: 1920,
           height: 1080,
+          fps: 25,
+          integratedLufs: -14,
+          truePeakDb: -3,
+        });
+        return outputPath;
+      },
+      createPublishProviderFor: () =>
+        ({
+          async post() {
+            return { postId: 'x' };
+          },
+        }) as never,
+      measureVideo: async (localPath: string) => {
+        const m = qaMeasurements.get(localPath);
+        if (!m) throw new Error(`no fake qa measurement recorded for ${localPath}`);
+        return m;
+      },
+      detectBlackFrames: async () => [],
+      fetchFn: (async (url: string) => {
+        const key = new URL(url).pathname.replace(/^\//, '');
+        const localPath = uploadedFiles[key];
+        if (!localPath) return new Response(null, { status: 404 });
+        const bytes = await readFile(localPath);
+        return new Response(bytes, { status: 200 });
+      }) as unknown as typeof fetch,
+    };
+
+    await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
+
+    assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});
+
+test('runJob: shorts-916 handler compiles, renders (real render-ffmpeg), and delivers using the real compileShorts916()', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-shorts-916-test-'));
+  try {
+    const stillHook = path.join(workDir, 'hook.jpg');
+    const stillSilent = path.join(workDir, 'silent.jpg');
+    await writeFile(stillHook, 'fake-image-bytes');
+    await writeFile(stillSilent, 'fake-image-bytes');
+
+    // Real minimal shorts-916 config shape (matching content/shorts/*.json's
+    // own shape) — a hook scene (VO-reconciled), a silent music-only scene,
+    // and an end_card_v2 close, exercising every branch of compile() except
+    // `vo_parts` (that path calls real ffmpeg pause-concat outside this
+    // handler's own compileOutputs — real-verified separately against real
+    // Kokoro TTS + a real DB job, not this fast fake-tts unit test).
+    const manifest = Manifest.parse({
+      version: '1',
+      projectRef: 'test-project',
+      template: 'shorts-916',
+      visual: { mode: 'shorts-916' },
+      shorts916: {
+        output: 'test.mp4',
+        images: { 'S01-A': 'hook.jpg', 'S02-A': 'silent.jpg' },
+        scenes: [
+          {
+            image: 'S01-A',
+            motion: 'push',
+            vo: 'This is the hook.',
+            target_duration_sec: 3,
+            hook: { amber_word: 'hook' },
+          },
+          { image: 'S02-A', motion: 'hold', target_duration_sec: 2 },
+          {
+            end_card_v2: true,
+            title: 'Underdog',
+            subtitle: 'More on the channel',
+            target_duration_sec: 4,
+          },
+        ],
+      },
+      outputs: ['fb'],
+      gates: [],
+      publish: [],
+      captions: {},
+      audio: { voice: 'am_adam', speed: 1 },
+    });
+
+    const uploadedFiles: Record<string, string> = {
+      'jobs/job-1/uploads/S01-A/hook.jpg': stillHook,
+      'jobs/job-1/uploads/S02-A/silent.jpg': stillSilent,
+    };
+
+    const qaMeasurements = new Map<
+      string,
+      {
+        durationSec: number;
+        width: number;
+        height: number;
+        fps: number;
+        integratedLufs: number;
+        truePeakDb: number;
+      }
+    >();
+    const statusUpdates: string[] = [];
+    const stageStore = new Map<
+      string,
+      { hash: string; status: 'done' | 'failed'; outputs?: unknown }
+    >();
+
+    const deps: RunJobDeps = {
+      jobsRepo: {
+        async getById() {
+          return {
+            id: 'job-1',
+            org_id: 'org-test',
+            project_id: 'proj-1',
+            manifest,
+            status: 'created',
+            created_at: '',
+            updated_at: '',
+          };
+        },
+        async updateStatus(_id: string, status: string) {
+          statusUpdates.push(status);
+        },
+      } as never,
+      projectsRepo: {
+        async getById() {
+          return {
+            id: 'proj-1',
+            org_id: 'org-test',
+            slug: 'test-project',
+            config: {
+              slug: 'test-project',
+              orgId: 'org-test',
+              defaults: {
+                template: 'shorts-916',
+                voice: 'am_adam',
+                speed: 1,
+                outputs: ['fb'],
+              },
+              gates: [],
+              publishTargets: [],
+              providers: {
+                tts: 'kokoro-js',
+                captions: 'whisper',
+                image: 'fal',
+                storage: 'local',
+                publish: 'facebook',
+              },
+              qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
+            },
+          };
+        },
+      } as never,
+      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createStageStore: () =>
+        ({
+          async getLastRun(_jobId: string, stageName: string, outputId?: string) {
+            return stageStore.get(`${stageName}:${outputId ?? ''}`) ?? null;
+          },
+          async recordStart() {},
+          async recordEnd(_jobId: string, stageName: string, result: never, outputId?: string) {
+            stageStore.set(`${stageName}:${outputId ?? ''}`, result);
+          },
+          async log() {},
+        }) as never,
+      createStorage: () =>
+        ({
+          async signedUrl(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+          async put({ key }: { localPath: string; key: string }) {
+            return { url: `https://fake-storage.test/${key}` };
+          },
+          async presignUpload(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+        }) as never,
+      synthesise: async ({ text }: { text: string }) => {
+        void text;
+        const wavPath = path.join(os.tmpdir(), `fake-vo-${Date.now()}-${Math.random()}.wav`);
+        await writeFile(wavPath, 'fake-wav-bytes');
+        return { wavPath, durationSec: 2.5 };
+      },
+      compileClipsOverlay: () => {
+        throw new Error('compileClipsOverlay: not exercised by this shorts-916 test');
+      },
+      compileCaseFile: () => {
+        throw new Error('compileCaseFile: not exercised by this shorts-916 test');
+      },
+      compileStillsKenburns: () => {
+        throw new Error('compileStillsKenburns: not exercised by this shorts-916 test');
+      },
+      compileShorts916,
+      parseShotlistV2: () => {
+        throw new Error('parseShotlistV2: not exercised by this shorts-916 test');
+      },
+      render: async () => {
+        throw new Error('render (remotion): not exercised by this shorts-916 test');
+      },
+      renderFfmpeg: async (timeline, opts) => {
+        await mkdir(opts.outputDir, { recursive: true });
+        const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
+        await writeFile(outputPath, 'fake-mp4-bytes');
+        qaMeasurements.set(outputPath, {
+          durationSec: timeline.scenes.reduce((sum, s) => sum + s.durationSecs, 0),
+          width: 1080,
+          height: 1920,
           fps: 25,
           integratedLufs: -14,
           truePeakDb: -3,

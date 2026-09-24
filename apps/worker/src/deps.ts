@@ -10,6 +10,7 @@ import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 import { getEngine } from '@signal-studio/render-core/engine';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
+import { compile as compileShorts916 } from '@signal-studio/template-shorts-916/compile';
 import { compile as compileStillsKenburns } from '@signal-studio/template-stills-kenburns/compile';
 import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 // Side-effect imports: register the 'remotion'/'ffmpeg' engines with render-core.
@@ -89,6 +90,7 @@ export function realRunJobDeps(): RunJobDeps {
     compileClipsOverlay,
     compileCaseFile,
     compileStillsKenburns,
+    compileShorts916,
     parseShotlistV2,
     render: realRender(),
     renderFfmpeg: realRenderFfmpeg(),

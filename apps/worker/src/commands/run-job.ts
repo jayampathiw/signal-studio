@@ -1,6 +1,8 @@
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { resolveJob, type ResolvedJob } from '@signal-studio/core/resolve';
 import { StageRunner, type Job, type JobStageStore } from '@signal-studio/core/runner';
@@ -16,11 +18,18 @@ import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/
 import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
 import type { ArtifactsRepo, JobRow, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
 import type { PublishProvider, StorageProvider } from '@signal-studio/providers/contracts';
+import { probeDuration } from '@signal-studio/render-ffmpeg/stills-render';
 import type { CaseFileCompileParams } from '@signal-studio/template-case-file/compile';
+import type {
+  ResolvedSceneVo,
+  ShortsCompileParams,
+} from '@signal-studio/template-shorts-916/compile';
 import type { StillsKenburnsCompileParams } from '@signal-studio/template-stills-kenburns/compile';
 import type { ParsedShotlist } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
 import type { Logger } from '../logger.ts';
+
+const execFileAsync = promisify(execFile);
 
 // **Deliberate, flagged convention**: `Timeline.aspectRatio` names a ratio,
 // not pixels — nothing else in `timeline.v1`/`manifest.v1` pins the actual
@@ -136,12 +145,13 @@ export type RunJobDeps = {
   ) => TimelineT;
   compileCaseFile: (params: CaseFileCompileParams) => TimelineT;
   compileStillsKenburns: (params: StillsKenburnsCompileParams) => TimelineT;
+  compileShorts916: (params: ShortsCompileParams) => TimelineT;
   parseShotlistV2: (text: string) => ParsedShotlist;
   render: (timeline: TimelineT, opts: { outputDir: string }) => Promise<string>;
   // Used by `render-ffmpeg`-based templates (`stills-kenburns`,
-  // `shorts-916`) once wired — optional for now since neither handler
-  // exists yet; `renderJob`'s own dispatch throws a clear error if a
-  // future handler needs it but a caller's `deps` didn't supply it.
+  // `shorts-916`) — optional so a caller's `deps` that never touches either
+  // template doesn't need to supply it; `renderJob`'s own dispatch throws a
+  // clear error if a handler needs it but wasn't given one.
   renderFfmpeg?: (timeline: TimelineT, opts: { outputDir: string }) => Promise<string>;
   createPublishProviderFor: (platform: string, credentialRef: string) => PublishProvider;
   measureVideo: (localPath: string) => Promise<QaMeasurement>;
@@ -431,10 +441,157 @@ const stillsKenburnsHandler: TemplateHandler = {
   },
 };
 
+// ---- shorts-916 ----
+
+// Ported from `assemble-short-rewrite.mjs`'s `synthPausedScene`, minus its
+// Whisper word-timestamp pass on part 2 — same "not wired for real
+// transcription this pass" gap this file's own header already flags for
+// every other handler's captions. Without it, `hitOffsetInScene` can't
+// name the exact word the musical hit should land on (the original script
+// synced a "hit" cue to part 2's LAST spoken word specifically, e.g.
+// "bar" in "over the bar"); this falls back to where part 2 *starts*
+// instead — an honest approximation, not the original's precision, flagged
+// here rather than silently matched.
+async function synthPausedVo(
+  parts: [string, string],
+  pauseSec: number,
+  synthesise: RunJobDeps['synthesise'],
+  voice: string,
+  speed: number,
+  workDir: string,
+  idx: number,
+): Promise<ResolvedSceneVo> {
+  await mkdir(workDir, { recursive: true });
+  const part1 = await synthesise({ text: parts[0], voice, speed });
+  const part2 = await synthesise({ text: parts[1], voice, speed });
+  const part1Dur = probeDuration(part1.wavPath);
+
+  const silencePath = path.join(workDir, `silence_${idx}.wav`);
+  await execFileAsync('ffmpeg', [
+    '-y',
+    '-f',
+    'lavfi',
+    '-i',
+    'anullsrc=r=24000:cl=mono',
+    '-t',
+    String(pauseSec),
+    '-c:a',
+    'pcm_s16le',
+    silencePath,
+  ]);
+
+  const outPath = path.join(workDir, `paused_${idx}.wav`);
+  await execFileAsync('ffmpeg', [
+    '-y',
+    '-i',
+    part1.wavPath,
+    '-i',
+    silencePath,
+    '-i',
+    part2.wavPath,
+    '-filter_complex',
+    '[0:a][1:a][2:a]concat=n=3:v=0:a=1[out]',
+    '-map',
+    '[out]',
+    '-c:a',
+    'pcm_s16le',
+    outPath,
+  ]);
+
+  return {
+    path: outPath,
+    durationSec: part1Dur + pauseSec + part2.durationSec,
+    pauseStartInScene: part1Dur,
+    hitOffsetInScene: part1Dur + pauseSec,
+  };
+}
+
+const shorts916Handler: TemplateHandler = {
+  async compileOutputs(ctx) {
+    const { job, resolvedJob, tmpDir, storage, fetchFn, deps } = ctx;
+    const config = job.manifest.shorts916;
+    if (!config) {
+      throw new Error('run-job: shorts-916 jobs require manifest.shorts916');
+    }
+
+    const imageLocalPaths: Record<string, string> = {};
+    for (const [key, filename] of Object.entries(config.images)) {
+      imageLocalPaths[key] = await downloadRawAsset(
+        storage,
+        job.id,
+        key,
+        filename,
+        path.join(tmpDir, 'stills'),
+        fetchFn,
+      );
+    }
+
+    // No shared `assets`/`tts` `StageRunner` stage here, unlike every other
+    // handler — those stages are keyed one-text-per-shot-id, and a
+    // `vo_parts` scene needs two TTS calls plus real ffmpeg pause-concat
+    // (`synthPausedVo` above), which doesn't fit that shape. Each scene's
+    // VO is synthesised directly instead; this also means a retried job
+    // resynthesises every scene's VO from scratch — a real gap, but not a
+    // new one: the `tts` stage's own skip logic is already broken by
+    // `tmpDir` deletion on every invocation (this file's own header).
+    const voice = config.voice ?? resolvedJob.voice;
+    const voDir = path.join(tmpDir, 'shorts-vo');
+    const sceneVo: Record<number, ResolvedSceneVo> = {};
+    for (let i = 0; i < config.scenes.length; i++) {
+      const scene = config.scenes[i];
+      const n = i + 1;
+      if (scene.vo_parts) {
+        if (scene.vo_parts.length !== 2) {
+          throw new Error(
+            `run-job: shorts-916 scene ${n} has ${scene.vo_parts.length} vo_parts, expected exactly 2`,
+          );
+        }
+        sceneVo[n] = await synthPausedVo(
+          [scene.vo_parts[0], scene.vo_parts[1]],
+          scene.pause_sec ?? 1,
+          deps.synthesise,
+          voice,
+          resolvedJob.speed,
+          voDir,
+          n,
+        );
+      } else if (scene.vo) {
+        const { wavPath, durationSec } = await deps.synthesise({
+          text: scene.vo,
+          voice,
+          speed: resolvedJob.speed,
+        });
+        sceneVo[n] = { path: wavPath, durationSec };
+      }
+    }
+
+    const timelines: Record<string, TimelineT> = {};
+    for (const outputId of resolvedJob.outputs) {
+      timelines[outputId] = deps.compileShorts916({
+        contentId: `${job.id}_${outputId}`,
+        config,
+        resolveImagePath: (key) => {
+          const resolved = imageLocalPaths[key];
+          if (!resolved) throw new Error(`run-job: no uploaded image for key "${key}"`);
+          return resolved;
+        },
+        sceneVo,
+        // Real Whisper transcription isn't wired into a real job this pass
+        // (see this file's own header) — compile() renders a hook scene's
+        // overlay from its own script text either way, and simply omits
+        // word-synced caption overlays for a non-hook scene when this is
+        // left empty.
+      });
+    }
+    return { timelines, engine: 'ffmpeg' };
+  },
+};
+
 const TEMPLATE_HANDLERS: Record<string, TemplateHandler> = {
   'clips-overlay': clipsOverlayHandler,
   'case-file': caseFileHandler,
   'stills-kenburns': stillsKenburnsHandler,
+  'shorts-916': shorts916Handler,
 };
 
 export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logger): Promise<void> {

@@ -216,6 +216,9 @@ importers:
       '@signal-studio/template-compilation':
         specifier: workspace:*
         version: link:../../packages/templates/compilation
+      '@signal-studio/template-shorts-916':
+        specifier: workspace:*
+        version: link:../../packages/templates/shorts-916
       '@signal-studio/template-stills-kenburns':
         specifier: workspace:*
         version: link:../../packages/templates/stills-kenburns
