@@ -10,8 +10,11 @@ import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 import { getEngine } from '@signal-studio/render-core/engine';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
-// Side-effect import: registers the 'remotion' engine with render-core.
+import { compile as compileStillsKenburns } from '@signal-studio/template-stills-kenburns/compile';
+import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
+// Side-effect imports: register the 'remotion'/'ffmpeg' engines with render-core.
 import '@signal-studio/render-remotion';
+import '@signal-studio/render-ffmpeg';
 
 import type { MarkFailedDeps } from './commands/mark-failed.ts';
 import type { RunJobDeps } from './commands/run-job.ts';
@@ -38,6 +41,10 @@ function realTts() {
 
 function realRender() {
   return getEngine('remotion').render;
+}
+
+function realRenderFfmpeg() {
+  return getEngine('ffmpeg').render;
 }
 
 export function realRunLocalDeps(): RunLocalDeps {
@@ -81,7 +88,10 @@ export function realRunJobDeps(): RunJobDeps {
     synthesise: realTts(),
     compileClipsOverlay,
     compileCaseFile,
+    compileStillsKenburns,
+    parseShotlistV2,
     render: realRender(),
+    renderFfmpeg: realRenderFfmpeg(),
     createPublishProviderFor,
     measureVideo,
     detectBlackFrames,

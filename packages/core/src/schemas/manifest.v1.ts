@@ -151,6 +151,22 @@ export const CaseFileConfig = z.object({
   showOutro: z.boolean().default(true),
 });
 
+// P3.7 addition — `stills-kenburns`'s own top-level config. Its real input
+// format is a whole `shotlist-v2.md` text blob (scene/cut/motion/overlay
+// language none of `manifest.v1`'s `shots[]` fields represent), not a flat
+// shot list — so unlike `case-file`, this template doesn't reuse `shots[]`
+// at all. `stillImages` maps each cut's own shot id (this file's own
+// convention: `S{scene_n zero-padded}-{cut letter}`, e.g. "S01-A") to the
+// filename it was uploaded under (`ss upload --shot S01-A --file <path>`)
+// — needed because, unlike `clips-overlay`'s `shot.clip`/`case-file`'s
+// `shot.image`, nothing in a parsed shotlist names an actual uploaded
+// filename for run-job.ts to look for.
+export const StillsKenburnsConfig = z.object({
+  shotlistText: z.string().min(1),
+  stillImages: z.record(z.string(), z.string()),
+  aspectRatio: z.enum(['16:9', '9:16']).default('16:9'),
+});
+
 export const Manifest = z
   .object({
     version: z.literal('1'),
@@ -167,8 +183,11 @@ export const Manifest = z
     // scenes (the real `mamboleo-pacific-life-settlement` 16:9 case has 16
     // scenes) — moved the max-6 rule into `superRefine` below, scoped to
     // `clips-overlay` only, so this test's own existing behavior for that
-    // template is unchanged.
-    shots: z.array(Shot).min(1),
+    // template is unchanged. Also relaxed from `.min(1)`: `stills-kenburns`
+    // doesn't use `shots[]` at all (its own `StillsKenburnsConfig.
+    // shotlistText` carries the scenes instead) — the min-1 rule moved into
+    // `superRefine` too, scoped to every *other* template.
+    shots: z.array(Shot).default([]),
     visual: Visual,
     audio: ManifestAudio.default({
       voice: 'bm_george',
@@ -193,8 +212,19 @@ export const Manifest = z
     // render-compilation.ts did.
     compilationTargetS: z.number().positive().optional(),
     case_file: CaseFileConfig.optional(),
+    stillsKenburns: StillsKenburnsConfig.optional(),
   })
   .superRefine((manifest, ctx) => {
+    // `stills-kenburns` carries its scenes in `stillsKenburns.shotlistText`
+    // instead of `shots[]` — every other template still needs at least one
+    // shot (the `shots[].min(1)` rule moved here, see that field's comment).
+    if (manifest.visual.mode !== 'stills-kenburns' && manifest.shots.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['shots'],
+        message: 'at least one shot is required (except for visual.mode "stills-kenburns")',
+      });
+    }
     // clips-overlay is the only template that requires every shot to carry
     // an actual video clip — other visual modes (stills-kenburns, etc.)
     // legitimately use image/text-only shots. Its shot-count cap (6) is

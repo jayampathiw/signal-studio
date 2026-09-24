@@ -17,6 +17,8 @@ import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
 import type { ArtifactsRepo, JobRow, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
 import type { PublishProvider, StorageProvider } from '@signal-studio/providers/contracts';
 import type { CaseFileCompileParams } from '@signal-studio/template-case-file/compile';
+import type { StillsKenburnsCompileParams } from '@signal-studio/template-stills-kenburns/compile';
+import type { ParsedShotlist } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
 import type { Logger } from '../logger.ts';
 
@@ -133,6 +135,8 @@ export type RunJobDeps = {
     },
   ) => TimelineT;
   compileCaseFile: (params: CaseFileCompileParams) => TimelineT;
+  compileStillsKenburns: (params: StillsKenburnsCompileParams) => TimelineT;
+  parseShotlistV2: (text: string) => ParsedShotlist;
   render: (timeline: TimelineT, opts: { outputDir: string }) => Promise<string>;
   // Used by `render-ffmpeg`-based templates (`stills-kenburns`,
   // `shorts-916`) once wired — optional for now since neither handler
@@ -359,9 +363,78 @@ const caseFileHandler: TemplateHandler = {
   },
 };
 
+// ---- stills-kenburns ----
+
+function pad2(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
+const stillsKenburnsHandler: TemplateHandler = {
+  async compileOutputs(ctx) {
+    const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
+    const config = job.manifest.stillsKenburns;
+    if (!config) {
+      throw new Error('run-job: stills-kenburns jobs require manifest.stillsKenburns');
+    }
+
+    const parsed = deps.parseShotlistV2(config.shotlistText);
+
+    const stillLocalPaths: Record<string, string> = {};
+    for (const [shotId, filename] of Object.entries(config.stillImages)) {
+      stillLocalPaths[shotId] = await downloadRawAsset(
+        storage,
+        job.id,
+        shotId,
+        filename,
+        path.join(tmpDir, 'stills'),
+        fetchFn,
+      );
+    }
+
+    // Reuses the `tts` stage exactly like `case-file`'s handler, just
+    // addressed by scene label ("S01") instead of a shot id — scenes with
+    // no `vo_text` (silent connective beats) are skipped, matching
+    // `compile()`'s own "no narration" handling.
+    const ttsShots = parsed.scenes
+      .filter((s) => s.vo_text)
+      .map((s) => ({ id: `S${pad2(s.scene_n)}`, voiceover_text: s.vo_text! }));
+    const stageJob: Job = {
+      id: job.id,
+      manifest: { ...job.manifest, shots: ttsShots },
+      workDir: tmpDir,
+    };
+    runner.register(
+      createTtsStage({
+        synthesise: deps.synthesise,
+        voice: resolvedJob.voice,
+        speed: resolvedJob.speed,
+      }),
+    );
+    const stageOutputs = await runner.run(stageJob);
+    const ttsOut = stageOutputs.get('tts:') as { durations: Record<string, number> } | undefined;
+
+    const timelines: Record<string, TimelineT> = {};
+    for (const outputId of resolvedJob.outputs) {
+      timelines[outputId] = deps.compileStillsKenburns({
+        contentId: `${job.id}_${outputId}`,
+        aspectRatio: config.aspectRatio,
+        parsed,
+        findStillPath: (sceneN, cut) => stillLocalPaths[`S${pad2(sceneN)}-${cut}`] ?? null,
+        findVoPath: (sceneN) =>
+          ttsOut?.durations[`S${pad2(sceneN)}`] !== undefined
+            ? path.join(tmpDir, 'vo', `S${pad2(sceneN)}.wav`)
+            : null,
+        voDurationSec: (sceneN) => ttsOut!.durations[`S${pad2(sceneN)}`],
+      });
+    }
+    return { timelines, engine: 'ffmpeg' };
+  },
+};
+
 const TEMPLATE_HANDLERS: Record<string, TemplateHandler> = {
   'clips-overlay': clipsOverlayHandler,
   'case-file': caseFileHandler,
+  'stills-kenburns': stillsKenburnsHandler,
 };
 
 export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logger): Promise<void> {

@@ -14,10 +14,12 @@
     "@signal-studio/db": "workspace:*",
     "@signal-studio/providers": "workspace:*",
     "@signal-studio/render-core": "workspace:*",
+    "@signal-studio/render-ffmpeg": "workspace:*",
     "@signal-studio/render-remotion": "workspace:*",
     "@signal-studio/template-case-file": "workspace:*",
     "@signal-studio/template-clips-overlay": "workspace:*",
     "@signal-studio/template-compilation": "workspace:*",
+    "@signal-studio/template-stills-kenburns": "workspace:*",
     "googleapis": "^144.0.0",
     "pg-boss": "^10.1.5",
     "zod": "^3.23.0"

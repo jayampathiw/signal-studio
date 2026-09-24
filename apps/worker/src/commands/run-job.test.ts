@@ -9,6 +9,8 @@ import { promisify } from 'node:util';
 import { Manifest } from '@signal-studio/core/schemas';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
+import { compile as compileStillsKenburns } from '@signal-studio/template-stills-kenburns/compile';
+import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
 import { runJob, type RunJobDeps } from './run-job.ts';
 import { createLogger } from '../logger.ts';
@@ -160,6 +162,12 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
     compileClipsOverlay,
     compileCaseFile: () => {
       throw new Error('compileCaseFile: not exercised by these clips-overlay tests');
+    },
+    compileStillsKenburns: () => {
+      throw new Error('compileStillsKenburns: not exercised by these clips-overlay tests');
+    },
+    parseShotlistV2: () => {
+      throw new Error('parseShotlistV2: not exercised by these clips-overlay tests');
     },
     render: async (timeline, opts) => {
       await mkdir(opts.outputDir, { recursive: true });
@@ -424,6 +432,12 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
         throw new Error('compileClipsOverlay: not exercised by this case-file test');
       },
       compileCaseFile,
+      compileStillsKenburns: () => {
+        throw new Error('compileStillsKenburns: not exercised by this case-file test');
+      },
+      parseShotlistV2: () => {
+        throw new Error('parseShotlistV2: not exercised by this case-file test');
+      },
       render: async (timeline, opts) => {
         await mkdir(opts.outputDir, { recursive: true });
         const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
@@ -473,8 +487,8 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
   const manifest = Manifest.parse({
     version: '1',
     projectRef: 'test-project',
-    template: 'stills-kenburns',
-    visual: { mode: 'stills-kenburns' },
+    template: 'shorts-916',
+    visual: { mode: 'shorts-916' },
     shots: [{ id: 's1', text: 'x' }],
     outputs: ['fb'],
     gates: [],
@@ -507,7 +521,7 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
             slug: 'test-project',
             orgId: 'org-test',
             defaults: {
-              template: 'stills-kenburns',
+              template: 'shorts-916',
               voice: 'bm_george',
               speed: 1,
               outputs: ['fb'],
@@ -536,6 +550,12 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
     compileCaseFile: () => {
       throw new Error('unreachable');
     },
+    compileStillsKenburns: () => {
+      throw new Error('unreachable');
+    },
+    parseShotlistV2: () => {
+      throw new Error('unreachable');
+    },
     render: async () => '',
     createPublishProviderFor: () =>
       ({
@@ -551,6 +571,209 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
 
   await assert.rejects(
     () => runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' })),
-    /unsupported visual\.mode "stills-kenburns"/,
+    /unsupported visual\.mode "shorts-916"/,
   );
+});
+
+test('runJob: stills-kenburns handler compiles, renders (real render-ffmpeg), and delivers using the real compileStillsKenburns()', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-stills-kenburns-test-'));
+  try {
+    // Real, minimal shotlist-v2 text (the same shape parse-shotlist-v2.test.ts's
+    // own SAMPLE uses) — 2 scenes, each with real stills + narration.
+    const shotlistText = `**TITLE:** Test Documentary
+**TARGET_DURATION_SEC:** 20
+
+## COLD OPEN
+
+**SCENE 1 — 0:00–0:06 (6s)**
+🖼️ STILL A: A goalkeeper alone under stadium lights [WIDE]
+🎞️ PUSH
+🎙️ "Imagine you are twenty-six years old."
+
+**SCENE 2 — 0:06–0:21 (15s)** · WARM
+🖼️ STILL A: Close on his hands
+🖼️ STILL B: Wide shot of the pitch
+🎞️ A: PUSH B: micro-PUSH
+🎙️ "He was the best in the world, briefly."
+`;
+
+    const stillA1 = path.join(workDir, 's1a.jpg');
+    const stillA2 = path.join(workDir, 's2a.jpg');
+    const stillB2 = path.join(workDir, 's2b.jpg');
+    await writeFile(stillA1, 'fake-image-bytes');
+    await writeFile(stillA2, 'fake-image-bytes');
+    await writeFile(stillB2, 'fake-image-bytes');
+
+    const manifest = Manifest.parse({
+      version: '1',
+      projectRef: 'test-project',
+      template: 'stills-kenburns',
+      visual: { mode: 'stills-kenburns' },
+      stillsKenburns: {
+        shotlistText,
+        aspectRatio: '16:9',
+        stillImages: {
+          'S01-A': 's1a.jpg',
+          'S02-A': 's2a.jpg',
+          'S02-B': 's2b.jpg',
+        },
+      },
+      outputs: ['fb'],
+      gates: [],
+      publish: [],
+      captions: {},
+      audio: { voice: 'bm_george', speed: 1 },
+    });
+
+    const uploadedFiles: Record<string, string> = {
+      'jobs/job-1/uploads/S01-A/s1a.jpg': stillA1,
+      'jobs/job-1/uploads/S02-A/s2a.jpg': stillA2,
+      'jobs/job-1/uploads/S02-B/s2b.jpg': stillB2,
+    };
+
+    const qaMeasurements = new Map<
+      string,
+      {
+        durationSec: number;
+        width: number;
+        height: number;
+        fps: number;
+        integratedLufs: number;
+        truePeakDb: number;
+      }
+    >();
+    const statusUpdates: string[] = [];
+    const stageStore = new Map<
+      string,
+      { hash: string; status: 'done' | 'failed'; outputs?: unknown }
+    >();
+
+    const deps: RunJobDeps = {
+      jobsRepo: {
+        async getById() {
+          return {
+            id: 'job-1',
+            org_id: 'org-test',
+            project_id: 'proj-1',
+            manifest,
+            status: 'created',
+            created_at: '',
+            updated_at: '',
+          };
+        },
+        async updateStatus(_id: string, status: string) {
+          statusUpdates.push(status);
+        },
+      } as never,
+      projectsRepo: {
+        async getById() {
+          return {
+            id: 'proj-1',
+            org_id: 'org-test',
+            slug: 'test-project',
+            config: {
+              slug: 'test-project',
+              orgId: 'org-test',
+              defaults: {
+                template: 'stills-kenburns',
+                voice: 'bm_george',
+                speed: 1,
+                outputs: ['fb'],
+              },
+              gates: [],
+              publishTargets: [],
+              providers: {
+                tts: 'kokoro-js',
+                captions: 'whisper',
+                image: 'fal',
+                storage: 'local',
+                publish: 'facebook',
+              },
+              qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
+            },
+          };
+        },
+      } as never,
+      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createStageStore: () =>
+        ({
+          async getLastRun(_jobId: string, stageName: string, outputId?: string) {
+            return stageStore.get(`${stageName}:${outputId ?? ''}`) ?? null;
+          },
+          async recordStart() {},
+          async recordEnd(_jobId: string, stageName: string, result: never, outputId?: string) {
+            stageStore.set(`${stageName}:${outputId ?? ''}`, result);
+          },
+          async log() {},
+        }) as never,
+      createStorage: () =>
+        ({
+          async signedUrl(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+          async put({ key }: { localPath: string; key: string }) {
+            return { url: `https://fake-storage.test/${key}` };
+          },
+          async presignUpload(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+        }) as never,
+      synthesise: async ({ text }: { text: string }) => {
+        void text;
+        const wavPath = path.join(os.tmpdir(), `fake-vo-${Date.now()}-${Math.random()}.wav`);
+        await writeFile(wavPath, 'fake-wav-bytes');
+        return { wavPath, durationSec: 3.0 };
+      },
+      compileClipsOverlay: () => {
+        throw new Error('compileClipsOverlay: not exercised by this stills-kenburns test');
+      },
+      compileCaseFile: () => {
+        throw new Error('compileCaseFile: not exercised by this stills-kenburns test');
+      },
+      compileStillsKenburns,
+      parseShotlistV2,
+      render: async () => {
+        throw new Error('render (remotion): not exercised by this stills-kenburns test');
+      },
+      renderFfmpeg: async (timeline, opts) => {
+        await mkdir(opts.outputDir, { recursive: true });
+        const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
+        await writeFile(outputPath, 'fake-mp4-bytes');
+        qaMeasurements.set(outputPath, {
+          durationSec: timeline.scenes.reduce((sum, s) => sum + s.durationSecs, 0),
+          width: 1920,
+          height: 1080,
+          fps: 25,
+          integratedLufs: -14,
+          truePeakDb: -3,
+        });
+        return outputPath;
+      },
+      createPublishProviderFor: () =>
+        ({
+          async post() {
+            return { postId: 'x' };
+          },
+        }) as never,
+      measureVideo: async (localPath: string) => {
+        const m = qaMeasurements.get(localPath);
+        if (!m) throw new Error(`no fake qa measurement recorded for ${localPath}`);
+        return m;
+      },
+      detectBlackFrames: async () => [],
+      fetchFn: (async (url: string) => {
+        const key = new URL(url).pathname.replace(/^\//, '');
+        const localPath = uploadedFiles[key];
+        if (!localPath) return new Response(null, { status: 404 });
+        const bytes = await readFile(localPath);
+        return new Response(bytes, { status: 200 });
+      }) as unknown as typeof fetch,
+    };
+
+    await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
+
+    assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
 });
