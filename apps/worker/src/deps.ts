@@ -8,6 +8,7 @@ import { ArtifactsRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-st
 import { createAnthropicProvider } from '@signal-studio/providers/llm-anthropic';
 import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 import { getEngine } from '@signal-studio/render-core/engine';
+import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
 // Side-effect import: registers the 'remotion' engine with render-core.
 import '@signal-studio/render-remotion';
@@ -79,6 +80,7 @@ export function realRunJobDeps(): RunJobDeps {
     createStorage: createStorageProviderFor,
     synthesise: realTts(),
     compileClipsOverlay,
+    compileCaseFile,
     render: realRender(),
     createPublishProviderFor,
     measureVideo,

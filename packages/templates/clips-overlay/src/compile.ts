@@ -58,6 +58,14 @@ export function compile(resolvedJob: ResolvedJob, params: CompileParams): Timeli
       `compile() is the clips-overlay template's compiler; got visual.mode="${manifest.visual.mode}"`,
     );
   }
+  // `end_card` became schema-optional at P3.7 (`case-file` has no end-card
+  // concept at all) — clips-overlay still requires one, checked here now
+  // instead of at the schema level.
+  if (!manifest.end_card) {
+    throw new ClipsOverlayCompileError(
+      'compile(): manifest.end_card is required for clips-overlay',
+    );
+  }
 
   const shots = visibleShots(manifest.shots, params.outputId);
 

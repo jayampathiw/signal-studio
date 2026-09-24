@@ -7,6 +7,7 @@ import { test } from 'node:test';
 import { promisify } from 'node:util';
 
 import { Manifest } from '@signal-studio/core/schemas';
+import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
 
 import { runJob, type RunJobDeps } from './run-job.ts';
@@ -157,6 +158,9 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
       return { wavPath, durationSec: 1.8 };
     },
     compileClipsOverlay,
+    compileCaseFile: () => {
+      throw new Error('compileCaseFile: not exercised by these clips-overlay tests');
+    },
     render: async (timeline, opts) => {
       await mkdir(opts.outputDir, { recursive: true });
       const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
@@ -299,4 +303,254 @@ test('runJob: a qa stage failure marks the job failed and blocks publish', async
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }
+});
+
+test('runJob: case-file handler compiles, renders, and delivers using the real compileCaseFile()', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-case-file-test-'));
+  try {
+    const imagePath = path.join(workDir, 'doc1.png');
+    await writeFile(imagePath, 'fake-image-bytes');
+
+    const manifest = Manifest.parse({
+      version: '1',
+      projectRef: 'test-project',
+      template: 'case-file',
+      visual: { mode: 'case-file' },
+      shots: [
+        {
+          id: 's1',
+          image: 'doc1.png',
+          voiceover_text: 'This is a real narration line for the case file.',
+          text: 'Fallback caption text.',
+        },
+      ],
+      case_file: { caseId: 'test-case', aspectRatio: '16:9' },
+      outputs: ['fb'],
+      gates: [],
+      publish: [],
+      captions: {},
+      audio: { voice: 'bm_george', speed: 1 },
+    });
+
+    const qaMeasurements = new Map<
+      string,
+      {
+        durationSec: number;
+        width: number;
+        height: number;
+        fps: number;
+        integratedLufs: number;
+        truePeakDb: number;
+      }
+    >();
+    const statusUpdates: string[] = [];
+    const stageStore = new Map<
+      string,
+      { hash: string; status: 'done' | 'failed'; outputs?: unknown }
+    >();
+
+    const deps: RunJobDeps = {
+      jobsRepo: {
+        async getById() {
+          return {
+            id: 'job-1',
+            org_id: 'org-test',
+            project_id: 'proj-1',
+            manifest,
+            status: 'created',
+            created_at: '',
+            updated_at: '',
+          };
+        },
+        async updateStatus(_id: string, status: string) {
+          statusUpdates.push(status);
+        },
+      } as never,
+      projectsRepo: {
+        async getById() {
+          return {
+            id: 'proj-1',
+            org_id: 'org-test',
+            slug: 'test-project',
+            config: {
+              slug: 'test-project',
+              orgId: 'org-test',
+              defaults: { template: 'case-file', voice: 'bm_george', speed: 1, outputs: ['fb'] },
+              gates: [],
+              publishTargets: [],
+              providers: {
+                tts: 'kokoro-js',
+                captions: 'whisper',
+                image: 'fal',
+                storage: 'local',
+                publish: 'facebook',
+              },
+              qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
+            },
+          };
+        },
+      } as never,
+      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createStageStore: () =>
+        ({
+          async getLastRun(_jobId: string, stageName: string, outputId?: string) {
+            return stageStore.get(`${stageName}:${outputId ?? ''}`) ?? null;
+          },
+          async recordStart() {},
+          async recordEnd(_jobId: string, stageName: string, result: never, outputId?: string) {
+            stageStore.set(`${stageName}:${outputId ?? ''}`, result);
+          },
+          async log() {},
+        }) as never,
+      createStorage: () =>
+        ({
+          async signedUrl(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+          async put({ key }: { localPath: string; key: string }) {
+            return { url: `https://fake-storage.test/${key}` };
+          },
+          async presignUpload(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+        }) as never,
+      synthesise: async ({ text }: { text: string }) => {
+        void text;
+        const wavPath = path.join(os.tmpdir(), `fake-vo-${Date.now()}.wav`);
+        await writeFile(wavPath, 'fake-wav-bytes');
+        return { wavPath, durationSec: 3.0 };
+      },
+      compileClipsOverlay: () => {
+        throw new Error('compileClipsOverlay: not exercised by this case-file test');
+      },
+      compileCaseFile,
+      render: async (timeline, opts) => {
+        await mkdir(opts.outputDir, { recursive: true });
+        const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
+        await writeFile(outputPath, 'fake-mp4-bytes');
+        qaMeasurements.set(outputPath, {
+          // case-file's real CaseFile.tsx adds a fixed 2.5s outro card
+          // whenever caseMeta.showOutro is set (the default) — matches
+          // run-job.ts's own real "expected duration" fix for the same gap.
+          durationSec:
+            timeline.scenes.reduce((sum, s) => sum + s.durationSecs, 0) +
+            (timeline.caseMeta?.showOutro !== false ? 2.5 : 0),
+          width: 1920,
+          height: 1080,
+          fps: 30,
+          integratedLufs: -14,
+          truePeakDb: -3,
+        });
+        return outputPath;
+      },
+      createPublishProviderFor: () =>
+        ({
+          async post() {
+            return { postId: 'x' };
+          },
+        }) as never,
+      measureVideo: async (localPath: string) => {
+        const m = qaMeasurements.get(localPath);
+        if (!m) throw new Error(`no fake qa measurement recorded for ${localPath}`);
+        return m;
+      },
+      detectBlackFrames: async () => [],
+      fetchFn: (async () => {
+        const bytes = await readFile(imagePath);
+        return new Response(bytes, { status: 200 });
+      }) as unknown as typeof fetch,
+    };
+
+    await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
+
+    assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});
+
+test('runJob: throws a clear error for an unsupported visual.mode', async () => {
+  const manifest = Manifest.parse({
+    version: '1',
+    projectRef: 'test-project',
+    template: 'stills-kenburns',
+    visual: { mode: 'stills-kenburns' },
+    shots: [{ id: 's1', text: 'x' }],
+    outputs: ['fb'],
+    gates: [],
+    publish: [],
+    captions: {},
+  });
+
+  const deps: RunJobDeps = {
+    jobsRepo: {
+      async getById() {
+        return {
+          id: 'job-1',
+          org_id: 'org-test',
+          project_id: 'proj-1',
+          manifest,
+          status: 'created',
+          created_at: '',
+          updated_at: '',
+        };
+      },
+      async updateStatus() {},
+    } as never,
+    projectsRepo: {
+      async getById() {
+        return {
+          id: 'proj-1',
+          org_id: 'org-test',
+          slug: 'test-project',
+          config: {
+            slug: 'test-project',
+            orgId: 'org-test',
+            defaults: {
+              template: 'stills-kenburns',
+              voice: 'bm_george',
+              speed: 1,
+              outputs: ['fb'],
+            },
+            gates: [],
+            publishTargets: [],
+            providers: {
+              tts: 'kokoro-js',
+              captions: 'whisper',
+              image: 'fal',
+              storage: 'local',
+              publish: 'facebook',
+            },
+            qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
+          },
+        };
+      },
+    } as never,
+    createArtifactsRepo: () => ({ async record() {} }) as never,
+    createStageStore: () => ({}) as never,
+    createStorage: () => ({}) as never,
+    synthesise: async () => ({ wavPath: '', durationSec: 0 }),
+    compileClipsOverlay: () => {
+      throw new Error('unreachable');
+    },
+    compileCaseFile: () => {
+      throw new Error('unreachable');
+    },
+    render: async () => '',
+    createPublishProviderFor: () =>
+      ({
+        async post() {
+          return { postId: 'x' };
+        },
+      }) as never,
+    measureVideo: async () => {
+      throw new Error('unreachable');
+    },
+    detectBlackFrames: async () => [],
+  };
+
+  await assert.rejects(
+    () => runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' })),
+    /unsupported visual\.mode "stills-kenburns"/,
+  );
 });

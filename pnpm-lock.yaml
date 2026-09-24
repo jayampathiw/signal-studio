@@ -204,6 +204,9 @@ importers:
       '@signal-studio/render-remotion':
         specifier: workspace:*
         version: link:../../packages/render/remotion
+      '@signal-studio/template-case-file':
+        specifier: workspace:*
+        version: link:../../packages/templates/case-file
       '@signal-studio/template-clips-overlay':
         specifier: workspace:*
         version: link:../../packages/templates/clips-overlay

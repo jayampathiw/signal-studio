@@ -15,6 +15,7 @@
     "@signal-studio/providers": "workspace:*",
     "@signal-studio/render-core": "workspace:*",
     "@signal-studio/render-remotion": "workspace:*",
+    "@signal-studio/template-case-file": "workspace:*",
     "@signal-studio/template-clips-overlay": "workspace:*",
     "@signal-studio/template-compilation": "workspace:*",
     "googleapis": "^144.0.0",
