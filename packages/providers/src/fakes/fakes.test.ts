@@ -1,17 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import {
-  LlmResult,
-  TtsResult,
-  WordTiming,
-  ImageResult,
-  StockResult,
-  StorageResult,
-  PublishResult,
-  assertImplemented,
-  NotImplementedProviderError,
-} from '../contracts.ts';
+import { assertImplemented, NotImplementedProviderError } from '../contracts.ts';
+import { assertEachMatchesContract, assertMatchesContract } from '../contract-test-harness.ts';
 import {
   fakeLlmProvider,
   fakeTtsProvider,
@@ -26,7 +17,7 @@ test('fakeLlmProvider result matches LlmResult schema', async () => {
   const result = await fakeLlmProvider.complete({
     messages: [{ role: 'user', content: 'hello world' }],
   });
-  assert.equal(LlmResult.safeParse(result).success, true);
+  assertMatchesContract('llm', result);
 });
 
 test('fakeTtsProvider result matches TtsResult schema and scales with speed', async () => {
@@ -40,7 +31,7 @@ test('fakeTtsProvider result matches TtsResult schema and scales with speed', as
     voice: 'bm_george',
     speed: 2,
   });
-  assert.equal(TtsResult.safeParse(normal).success, true);
+  assertMatchesContract('tts', normal);
   assert.ok(fast.durationSec < normal.durationSec);
 });
 
@@ -50,23 +41,23 @@ test('fakeCaptionsProvider returns word timings matching WordTiming schema', asy
     hintText: 'one two three',
   });
   assert.equal(timings.length, 3);
-  for (const t of timings) assert.equal(WordTiming.safeParse(t).success, true);
+  assertEachMatchesContract('captions', timings);
 });
 
 test('fakeImageProvider result matches ImageResult schema', async () => {
   const result = await fakeImageProvider.generate({ prompt: 'a red fox', aspect: '9:16' });
-  assert.equal(ImageResult.safeParse(result).success, true);
+  assertMatchesContract('image', result);
 });
 
 test('fakeStockProvider result matches StockResult schema', async () => {
   const results = await fakeStockProvider.search({ query: 'ocean', orientation: 'vertical' });
   assert.equal(results.length, 1);
-  assert.equal(StockResult.safeParse(results[0]).success, true);
+  assertEachMatchesContract('stock', results);
 });
 
 test('fakeStorageProvider result matches StorageResult schema', async () => {
   const result = await fakeStorageProvider.put({ localPath: '/tmp/x.mp4', key: 'clips/x.mp4' });
-  assert.equal(StorageResult.safeParse(result).success, true);
+  assertMatchesContract('storage', result);
   assert.match(await fakeStorageProvider.signedUrl('clips/x.mp4'), /signed=1/);
 });
 
@@ -77,7 +68,7 @@ test('fakePublishProvider result matches PublishResult schema', async () => {
     video: '/tmp/x.mp4',
     caption: 'hello',
   });
-  assert.equal(PublishResult.safeParse(result).success, true);
+  assertMatchesContract('publish', result);
 });
 
 test('assertImplemented throws NotImplementedProviderError for an unimplemented id', () => {
