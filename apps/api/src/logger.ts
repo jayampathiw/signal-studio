@@ -1,20 +1,12 @@
 import pino from 'pino';
 
 /**
- * P2.5/P4.3 — `--log-level` + JSON-logs support for the `ss` CLI, real
- * pino under the hood for JSON mode (P4.3's own bullet: "pino JSON →
- * stdout"). Text mode (the default, for a human at a terminal) is
- * unchanged from P2.5 — plain `console.error` (stderr), matching CLAUDE.md's
- * "No console.log in production paths — console.error for errors".
- *
- * **JSON mode is a deliberate, scoped exception to that same rule**: real
- * pino writes NDJSON to **stdout**, not stderr, because that's what a
- * container's log collector (`docker logs`, P4.2's own deployment) expects
- * from a service's structured logs — CLAUDE.md's console rule targets
- * stray debug prints in application code, not the one sanctioned
- * structured-logging path this file exists to be. `run-job.yml`'s CI logs
- * and `ss worker`'s real production logging both use `--json` for exactly
- * this reason.
+ * P4.3 — `apps/api` had no structured logger at all before this pass (just
+ * one `console.error` startup banner in `index.ts`). Same shape and same
+ * real-pino-to-stdout reasoning as `apps/worker/src/logger.ts`'s own header
+ * — kept as its own small file rather than a shared package, matching this
+ * repo's existing per-app-owns-its-small-utilities convention (neither app
+ * depends on the other).
  */
 
 export const LOG_LEVELS = ['debug', 'info', 'warn', 'error'] as const;
@@ -32,9 +24,6 @@ export function createLogger(opts: { level?: LogLevel; json?: boolean } = {}): L
 
   if (opts.json) {
     const p = pino({ level });
-    // pino's own call order is `(mergingObject, msg)` — the reverse of
-    // this file's `(message, meta)` — wrapped here so every real call
-    // site across `apps/worker` (dozens of them) needed no change.
     return {
       debug: (message, meta) => p.debug(meta ?? {}, message),
       info: (message, meta) => p.info(meta ?? {}, message),

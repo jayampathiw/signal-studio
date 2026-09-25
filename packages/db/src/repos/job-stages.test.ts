@@ -130,3 +130,48 @@ test('P2.5: getLastRun returns outputs from the row, so a skip can still feed co
   const result = await repo.getLastRun('job-1', 'assets');
   assert.deepEqual(result, { hash: 'h1', status: 'done', outputs: { durations: { s1: 4 } } });
 });
+
+test('P4.3: listRecent scopes to org+job, orders by created_at desc with a limit, then returns chronological order', async () => {
+  const chain = {
+    select: () => chain,
+    eq: () => chain,
+    order: (col: string, opts: { ascending: boolean }) => {
+      assert.equal(col, 'created_at');
+      assert.equal(opts.ascending, false);
+      return chain;
+    },
+    limit: async (n: number) => {
+      assert.equal(n, 2);
+      // Simulate Postgres returning newest-first per the real .order() call.
+      return {
+        data: [
+          { id: 2, stage_name: 'assets', message: 'second', created_at: 't2' },
+          { id: 1, stage_name: 'assets', message: 'first', created_at: 't1' },
+        ],
+        error: null,
+      };
+    },
+  };
+  const client = { from: () => chain };
+  const repo = new JobStagesRepo(client as never, 'org-1');
+
+  const entries = await repo.listRecent('job-1', 2);
+
+  assert.deepEqual(entries, [
+    { id: 1, stage_name: 'assets', message: 'first', created_at: 't1' },
+    { id: 2, stage_name: 'assets', message: 'second', created_at: 't2' },
+  ]);
+});
+
+test('P4.3: listRecent throws a clear error on a Supabase failure', async () => {
+  const chain = {
+    select: () => chain,
+    eq: () => chain,
+    order: () => chain,
+    limit: async () => ({ data: null, error: { message: 'connection reset' } }),
+  };
+  const client = { from: () => chain };
+  const repo = new JobStagesRepo(client as never, 'org-1');
+
+  await assert.rejects(() => repo.listRecent('job-1', 50), /connection reset/);
+});

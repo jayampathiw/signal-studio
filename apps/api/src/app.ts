@@ -2,10 +2,11 @@ import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { resolveJob } from '@signal-studio/core/resolve';
 import { Manifest } from '@signal-studio/core/schemas';
 import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
-import type { ApiKeysRepo, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
+import type { ApiKeysRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
 import type { StorageProvider } from '@signal-studio/providers/contracts';
 
 import type { Dispatcher } from './dispatcher.ts';
+import type { Logger } from './logger.ts';
 import { apiKeyAuth, type AuthVariables } from './middleware/api-key.ts';
 
 /**
@@ -34,16 +35,52 @@ const JobResponse = z.object({
 
 const ErrorResponse = z.object({ error: z.string() });
 
+const LogEntryResponse = z.object({
+  id: z.union([z.string(), z.number()]),
+  stage_name: z.string().nullable(),
+  message: z.string(),
+  created_at: z.string(),
+});
+
 export type AppDeps = {
   jobsRepo: JobsRepo;
   projectsRepo: ProjectsRepo;
   apiKeysRepo: ApiKeysRepo;
   createStorage: (providerId: string) => StorageProvider;
   dispatcher: Dispatcher;
+  // P4.1 addition — one per org, same "factory, not a fixed instance"
+  // reasoning `apps/worker`'s own `createArtifactsRepo`/`createStageStore`
+  // deps already have (the org isn't known until request time, from
+  // `apiKeyAuth` middleware).
+  createJobStagesRepo: (orgId: string) => JobStagesRepo;
+  // P4.3 addition — optional so every existing `createApp(deps)` test
+  // fixture (built before this pass) keeps compiling unchanged; real
+  // callers (`src/index.ts`) always supply the real pino-backed one.
+  logger?: Logger;
 };
 
 export function createApp(deps: AppDeps) {
   const app = new OpenAPIHono<{ Variables: AuthVariables }>();
+  const logger: Logger = deps.logger ?? {
+    debug() {},
+    info() {},
+    warn() {},
+    error() {},
+  };
+
+  // P4.3 — every unhandled route error (a thrown `DispatchError`, a
+  // Supabase call failing, etc.) previously fell through to Hono's own
+  // default 500 with no structured logging at all. Now logged with real
+  // request context before still returning the same generic 500 body —
+  // never a raw stack trace to the caller.
+  app.onError((err, c) => {
+    logger.error('unhandled request error', {
+      method: c.req.method,
+      path: c.req.path,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return c.json({ error: 'Internal server error' }, 500);
+  });
 
   app.openapi(
     createRoute({
@@ -119,6 +156,36 @@ export function createApp(deps: AppDeps) {
       // be able to see it either way.
       if (!job || job.org_id !== orgId) return c.json({ error: 'Job not found' }, 404);
       return c.json(job, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/jobs/{id}/log',
+      request: {
+        params: z.object({ id: z.string() }),
+        query: z.object({ tail: z.coerce.number().int().positive().max(500).optional() }),
+      },
+      responses: {
+        200: {
+          content: { 'application/json': { schema: z.array(LogEntryResponse) } },
+          description: 'The most recent job_log entries, oldest first',
+        },
+        404: {
+          content: { 'application/json': { schema: ErrorResponse } },
+          description: 'Not found',
+        },
+      },
+    }),
+    async (c) => {
+      const orgId = c.get('orgId');
+      const { id } = c.req.valid('param');
+      const { tail } = c.req.valid('query');
+      const job = await deps.jobsRepo.getById(id);
+      if (!job || job.org_id !== orgId) return c.json({ error: 'Job not found' }, 404);
+      const entries = await deps.createJobStagesRepo(orgId).listRecent(id, tail ?? 50);
+      return c.json(entries, 200);
     },
   );
 

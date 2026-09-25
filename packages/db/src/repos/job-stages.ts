@@ -95,4 +95,33 @@ export class JobStagesRepo implements JobStageStore {
       .insert({ org_id: this.orgId, job_id: jobId, stage_name: stageName, message });
     if (error) throw new Error(`JobStagesRepo.log: ${error.message}`);
   }
+
+  // P4.3 addition — the real read side of `log()`, for the API's own
+  // `GET /jobs/:id/log?tail=N` endpoint. Fetches the `tail` most recent
+  // rows (newest first, cheapest for the DB to answer), then reverses them
+  // before returning — a human tailing a job's log wants chronological
+  // order, the same as `tail -f` would show.
+  async listRecent(
+    jobId: string,
+    tail: number,
+  ): Promise<
+    Array<{ id: string | number; stage_name: string | null; message: string; created_at: string }>
+  > {
+    const { data, error } = await this.client
+      .from('job_log')
+      .select('id, stage_name, message, created_at')
+      .eq('org_id', this.orgId)
+      .eq('job_id', jobId)
+      .order('created_at', { ascending: false })
+      .limit(tail);
+    if (error) throw new Error(`JobStagesRepo.listRecent: ${error.message}`);
+    return (
+      data as Array<{
+        id: string | number;
+        stage_name: string | null;
+        message: string;
+        created_at: string;
+      }>
+    ).reverse();
+  }
 }

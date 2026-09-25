@@ -116,6 +116,12 @@ function fakeDeps(overrides: Partial<AppDeps> = {}): {
       },
     }),
     dispatcher: { dispatch: async () => {} },
+    createJobStagesRepo: () =>
+      ({
+        async listRecent() {
+          return [];
+        },
+      }) as never,
     ...overrides,
   };
 
@@ -292,4 +298,91 @@ test('GET /openapi.json: serves a real generated OpenAPI document', async () => 
   assert.equal(doc.openapi, '3.0.0');
   assert.ok(doc.paths['/jobs']);
   assert.ok(doc.paths['/jobs/{id}/approve']);
+});
+
+test('GET /jobs/:id/log: returns entries scoped to the org, 404 for another org or missing job', async () => {
+  const logEntries = [
+    { id: 1, stage_name: 'assets', message: 'running (hash=abc)', created_at: 't1' },
+    { id: 2, stage_name: 'assets', message: 'skipped (unchanged, hash=abc)', created_at: 't2' },
+  ];
+  let capturedTail: number | undefined;
+  const { deps, jobs } = fakeDeps({
+    createJobStagesRepo: () =>
+      ({
+        async listRecent(_jobId: string, tail: number) {
+          capturedTail = tail;
+          return logEntries;
+        },
+      }) as never,
+  });
+  const app = createApp(deps);
+  const createRes = await app.request('/jobs', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${API_KEY}` },
+    body: JSON.stringify({ projectSlug: 'test-project', manifest: validManifest() }),
+  });
+  const created = await createRes.json();
+
+  const res = await app.request(`/jobs/${created.id}/log?tail=10`, {
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), logEntries);
+  assert.equal(capturedTail, 10);
+
+  // Default tail when the query param is omitted.
+  await app.request(`/jobs/${created.id}/log`, {
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(capturedTail, 50);
+
+  // A job belonging to another org reads as 404, same convention as
+  // GET /jobs/:id.
+  jobs.get(created.id)!.org_id = 'some-other-org';
+  const forbidden = await app.request(`/jobs/${created.id}/log`, {
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(forbidden.status, 404);
+
+  const missing = await app.request('/jobs/does-not-exist/log', {
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(missing.status, 404);
+});
+
+test('onError: an unhandled route error is logged with real request context and returns a generic 500', async () => {
+  const logs: Array<{ level: string; message: string; meta?: Record<string, unknown> }> = [];
+  const { deps, jobs } = fakeDeps({
+    dispatcher: {
+      dispatch: async () => {
+        throw new Error('github is down');
+      },
+    },
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: (message, meta) => logs.push({ level: 'error', message, meta }),
+    },
+  });
+  const app = createApp(deps);
+  const createRes = await app.request('/jobs', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${API_KEY}` },
+    body: JSON.stringify({ projectSlug: 'test-project', manifest: validManifest() }),
+  });
+  const created = await createRes.json();
+  jobs.get(created.id)!.status = 'queued';
+
+  const res = await app.request(`/jobs/${created.id}/dispatch`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+
+  assert.equal(res.status, 500);
+  assert.deepEqual(await res.json(), { error: 'Internal server error' });
+  assert.equal(logs.length, 1);
+  assert.equal(logs[0].message, 'unhandled request error');
+  assert.equal(logs[0].meta?.error, 'github is down');
+  assert.equal(logs[0].meta?.path, `/jobs/${created.id}/dispatch`);
 });

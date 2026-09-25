@@ -1,13 +1,18 @@
 import { serve } from '@hono/node-server';
 import { createEngineClient } from '@signal-studio/db/client';
-import { ApiKeysRepo, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
+import { ApiKeysRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
 
 import { createApp } from './app.ts';
 import { createGithubDispatcher, createQueueDispatcher, type Dispatcher } from './dispatcher.ts';
+import { createLogger } from './logger.ts';
 import { createStorageProviderFor } from './storage.ts';
 
 const client = createEngineClient();
 const jobsRepo = new JobsRepo(client);
+const logger = createLogger({
+  level: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' | undefined) ?? 'info',
+  json: process.env.LOG_JSON !== 'false',
+});
 
 /**
  * P4.1 — `DISPATCH_MODE` selects which real dispatcher the API uses.
@@ -55,11 +60,11 @@ const app = createApp({
   apiKeysRepo: new ApiKeysRepo(client),
   createStorage: createStorageProviderFor,
   dispatcher: await createDispatcher(),
+  createJobStagesRepo: (orgId: string) => new JobStagesRepo(client, orgId),
+  logger,
 });
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, (info) => {
-  // Startup banner, not an error path — CLAUDE.md's console rule is about
-  // production request-handling code, not a one-line "the server is up" log.
-  console.error(`signal-studio API listening on :${info.port}`);
+  logger.info(`signal-studio API listening on :${info.port}`);
 });
