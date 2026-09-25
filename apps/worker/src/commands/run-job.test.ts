@@ -7,6 +7,7 @@ import { test } from 'node:test';
 import { promisify } from 'node:util';
 
 import { Manifest } from '@signal-studio/core/schemas';
+import { compile as compileCarousel } from '@signal-studio/template-carousel/compile';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
 import { compile as compileCompilation } from '@signal-studio/template-compilation/compile';
@@ -173,6 +174,17 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
     },
     compileCompilation: () => {
       throw new Error('compileCompilation: not exercised by these clips-overlay tests');
+    },
+    compileCarousel: () => {
+      throw new Error('compileCarousel: not exercised by these clips-overlay tests');
+    },
+    renderCarouselStills: () => {
+      throw new Error('renderCarouselStills: not exercised by these clips-overlay tests');
+    },
+    createCarouselPublishProviderFor: () => {
+      throw new Error(
+        'createCarouselPublishProviderFor: not exercised by these clips-overlay tests',
+      );
     },
     parseShotlistV2: () => {
       throw new Error('parseShotlistV2: not exercised by these clips-overlay tests');
@@ -449,6 +461,15 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
       compileCompilation: () => {
         throw new Error('compileCompilation: not exercised by this case-file test');
       },
+      compileCarousel: () => {
+        throw new Error('compileCarousel: not exercised by this case-file test');
+      },
+      renderCarouselStills: () => {
+        throw new Error('renderCarouselStills: not exercised by this case-file test');
+      },
+      createCarouselPublishProviderFor: () => {
+        throw new Error('createCarouselPublishProviderFor: not exercised by this case-file test');
+      },
       parseShotlistV2: () => {
         throw new Error('parseShotlistV2: not exercised by this case-file test');
       },
@@ -501,8 +522,8 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
   const manifest = Manifest.parse({
     version: '1',
     projectRef: 'test-project',
-    template: 'carousel',
-    visual: { mode: 'carousel' },
+    template: 'longform-brief',
+    visual: { mode: 'longform-brief' },
     shots: [{ id: 's1', text: 'x' }],
     outputs: ['fb'],
     gates: [],
@@ -535,7 +556,7 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
             slug: 'test-project',
             orgId: 'org-test',
             defaults: {
-              template: 'carousel',
+              template: 'longform-brief',
               voice: 'bm_george',
               speed: 1,
               outputs: ['fb'],
@@ -573,6 +594,15 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
     compileCompilation: () => {
       throw new Error('unreachable');
     },
+    compileCarousel: () => {
+      throw new Error('compileCarousel: not exercised by this test');
+    },
+    renderCarouselStills: () => {
+      throw new Error('renderCarouselStills: not exercised by this test');
+    },
+    createCarouselPublishProviderFor: () => {
+      throw new Error('createCarouselPublishProviderFor: not exercised by this test');
+    },
     parseShotlistV2: () => {
       throw new Error('unreachable');
     },
@@ -591,7 +621,7 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
 
   await assert.rejects(
     () => runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' })),
-    /unsupported visual\.mode "carousel"/,
+    /unsupported visual\.mode "longform-brief"/,
   );
 });
 
@@ -756,6 +786,17 @@ test('runJob: stills-kenburns handler compiles, renders (real render-ffmpeg), an
       },
       compileCompilation: () => {
         throw new Error('compileCompilation: not exercised by this stills-kenburns test');
+      },
+      compileCarousel: () => {
+        throw new Error('compileCarousel: not exercised by this stills-kenburns test');
+      },
+      renderCarouselStills: () => {
+        throw new Error('renderCarouselStills: not exercised by this stills-kenburns test');
+      },
+      createCarouselPublishProviderFor: () => {
+        throw new Error(
+          'createCarouselPublishProviderFor: not exercised by this stills-kenburns test',
+        );
       },
       parseShotlistV2,
       render: async () => {
@@ -960,6 +1001,15 @@ test('runJob: shorts-916 handler compiles, renders (real render-ffmpeg), and del
       compileShorts916,
       compileCompilation: () => {
         throw new Error('compileCompilation: not exercised by this shorts-916 test');
+      },
+      compileCarousel: () => {
+        throw new Error('compileCarousel: not exercised by this shorts-916 test');
+      },
+      renderCarouselStills: () => {
+        throw new Error('renderCarouselStills: not exercised by this shorts-916 test');
+      },
+      createCarouselPublishProviderFor: () => {
+        throw new Error('createCarouselPublishProviderFor: not exercised by this shorts-916 test');
       },
       parseShotlistV2: () => {
         throw new Error('parseShotlistV2: not exercised by this shorts-916 test');
@@ -1183,6 +1233,15 @@ test('runJob: compilation handler compiles, renders, and delivers using the real
         throw new Error('compileShorts916: not exercised by this compilation test');
       },
       compileCompilation,
+      compileCarousel: () => {
+        throw new Error('compileCarousel: not exercised by this compilation test');
+      },
+      renderCarouselStills: () => {
+        throw new Error('renderCarouselStills: not exercised by this compilation test');
+      },
+      createCarouselPublishProviderFor: () => {
+        throw new Error('createCarouselPublishProviderFor: not exercised by this compilation test');
+      },
       parseShotlistV2: () => {
         throw new Error('parseShotlistV2: not exercised by this compilation test');
       },
@@ -1229,6 +1288,320 @@ test('runJob: compilation handler compiles, renders, and delivers using the real
     await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
 
     assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});
+
+test('runJob: carousel handler renders N stills (real compileCarousel()), uploads them, and posts a real carousel via the carousel publish provider', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-carousel-test-'));
+  try {
+    const watermarkPath = path.join(workDir, 'logo.png');
+    await writeFile(watermarkPath, 'fake-png-bytes');
+
+    const manifest = Manifest.parse({
+      version: '1',
+      projectRef: 'test-project',
+      template: 'carousel',
+      visual: { mode: 'carousel' },
+      carousel: {
+        postCaption: 'A real carousel caption.',
+        watermarkImage: 'logo.png',
+        slides: [
+          { headline: 'Slide one', showFolder: true },
+          { headline: 'Slide two', body: 'Some body text.' },
+          { headline: 'Slide three', showFolder: true },
+        ],
+      },
+      outputs: ['fb'],
+      gates: [],
+      publish: ['facebook'],
+      captions: {},
+    });
+
+    const uploadedFiles: Record<string, string> = {
+      'jobs/job-1/uploads/watermark/logo.png': watermarkPath,
+    };
+    const statusUpdates: string[] = [];
+    const artifacts: Array<{ kind: string; url: string }> = [];
+    const publishCalls: Array<{
+      platform: string;
+      pageRef: string;
+      images: string[];
+      caption: string;
+    }> = [];
+
+    const deps: RunJobDeps = {
+      jobsRepo: {
+        async getById() {
+          return {
+            id: 'job-1',
+            org_id: 'org-test',
+            project_id: 'proj-1',
+            manifest,
+            status: 'created',
+            created_at: '',
+            updated_at: '',
+          };
+        },
+        async updateStatus(_id: string, status: string) {
+          statusUpdates.push(status);
+        },
+      } as never,
+      projectsRepo: {
+        async getById() {
+          return {
+            id: 'proj-1',
+            org_id: 'org-test',
+            slug: 'test-project',
+            config: {
+              slug: 'test-project',
+              orgId: 'org-test',
+              defaults: { template: 'carousel', voice: 'bm_george', speed: 1, outputs: ['fb'] },
+              gates: [],
+              publishTargets: [{ platform: 'facebook', credentialRef: 'TEST' }],
+              providers: {
+                tts: 'kokoro-js',
+                captions: 'whisper',
+                image: 'fal',
+                storage: 'local',
+                publish: 'facebook',
+              },
+              qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
+            },
+          };
+        },
+      } as never,
+      createArtifactsRepo: () =>
+        ({
+          async record(_jobId: string, _stage: string, kind: string, url: string) {
+            artifacts.push({ kind, url });
+          },
+        }) as never,
+      createStageStore: () => ({}) as never,
+      createStorage: () =>
+        ({
+          async signedUrl(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+          async put({ localPath, key }: { localPath: string; key: string }) {
+            void localPath;
+            return { url: `https://fake-storage.test/${key}` };
+          },
+          async presignUpload(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+        }) as never,
+      synthesise: async () => {
+        throw new Error('synthesise: not exercised by this carousel test');
+      },
+      compileClipsOverlay: () => {
+        throw new Error('unreachable');
+      },
+      compileCaseFile: () => {
+        throw new Error('unreachable');
+      },
+      compileStillsKenburns: () => {
+        throw new Error('unreachable');
+      },
+      compileShorts916: () => {
+        throw new Error('unreachable');
+      },
+      compileCompilation: () => {
+        throw new Error('unreachable');
+      },
+      compileCarousel,
+      renderCarouselStills: async (output, opts) => {
+        await mkdir(opts.outputDir, { recursive: true });
+        const outPaths: string[] = [];
+        for (let i = 0; i < output.slides.length; i++) {
+          const p = path.join(opts.outputDir, `slide-${i + 1}.png`);
+          await writeFile(p, `fake-png-${i + 1}`);
+          outPaths.push(p);
+        }
+        return outPaths;
+      },
+      createCarouselPublishProviderFor: (platform: string) =>
+        ({
+          async post(args: { pageRef: string; images: string[]; caption: string }) {
+            publishCalls.push({ platform, ...args });
+            return { postId: 'post-1', url: 'https://www.facebook.com/post-1' };
+          },
+        }) as never,
+      parseShotlistV2: () => {
+        throw new Error('unreachable');
+      },
+      render: async () => {
+        throw new Error('render: not exercised by this carousel test');
+      },
+      createPublishProviderFor: () => {
+        throw new Error('createPublishProviderFor: not exercised by this carousel test');
+      },
+      measureVideo: async () => {
+        throw new Error('unreachable');
+      },
+      detectBlackFrames: async () => [],
+      fetchFn: (async (url: string) => {
+        const key = new URL(url).pathname.replace(/^\//, '');
+        const localPath = uploadedFiles[key];
+        if (!localPath) return new Response(null, { status: 404 });
+        const bytes = await readFile(localPath);
+        return new Response(bytes, { status: 200 });
+      }) as unknown as typeof fetch,
+    };
+
+    await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
+
+    assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+    assert.equal(artifacts.filter((a) => a.kind === 'image').length, 3);
+    assert.equal(publishCalls.length, 1);
+    assert.equal(publishCalls[0].platform, 'facebook');
+    assert.equal(publishCalls[0].pageRef, 'TEST');
+    assert.equal(publishCalls[0].caption, 'A real carousel caption.');
+    assert.equal(publishCalls[0].images.length, 3);
+    const publishArtifact = artifacts.find((a) => a.kind === 'post');
+    assert.equal(publishArtifact?.url, 'https://www.facebook.com/post-1');
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});
+
+test('runJob: carousel handler stops at awaiting_review when the job has gates, without publishing', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-carousel-gated-test-'));
+  try {
+    const manifest = Manifest.parse({
+      version: '1',
+      projectRef: 'test-project',
+      template: 'carousel',
+      visual: { mode: 'carousel' },
+      carousel: {
+        postCaption: 'x',
+        slides: [{ headline: 'A' }, { headline: 'B' }],
+      },
+      outputs: ['fb'],
+      gates: ['image-quality'],
+      publish: ['facebook'],
+      captions: {},
+    });
+
+    const statusUpdates: string[] = [];
+    let publishCalled = false;
+
+    const deps: RunJobDeps = {
+      jobsRepo: {
+        async getById() {
+          return {
+            id: 'job-1',
+            org_id: 'org-test',
+            project_id: 'proj-1',
+            manifest,
+            status: 'created',
+            created_at: '',
+            updated_at: '',
+          };
+        },
+        async updateStatus(_id: string, status: string) {
+          statusUpdates.push(status);
+        },
+      } as never,
+      projectsRepo: {
+        async getById() {
+          return {
+            id: 'proj-1',
+            org_id: 'org-test',
+            slug: 'test-project',
+            config: {
+              slug: 'test-project',
+              orgId: 'org-test',
+              defaults: { template: 'carousel', voice: 'bm_george', speed: 1, outputs: ['fb'] },
+              gates: ['image-quality'],
+              publishTargets: [{ platform: 'facebook', credentialRef: 'TEST' }],
+              providers: {
+                tts: 'kokoro-js',
+                captions: 'whisper',
+                image: 'fal',
+                storage: 'local',
+                publish: 'facebook',
+              },
+              qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
+            },
+          };
+        },
+      } as never,
+      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createStageStore: () => ({}) as never,
+      createStorage: () =>
+        ({
+          async signedUrl(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+          async put({ key }: { localPath: string; key: string }) {
+            return { url: `https://fake-storage.test/${key}` };
+          },
+          async presignUpload(key: string) {
+            return `https://fake-storage.test/${key}`;
+          },
+        }) as never,
+      synthesise: async () => {
+        throw new Error('unreachable');
+      },
+      compileClipsOverlay: () => {
+        throw new Error('unreachable');
+      },
+      compileCaseFile: () => {
+        throw new Error('unreachable');
+      },
+      compileStillsKenburns: () => {
+        throw new Error('unreachable');
+      },
+      compileShorts916: () => {
+        throw new Error('unreachable');
+      },
+      compileCompilation: () => {
+        throw new Error('unreachable');
+      },
+      compileCarousel,
+      renderCarouselStills: async (output, opts) => {
+        await mkdir(opts.outputDir, { recursive: true });
+        const outPaths: string[] = [];
+        for (let i = 0; i < output.slides.length; i++) {
+          const p = path.join(opts.outputDir, `slide-${i + 1}.png`);
+          await writeFile(p, `fake-png-${i + 1}`);
+          outPaths.push(p);
+        }
+        return outPaths;
+      },
+      createCarouselPublishProviderFor: () =>
+        ({
+          async post() {
+            publishCalled = true;
+            return { postId: 'x' };
+          },
+        }) as never,
+      parseShotlistV2: () => {
+        throw new Error('unreachable');
+      },
+      render: async () => {
+        throw new Error('unreachable');
+      },
+      createPublishProviderFor: () => {
+        throw new Error('unreachable');
+      },
+      measureVideo: async () => {
+        throw new Error('unreachable');
+      },
+      detectBlackFrames: async () => [],
+    };
+
+    await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
+
+    assert.deepEqual(statusUpdates, [
+      'queued',
+      'dispatched',
+      'running',
+      'awaiting_review:image-quality',
+    ]);
+    assert.equal(publishCalled, false);
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }

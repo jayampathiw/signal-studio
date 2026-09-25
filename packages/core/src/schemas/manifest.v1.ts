@@ -255,6 +255,29 @@ export const CompilationConfig = z.object({
   episodes: z.array(z.object({ ref: z.string().min(1), title: z.string().min(1) })).min(1),
 });
 
+// P3.7 addition — `carousel`'s own top-level config, mirroring the real
+// `carousel.json` input shape (`appeal-playbook-7-days/carousel.json`'s own
+// `slides[]`/top-level `postCaption`) almost exactly. Like
+// `stills-kenburns`/`shorts-916`, doesn't reuse `shots[]` at all — a slide
+// has no clip/image-per-shot concept `Shot` was built around, just
+// headline/body/showFolder text. `watermarkImage` names the uploaded
+// filename key for the brand logo PNG (same `ss upload --shot watermark
+// --file <name>` convention `stillsKenburns.stillImages` already
+// established) — carousel's own compile() takes a resolved local path, not
+// a manifest-level text watermark the way `Watermark.text` is for every
+// video template.
+export const CarouselSlideConfig = z.object({
+  headline: z.string().min(1),
+  body: z.string().optional(),
+  showFolder: z.boolean().optional(),
+});
+
+export const CarouselJobConfig = z.object({
+  slides: z.array(CarouselSlideConfig).min(1),
+  postCaption: z.string().min(1),
+  watermarkImage: z.string().optional(),
+});
+
 export const Manifest = z
   .object({
     version: z.literal('1'),
@@ -303,14 +326,17 @@ export const Manifest = z
     stillsKenburns: StillsKenburnsConfig.optional(),
     shorts916: Shorts916Config.optional(),
     compilation: CompilationConfig.optional(),
+    carousel: CarouselJobConfig.optional(),
   })
   .superRefine((manifest, ctx) => {
-    // `stills-kenburns`/`shorts-916` carry their scenes in their own
-    // top-level config block instead of `shots[]` — every other template
-    // still needs at least one shot (the `shots[].min(1)` rule moved here,
-    // see that field's comment).
+    // `stills-kenburns`/`shorts-916`/`carousel` carry their scenes/slides in
+    // their own top-level config block instead of `shots[]` — every other
+    // template still needs at least one shot (the `shots[].min(1)` rule
+    // moved here, see that field's comment).
     const usesOwnSceneShape =
-      manifest.visual.mode === 'stills-kenburns' || manifest.visual.mode === 'shorts-916';
+      manifest.visual.mode === 'stills-kenburns' ||
+      manifest.visual.mode === 'shorts-916' ||
+      manifest.visual.mode === 'carousel';
     if (!usesOwnSceneShape && manifest.shots.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -378,6 +404,14 @@ export const Manifest = z
             message: `episodeRef "${shot.episodeRef}" does not match any manifest.compilation.episodes[].ref`,
           });
         }
+      });
+    }
+
+    if (manifest.visual.mode === 'carousel' && !manifest.carousel) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['carousel'],
+        message: 'manifest.carousel is required when visual.mode is "carousel"',
       });
     }
   });

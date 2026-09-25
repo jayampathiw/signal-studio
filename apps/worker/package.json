@@ -16,6 +16,7 @@
     "@signal-studio/render-core": "workspace:*",
     "@signal-studio/render-ffmpeg": "workspace:*",
     "@signal-studio/render-remotion": "workspace:*",
+    "@signal-studio/template-carousel": "workspace:*",
     "@signal-studio/template-case-file": "workspace:*",
     "@signal-studio/template-clips-overlay": "workspace:*",
     "@signal-studio/template-compilation": "workspace:*",

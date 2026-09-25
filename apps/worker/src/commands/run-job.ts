@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 
 import { resolveJob, type ResolvedJob } from '@signal-studio/core/resolve';
 import { StageRunner, type Job, type JobStageStore } from '@signal-studio/core/runner';
-import type { TimelineT, ProjectT } from '@signal-studio/core/schemas';
+import type { CarouselOutputT, TimelineT, ProjectT } from '@signal-studio/core/schemas';
 import { createAssetsStage } from '@signal-studio/core/stages/assets';
 import { createPublishStage, type PublishFn } from '@signal-studio/core/stages/publish';
 import {
@@ -17,8 +17,13 @@ import {
 import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/tts';
 import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
 import type { ArtifactsRepo, JobRow, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
-import type { PublishProvider, StorageProvider } from '@signal-studio/providers/contracts';
+import type {
+  CarouselPublishProvider,
+  PublishProvider,
+  StorageProvider,
+} from '@signal-studio/providers/contracts';
 import { probeDuration } from '@signal-studio/render-ffmpeg/stills-render';
+import type { CarouselCompileParams } from '@signal-studio/template-carousel/compile';
 import type { CaseFileCompileParams } from '@signal-studio/template-case-file/compile';
 import type {
   CompilationEpisode,
@@ -154,6 +159,20 @@ export type RunJobDeps = {
     episodes: CompilationEpisode[],
     params: CompilationCompileParams,
   ) => TimelineT;
+  compileCarousel: (params: CarouselCompileParams) => CarouselOutputT;
+  // `carousel`'s render path returns N still-image paths, not a video —
+  // structurally incompatible with `render`/`renderFfmpeg`'s `TimelineT`
+  // signature (same reasoning `renderCarouselStills()`'s own header gives
+  // for staying off the `render-core` engine registry), so it's its own
+  // separate dep rather than a third branch of `render`/`renderFfmpeg`.
+  renderCarouselStills: (
+    output: CarouselOutputT,
+    opts: { outputDir: string; watermarkPath?: string },
+  ) => Promise<string[]>;
+  createCarouselPublishProviderFor: (
+    platform: string,
+    credentialRef: string,
+  ) => CarouselPublishProvider;
   parseShotlistV2: (text: string) => ParsedShotlist;
   render: (timeline: TimelineT, opts: { outputDir: string }) => Promise<string>;
   // Used by `render-ffmpeg`-based templates (`stills-kenburns`,
@@ -725,6 +744,117 @@ const TEMPLATE_HANDLERS: Record<string, TemplateHandler> = {
   compilation: compilationHandler,
 };
 
+/**
+ * P3.7 — `carousel`'s whole job path, kept structurally separate from
+ * `TEMPLATE_HANDLERS`/the shared render loop below rather than forced to
+ * fit `TemplateOutput`'s `Record<outputId, TimelineT>` shape. A carousel
+ * output is N independent still PNGs with no `Timeline`, no duration, no
+ * audio — `renderCarouselStills()`'s own header already explains why it
+ * stays off the `render-core` engine registry for the same reason; this is
+ * that same reasoning one level up, for the whole job, not just the render
+ * step. Consequently: no `assets`/`tts`/`qa` stages run here at all (none
+ * apply — a still has no clip/VO to ingest and no duration/fps/LUFS/
+ * black-frame check that means anything for it), and publish dispatches
+ * straight to `CarouselPublishProvider` rather than through the shared
+ * `createPublishStage()` (built around one rendered video URL per
+ * platform, not N image URLs).
+ */
+async function runCarouselJob(
+  job: JobRow,
+  project: ProjectT,
+  deps: RunJobDeps,
+  logger: Logger,
+): Promise<void> {
+  const config = job.manifest.carousel;
+  if (!config) {
+    throw new Error('run-job: carousel jobs require manifest.carousel');
+  }
+  const resolvedJob = resolveJob(project, job.manifest);
+  const storage = deps.createStorage(resolvedJob.providers.storage);
+  const artifactsRepo = deps.createArtifactsRepo(job.org_id);
+  const fetchFn = deps.fetchFn ?? fetch;
+
+  const tmpDir = await mkdtemp(path.join(os.tmpdir(), `ss-run-job-${job.id}-`));
+  try {
+    await advanceToRunning(deps.jobsRepo, job, logger);
+
+    let watermarkLocalPath: string | undefined;
+    if (config.watermarkImage) {
+      watermarkLocalPath = await downloadRawAsset(
+        storage,
+        job.id,
+        'watermark',
+        config.watermarkImage,
+        path.join(tmpDir, 'watermark'),
+        fetchFn,
+      );
+    }
+
+    const output = deps.compileCarousel({
+      contentId: job.id,
+      slides: config.slides,
+      watermarkPath: watermarkLocalPath,
+    });
+
+    const renderOutDir = path.join(tmpDir, 'out');
+    const localPaths = await deps.renderCarouselStills(output, {
+      outputDir: renderOutDir,
+      watermarkPath: watermarkLocalPath,
+    });
+
+    const imageUrls: string[] = [];
+    for (let i = 0; i < localPaths.length; i++) {
+      const key = `jobs/${job.id}/rendered/slide-${String(i + 1).padStart(2, '0')}.png`;
+      const { url } = await storage.put({ localPath: localPaths[i], key });
+      imageUrls.push(url);
+      await artifactsRepo.record(job.id, 'render', 'image', url, { slide: i + 1 });
+    }
+    logger.info(`rendered ${imageUrls.length} carousel slides`);
+
+    if (resolvedJob.gates.length === 0 && job.manifest.publish.length > 0) {
+      const publishTargets: Record<string, string> = {};
+      for (const target of project.publishTargets) {
+        publishTargets[target.platform] = target.credentialRef;
+      }
+      for (const platform of job.manifest.publish) {
+        const credentialRef = publishTargets[platform];
+        if (!credentialRef) {
+          throw new Error(`run-job: no publishTarget configured for platform "${platform}"`);
+        }
+        const post = await deps.createCarouselPublishProviderFor(platform, credentialRef).post({
+          platform,
+          pageRef: credentialRef,
+          images: imageUrls,
+          caption: config.postCaption,
+        });
+        await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
+          platform,
+          postId: post.postId,
+        });
+        logger.info(`published ${platform}`, post);
+      }
+    }
+
+    if (resolvedJob.gates.length > 0) {
+      const next = `awaiting_review:${resolvedJob.gates[0]}` as JobStatus;
+      assertJobTransition('running', next);
+      await deps.jobsRepo.updateStatus(job.id, next);
+      logger.info('job running -> awaiting_review (gates present, not evaluated)', {
+        gates: resolvedJob.gates,
+      });
+    } else {
+      assertJobTransition('running', 'delivered');
+      await deps.jobsRepo.updateStatus(job.id, 'delivered');
+      logger.info('job running -> delivered');
+    }
+  } catch (err) {
+    await deps.jobsRepo.updateStatus(job.id, 'failed');
+    throw err;
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true });
+  }
+}
+
 export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logger): Promise<void> {
   const job = await deps.jobsRepo.getById(opts.jobId);
   if (!job) throw new Error(`run-job: no job found with id "${opts.jobId}"`);
@@ -734,10 +864,14 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
     throw new Error(`run-job: job "${job.id}" references missing project_id "${job.project_id}"`);
   const project: ProjectT = projectRow.config;
 
+  if (job.manifest.visual.mode === 'carousel') {
+    return runCarouselJob(job, project, deps, logger);
+  }
+
   const handler = TEMPLATE_HANDLERS[job.manifest.visual.mode];
   if (!handler) {
     throw new Error(
-      `run-job: unsupported visual.mode "${job.manifest.visual.mode}" (expected one of ${Object.keys(TEMPLATE_HANDLERS).join(', ')})`,
+      `run-job: unsupported visual.mode "${job.manifest.visual.mode}" (expected one of ${[...Object.keys(TEMPLATE_HANDLERS), 'carousel'].join(', ')})`,
     );
   }
 

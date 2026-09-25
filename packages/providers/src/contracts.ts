@@ -134,6 +134,24 @@ export interface PublishProvider {
 }
 
 /**
+ * P3.7 addition — a `carousel` template output is N still images, not one
+ * video, so it structurally cannot go through `PublishProvider.post()`'s
+ * `video: string` field. Rather than widen that interface with an optional
+ * `images[]` no video-based provider would ever fill in, this is its own
+ * small, parallel interface — same relationship `renderCarouselStills()`
+ * already has to the video-shaped `RenderEngine.render()` in `render-core`.
+ */
+export interface CarouselPublishProvider {
+  post(args: {
+    platform: string;
+    pageRef: string;
+    images: string[];
+    caption: string;
+    scheduleAt?: string;
+  }): Promise<PublishResultT>;
+}
+
+/**
  * `NotImplementedProvider` is the explicit stand-in for launch-set gaps
  * (Instagram/TikTok per §2.4) — it must fail at **validation** time (when a
  * project/manifest resolves to it), not mid-run. Any provider role can wrap

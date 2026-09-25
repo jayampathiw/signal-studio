@@ -8,6 +8,8 @@ import { ArtifactsRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-st
 import { createAnthropicProvider } from '@signal-studio/providers/llm-anthropic';
 import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 import { getEngine } from '@signal-studio/render-core/engine';
+import { renderCarouselStills } from '@signal-studio/render-remotion/render-stills';
+import { compile as compileCarousel } from '@signal-studio/template-carousel/compile';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
 import { compile as compileClipsOverlay } from '@signal-studio/template-clips-overlay/compile';
 import { compile as compileCompilation } from '@signal-studio/template-compilation/compile';
@@ -23,7 +25,7 @@ import type { RunJobDeps } from './commands/run-job.ts';
 import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
 import type { WorkerDeps } from './commands/worker.ts';
-import { createPublishProviderFor } from './publish.ts';
+import { createCarouselPublishProviderFor, createPublishProviderFor } from './publish.ts';
 import { detectBlackFrames, measureVideo } from './qa-measure.ts';
 import { createVisionCheck } from './qa-vision.ts';
 import { createStorageProviderFor } from './storage.ts';
@@ -93,6 +95,9 @@ export function realRunJobDeps(): RunJobDeps {
     compileStillsKenburns,
     compileShorts916,
     compileCompilation,
+    compileCarousel,
+    renderCarouselStills,
+    createCarouselPublishProviderFor,
     parseShotlistV2,
     render: realRender(),
     renderFfmpeg: realRenderFfmpeg(),

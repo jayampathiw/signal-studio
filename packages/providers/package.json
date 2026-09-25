@@ -22,6 +22,7 @@
     "./image-user": "./src/image-user.ts",
     "./captions-faster-whisper": "./src/captions-faster-whisper.ts",
     "./publish-facebook": "./src/publish-facebook.ts",
+    "./publish-facebook-carousel": "./src/publish-facebook-carousel.ts",
     "./publish-youtube": "./src/publish-youtube.ts"
   },
   "dependencies": {

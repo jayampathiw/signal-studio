@@ -1,11 +1,11 @@
-import { google } from 'googleapis';
-
-import type { PublishProvider } from '@signal-studio/providers/contracts';
+import type { CarouselPublishProvider, PublishProvider } from '@signal-studio/providers/contracts';
 import { createFacebookPublishProvider } from '@signal-studio/providers/publish-facebook';
+import { createFacebookCarouselPublishProvider } from '@signal-studio/providers/publish-facebook-carousel';
 import {
   createYoutubePublishProvider,
   type YoutubeVideosInsertClient,
 } from '@signal-studio/providers/publish-youtube';
+import { google } from 'googleapis';
 
 /**
  * Picks a real `PublishProvider` by platform name (`manifest.publish[]`
@@ -53,4 +53,18 @@ export function createPublishProviderFor(platform: string, credentialRef: string
     return createYoutubePublishProvider({ youtubeClient });
   }
   throw new Error(`Unsupported publish platform "${platform}" (expected "facebook" or "youtube")`);
+}
+
+/**
+ * P3.7 — same factory-by-id pattern as `createPublishProviderFor` above,
+ * for `CarouselPublishProvider` instead. Facebook only, for now — Meta's
+ * own multi-photo `attached_media` mechanism this provider implements is a
+ * Page-feed-post concept, not something YouTube (no photo-carousel concept
+ * at all) or Instagram (a real, separate Graph API carousel-container flow,
+ * not this one) can reuse; those need their own providers when a real job
+ * needs them, not a guessed reuse of this one.
+ */
+export function createCarouselPublishProviderFor(platform: string): CarouselPublishProvider {
+  if (platform === 'facebook') return createFacebookCarouselPublishProvider();
+  throw new Error(`Unsupported carousel publish platform "${platform}" (expected "facebook")`);
 }
