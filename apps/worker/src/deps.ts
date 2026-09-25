@@ -28,6 +28,7 @@ import type { BossQueue, WorkerDeps } from './commands/worker.ts';
 import { createCarouselPublishProviderFor, createPublishProviderFor } from './publish.ts';
 import { detectBlackFrames, measureVideo } from './qa-measure.ts';
 import { createVisionCheck } from './qa-vision.ts';
+import { createErrorReporter } from './sentry.ts';
 import { createStorageProviderFor } from './storage.ts';
 
 /**
@@ -159,5 +160,6 @@ export function realWorkerDeps(runJob: (jobId: string) => Promise<void>): Worker
           }
         }
       : undefined,
+    reportError: createErrorReporter(process.env.SENTRY_DSN),
   };
 }

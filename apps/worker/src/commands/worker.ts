@@ -100,11 +100,14 @@ export type WorkerDeps = {
   // P4.3 — omitted entirely (not just no-op'd) when no Healthchecks.io
   // ping URL is configured; see this file's own header.
   pingHealthcheck?: () => Promise<void>;
+  // P4.3 — omitted entirely when no Sentry DSN is configured, same
+  // reasoning as `pingHealthcheck` above.
+  reportError?: (err: unknown, context?: Record<string, unknown>) => void;
 };
 
 export async function handleJob(
   payload: { jobId: string },
-  deps: Pick<WorkerDeps, 'runJob' | 'heartbeat'>,
+  deps: Pick<WorkerDeps, 'runJob' | 'heartbeat' | 'reportError'>,
   logger: Logger,
   heartbeatIntervalMs = 30_000,
 ): Promise<void> {
@@ -129,6 +132,7 @@ export async function handleJob(
       jobId: payload.jobId,
       error: err instanceof Error ? err.message : String(err),
     });
+    deps.reportError?.(err, { jobId: payload.jobId });
     throw err; // let pg-boss's own retry/dead-letter policy decide what happens next
   } finally {
     clearInterval(interval);

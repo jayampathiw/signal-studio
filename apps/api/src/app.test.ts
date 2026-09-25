@@ -386,3 +386,35 @@ test('onError: an unhandled route error is logged with real request context and 
   assert.equal(logs[0].meta?.error, 'github is down');
   assert.equal(logs[0].meta?.path, `/jobs/${created.id}/dispatch`);
 });
+
+test('onError: reportError is called with the error and request context; omitted when not supplied', async () => {
+  const reported: Array<{ err: unknown; context: unknown }> = [];
+  const { deps, jobs } = fakeDeps({
+    dispatcher: {
+      dispatch: async () => {
+        throw new Error('github is down');
+      },
+    },
+    reportError: (err, context) => reported.push({ err, context }),
+  });
+  const app = createApp(deps);
+  const createRes = await app.request('/jobs', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${API_KEY}` },
+    body: JSON.stringify({ projectSlug: 'test-project', manifest: validManifest() }),
+  });
+  const created = await createRes.json();
+  jobs.get(created.id)!.status = 'queued';
+
+  const res = await app.request(`/jobs/${created.id}/dispatch`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(res.status, 500);
+  assert.equal(reported.length, 1);
+  assert.equal((reported[0].err as Error).message, 'github is down');
+  assert.deepEqual(reported[0].context, {
+    method: 'POST',
+    path: `/jobs/${created.id}/dispatch`,
+  });
+});

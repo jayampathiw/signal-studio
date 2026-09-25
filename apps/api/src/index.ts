@@ -5,6 +5,7 @@ import { ApiKeysRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-stud
 import { createApp } from './app.ts';
 import { createGithubDispatcher, createQueueDispatcher, type Dispatcher } from './dispatcher.ts';
 import { createLogger } from './logger.ts';
+import { createErrorReporter } from './sentry.ts';
 import { createStorageProviderFor } from './storage.ts';
 
 const client = createEngineClient();
@@ -62,6 +63,7 @@ const app = createApp({
   dispatcher: await createDispatcher(),
   createJobStagesRepo: (orgId: string) => new JobStagesRepo(client, orgId),
   logger,
+  reportError: createErrorReporter(process.env.SENTRY_DSN),
 });
 
 const port = Number(process.env.PORT ?? 8787);

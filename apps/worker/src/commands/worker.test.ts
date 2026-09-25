@@ -37,6 +37,57 @@ test("handleJob: rethrows runJob's error so pg-boss can retry/dead-letter", asyn
   );
 });
 
+test('handleJob: P4.3 — reportError is called with the failure and jobId context, only on failure', async () => {
+  const reported: Array<{ err: unknown; context: unknown }> = [];
+  await assert.rejects(
+    () =>
+      handleJob(
+        { jobId: 'job-1' },
+        {
+          runJob: async () => {
+            throw new Error('render failed');
+          },
+          heartbeat: async () => {},
+          reportError: (err, context) => reported.push({ err, context }),
+        },
+        createLogger({ level: 'error' }),
+      ),
+    /render failed/,
+  );
+  assert.equal(reported.length, 1);
+  assert.equal((reported[0].err as Error).message, 'render failed');
+  assert.deepEqual(reported[0].context, { jobId: 'job-1' });
+
+  const reportedOnSuccess: unknown[] = [];
+  await handleJob(
+    { jobId: 'job-2' },
+    {
+      runJob: async () => {},
+      heartbeat: async () => {},
+      reportError: (err) => reportedOnSuccess.push(err),
+    },
+    createLogger({ level: 'error' }),
+  );
+  assert.equal(reportedOnSuccess.length, 0);
+});
+
+test('handleJob: P4.3 — reportError being omitted does not break a failing job', async () => {
+  await assert.rejects(
+    () =>
+      handleJob(
+        { jobId: 'job-1' },
+        {
+          runJob: async () => {
+            throw new Error('render failed');
+          },
+          heartbeat: async () => {},
+        },
+        createLogger({ level: 'error' }),
+      ),
+    /render failed/,
+  );
+});
+
 test('handleJob: P4.1 — heartbeats immediately, then on the given interval, and stops on completion', async () => {
   const heartbeats: string[] = [];
   let resolveRunJob!: () => void;

@@ -10,6 +10,7 @@
     "test": "node --experimental-strip-types --test 'src/**/*.test.ts'"
   },
   "dependencies": {
+    "@sentry/node": "^11.0.0",
     "@signal-studio/core": "workspace:*",
     "@signal-studio/db": "workspace:*",
     "@signal-studio/providers": "workspace:*",

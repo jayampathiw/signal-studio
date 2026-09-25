@@ -57,6 +57,10 @@ export type AppDeps = {
   // fixture (built before this pass) keeps compiling unchanged; real
   // callers (`src/index.ts`) always supply the real pino-backed one.
   logger?: Logger;
+  // P4.3 addition — omitted entirely when no Sentry DSN is configured,
+  // same "genuinely inactive, not a no-op" convention `apps/worker`'s own
+  // `reportError` dep already established.
+  reportError?: (err: unknown, context?: Record<string, unknown>) => void;
 };
 
 export function createApp(deps: AppDeps) {
@@ -79,6 +83,7 @@ export function createApp(deps: AppDeps) {
       path: c.req.path,
       error: err instanceof Error ? err.message : String(err),
     });
+    deps.reportError?.(err, { method: c.req.method, path: c.req.path });
     return c.json({ error: 'Internal server error' }, 500);
   });
 
