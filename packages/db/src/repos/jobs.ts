@@ -10,6 +10,9 @@ export type JobRow = {
   status: JobStatus;
   created_at: string;
   updated_at: string;
+  // P4.1 addition — `ss worker`'s own liveness signal, touched every ~30s
+  // while a job is actively processing. Null until the first heartbeat.
+  heartbeat_at: string | null;
 };
 
 export class JobsRepo {
@@ -70,5 +73,40 @@ export class JobsRepo {
       .select('id');
     if (error) throw new Error(`JobsRepo.markDispatched: ${error.message}`);
     return (data as unknown[]).length > 0;
+  }
+
+  // P4.1 addition — `ss worker`'s own periodic liveness ping while a job is
+  // actively `running`. Deliberately does NOT bump `updated_at` (unlike
+  // `updateStatus`) — `updated_at` means "the job's own state changed,"
+  // which a heartbeat isn't; keeping them separate means a dashboard/API
+  // consumer sorting or diffing on `updated_at` doesn't see a real
+  // in-progress job "changing" every 30 seconds for no substantive reason.
+  async heartbeat(jobId: string): Promise<void> {
+    const { error } = await this.client
+      .from('jobs')
+      .update({ heartbeat_at: new Date().toISOString() })
+      .eq('id', jobId);
+    if (error) throw new Error(`JobsRepo.heartbeat: ${error.message}`);
+  }
+
+  // P4.1 addition — the reaper's own query: any job still `running` whose
+  // heartbeat has gone stale (its worker crashed, was OOM-killed, or the
+  // host rebooted mid-job, with no chance to mark its own job `failed`)
+  // gets marked `failed` here. Scoped to `heartbeat_at is not null` — a job
+  // that transitioned to `running` but hasn't had its first heartbeat tick
+  // yet (a real, brief window right at job start) has no heartbeat to be
+  // stale, and reaping it on that technicality would be a false positive,
+  // not a real hang. Returns the reaped rows so the caller can log exactly
+  // which jobs it touched, not just a count.
+  async reapStaleRunning(staleBefore: Date): Promise<JobRow[]> {
+    const { data, error } = await this.client
+      .from('jobs')
+      .update({ status: 'failed', updated_at: new Date().toISOString() })
+      .eq('status', 'running')
+      .not('heartbeat_at', 'is', null)
+      .lt('heartbeat_at', staleBefore.toISOString())
+      .select();
+    if (error) throw new Error(`JobsRepo.reapStaleRunning: ${error.message}`);
+    return data as JobRow[];
   }
 }

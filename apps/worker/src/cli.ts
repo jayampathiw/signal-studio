@@ -81,10 +81,24 @@ async function main(): Promise<number> {
 
     case 'worker': {
       const jobDeps = realRunJobDeps();
+      const num = (key: string) =>
+        typeof flags[key] === 'string' ? Number(flags[key]) : undefined;
       await workerCommand(
         {
           queue: typeof flags.queue === 'string' ? flags.queue : 'render-jobs',
           connectionString: requireFlag(flags, 'connection-string'),
+          // P4.1 — all optional; `workerCommand` itself applies the plan's
+          // own real defaults (retryLimit 2, retryDelay 60s, backoff on,
+          // expireInHours 6, 30s heartbeat, 60s reaper tick, 10min stale
+          // threshold) when these flags aren't passed.
+          retryLimit: num('retry-limit'),
+          retryDelaySeconds: num('retry-delay-seconds'),
+          retryBackoff: typeof flags['no-retry-backoff'] === 'boolean' ? false : undefined,
+          expireInHours: num('expire-in-hours'),
+          heartbeatIntervalMs: num('heartbeat-interval-ms'),
+          reapIntervalMs: num('reap-interval-ms'),
+          reapStaleAfterMs: num('reap-stale-after-ms'),
+          shutdownTimeoutMs: num('shutdown-timeout-ms'),
         },
         realWorkerDeps((jobId) => runJob({ jobId }, jobDeps, logger)),
         logger,

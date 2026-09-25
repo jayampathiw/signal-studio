@@ -24,7 +24,7 @@ import type { MarkFailedDeps } from './commands/mark-failed.ts';
 import type { RunJobDeps } from './commands/run-job.ts';
 import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
-import type { WorkerDeps } from './commands/worker.ts';
+import type { BossQueue, WorkerDeps } from './commands/worker.ts';
 import { createCarouselPublishProviderFor, createPublishProviderFor } from './publish.ts';
 import { detectBlackFrames, measureVideo } from './qa-measure.ts';
 import { createVisionCheck } from './qa-vision.ts';
@@ -131,11 +131,19 @@ export function realMarkFailedDeps(): MarkFailedDeps {
 }
 
 export function realWorkerDeps(runJob: (jobId: string) => Promise<void>): WorkerDeps {
+  const client = createEngineClient();
+  const jobsRepo = new JobsRepo(client);
   return {
     runJob,
+    heartbeat: (jobId: string) => jobsRepo.heartbeat(jobId),
+    reapStaleRunning: (staleBefore: Date) => jobsRepo.reapStaleRunning(staleBefore),
     async createBoss(connectionString: string) {
       const PgBoss = (await import('pg-boss')).default;
-      return new PgBoss(connectionString);
+      // pg-boss's own real type is a superset of `BossQueue` (this file's
+      // own minimal, testable shape) — no adapter needed, only the fields
+      // `worker.ts` actually calls are typed here.
+      const boss = new PgBoss(connectionString);
+      return boss as unknown as BossQueue;
     },
   };
 }
