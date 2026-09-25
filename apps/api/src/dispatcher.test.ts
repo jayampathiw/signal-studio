@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { createGithubDispatcher, DispatchError } from './dispatcher.ts';
+import { createGithubDispatcher, createQueueDispatcher, DispatchError } from './dispatcher.ts';
 
 function fakeJobsRepo(markDispatchedResult: boolean) {
   const calls: string[] = [];
@@ -86,6 +86,51 @@ test('dispatch: throws DispatchError on a non-ok GitHub response', async () => {
     token: 'gh-token',
     jobsRepo: repo as never,
     fetchFn,
+  });
+
+  await assert.rejects(() => dispatcher.dispatch('job-1'), DispatchError);
+});
+
+test('queue dispatch: calls markDispatched, then send()s to pg-boss with {jobId}', async () => {
+  const { repo, calls } = fakeJobsRepo(true);
+  const sendCalls: Array<{ queue: string; data: { jobId: string } }> = [];
+  const dispatcher = createQueueDispatcher({
+    queue: 'run-job',
+    jobsRepo: repo as never,
+    send: async (queue, data) => {
+      sendCalls.push({ queue, data });
+      return 'pgboss-msg-id';
+    },
+  });
+
+  await dispatcher.dispatch('job-1');
+
+  assert.deepEqual(calls, ['job-1']);
+  assert.deepEqual(sendCalls, [{ queue: 'run-job', data: { jobId: 'job-1' } }]);
+});
+
+test('queue dispatch: skips send() entirely when markDispatched loses the race', async () => {
+  const { repo } = fakeJobsRepo(false);
+  let sendCalled = false;
+  const dispatcher = createQueueDispatcher({
+    queue: 'run-job',
+    jobsRepo: repo as never,
+    send: async () => {
+      sendCalled = true;
+      return 'x';
+    },
+  });
+
+  await dispatcher.dispatch('job-1');
+  assert.equal(sendCalled, false);
+});
+
+test('queue dispatch: throws DispatchError when send() returns null', async () => {
+  const { repo } = fakeJobsRepo(true);
+  const dispatcher = createQueueDispatcher({
+    queue: 'run-job',
+    jobsRepo: repo as never,
+    send: async () => null,
   });
 
   await assert.rejects(() => dispatcher.dispatch('job-1'), DispatchError);
