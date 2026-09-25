@@ -173,6 +173,62 @@ test('P2.5: run() recovers outputs from a skipped (unchanged-hash) stage, not ju
   assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
 });
 
+test('P4.1: verifySkip returning false re-runs the stage instead of trusting a matching hash', async () => {
+  const { store } = makeFakeStore();
+  let calls = 0;
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => {
+      calls += 1;
+      return { outputs: { durations: { s1: 4 } } };
+    },
+    verifySkip: async () => false,
+  });
+
+  await runner.run(job());
+  const outputs = await runner.run(job()); // hash unchanged, but verifySkip says stale
+  assert.equal(calls, 2);
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
+});
+
+test('P4.1: verifySkip returning true still skips a stage with an unchanged hash', async () => {
+  const { store } = makeFakeStore();
+  let calls = 0;
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => {
+      calls += 1;
+      return { outputs: { durations: { s1: 4 } } };
+    },
+    verifySkip: async () => true,
+  });
+
+  await runner.run(job());
+  const outputs = await runner.run(job());
+  assert.equal(calls, 1);
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
+});
+
+test('P4.1: verifySkip receives the cached outputs and job context', async () => {
+  const { store } = makeFakeStore();
+  const seen: Array<{ outputs: unknown; jobId: string }> = [];
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => ({ outputs: { durations: { s1: 4 } } }),
+    verifySkip: async (outputs, ctx) => {
+      seen.push({ outputs, jobId: ctx.job.id });
+      return true;
+    },
+  });
+
+  await runner.run(job());
+  await runner.run(job());
+  assert.deepEqual(seen, [{ outputs: { durations: { s1: 4 } }, jobId: 'job-1' }]);
+});
+
 test('cancellation token is checked before each stage', async () => {
   const { store } = makeFakeStore();
   const calls: string[] = [];

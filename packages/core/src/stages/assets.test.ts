@@ -199,6 +199,43 @@ test('assets stage: inputsHash changes when a shot clip or strip flag changes', 
   assert.notEqual(stage.inputsHash(base), stage.inputsHash(diffStrip));
 });
 
+test('P4.1: a real bug — a "done" record whose hash still matches but whose processed clip file is missing (a fresh workDir on retry) re-runs instead of leaving a hole for compile() to hit ENOENT on', async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'assets-stage-verify-skip-test-'));
+  try {
+    const rawDir = path.join(tmp, 'clips', 'raw');
+    await mkdir(rawDir, { recursive: true });
+    await makeSyntheticClip(path.join(rawDir, 's1.mp4'), '640x480', 24, 1);
+
+    const store = makeFakeStore();
+    const stage = createAssetsStage();
+    const theJob = job(tmp, [{ id: 's1', clip: 's1.mp4' }]);
+
+    // Simulate exactly what a retried `ss run-job` sees: a real "done"
+    // record already exists in the (durable) DB-backed store from an
+    // earlier invocation, matching this job's real hash — but this run's
+    // (fresh) workDir has never had the assets stage actually execute in
+    // it, so `clips/s1.mp4` doesn't exist yet, only `clips/raw/s1.mp4`.
+    const hash = stage.inputsHash(theJob);
+    await store.recordEnd('job-1', 'assets', {
+      hash,
+      status: 'done',
+      outputs: { durations: { s1: 1 } },
+    });
+    assert.equal(existsSync(path.join(tmp, 'clips', 's1.mp4')), false);
+
+    const runner = new StageRunner(store).register(stage);
+    const outputs = await runner.run(theJob);
+
+    // The stage actually ran (not a trusted-but-wrong skip) — real output
+    // file now exists, with a real measured duration.
+    assert.equal(existsSync(path.join(tmp, 'clips', 's1.mp4')), true);
+    const returned = outputs.get('assets:') as { durations: Record<string, number> };
+    assert.ok(returned.durations.s1 > 0);
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
+});
+
 test('assets stage: wired into StageRunner, a second run with unchanged manifest is skipped entirely', async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), 'assets-stage-test-'));
   try {

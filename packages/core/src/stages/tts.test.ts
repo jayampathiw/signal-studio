@@ -1,11 +1,31 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 
 import { createTtsStage, type TtsSynthesiser } from './tts.ts';
-import type { Job } from '../runner/index.ts';
+import { StageRunner, type Job, type JobStageStore, type StageRunRecord } from '../runner/index.ts';
+
+function makeFakeStore() {
+  const runs = new Map<string, StageRunRecord>();
+  const store: JobStageStore = {
+    async getLastRun(jobId, stage, outputId) {
+      return runs.get(`${jobId}:${stage}:${outputId ?? ''}`) ?? null;
+    },
+    async recordStart() {},
+    async recordEnd(jobId, stage, result, outputId) {
+      runs.set(`${jobId}:${stage}:${outputId ?? ''}`, {
+        hash: result.hash,
+        status: result.status,
+        outputs: result.outputs,
+      });
+    },
+    async log() {},
+  };
+  return store;
+}
 
 async function withTmpDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'tts-stage-test-'));
@@ -78,5 +98,62 @@ test('tts stage: no shots have voiceover_text -> empty durations, synthesise nev
 
     assert.equal(calls, 0);
     assert.deepEqual(result?.outputs, { durations: {} });
+  });
+});
+
+test('P4.1: a real bug — a "done" record whose hash still matches but whose synthesised wav file is missing (a fresh workDir on retry) re-runs instead of leaving a hole for compile() to hit ENOENT on', async () => {
+  await withTmpDir(async (workDir) => {
+    const sourceWav = path.join(workDir, 'source.wav');
+    await writeFile(sourceWav, 'fake-wav-bytes');
+
+    let calls = 0;
+    const synthesise: TtsSynthesiser = async () => {
+      calls += 1;
+      return { wavPath: sourceWav, durationSec: 2.5 };
+    };
+
+    const store = makeFakeStore();
+    const stage = createTtsStage({ synthesise, voice: 'bm_george', speed: 1 });
+    const theJob = job(workDir, [{ id: 's1', voiceover_text: 'A fact about octopuses.' }]);
+
+    // Same simulated scenario as `assets.test.ts`'s own P4.1 test: a real
+    // "done" record already exists (matching hash) from an earlier
+    // invocation, but this run's workDir has never actually had the tts
+    // stage write `vo/s1.wav` into it.
+    const hash = stage.inputsHash(theJob);
+    await store.recordEnd('job-1', 'tts', {
+      hash,
+      status: 'done',
+      outputs: { durations: { s1: 2.5 } },
+    });
+    assert.equal(existsSync(path.join(workDir, 'vo', 's1.wav')), false);
+
+    const runner = new StageRunner(store).register(stage);
+    await runner.run(theJob);
+
+    assert.equal(calls, 1);
+    assert.equal(existsSync(path.join(workDir, 'vo', 's1.wav')), true);
+  });
+});
+
+test('P4.1: verifySkip only checks shots that actually have voiceover_text', async () => {
+  await withTmpDir(async (workDir) => {
+    await mkdir(path.join(workDir, 'vo'), { recursive: true });
+    const stage = createTtsStage({
+      synthesise: (async () => ({ wavPath: '', durationSec: 1 })) as TtsSynthesiser,
+      voice: 'bm_george',
+      speed: 1,
+    });
+    // s1 has no voiceover_text at all — verifySkip must not require a
+    // vo/s1.wav file that was never supposed to exist in the first place.
+    const theJob = job(workDir, [{ id: 's1' }]);
+    const stillValid = await stage.verifySkip!(
+      { durations: {} },
+      {
+        job: theJob,
+        cancelled: () => false,
+      },
+    );
+    assert.equal(stillValid, true);
   });
 });

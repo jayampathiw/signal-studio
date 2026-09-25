@@ -25,6 +25,22 @@ export type StageDefinition = {
   multiOutput?: boolean;
   inputsHash: (job: Job) => string;
   run: (ctx: StageContext) => Promise<{ outputs?: unknown; warnings?: string[] } | void>;
+  // P4.1 addition — real bug found running `ss run-job` for real (P3.5):
+  // a stage whose outputs reference files outside the DB (`assets`/`tts`'s
+  // `<job.workDir>/clips|vo/...` convention) can have a `store`-recorded
+  // "done" run whose hash still matches even though the physical files it
+  // implies are gone — a fresh per-invocation `workDir` (`ss run-job`'s own
+  // `mkdtemp` per call) means a retried job's cached `assets`/`tts` record
+  // looks valid by hash alone, but the files it points at were never
+  // recreated this run, so a template's `compile()` fails with a plain
+  // ENOENT reading a path that "should" exist per the skip. Optional so
+  // stages with no filesystem dependency (`tts`'s own `run()` has one, but
+  // `qa`/`publish` never write files at all) don't need to supply it —
+  // `run()` below treats a missing `verifySkip` the same as "always valid",
+  // its prior behavior. Called only when a matching hash was actually
+  // found; a `false` return makes `run()` treat it exactly like a cold
+  // start (no cached record) rather than a special third state.
+  verifySkip?: (outputs: unknown, ctx: StageContext) => Promise<boolean>;
 };
 
 export type StageRunRecord = {
@@ -97,9 +113,19 @@ export class StageRunner {
         const last = await this.store.getLastRun(job.id, stage.name, outputId);
 
         if (last && last.status === 'done' && last.hash === hash) {
-          await this.store.log(job.id, stage.name, `skipped (unchanged, hash=${hash})`);
-          if (last.outputs !== undefined) outputs.set(key, last.outputs);
-          continue;
+          const stillValid = stage.verifySkip
+            ? await stage.verifySkip(last.outputs, { job, outputId, cancelled })
+            : true;
+          if (stillValid) {
+            await this.store.log(job.id, stage.name, `skipped (unchanged, hash=${hash})`);
+            if (last.outputs !== undefined) outputs.set(key, last.outputs);
+            continue;
+          }
+          await this.store.log(
+            job.id,
+            stage.name,
+            `cached outputs no longer valid (hash=${hash}) — re-running`,
+          );
         }
 
         await this.store.recordStart(job.id, stage.name, outputId);

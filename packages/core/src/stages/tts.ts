@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -45,6 +46,17 @@ export function createTtsStage(opts: TtsStageOptions): StageDefinition {
         speed: opts.speed,
       }));
       return createHash('sha256').update(JSON.stringify(fingerprint)).digest('hex').slice(0, 16);
+    },
+    // P4.1 addition — same real bug `assets.ts`'s own `verifySkip` fixes,
+    // for `<workDir>/vo/<shotId>.wav` instead of `clips/<shot.clip>`.
+    async verifySkip(_outputs, ctx) {
+      const workDir = getWorkDir(ctx.job);
+      const shots = getShots(ctx.job);
+      for (const shot of shots) {
+        if (!shot.voiceover_text) continue;
+        if (!existsSync(path.join(workDir, 'vo', `${shot.id}.wav`))) return false;
+      }
+      return true;
     },
     async run(ctx) {
       const workDir = getWorkDir(ctx.job);

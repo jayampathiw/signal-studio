@@ -70,6 +70,22 @@ export function createAssetsStage(opts: AssetsStageOptions = {}): StageDefinitio
       }));
       return createHash('sha256').update(JSON.stringify(fingerprint)).digest('hex').slice(0, 16);
     },
+    // P4.1 addition — real bug found running `ss run-job` for real: a
+    // matching `inputsHash` only proves the *manifest* is unchanged, not
+    // that `<workDir>/clips/<shot.clip>` still exists — a fresh
+    // `mkdtemp`-per-invocation `workDir` (every `ss run-job` call) means a
+    // retried job's "done" record can be stale from the moment it's
+    // written. Checks every shot's processed output file is actually on
+    // disk before trusting the skip.
+    async verifySkip(_outputs, ctx) {
+      const workDir = getWorkDir(ctx.job);
+      const shots = getShots(ctx.job);
+      for (const shot of shots) {
+        if (!shot.clip) continue;
+        if (!existsSync(path.join(workDir, 'clips', shot.clip))) return false;
+      }
+      return true;
+    },
     async run(ctx) {
       const workDir = getWorkDir(ctx.job);
       const shots = getShots(ctx.job);
