@@ -51,6 +51,15 @@ import type { Logger } from '../logger.ts';
  * for the parts that are (`handleJob`'s heartbeat wrapping, the reaper's
  * own query logic) plus the real end-to-end script run separately against
  * a live container and the real Supabase `jobs.heartbeat_at` column.
+ *
+ * **P4.3 addition**: an optional Healthchecks.io "I'm alive" ping,
+ * `deps.pingHealthcheck`, fired on the same interval as the reaper (they
+ * share `reapIntervalMs` — both are "is this loop still turning over"
+ * checks, no reason for two separate timers). `undefined` when
+ * `HEALTHCHECKS_PING_URL` isn't set (`deps.ts`'s own real wiring) — this
+ * file never constructs a URL or talks HTTP itself, it only calls whatever
+ * `deps` hands it, so a worker with no Healthchecks account configured
+ * behaves exactly as before, not with a silently-failing ping loop.
  */
 
 export type WorkerOptions = {
@@ -88,6 +97,9 @@ export type WorkerDeps = {
   // real caller gets the real signal wiring without having to know this
   // exists.
   onSignal?: (signal: 'SIGTERM' | 'SIGINT', handler: () => void) => void;
+  // P4.3 — omitted entirely (not just no-op'd) when no Healthchecks.io
+  // ping URL is configured; see this file's own header.
+  pingHealthcheck?: () => Promise<void>;
 };
 
 export async function handleJob(
@@ -147,6 +159,20 @@ export async function reapOnce(
   }
 }
 
+// Exported for its own direct test coverage, same reasoning as `reapOnce`.
+export async function pingHealthcheckOnce(
+  pingHealthcheck: () => Promise<void>,
+  logger: Logger,
+): Promise<void> {
+  try {
+    await pingHealthcheck();
+  } catch (err) {
+    logger.error('healthcheck ping failed', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
 export async function workerCommand(
   opts: WorkerOptions,
   deps: WorkerDeps,
@@ -172,6 +198,9 @@ export async function workerCommand(
     () => void reapOnce(deps.reapStaleRunning, reapStaleAfterMs, logger),
     reapIntervalMs,
   );
+  const healthcheckInterval = deps.pingHealthcheck
+    ? setInterval(() => void pingHealthcheckOnce(deps.pingHealthcheck!, logger), reapIntervalMs)
+    : undefined;
 
   await boss.work(opts.queue, { batchSize: 1 }, async (jobs) => {
     for (const job of jobs) {
@@ -194,6 +223,7 @@ export async function workerCommand(
     const shutdown = (signal: 'SIGTERM' | 'SIGINT') => {
       logger.info('shutdown signal received, stopping gracefully', { signal });
       clearInterval(reaperInterval);
+      if (healthcheckInterval) clearInterval(healthcheckInterval);
       boss
         .stop({ graceful: true, timeout: shutdownTimeoutMs })
         .then(() => logger.info('worker stopped gracefully'))

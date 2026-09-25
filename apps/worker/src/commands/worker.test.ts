@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { handleJob, reapOnce, workerCommand, type BossQueue } from './worker.ts';
+import {
+  handleJob,
+  pingHealthcheckOnce,
+  reapOnce,
+  workerCommand,
+  type BossQueue,
+} from './worker.ts';
 import { createLogger } from '../logger.ts';
 
 test('handleJob: calls runJob with the payload jobId, resolves on success', async () => {
@@ -111,6 +117,28 @@ test('reapOnce: a failure in reapStaleRunning is caught, not thrown', async () =
         throw new Error('db down');
       },
       600_000,
+      createLogger({ level: 'error' }),
+    ),
+  );
+});
+
+test('pingHealthcheckOnce: P4.3 — calls the given ping function', async () => {
+  let called = false;
+  await pingHealthcheckOnce(
+    async () => {
+      called = true;
+    },
+    createLogger({ level: 'error' }),
+  );
+  assert.equal(called, true);
+});
+
+test('pingHealthcheckOnce: a failed ping is caught, not thrown', async () => {
+  await assert.doesNotReject(() =>
+    pingHealthcheckOnce(
+      async () => {
+        throw new Error('healthchecks.io unreachable');
+      },
       createLogger({ level: 'error' }),
     ),
   );
@@ -262,6 +290,68 @@ test('workerCommand: P4.1 — every dispatched job gets a real heartbeat while p
   await new Promise((r) => setTimeout(r, 10));
   assert.deepEqual(heartbeats, ['job-1']);
 
+  signalHandlers.SIGTERM();
+  await runPromise;
+});
+
+test('workerCommand: P4.3 — pings the health check on the reaper interval when pingHealthcheck is supplied', async () => {
+  const { boss } = fakeBoss();
+  const signalHandlers: Record<string, () => void> = {};
+  let pingCalls = 0;
+
+  const runPromise = workerCommand(
+    { queue: 'run-job', connectionString: 'postgres://fake', reapIntervalMs: 5 },
+    {
+      runJob: async () => {},
+      heartbeat: async () => {},
+      reapStaleRunning: async () => [],
+      createBoss: async () => boss,
+      pingHealthcheck: async () => {
+        pingCalls += 1;
+      },
+      onSignal: (signal, handler) => {
+        signalHandlers[signal] = handler;
+      },
+    },
+    createLogger({ level: 'error' }),
+  );
+
+  await new Promise((r) => setTimeout(r, 30));
+  assert.ok(pingCalls > 0, 'healthcheck should have pinged before shutdown');
+
+  signalHandlers.SIGTERM();
+  await runPromise;
+
+  const pingCallsAtShutdown = pingCalls;
+  await new Promise((r) => setTimeout(r, 30));
+  assert.equal(
+    pingCalls,
+    pingCallsAtShutdown,
+    'healthcheck ping must not fire again after shutdown',
+  );
+});
+
+test('workerCommand: P4.3 — no healthcheck interval runs at all when pingHealthcheck is omitted', async () => {
+  const { boss } = fakeBoss();
+  const signalHandlers: Record<string, () => void> = {};
+
+  const runPromise = workerCommand(
+    { queue: 'run-job', connectionString: 'postgres://fake', reapIntervalMs: 5 },
+    {
+      runJob: async () => {},
+      heartbeat: async () => {},
+      reapStaleRunning: async () => [],
+      createBoss: async () => boss,
+      onSignal: (signal, handler) => {
+        signalHandlers[signal] = handler;
+      },
+    },
+    createLogger({ level: 'error' }),
+  );
+
+  // No assertion possible on "nothing happened" beyond it not throwing —
+  // real coverage that pingHealthcheck is optional and safely skippable.
+  await new Promise((r) => setTimeout(r, 20));
   signalHandlers.SIGTERM();
   await runPromise;
 });

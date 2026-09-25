@@ -133,6 +133,7 @@ export function realMarkFailedDeps(): MarkFailedDeps {
 export function realWorkerDeps(runJob: (jobId: string) => Promise<void>): WorkerDeps {
   const client = createEngineClient();
   const jobsRepo = new JobsRepo(client);
+  const healthchecksUrl = process.env.HEALTHCHECKS_PING_URL;
   return {
     runJob,
     heartbeat: (jobId: string) => jobsRepo.heartbeat(jobId),
@@ -145,5 +146,18 @@ export function realWorkerDeps(runJob: (jobId: string) => Promise<void>): Worker
       const boss = new PgBoss(connectionString);
       return boss as unknown as BossQueue;
     },
+    // P4.3 — genuinely `undefined`, not a no-op function, when
+    // HEALTHCHECKS_PING_URL isn't set (no Healthchecks.io account exists
+    // for this deployment yet) — `workerCommand` skips the whole ping loop
+    // in that case rather than starting a timer that would silently do
+    // nothing on every tick.
+    pingHealthcheck: healthchecksUrl
+      ? async () => {
+          const res = await fetch(healthchecksUrl);
+          if (!res.ok) {
+            throw new Error(`Healthchecks.io ping failed (${res.status})`);
+          }
+        }
+      : undefined,
   };
 }
