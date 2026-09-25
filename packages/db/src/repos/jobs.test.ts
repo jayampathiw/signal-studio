@@ -151,3 +151,63 @@ test('reapStaleRunning: only touches running jobs with a non-null, stale heartbe
     '2026-01-01T00:00:00.000Z',
   ]);
 });
+
+test('countsByStatus: runs 3 real head-count queries scoped to org, awaiting_review uses a like filter', async () => {
+  const calls: Array<{ method: string; args: unknown[] }> = [];
+  const chain = {
+    select: (...args: unknown[]) => {
+      calls.push({ method: 'select', args });
+      return chain;
+    },
+    eq: (...args: unknown[]) => {
+      calls.push({ method: 'eq', args });
+      if (args[0] === 'status') return Promise.resolve({ count: 3, error: null });
+      return chain;
+    },
+    like: (...args: unknown[]) => {
+      calls.push({ method: 'like', args });
+      return Promise.resolve({ count: 1, error: null });
+    },
+  };
+  const client = { from: () => chain };
+  const repo = new JobsRepo(client as never);
+
+  const counts = await repo.countsByStatus('org-1');
+
+  assert.deepEqual(counts, { failed: 3, awaitingReview: 1, delivered: 3 });
+  assert.deepEqual(
+    calls.filter((c) => c.method === 'select').map((c) => c.args),
+    [
+      ['id', { count: 'exact', head: true }],
+      ['id', { count: 'exact', head: true }],
+      ['id', { count: 'exact', head: true }],
+    ],
+  );
+  assert.ok(
+    calls.some((c) => c.method === 'eq' && c.args[0] === 'org_id' && c.args[1] === 'org-1'),
+  );
+  assert.ok(
+    calls.some((c) => c.method === 'eq' && c.args[0] === 'status' && c.args[1] === 'failed'),
+  );
+  assert.ok(
+    calls.some((c) => c.method === 'eq' && c.args[0] === 'status' && c.args[1] === 'delivered'),
+  );
+  assert.ok(
+    calls.some(
+      (c) => c.method === 'like' && c.args[0] === 'status' && c.args[1] === 'awaiting_review:%',
+    ),
+  );
+});
+
+test('countsByStatus: throws a clear error when a query fails', async () => {
+  const chain = {
+    select: () => chain,
+    eq: (col: string) =>
+      col === 'status' ? Promise.resolve({ count: null, error: { message: 'timeout' } }) : chain,
+    like: () => Promise.resolve({ count: 0, error: null }),
+  };
+  const client = { from: () => chain };
+  const repo = new JobsRepo(client as never);
+
+  await assert.rejects(() => repo.countsByStatus('org-1'), /timeout/);
+});

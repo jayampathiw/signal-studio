@@ -109,4 +109,29 @@ export class JobsRepo {
     if (error) throw new Error(`JobsRepo.reapStaleRunning: ${error.message}`);
     return data as JobRow[];
   }
+
+  // P4.3 addition — the daily digest's own counts. Three real head-count
+  // queries rather than one `select('status')` over every row: exact and
+  // cheap at any real table size (a `head: true` count never transfers row
+  // data), and `awaiting_review` is a *family* of statuses
+  // (`awaiting_review:<gate>`, per `packages/core/src/state`'s own
+  // comment) that a single `.eq('status', ...)` can't match — needs `like`.
+  async countsByStatus(
+    orgId: string,
+  ): Promise<{ failed: number; awaitingReview: number; delivered: number }> {
+    const base = () =>
+      this.client.from('jobs').select('id', { count: 'exact', head: true }).eq('org_id', orgId);
+    const countOf = async (apply: (q: ReturnType<typeof base>) => ReturnType<typeof base>) => {
+      const { count, error } = await apply(base());
+      if (error) throw new Error(`JobsRepo.countsByStatus: ${error.message}`);
+      return count ?? 0;
+    };
+
+    const [failed, awaitingReview, delivered] = await Promise.all([
+      countOf((q) => q.eq('status', 'failed')),
+      countOf((q) => q.like('status', 'awaiting_review:%')),
+      countOf((q) => q.eq('status', 'delivered')),
+    ]);
+    return { failed, awaitingReview, delivered };
+  }
 }

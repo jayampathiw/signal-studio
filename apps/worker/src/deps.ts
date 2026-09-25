@@ -20,6 +20,7 @@ import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-st
 import '@signal-studio/render-remotion';
 import '@signal-studio/render-ffmpeg';
 
+import type { DigestDeps } from './commands/digest.ts';
 import type { MarkFailedDeps } from './commands/mark-failed.ts';
 import type { RunJobDeps } from './commands/run-job.ts';
 import type { RunLocalDeps } from './commands/run-local.ts';
@@ -128,6 +129,80 @@ export function realMarkFailedDeps(): MarkFailedDeps {
   return {
     jobsRepo: new JobsRepo(client),
     createArtifactsRepo: (orgId: string) => new ArtifactsRepo(client, orgId),
+  };
+}
+
+export function realDigestDeps(): DigestDeps {
+  const client = createEngineClient();
+  const jobsRepo = new JobsRepo(client);
+
+  const githubPat = process.env.GITHUB_PAT;
+  const githubUsername = process.env.GITHUB_USERNAME ?? process.env.GITHUB_REPO_OWNER;
+  const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  const telegramChatId = process.env.TELEGRAM_CHAT_ID;
+  const smtpHost = process.env.SMTP_HOST;
+
+  return {
+    countsByStatus: (orgId: string) => jobsRepo.countsByStatus(orgId),
+    // P4.3 — `GET /users/{username}/settings/billing/actions`. Verified
+    // for real against the live API (not guessed, and not just trusted
+    // from docs search results — an initial web search suggested
+    // `/users/{username}/billing/actions`, which real-checking via `gh api`
+    // showed is a genuinely wrong path (404); this one returns a real 403
+    // "Resource not accessible by personal access token" whose
+    // `documentation_url` confirms it's the exact right endpoint — just
+    // needs a classic PAT with the `user` scope, which `GITHUB_PAT`
+    // (scoped for `workflow_dispatch`) may not have — `digestCommand`
+    // already treats a failure here as best-effort, not fatal.
+    getActionsMinutesUsed:
+      githubPat && githubUsername
+        ? async () => {
+            const res = await fetch(
+              `https://api.github.com/users/${githubUsername}/settings/billing/actions`,
+              {
+                headers: {
+                  Authorization: `Bearer ${githubPat}`,
+                  Accept: 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                },
+              },
+            );
+            if (!res.ok) {
+              throw new Error(`GitHub Actions billing request failed (${res.status})`);
+            }
+            const data = (await res.json()) as { total_minutes_used: number };
+            return data.total_minutes_used;
+          }
+        : undefined,
+    sendTelegram:
+      telegramToken && telegramChatId
+        ? async (text: string) => {
+            const res = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ chat_id: telegramChatId, text }),
+            });
+            if (!res.ok) {
+              throw new Error(`Telegram sendMessage failed (${res.status}): ${await res.text()}`);
+            }
+          }
+        : undefined,
+    sendEmail: smtpHost
+      ? async (subject: string, text: string) => {
+          const nodemailer = (await import('nodemailer')).default;
+          const transport = nodemailer.createTransport({
+            host: smtpHost,
+            port: Number(process.env.SMTP_PORT ?? 587),
+            auth: process.env.SMTP_USER
+              ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+              : undefined,
+          });
+          const from = process.env.DIGEST_EMAIL_FROM ?? 'signal-studio@localhost';
+          const to = process.env.DIGEST_EMAIL_TO;
+          if (!to) throw new Error('SMTP_HOST is set but DIGEST_EMAIL_TO is missing');
+          await transport.sendMail({ from, to, subject, text });
+        }
+      : undefined,
   };
 }
 

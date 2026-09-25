@@ -24,6 +24,7 @@
     "@signal-studio/template-shorts-916": "workspace:*",
     "@signal-studio/template-stills-kenburns": "workspace:*",
     "googleapis": "^144.0.0",
+    "nodemailer": "^10.0.10",
     "pg-boss": "^10.1.5",
     "pino": "^10.3.1",
     "zod": "^3.23.0"

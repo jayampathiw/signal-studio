@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { parseFlags, requireFlag } from './args.ts';
+import { digestCommand } from './commands/digest.ts';
 import { markFailedCommand } from './commands/mark-failed.ts';
 import { runJob } from './commands/run-job.ts';
 import { runLocal } from './commands/run-local.ts';
@@ -8,6 +9,7 @@ import { validateCommand } from './commands/validate.ts';
 import { workerCommand } from './commands/worker.ts';
 import {
   fakeRunLocalDeps,
+  realDigestDeps,
   realMarkFailedDeps,
   realRunJobDeps,
   realRunLocalDeps,
@@ -106,6 +108,11 @@ async function main(): Promise<number> {
       return 0;
     }
 
+    case 'digest': {
+      await digestCommand({ orgId: requireFlag(flags, 'org') }, realDigestDeps(), logger);
+      return 0;
+    }
+
     case 'mark-failed': {
       await markFailedCommand(
         {
@@ -126,6 +133,7 @@ async function main(): Promise<number> {
           'run-job',
           'upload',
           'worker',
+          'digest',
           'mark-failed',
         ],
       });
