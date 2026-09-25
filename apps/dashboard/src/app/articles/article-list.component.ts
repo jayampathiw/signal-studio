@@ -80,6 +80,11 @@ const COUNTRY_NAMES: Record<string, string> = {
           style="font-size:11px;font-weight:600;color:#7c5cff;text-decoration:none;padding:3px 8px;border-radius:4px;background:rgba(124,92,255,0.12);letter-spacing:.05em;"
           >🎬 Video Channels</a
         >
+        <a
+          routerLink="/engine/projects"
+          style="font-size:11px;font-weight:600;color:var(--ink-brand);text-decoration:none;padding:3px 8px;border-radius:4px;background:var(--ink-brand-glow);letter-spacing:.05em;"
+          >🚀 Engine</a
+        >
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span

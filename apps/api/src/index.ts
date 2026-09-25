@@ -1,6 +1,14 @@
 import { serve } from '@hono/node-server';
 import { createEngineClient } from '@signal-studio/db/client';
-import { ApiKeysRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
+import {
+  ApiKeysRepo,
+  ArtifactsRepo,
+  GenerationAttemptsRepo,
+  JobsRepo,
+  JobStagesRepo,
+  ProjectsRepo,
+  UserOrgsRepo,
+} from '@signal-studio/db/repos';
 
 import { createApp } from './app.ts';
 import { createGithubDispatcher, createQueueDispatcher, type Dispatcher } from './dispatcher.ts';
@@ -55,6 +63,12 @@ async function createDispatcher(): Promise<Dispatcher> {
   });
 }
 
+const engineSupabaseUrl = process.env.ENGINE_SUPABASE_URL;
+const engineSupabaseAnonKey = process.env.ENGINE_SUPABASE_ANON_KEY;
+if (!engineSupabaseUrl || !engineSupabaseAnonKey) {
+  throw new Error('ENGINE_SUPABASE_URL and ENGINE_SUPABASE_ANON_KEY are required');
+}
+
 const app = createApp({
   jobsRepo,
   projectsRepo: new ProjectsRepo(client),
@@ -62,6 +76,12 @@ const app = createApp({
   createStorage: createStorageProviderFor,
   dispatcher: await createDispatcher(),
   createJobStagesRepo: (orgId: string) => new JobStagesRepo(client, orgId),
+  createArtifactsRepo: (orgId: string) => new ArtifactsRepo(client, orgId),
+  createGenerationAttemptsRepo: () => new GenerationAttemptsRepo(client),
+  userOrgsRepo: new UserOrgsRepo(client),
+  engineSupabaseUrl,
+  engineSupabaseAnonKey,
+  corsOrigins: process.env.CORS_ORIGINS?.split(','),
   logger,
   reportError: createErrorReporter(process.env.SENTRY_DSN),
 });

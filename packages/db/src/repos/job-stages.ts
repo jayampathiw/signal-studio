@@ -124,4 +124,35 @@ export class JobStagesRepo implements JobStageStore {
       }>
     ).reverse();
   }
+
+  // P5.3 addition — the Jobs detail page's own "stage timeline": every
+  // `job_stages` row for a job, in run order. Nothing before this needed
+  // more than one stage's own last run (`getLastRun`); the dashboard needs
+  // all of them at once.
+  async listForJob(jobId: string): Promise<
+    Array<{
+      stage_name: string;
+      output_id: string;
+      status: string;
+      warnings: string[] | null;
+      started_at: string | null;
+      ended_at: string | null;
+    }>
+  > {
+    const { data, error } = await this.client
+      .from('job_stages')
+      .select('stage_name, output_id, status, warnings, started_at, ended_at')
+      .eq('org_id', this.orgId)
+      .eq('job_id', jobId)
+      .order('started_at', { ascending: true });
+    if (error) throw new Error(`JobStagesRepo.listForJob: ${error.message}`);
+    return data as Array<{
+      stage_name: string;
+      output_id: string;
+      status: string;
+      warnings: string[] | null;
+      started_at: string | null;
+      ended_at: string | null;
+    }>;
+  }
 }

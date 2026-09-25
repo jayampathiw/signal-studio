@@ -8,6 +8,7 @@
     "dev": "node --experimental-strip-types src/index.ts"
   },
   "dependencies": {
+    "@assemblex/packs": "workspace:*",
     "@hono/node-server": "^2.1.1",
     "@sentry/node": "^11.0.0",
     "@hono/zod-openapi": "^0.19.10",

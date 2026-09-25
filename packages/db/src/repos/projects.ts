@@ -50,4 +50,34 @@ export class ProjectsRepo {
     if (error) throw new Error(`ProjectsRepo.getById: ${error.message}`);
     return data as ProjectRow | null;
   }
+
+  // P5.2 addition — the dashboard's own Projects list needs every project
+  // for the caller's org; nothing before this needed "all of them", only
+  // one at a time by slug or id.
+  async listByOrg(orgId: string): Promise<ProjectRow[]> {
+    const { data, error } = await this.client
+      .from('projects')
+      .select()
+      .eq('org_id', orgId)
+      .order('slug', { ascending: true });
+    if (error) throw new Error(`ProjectsRepo.listByOrg: ${error.message}`);
+    return data as ProjectRow[];
+  }
+
+  // P5.2 addition — the brand-kit editor's save action. `config` is the
+  // caller's already-`Project.parse()`-validated replacement, not a patch —
+  // partial jsonb merges invite a client silently dropping fields it
+  // doesn't render yet, which this schema's `additionalProperties: false`
+  // shape makes especially easy to get wrong.
+  async updateConfig(orgId: string, slug: string, config: ProjectT): Promise<ProjectRow> {
+    const { data, error } = await this.client
+      .from('projects')
+      .update({ config, updated_at: new Date().toISOString() })
+      .eq('org_id', orgId)
+      .eq('slug', slug)
+      .select()
+      .single();
+    if (error) throw new Error(`ProjectsRepo.updateConfig: ${error.message}`);
+    return data as ProjectRow;
+  }
 }

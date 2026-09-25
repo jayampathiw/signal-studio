@@ -1,0 +1,134 @@
+{
+  "$ref": "#/definitions/project.v1",
+  "definitions": {
+    "project.v1": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orgId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "brand": {
+          "type": "object",
+          "properties": {
+            "fonts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "colours": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "watermark": {
+              "type": "string"
+            },
+            "musicBeds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "fonts": [],
+            "colours": [],
+            "musicBeds": []
+          }
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "template": {
+              "type": "string"
+            },
+            "voice": {
+              "type": "string"
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 2,
+              "default": 1
+            },
+            "outputs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["template", "voice", "outputs"],
+          "additionalProperties": false
+        },
+        "gates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "publishTargets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "platform": {
+                "type": "string"
+              },
+              "credentialRef": {
+                "type": "string"
+              }
+            },
+            "required": ["platform", "credentialRef"],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "promptPack": {
+          "type": "string"
+        },
+        "providers": {
+          "type": "object",
+          "properties": {
+            "tts": {
+              "type": "string"
+            },
+            "captions": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
+            },
+            "stock": {
+              "type": "string"
+            },
+            "storage": {
+              "type": "string"
+            },
+            "publish": {
+              "type": "string"
+            }
+          },
+          "required": ["tts", "captions", "image", "storage", "publish"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["slug", "orgId", "defaults", "providers"],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

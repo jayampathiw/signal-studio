@@ -175,3 +175,51 @@ test('P4.3: listRecent throws a clear error on a Supabase failure', async () => 
 
   await assert.rejects(() => repo.listRecent('job-1', 50), /connection reset/);
 });
+
+test('P5.3: listForJob scopes by org_id and job_id, orders by started_at ascending', async () => {
+  const calls: Array<{ method: string; args: unknown[] }> = [];
+  const chain = {
+    select: (...args: unknown[]) => {
+      calls.push({ method: 'select', args });
+      return chain;
+    },
+    eq: (...args: unknown[]) => {
+      calls.push({ method: 'eq', args });
+      return chain;
+    },
+    order: async (...args: unknown[]) => {
+      calls.push({ method: 'order', args });
+      return {
+        data: [
+          {
+            stage_name: 'assets',
+            output_id: '',
+            status: 'done',
+            warnings: null,
+            started_at: 't1',
+            ended_at: 't2',
+          },
+        ],
+        error: null,
+      };
+    },
+  };
+  const client = { from: () => chain };
+  const repo = new JobStagesRepo(client as never, 'org-1');
+
+  const stages = await repo.listForJob('job-1');
+
+  assert.deepEqual(
+    calls.filter((c) => c.method === 'eq').map((c) => c.args),
+    [
+      ['org_id', 'org-1'],
+      ['job_id', 'job-1'],
+    ],
+  );
+  assert.deepEqual(calls.find((c) => c.method === 'order')?.args, [
+    'started_at',
+    { ascending: true },
+  ]);
+  assert.equal(stages.length, 1);
+  assert.equal(stages[0].stage_name, 'assets');
+});

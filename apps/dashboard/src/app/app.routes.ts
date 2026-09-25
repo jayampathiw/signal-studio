@@ -1,11 +1,53 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth.guard';
+import { engineAuthGuard } from './core/engine-auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'articles', pathMatch: 'full' },
   {
     path: 'login',
     loadComponent: () => import('./auth/login.component').then((m) => m.LoginComponent),
+  },
+  // P5 — the new engine-backed console, additive alongside the legacy
+  // pages below (see refactor-plan.md's P5.7 entry for why those aren't
+  // retired yet — both consoles are real, live UI right now).
+  {
+    path: 'engine/login',
+    loadComponent: () =>
+      import('./engine/engine-login.component').then((m) => m.EngineLoginComponent),
+  },
+  {
+    path: 'engine/projects',
+    loadComponent: () =>
+      import('./engine/project-list.component').then((m) => m.ProjectListComponent),
+    canActivate: [engineAuthGuard],
+  },
+  {
+    path: 'engine/projects/:slug',
+    loadComponent: () =>
+      import('./engine/project-detail.component').then((m) => m.ProjectDetailComponent),
+    canActivate: [engineAuthGuard],
+  },
+  {
+    path: 'engine/projects/:slug/jobs',
+    loadComponent: () => import('./engine/job-list.component').then((m) => m.JobListComponent),
+    canActivate: [engineAuthGuard],
+  },
+  {
+    path: 'engine/projects/:slug/jobs/new',
+    loadComponent: () => import('./engine/new-job.component').then((m) => m.NewJobComponent),
+    canActivate: [engineAuthGuard],
+  },
+  {
+    path: 'engine/jobs/:id',
+    loadComponent: () => import('./engine/job-detail.component').then((m) => m.JobDetailComponent),
+    canActivate: [engineAuthGuard],
+  },
+  {
+    path: 'engine/generation-attempts',
+    loadComponent: () =>
+      import('./engine/generation-attempts.component').then((m) => m.GenerationAttemptsComponent),
+    canActivate: [engineAuthGuard],
   },
   {
     path: 'articles',
