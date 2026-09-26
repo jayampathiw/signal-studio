@@ -112,7 +112,8 @@ function fakeDeps(): AppDeps {
       },
     }),
     dispatcher: { dispatch: async () => {} },
-    createJobStagesRepo: () => ({ listRecent: async () => [], listForJob: async () => [] }) as never,
+    createJobStagesRepo: () =>
+      ({ listRecent: async () => [], listForJob: async () => [] }) as never,
     createArtifactsRepo: () => ({ listForJob: async () => [] }) as never,
     createGenerationAttemptsRepo: () =>
       ({ create: async () => ({}), weeklyReport: async () => [] }) as never,
@@ -169,7 +170,7 @@ test('list_jobs returns only jobs for the requested project', async () => {
   assert.equal(jobs.length, 1);
 });
 
-test('get_job on another org\'s job returns an MCP tool error, not the job', async () => {
+test("get_job on another org's job returns an MCP tool error, not the job", async () => {
   const deps = fakeDeps();
   const ownerClient = await connectedClient(deps, ORG_ID);
   const created = await ownerClient.callTool({
@@ -220,11 +221,5 @@ test('the server advertises exactly the 5 tools the plan asks for', async () => 
   const client = await connectedClient(deps, ORG_ID);
   const { tools } = await client.listTools();
   const names = tools.map((t) => t.name).sort();
-  assert.deepEqual(names, [
-    'approve_gate',
-    'create_job',
-    'get_job',
-    'list_jobs',
-    'presign_upload',
-  ]);
+  assert.deepEqual(names, ['approve_gate', 'create_job', 'get_job', 'list_jobs', 'presign_upload']);
 });

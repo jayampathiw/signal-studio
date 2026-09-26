@@ -103,7 +103,11 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
       }
       assertJobTransition(job.status, 'running');
       await deps.jobsRepo.updateStatus(id, 'running');
-      return { content: [{ type: 'text', text: JSON.stringify({ ...job, status: 'running' as JobStatus }) }] };
+      return {
+        content: [
+          { type: 'text', text: JSON.stringify({ ...job, status: 'running' as JobStatus }) },
+        ],
+      };
     },
   );
 
@@ -112,7 +116,11 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
     {
       title: 'Presign upload',
       description: 'Get a presigned upload URL for a shot asset on a job.',
-      inputSchema: { id: z.string().min(1), shotId: z.string().min(1), filename: z.string().min(1) },
+      inputSchema: {
+        id: z.string().min(1),
+        shotId: z.string().min(1),
+        filename: z.string().min(1),
+      },
     },
     async ({ id, shotId, filename }) => {
       const job = await deps.jobsRepo.getById(id);
