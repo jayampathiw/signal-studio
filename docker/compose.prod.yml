@@ -1,0 +1,108 @@
+# P4.2 T-P — the real production stack, deployed to the Hetzner CX23 box.
+# Distinct from `compose.yml` (T-L, local-only, builds the image itself) —
+# this one pulls the already-published `ghcr.io/<owner>/signal-studio-worker`
+# image (built and pushed by `.github/workflows/image.yml` on every push to
+# `refactor`/`main`) and never builds locally on the box.
+#
+# **Real Supabase project used, deliberately not a separate "prod" one** —
+# decided with you rather than defaulted into: this project has no external
+# customers or uptime SLA yet, `org_id` already scopes every row, and a
+# live worker polling the queue constantly means the free-tier "pauses
+# after inactivity" risk that would otherwise apply doesn't. Revisit only
+# once there's a real reason (external customers, a compliance need) to
+# split — not speculatively. `deploy/.env` (not committed, see its own
+# template) points `ENGINE_SUPABASE_*` at that same real project.
+#
+# **`queue-db` here is NOT the same throwaway container `compose.yml` (T-L)
+# uses** — this one has a real named volume (`queue-db-data`) so pg-boss's
+# own internal queue schema survives a container restart/host reboot. Real
+# job/project state still lives entirely in Supabase; only pg-boss's own
+# bookkeeping (which jobs are claimed, retry counts, etc.) lives here. This
+# was a deliberate choice over pointing pg-boss at the Supabase project's own
+# direct-Postgres connection: getting that connection string means either
+# already knowing the project's DB password or resetting it, and resetting a
+# password nothing has needed before now — for something that's genuinely
+# only local queue bookkeeping — wasn't worth doing without asking first.
+# Revisit if this ever needs to run across more than one worker host, since
+# a single-box Postgres can't be shared then.
+#
+# **`api`'s port is deliberately bound to 127.0.0.1 only, not 0.0.0.0** —
+# nothing public needs to reach it yet (no dashboard is deployed anywhere
+# that would call it), so it's reachable only via an SSH tunnel for now
+# rather than sitting open on the internet with no TLS/firewall in front of
+# it. Revisit once a real client (the dashboard, once it has a deploy
+# target) needs to reach this box directly — that's the point to add a
+# reverse proxy + TLS + firewall rules, not before.
+#
+# Usage (on the server):
+#   docker compose -f compose.prod.yml --env-file deploy.env pull
+#   docker compose -f compose.prod.yml --env-file deploy.env up -d
+
+services:
+  queue-db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${QUEUE_DB_PASSWORD}
+    volumes:
+      - queue-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    image: ghcr.io/${GHCR_OWNER}/signal-studio-worker:dev
+    restart: always
+    command:
+      [
+        'worker',
+        '--queue',
+        'render-jobs',
+        '--connection-string',
+        'postgresql://postgres:${QUEUE_DB_PASSWORD}@queue-db:5432/postgres',
+      ]
+    env_file:
+      - deploy.env
+    depends_on:
+      queue-db:
+        condition: service_healthy
+
+  api:
+    image: ghcr.io/${GHCR_OWNER}/signal-studio-worker:dev
+    restart: always
+    entrypoint: ['node', '--experimental-strip-types']
+    command: ['apps/api/src/index.ts']
+    ports:
+      - '127.0.0.1:8787:8787'
+    environment:
+      DISPATCH_MODE: queue
+      DISPATCH_QUEUE_CONNECTION_STRING: postgresql://postgres:${QUEUE_DB_PASSWORD}@queue-db:5432/postgres
+      DISPATCH_QUEUE_NAME: render-jobs
+    env_file:
+      - deploy.env
+    depends_on:
+      queue-db:
+        condition: service_healthy
+
+  # Auto-pulls a new `:dev` image whenever `image.yml` publishes one and
+  # restarts only the containers using it — the plan's own "restart:
+  # always" continuous-deploy bullet, via the standard tool for it rather
+  # than a hand-rolled polling script.
+  watchtower:
+    image: containrrr/watchtower
+    restart: always
+    # Real bug found deploying this for real: this image's bundled Docker
+    # client defaults to API 1.25, which our Docker Engine (29.8.1) rejects
+    # as too old ("Minimum supported API version is 1.40") — crash-looped
+    # every ~5s until this was set. Pinning a modern version here forces the
+    # client to negotiate correctly instead of using its stale default.
+    environment:
+      DOCKER_API_VERSION: '1.44'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ['--interval', '60', 'worker', 'api']
+
+volumes:
+  queue-db-data:
