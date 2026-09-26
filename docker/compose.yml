@@ -1,41 +1,96 @@
-# P2.6 — local compose for the worker (+ api once P2.7 exists). Per the
-# plan's own P2.6 bullet, this is "used fully in P4" (production worker
-# deploy) — right now `ss` only has `validate`, so `worker`'s default command
-# below is deliberately the one real thing you can exercise today. The `api`
-# service is commented out entirely rather than pointing at a command that
-# doesn't exist yet (apps/api is P2.7) — an "it's here but broken" service
-# is worse than an honest gap.
+# P4.2 T-L — local queue-mode stack, pointed at the real hosted `dev`
+# Supabase project rather than a local Supabase stack (a deliberate,
+# flagged deviation from the plan's literal "local Supabase" wording — see
+# docs/refactor/refactor-plan.md's P4.2 entry for why: every other real
+# DB-backed verification in this project has gone against the hosted `dev`
+# project, never a local Supabase stack, which nothing here has ever
+# actually stood up).
 #
-# Usage today:
-#   docker compose -f docker/compose.yml run --rm worker validate /manifests/example.json
+# `queue-db` is the one genuinely local-only piece — pg-boss needs its own
+# raw Postgres connection to manage its own schema in, and this repo has no
+# committed direct-Postgres connection string for the `dev` Supabase project
+# (only its REST/service-role credentials). A real production deploy (P4.2's
+# own T-P) should point `DISPATCH_QUEUE_CONNECTION_STRING` at a real managed
+# Postgres instead (Supabase's own direct connection string, or a small
+# managed Postgres next to the VPS) — not this throwaway container — flagged
+# here rather than silently carried into production.
 #
-# Once P2.5 lands `ss run-local`/`ss run-job`/`ss worker`, update `command:`
-# below accordingly — the image itself (built from this same Dockerfile)
-# doesn't need to change.
+# **Single `worker` replica is the real, deliberate default** — found for
+# real at this same T-L gate: two concurrent renders (`--scale worker=2`)
+# each need their own headless-Chromium + ffmpeg process, and on a 2-vCPU
+# box that contention alone caused real render timeouts (on top of the
+# separate Chromium-cold-start issue `warm-remotion-browser.mjs` now fixes).
+# The target P4.2 production box (Hetzner CX22: 2 vCPUs, **4GB RAM**) is
+# exactly that CPU size, so production runs one worker — jobs queue and
+# process serially, not concurrently.
+#
+# **No `deploy.resources.limits` here, deliberately** — two real, back-to-
+# back mistakes at this same T-L gate convinced me not to guess these:
+# a `memory: 1.5G` limit (Hetzner CX22 actually has 4GB total, not 1.5GB)
+# made a real render thrash for 5+ minutes instead of ~15-30s; loosening it
+# to `memory: 2.5G` plus a `cpus: '1.8'` cap *still* produced a multi-minute
+# render (real Chromium work confirmed running via `docker top`, just
+# throttled by the CPU quota against genuinely CPU-heavy software
+# rasterization — no GPU in a container). Both were guesses with no real
+# profiling behind them, made in a pass that was supposed to be proving
+# *functional* correctness (T-L), not sizing production hardware — and they
+# actively broke the thing they were meant to protect. Real CPU/memory
+# limits for the CX22 box are a P4.2 T-P concern, to be set from actual
+# production monitoring once the box exists, not guessed into this file.
+#
+# Usage:
+#   docker compose -f docker/compose.yml up --build
+#   docker compose -f docker/compose.yml up --build --scale worker=2   # concurrency test only — see note above
 
 services:
+  queue-db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5433:5432' # host 5433, so a local Supabase (5432) can coexist if one's running
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
   worker:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     image: signal-studio-worker:dev
-    # No default command — ss has no bare-invocation behavior worth
-    # defaulting to yet. Pass one explicitly, e.g. `run --rm worker validate
-    # /manifests/example.json`.
+    command:
+      [
+        'worker',
+        '--queue',
+        'render-jobs',
+        '--connection-string',
+        'postgresql://postgres:postgres@queue-db:5432/postgres',
+      ]
     env_file:
       - ../.env
+    depends_on:
+      queue-db:
+        condition: service_healthy
     volumes:
-      # Mount a local manifests/project dir in to validate/run against,
-      # without baking project content into the image.
       - ../projects:/repo/projects:ro
 
-  # api:
-  #   build:
-  #     context: ..
-  #     dockerfile: docker/Dockerfile
-  #   image: signal-studio-worker:dev
-  #   command: ['node', '--experimental-strip-types', 'apps/api/src/index.ts']
-  #   ports:
-  #     - '3000:3000'
-  #   env_file:
-  #     - ../.env
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: signal-studio-worker:dev
+    entrypoint: ['node', '--experimental-strip-types']
+    command: ['apps/api/src/index.ts']
+    ports:
+      - '8787:8787'
+    environment:
+      DISPATCH_MODE: queue
+      DISPATCH_QUEUE_CONNECTION_STRING: postgresql://postgres:postgres@queue-db:5432/postgres
+      DISPATCH_QUEUE_NAME: render-jobs
+    env_file:
+      - ../.env
+    depends_on:
+      queue-db:
+        condition: service_healthy

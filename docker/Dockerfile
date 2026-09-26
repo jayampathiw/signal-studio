@@ -39,6 +39,10 @@ COPY packages/db/package.json packages/db/package.json
 COPY packages/providers/package.json packages/providers/package.json
 COPY packages/templates/clips-overlay/package.json packages/templates/clips-overlay/package.json
 COPY packages/templates/compilation/package.json packages/templates/compilation/package.json
+COPY packages/templates/stills-kenburns/package.json packages/templates/stills-kenburns/package.json
+COPY packages/templates/shorts-916/package.json packages/templates/shorts-916/package.json
+COPY packages/templates/case-file/package.json packages/templates/case-file/package.json
+COPY packages/templates/carousel/package.json packages/templates/carousel/package.json
 COPY apps/worker/package.json apps/worker/package.json
 COPY apps/api/package.json apps/api/package.json
 # ^ Real bug caught by actually running `ss run-local` inside this image for
@@ -51,6 +55,15 @@ COPY apps/api/package.json apps/api/package.json
 # never existed at all inside the image, even though the runtime stage's
 # later `COPY . .` brought over their real source. `ss validate` (P2.6's own
 # smoke test) never caught this because it only touches `packages/core`
+# directly. **Caught again for real at P4.2's T-L gate (2026-09-25)**: the 4
+# templates added by P3.1-P3.3 (stills-kenburns, shorts-916, case-file,
+# carousel) were still missing from this list — `ss worker` crashed on
+# startup with `ERR_MODULE_NOT_FOUND '@signal-studio/render-ffmpeg'`
+# (imported transitively by `shorts-916`'s own `compile.ts`), since
+# `ss run-job`'s `TemplateHandler` registry (built after this list was last
+# updated) imports every template unconditionally at module load, not
+# lazily per job. Whoever adds the next new workspace package needs to add
+# its `package.json` here too, or hit this same failure — same warning as
 # directly. Whoever adds the next new workspace package needs to add its
 # `package.json` here too, or hit this same failure.
 
@@ -152,6 +165,15 @@ FROM runtime AS prewarm
 # real file (docker/warm-kokoro-js.mjs), not `node -e` — see that file's own
 # header comment for the real bug this avoids.
 RUN node --experimental-strip-types docker/warm-kokoro-js.mjs
+
+# Bake Remotion's own headless-Chromium binary into the image too — found
+# real and load-bearing at P4.2's local T-L gate: a worker's first real
+# render otherwise triggers a ~92MB in-process download that can itself eat
+# past `renderMedia`/`renderStill`'s 30s-default render timeout, especially
+# under the CPU contention of two concurrent renders on a small (2-vCPU) VPS.
+# See docker/warm-remotion-browser.mjs's own header for why it can't just
+# `import '@remotion/renderer'` directly.
+RUN node --experimental-strip-types docker/warm-remotion-browser.mjs
 
 FROM prewarm AS final
 # P2.5: apps/worker/src/cli.ts is now the full `ss` command set (validate,
