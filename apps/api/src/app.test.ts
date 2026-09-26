@@ -872,3 +872,40 @@ test('CORS: a real preflight from the dashboard dev origin is allowed; an untrus
   });
   assert.equal(untrusted.headers.get('access-control-allow-origin'), null);
 });
+
+test('POST /jobs/:id/queue: 400 unless created/awaiting_assets, otherwise queues and dispatches', async () => {
+  const dispatchCalls: string[] = [];
+  const { deps, jobs } = fakeDeps({
+    dispatcher: { dispatch: async (id: string) => void dispatchCalls.push(id) },
+  });
+  const app = createApp(deps);
+  const createRes = await app.request('/jobs', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${API_KEY}` },
+    body: JSON.stringify({ projectSlug: 'test-project', manifest: validManifest() }),
+  });
+  const created = await createRes.json();
+  assert.equal(created.status, 'created');
+
+  const res = await app.request(`/jobs/${created.id}/queue`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { dispatched: true });
+  assert.equal(jobs.get(created.id)!.status, 'queued');
+  assert.deepEqual(dispatchCalls, [created.id]);
+
+  const notEligible = await app.request(`/jobs/${created.id}/queue`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(notEligible.status, 400);
+
+  jobs.get(created.id)!.status = 'awaiting_assets';
+  const fromAwaitingAssets = await app.request(`/jobs/${created.id}/queue`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+  assert.equal(fromAwaitingAssets.status, 200);
+});

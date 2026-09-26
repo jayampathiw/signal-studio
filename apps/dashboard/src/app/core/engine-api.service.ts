@@ -198,6 +198,10 @@ export class EngineApiService {
     return this.request(`/jobs/${id}/retry`, { method: 'POST' });
   }
 
+  queueJob(id: string): Promise<{ dispatched: boolean }> {
+    return this.request(`/jobs/${id}/queue`, { method: 'POST' });
+  }
+
   dispatchJob(id: string): Promise<{ dispatched: boolean }> {
     return this.request(`/jobs/${id}/dispatch`, { method: 'POST' });
   }

@@ -598,6 +598,51 @@ export function createApp(deps: AppDeps) {
 
   app.openapi(
     createRoute({
+      method: 'post',
+      path: '/jobs/{id}/queue',
+      request: { params: z.object({ id: z.string() }) },
+      responses: {
+        200: {
+          content: { 'application/json': { schema: z.object({ dispatched: z.boolean() }) } },
+          description: 'Queued and dispatched',
+        },
+        400: {
+          content: { 'application/json': { schema: ErrorResponse } },
+          description: 'Not created/awaiting_assets',
+        },
+        404: {
+          content: { 'application/json': { schema: ErrorResponse } },
+          description: 'Not found',
+        },
+      },
+    }),
+    async (c) => {
+      const orgId = c.get('orgId');
+      const { id } = c.req.valid('param');
+      const job = await deps.jobsRepo.getById(id);
+      if (!job || job.org_id !== orgId) return c.json({ error: 'Job not found' }, 404);
+      // **Real gap this route closes, found real-testing P4.2's queue-mode
+      // stack, not by inspection**: `POST /jobs` leaves a job at `created`
+      // forever — nothing else in this API ever moved it to `queued`, so
+      // `/dispatch` (which requires exactly that status) could never
+      // legally fire from a real client (the dashboard's own New Job
+      // wizard included). Every prior real verification of dispatch in
+      // this project went through `ss run-job` directly or manual DB
+      // writes, which both bypass this path entirely — this is the first
+      // time anything exercised "dashboard creates a job, then asks for it
+      // to actually run" end to end.
+      if (job.status !== 'created' && job.status !== 'awaiting_assets') {
+        return c.json({ error: `Job is "${job.status}", not created/awaiting_assets` }, 400);
+      }
+      assertJobTransition(job.status, 'queued');
+      await deps.jobsRepo.updateStatus(id, 'queued');
+      await deps.dispatcher.dispatch(id);
+      return c.json({ dispatched: true }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
       method: 'get',
       path: '/jobs/{id}/artifacts',
       request: { params: z.object({ id: z.string() }) },

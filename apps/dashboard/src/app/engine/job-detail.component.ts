@@ -56,6 +56,15 @@ type ShotAsset = {
             }}</span>
           </div>
           <div style="display:flex;gap:8px;">
+            @if (['created', 'awaiting_assets'].includes(j.status)) {
+              <button
+                class="btn-brand"
+                style="height:32px;font-size:12px;padding:0 12px;"
+                (click)="queue()"
+              >
+                Queue &amp; dispatch
+              </button>
+            }
             @if (j.status === 'failed') {
               <button
                 class="btn-brand"
@@ -340,6 +349,15 @@ export class JobDetailComponent implements OnInit {
   async retry() {
     try {
       await this.api.retryJob(this.jobId);
+      await this.refresh();
+    } catch (err) {
+      this.error.set(this.messageOf(err));
+    }
+  }
+
+  async queue() {
+    try {
+      await this.api.queueJob(this.jobId);
       await this.refresh();
     } catch (err) {
       this.error.set(this.messageOf(err));
