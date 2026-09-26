@@ -1,5 +1,6 @@
 import { Pack, packToManifest } from '@assemblex/packs/blbl.v1';
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { resolveJob } from '@signal-studio/core/resolve';
 import { Manifest, Project } from '@signal-studio/core/schemas';
 import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
@@ -17,6 +18,7 @@ import { cors } from 'hono/cors';
 
 import type { Dispatcher } from './dispatcher.ts';
 import type { Logger } from './logger.ts';
+import { createMcpServer } from './mcp.ts';
 import type { AuthVariables } from './middleware/api-key.ts';
 import { combinedAuth, type CombinedAuthDeps } from './middleware/combined-auth.ts';
 
@@ -201,6 +203,31 @@ export function createApp(deps: AppDeps) {
   app.use('/generation-attempts/*', combinedAuth(authDeps));
   app.use('/me', combinedAuth(authDeps));
   app.use('/manifest/*', combinedAuth(authDeps));
+  app.use('/mcp', combinedAuth(authDeps));
+
+  // P4.5 (optional) — `/mcp`: same `combinedAuth` every other authed route
+  // uses (an `api_keys` bearer token, the same one CI/`ss` already use, or
+  // a real dashboard session) rather than building a separate OAuth 2.1
+  // authorization server up front. The plan's own wording only asks for
+  // OAuth "if required" — untested this pass whether claude.ai's
+  // custom-connector UI accepts a static bearer token for a URL-added
+  // connector; that's the real thing the T-P gate below still needs to
+  // confirm, not something to guess into existence here.
+  //
+  // Stateless mode (`sessionIdGenerator` omitted): a fresh `McpServer` +
+  // transport per HTTP request, scoped to the org resolved by
+  // `combinedAuth` above, mirroring every other per-request-scoped `deps`
+  // factory in this file (`createJobStagesRepo(orgId)` etc.). None of the
+  // 5 registered tools needs a long-lived session (no resources, no
+  // server-initiated push) — a request/response tool call is the only
+  // shape claude.ai's own `BATCH 7` test exercises.
+  app.all('/mcp', async (c) => {
+    const orgId = c.get('orgId');
+    const server = createMcpServer(deps, orgId);
+    const transport = new WebStandardStreamableHTTPServerTransport();
+    await server.connect(transport);
+    return transport.handleRequest(c.req.raw);
+  });
 
   app.openapi(
     createRoute({
