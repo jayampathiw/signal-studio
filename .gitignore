@@ -2,6 +2,12 @@
 .env
 .env.local
 
+# Real credentials kept on disk for durability (not committed — see
+# secrets/README.md). Losing the Hetzner deploy key to an ephemeral session
+# scratchpad on 2026-09-28 caused a real lockout; this directory exists so
+# that never has to happen again.
+secrets/
+
 # Windows/WSL zone-identifier artefacts on downloaded files
 *:Zone.Identifier
 
