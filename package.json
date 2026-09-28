@@ -22,7 +22,6 @@
     "packages/providers"
   ],
   "scripts": {
-    "video": "node apps/video/src/pipeline.js",
     "evals": "node evals/run.js",
     "bootstrap": "node scripts/bootstrap.js",
     "lint": "eslint .",

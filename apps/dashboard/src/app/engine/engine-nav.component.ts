@@ -31,11 +31,6 @@ import { EngineAuthService } from '../core/engine-auth.service';
           style="font-size:11px;font-weight:600;color:var(--ink-text-2);text-decoration:none;padding:3px 8px;border-radius:4px;background:var(--ink-raised);"
           >Attempts</a
         >
-        <a
-          routerLink="/articles"
-          style="font-size:11px;font-weight:600;color:var(--ink-text-3);text-decoration:none;padding:3px 8px;"
-          >&larr; Legacy console</a
-        >
       </div>
       <button
         class="btn-ink"

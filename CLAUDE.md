@@ -2,7 +2,7 @@
 
 ## What this is
 
-Monorepo for a multi-channel AI content publishing platform. Consolidated from `facebook-news-pipeline` and `reels-pipeline`. It produces two kinds of content: **AI-generated reels** (`apps/video` + `.claude` skills, here) and **news posts** (`apps/news`, moved to the private `signal-studio-workspace` repo in P0.5 of the engine refactor — see `docs/refactor/refactor-plan.md`), reviewed via the **dashboard** (`apps/dashboard`, here). Both still share one database.
+Monorepo for a multi-channel AI content publishing platform, built around the new **engine** (`apps/worker` + `apps/api`, driven by `ss` — see below) and its dashboard console (`apps/dashboard`'s `/engine/*` routes). Historically this repo also hosted two legacy pipelines — **AI-generated reels** (Wild Eye, `apps/video`) and their review UI, and the review UI for **news posts** (generation itself lives in the private `signal-studio-workspace` repo, moved there in P0.5) — but both pipelines were permanently stopped and their code deleted from this repo on 2026-09-28 (P3.7/P5.7). See `docs/refactor/refactor-plan.md` for what that removal covered and what's still pending (archiving the external `reel-pipeline` trigger repo, deleting 6 now-orphaned Supabase edge functions).
 
 **Full onboarding reference:** `docs/implementation-guide.md` — read it for architecture, data flow, schema, and workflows. This file is the quick operating guide.
 
@@ -10,19 +10,20 @@ Monorepo for a multi-channel AI content publishing platform. Consolidated from `
 
 Video logic is **self-contained here**; news logic moved to `signal-studio-workspace` in P0.5. Two **public** GitHub repos exist only as free-runner automation triggers, not implementation:
 
-- `reel-pipeline` (public) — hosts `generate.yml`; on dispatch it checks out _this_ repo via a deploy key and runs `claude --print "run wild-eye-reel for id=N"`. The video generation logic it executes is all here (`.claude/skills`, `apps/video`).
-- `facebook-news-pipeline` (public) — the actual live news trigger (hourly cron in `fetch.yml` + 3 other scheduled workflows). As of P0.5 it dual-checkouts both `signal-studio-workspace` (`apps/news` + its own `package.json`, at `workspace/`) and this repo (for `packages/{ai,config,database,publishers,types}`, pinned to `ref: refactor`, at `workspace/engine/`). This repo's own `.github/workflows/fetch-news.yml` was dead (`workflow_dispatch`-only) even before P0.5 and has been deleted.
+- `reel-pipeline` (public) — **stale as of 2026-09-28.** It hosted `generate.yml`, which checked out this repo via a deploy key and ran `claude --print "run wild-eye-reel for id=N"` against `.claude/skills`/`apps/video` — both now deleted from this repo, so a dispatch today would fail immediately. Not yet archived (pending); do not treat it as live.
+- `facebook-news-pipeline` (public) — dual-checkouts `signal-studio-workspace` (`apps/news`, at `workspace/`) and this repo (for `packages/{ai,config,database,publishers,types}`, pinned to `ref: refactor`, at `workspace/engine/`). **A real, not-yet-fixed gap since 2026-09-28**: `packages/publishers` was deleted from this repo (superseded by the engine's own publish providers), but that external repo's own workflow YAML still lists it in its checkout — a real trigger today would either fail that step or silently proceed without it, depending on the checkout action's behavior; needs fixing in that repo directly. **Posting itself is currently stopped** (an operational decision) — the workflows and code still exist and are technically triggerable, just not scheduled/run right now.
 
 Public repos are used because GitHub Actions minutes are free/unlimited on them; the private logic is pulled in at runtime.
 
 ## Apps
 
-| App       | Path              | What it does                                                     |
-| --------- | ----------------- | ---------------------------------------------------------------- |
-| video     | `apps/video/`     | Stock/AI-image scenes → FFmpeg or Remotion → MP4 → all platforms |
-| dashboard | `apps/dashboard/` | Angular review UI (Vercel)                                       |
+| App       | Path              | What it does                                                      |
+| --------- | ----------------- | ----------------------------------------------------------------- |
+| worker    | `apps/worker/`    | The engine's job runner — `ss worker`/`ss run-job`, all templates |
+| api       | `apps/api/`       | Hono API backing the dashboard + `/mcp` (P4.5)                    |
+| dashboard | `apps/dashboard/` | Angular console — `/engine/*` routes only (Vercel)                |
 
-`news` (RSS/NewsAPI → Claude captions → fal.ai images → Facebook FR/IT) lives in `signal-studio-workspace/apps/news` now — see that repo, not here.
+`news` (RSS/NewsAPI → Claude captions → fal.ai images → Facebook FR/IT) lives in `signal-studio-workspace/apps/news` — see that repo, not here; posting is currently stopped (see "Trigger repos" above). `apps/video` (the old Wild Eye reel pipeline) was deleted from this repo on 2026-09-28 — permanently stopped, not moved anywhere.
 
 ## Shared packages
 
@@ -46,44 +47,29 @@ Public repos are used because GitHub Actions minutes are free/unlimited on them;
 - oneprovider.dev double-encodes JSON responses — the `parseResponse()` shim handles this
 - Versioned prompt files: `prompts/system/`, `prompts/tasks/`, loaded via `packages/ai/prompts.js`
 
-## Channels & content lifecycle
+## Job lifecycle (the engine)
 
-- **Channel registry:** `apps/video/src/config/channels.js`. Key shape is `<niche>/<style>/<LANG>` (e.g. `wildlife/intimacy/EN`). Almost all per-channel behaviour is data here, not branching code.
-- **`renderer` per-channel value** (not a directory split):
-  - `renderer: 'reel'` → stock-footage path via `packages/render/ffmpeg` (Kokoro TTS + Whisper + Ken Burns + FFmpeg concat). Driven by `rendererConfig`.
-  - `renderer: 'higgsfield'` → AI generation via `.claude` skills + Higgsfield MCP. Driven by the `formats` map (`11s` / `21s` / `portrait`) + model defaults.
-  - `packages/render/remotion` (React/TS) is also available as an engine.
-- **Reel status lifecycle** (`content_items.status`): `brief → storyboard → generating → rendered → publishing → posted`; off-ramps `blocked` / `failed` (reason in `status_note`).
-- **Generation config precedence:** per-reel `gen_config` jsonb (dashboard Config tab) → channel default in `channels.js`.
-- **Slug → channel:** `apps/video/src/config/channel-slugs.js` maps `wild-eye` → `wildlife/intimacy/EN` + skill name.
-
-## .claude skills — 3-tier architecture (AI video)
-
-Every skill/agent is exactly one tier (full spec: `docs/cloud-automation-workflow.md`):
-
-- **Tier 1** — official Higgsfield skills (`npx skills add higgsfield-ai/skills`); never modified.
-- **Tier 2** — platform-wide, apply to all channels: `higgsfield-credit-guard` skill; `image-quality-gate`, `continuity-checker`, `seo-writer`, `performance-analyst` agents.
-- **Tier 3** — one set per channel: `wild-eye-reel` (orchestrator) + `wild-eye-brief`.
-
-Rule: anything used by ≥2 channels → promote to Tier 2; channel-specific → Tier 3; Tier 1 untouched.
+The engine's content model is templates + manifests, not the old Wild Eye "channels" concept (that whole system — `apps/video/src/config/channels.js`/`channel-slugs.js`, the Higgsfield 3-tier `.claude` skills, `content_items.status` — was deleted 2026-09-28 along with `apps/video`). See `docs/implementation-guide.md` and `docs/video-generation-flow.md` for the current model: `jobs.status` lifecycle (`created → queued → dispatched → running → awaiting_review → running → delivered`, off-ramps `failed`/`blocked`), `packages/templates/*` (one per template: `clips-overlay`, `stills-kenburns`, `shorts-916`, `case-file`, `carousel`, `compilation`), and `manifest.v1` (`packages/core/src/schemas`) as the per-job config, resolved via `apps/worker/src/deps.ts`'s `TemplateHandler` registry.
 
 ## Supabase edge functions
 
-Deno functions in `supabase/functions/*` called by the dashboard. Key ones: `expand-brief` (Claude writes `scenes`, `brief`→`storyboard`), `trigger-generation` (dispatches `reel-pipeline` via GitHub API — needs `GITHUB_PAT` secret), `generate-image` / `generate-caption` / `post-to-facebook` (news). `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are auto-injected; other secrets via `supabase secrets set`.
+Deno functions in `supabase/functions/*` (legacy project). **6 of them — `trigger-generation`, `trigger-longform`, `expand-brief`, `import-shotlist`, `upload-still`, `auto-match-still` — are now orphaned as of 2026-09-28**: their only caller was the legacy dashboard's `supabase.service.ts`, which was deleted along with the Wild Eye review pages. Not yet deleted from Supabase itself (pending explicit go-ahead — see `docs/refactor/refactor-plan.md`'s P3.7 entry). The remaining ones (`generate-image`, `generate-caption`, `post-to-facebook`, `queue-on-this-day`, `post-on-this-day`) back the news pipeline in `signal-studio-workspace`, which is still wired up even though posting is currently stopped. `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are auto-injected; other secrets via `supabase secrets set`.
 
 ## MCP servers
 
 - Root `.mcp.json`: supabase, github, context7, sequential-thinking, filesystem, memory
-- Higgsfield: available automatically on claude.ai/code (OAuth MCP) — no local config needed
+- `apps/api`'s own `/mcp` (P4.5) — Streamable HTTP MCP server exposing the engine's `create_job`/`get_job`/`list_jobs`/`approve_gate`/`presign_upload` tools; see `docs/deployment.md` for the live connector URL/auth setup
 - Per-app `.mcp.json`: reserved for future niche servers; empty at launch
+- Higgsfield MCP is no longer used — it backed the now-deleted Wild Eye/`apps/video` pipeline only
 
 ## Runtime modes
 
-| Mode              | Where                                     | How                                                                                |
-| ----------------- | ----------------------------------------- | ---------------------------------------------------------------------------------- |
-| Interactive       | claude.ai / Claude Code                   | MCP servers; run `.claude` skills by hand                                          |
-| Automated (news)  | GitHub Actions (`facebook-news-pipeline`) | hourly cron → dual-checkout `signal-studio-workspace` + this repo → `npm run news` |
-| Automated (video) | GitHub Actions (`reel-pipeline`)          | dispatch → checkout this repo → `claude --print` runs `wild-eye-reel`              |
+| Mode                  | Where                                     | How                                                                                                |
+| --------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Interactive           | claude.ai / Claude Code                   | MCP servers (root `.mcp.json`, `apps/api`'s `/mcp`); `ss` CLI by hand                              |
+| Production (engine)   | Hetzner CX23 (`docker/compose.prod.yml`)  | `worker` polls the queue continuously; `api` serves the dashboard + `/mcp`, both `restart: always` |
+| Automated (news)      | GitHub Actions (`facebook-news-pipeline`) | hourly cron → dual-checkout `signal-studio-workspace` + this repo — **currently stopped**          |
+| ~~Automated (video)~~ | ~~GitHub Actions (`reel-pipeline`)~~      | **Retired 2026-09-28** — Wild Eye/`apps/video` deleted; `reel-pipeline` is stale, not yet archived |
 
 ## Facebook API
 
@@ -108,18 +94,11 @@ Shared across all apps: `nnxtvbolhuvihlpwppbj`
 
 ## Known gotchas
 
-- **SEO → publish caption mismatch (live bug).** `wild-eye-reel` writes the caption to the `seo` jsonb (`{title, description, hashtags}`), but `packages/publishers/facebook.js` still reads `ai_caption` (`{intro, question, cta}`) + the `hashtags` column. Publishing a Wild Eye reel today posts a **blank caption**. Make the publisher `seo`-aware (fallback to `ai_caption` for legacy news rows). See `docs/PROJECT-STATUS.md` §6.1.
-- **21s `rendered_video_url` is NULL until assembly.** The generator leaves it NULL for 21s (3 separate clips); `apps/video/scripts/assemble-reel.mjs` (skill Step 6.5) stitches them via FFmpeg → R2. Requires `ffmpeg` on PATH + `R2_*` env. Publishers hard-throw on missing `rendered_video_url`.
-- **Four separate secret stores.** Root `.env` (local), `signal-studio` GitHub Actions secrets (news/video workflows), Supabase edge-function secrets, and **`reel-pipeline` repo secrets** (the cloud video runner) are all independent. `trigger-generation` needs `GITHUB_PAT` (with `actions:write` on `reel-pipeline`) set in **Supabase**. `reel-pipeline` needs its own set: `SIGNAL_STUDIO_DEPLOY_KEY`, `ANTHROPIC_API_KEY`/`ANTHROPIC_BASE_URL`/`ANTHROPIC_MODEL`, `SUPABASE_MCP_TOKEN`, `HIGGSFIELD_AUTH_TOKEN`, `R2_*`. `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are auto-injected into edge functions — don't set them manually.
+- **Four separate secret stores (legacy news path only).** Root `.env` (local), `signal-studio` GitHub Actions secrets, Supabase edge-function secrets, and **`reel-pipeline` repo secrets** are all independent. `reel-pipeline`'s own secrets are now moot (see "Trigger repos" above) but not yet deleted. `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are auto-injected into edge functions — don't set them manually. See `docs/deployment.md` for the engine's own (separate, simpler) secret stores.
 - **`.env` is a template — many values are blank placeholders with inline comments** (e.g. `GITHUB_PAT=    # GitHub Personal Access Token`). Never blindly copy a `.env` value into a secret: a naive `grep|cut` captures the _comment_ as the value (this is what caused the dashboard 502). Strip inline comments and verify the value is non-empty / well-formed before setting.
-- **Cloud `claude` CLI + proxy Anthropic key.** If `ANTHROPIC_KEY` is a proxy key (non-`sk-ant-`), the `reel-pipeline` runner must **forward `ANTHROPIC_BASE_URL` + `ANTHROPIC_MODEL`** to the `claude` CLI (done in `generate.yml`'s "Run generation" env) — the CLI defaults to `api.anthropic.com` otherwise.
-- **Higgsfield CLI credentials path.** CLI v0.2.x stores auth at `~/.config/higgsfield/credentials.json` (JSON: `access_token` + `refresh_token`), **not** `~/.higgsfield/credentials`. The `HIGGSFIELD_AUTH_TOKEN` secret must hold the full `credentials.json`, restored to that path on the runner.
-- **oneprovider.dev double-encodes responses.** When `ANTHROPIC_BASE_URL` is the proxy, responses come back as a JSON string. Use `parseResponse()` (`packages/ai/claude.js`) / `getText()` (edge fns) — never read `content[0].text` raw.
-- **`env` validation throws at import.** `packages/config/env.js` throws if any of `SUPABASE_URL`, `SUPABASE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_KEY`, `FAL_KEY` is missing. Add new vars to `packages/config/schema.js`.
-- **Scenario-3 (21s) video model must support `end_image`.** `seedance_2_0`, `kling3_0`, `wan2_7`, `cinematic_studio_3_0`, `seedance_1_5` do; `kling3_0_turbo` does **not** (dashboard disables it for 21s).
-- **Safe-language lint lives in two places.** `apps/video/scripts/safe-language-lint.mjs` and the `UNSAFE_TERMS` array in `reel-detail-dialog.component.ts` must stay in sync.
-- **`expand-brief` failure reverts to `brief`.** On unparseable Claude JSON it stores the raw output (truncated) in `status_note` and resets `status='brief'` — check `status_note` to debug.
-- **Stale schema ref:** `apps/video/src/utils/content-item.js` references `fb_video_id` (only `fb_post_id` exists). Harmless (unused by `publish.js`).
+- **oneprovider.dev double-encodes responses.** When `ANTHROPIC_BASE_URL` is the proxy, responses come back as a JSON string. Use `parseResponse()` (`packages/ai/claude.js`, still used by the news pipeline) / `getText()` (edge fns) — never read `content[0].text` raw.
+- **`packages/config`'s `env.js` validation throws at import (legacy path only).** Throws if any of `SUPABASE_URL`, `SUPABASE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_KEY`, `FAL_KEY` is missing — but nothing in `apps/worker`/`apps/api` imports `@signal-studio/config` at all (confirmed by grep, not assumed); only `packages/ai`/`media`/`database` do, which the news pipeline still depends on. `packages/config/schema.js`'s `optional` list still has a lot of dead Wild-Eye-channel entries (`FB_PAGE_ID_NATURE_PULSE` etc.) from before 2026-09-28's deletion — harmless, just stale, not yet pruned.
+- **`expand-brief` failure reverts to `brief`.** One of the 6 now-orphaned edge functions (see "Supabase edge functions" above) — kept here for whoever eventually deletes it. On unparseable Claude JSON it stores the raw output (truncated) in `status_note` and resets `status='brief'`.
 
 ## Key docs
 
