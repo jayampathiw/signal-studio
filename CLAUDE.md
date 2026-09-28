@@ -2,7 +2,7 @@
 
 ## What this is
 
-Monorepo for a multi-channel AI content publishing platform, built around the new **engine** (`apps/worker` + `apps/api`, driven by `ss` — see below) and its dashboard console (`apps/dashboard`'s `/engine/*` routes). Historically this repo also hosted two legacy pipelines — **AI-generated reels** (Wild Eye, `apps/video`) and their review UI, and the review UI for **news posts** (generation itself lives in the private `signal-studio-workspace` repo, moved there in P0.5) — but both pipelines were permanently stopped and their code deleted from this repo on 2026-09-28 (P3.7/P5.7). See `docs/refactor/refactor-plan.md` for what that removal covered and what's still pending (archiving the external `reel-pipeline` trigger repo, deleting 6 now-orphaned Supabase edge functions).
+Monorepo for a multi-channel AI content publishing platform, built around the new **engine** (`apps/worker` + `apps/api`, driven by `ss` — see below) and its dashboard console (`apps/dashboard`'s `/engine/*` routes). Historically this repo also hosted two legacy pipelines — **AI-generated reels** (Wild Eye, `apps/video`) and their review UI, and the review UI for **news posts** (generation itself lives in the private `signal-studio-workspace` repo, moved there in P0.5) — but both pipelines were permanently stopped and fully retired on 2026-09-28 (P3.7/P5.7): code deleted, `reel-pipeline` archived + secrets deleted, 6 orphaned Supabase edge functions deleted, and a real cross-repo dependency break in `facebook-news-pipeline`/`signal-studio-workspace` fixed at its root cause. See `docs/refactor/refactor-plan.md`'s P3.7 entry for the full detail.
 
 **Full onboarding reference:** `docs/implementation-guide.md` — read it for architecture, data flow, schema, and workflows. This file is the quick operating guide.
 
@@ -10,8 +10,8 @@ Monorepo for a multi-channel AI content publishing platform, built around the ne
 
 Video logic is **self-contained here**; news logic moved to `signal-studio-workspace` in P0.5. Two **public** GitHub repos exist only as free-runner automation triggers, not implementation:
 
-- `reel-pipeline` (public) — **stale as of 2026-09-28.** It hosted `generate.yml`, which checked out this repo via a deploy key and ran `claude --print "run wild-eye-reel for id=N"` against `.claude/skills`/`apps/video` — both now deleted from this repo, so a dispatch today would fail immediately. Not yet archived (pending); do not treat it as live.
-- `facebook-news-pipeline` (public) — dual-checkouts `signal-studio-workspace` (`apps/news`, at `workspace/`) and this repo (for `packages/{ai,config,database,publishers,types}`, pinned to `ref: refactor`, at `workspace/engine/`). **A real, not-yet-fixed gap since 2026-09-28**: `packages/publishers` was deleted from this repo (superseded by the engine's own publish providers), but that external repo's own workflow YAML still lists it in its checkout — a real trigger today would either fail that step or silently proceed without it, depending on the checkout action's behavior; needs fixing in that repo directly. **Posting itself is currently stopped** (an operational decision) — the workflows and code still exist and are technically triggerable, just not scheduled/run right now.
+- `reel-pipeline` (public) — **archived 2026-09-28.** It hosted `generate.yml`, which checked out this repo via a deploy key and ran `claude --print "run wild-eye-reel for id=N"` against `.claude/skills`/`apps/video` — both deleted from this repo the same day. All 15 of its GH Actions secrets deleted, the repo itself archived, and the `reel-pipeline CI` deploy key it used (registered on this repo) removed too.
+- `facebook-news-pipeline` (public) — dual-checkouts `signal-studio-workspace` (`apps/news`, at `workspace/`) and this repo (for `packages/{ai,config,database,types}`, pinned to `ref: refactor`, at `workspace/engine/`) — note `publishers` was dropped from that list on 2026-09-28: `packages/publishers` was deleted from this repo, and the fix (removing the dependency from `signal-studio-workspace`'s `apps/news/package.json` + root `workspaces`, and deleting its one real importer — a dead script with zero actual invocations) was made directly in that private repo. **Posting itself is currently stopped** (an operational decision) — the workflows and code still exist and are technically triggerable, just not scheduled/run right now.
 
 Public repos are used because GitHub Actions minutes are free/unlimited on them; the private logic is pulled in at runtime.
 
@@ -53,7 +53,7 @@ The engine's content model is templates + manifests, not the old Wild Eye "chann
 
 ## Supabase edge functions
 
-Deno functions in `supabase/functions/*` (legacy project). **6 of them — `trigger-generation`, `trigger-longform`, `expand-brief`, `import-shotlist`, `upload-still`, `auto-match-still` — are now orphaned as of 2026-09-28**: their only caller was the legacy dashboard's `supabase.service.ts`, which was deleted along with the Wild Eye review pages. Not yet deleted from Supabase itself (pending explicit go-ahead — see `docs/refactor/refactor-plan.md`'s P3.7 entry). The remaining ones (`generate-image`, `generate-caption`, `post-to-facebook`, `queue-on-this-day`, `post-on-this-day`) back the news pipeline in `signal-studio-workspace`, which is still wired up even though posting is currently stopped. `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are auto-injected; other secrets via `supabase secrets set`.
+Deno functions in `supabase/functions/*` (legacy project). **`trigger-generation`, `trigger-longform`, `expand-brief`, `import-shotlist`, `upload-still`, `auto-match-still` were deleted for real on 2026-09-28** — their only caller was the legacy dashboard's `supabase.service.ts`, which was deleted along with the Wild Eye review pages. The remaining ones (`generate-image`, `generate-caption`, `post-to-facebook`, `queue-on-this-day`, `post-on-this-day`, `analyze-upload`) back the news pipeline in `signal-studio-workspace`, which is still wired up even though posting is currently stopped. `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are auto-injected; other secrets via `supabase secrets set`.
 
 ## MCP servers
 
@@ -69,7 +69,7 @@ Deno functions in `supabase/functions/*` (legacy project). **6 of them — `trig
 | Interactive           | claude.ai / Claude Code                   | MCP servers (root `.mcp.json`, `apps/api`'s `/mcp`); `ss` CLI by hand                              |
 | Production (engine)   | Hetzner CX23 (`docker/compose.prod.yml`)  | `worker` polls the queue continuously; `api` serves the dashboard + `/mcp`, both `restart: always` |
 | Automated (news)      | GitHub Actions (`facebook-news-pipeline`) | hourly cron → dual-checkout `signal-studio-workspace` + this repo — **currently stopped**          |
-| ~~Automated (video)~~ | ~~GitHub Actions (`reel-pipeline`)~~      | **Retired 2026-09-28** — Wild Eye/`apps/video` deleted; `reel-pipeline` is stale, not yet archived |
+| ~~Automated (video)~~ | ~~GitHub Actions (`reel-pipeline`)~~      | **Retired 2026-09-28** — Wild Eye/`apps/video` deleted; `reel-pipeline` archived, secrets deleted  |
 
 ## Facebook API
 
@@ -94,11 +94,10 @@ Shared across all apps: `nnxtvbolhuvihlpwppbj`
 
 ## Known gotchas
 
-- **Four separate secret stores (legacy news path only).** Root `.env` (local), `signal-studio` GitHub Actions secrets, Supabase edge-function secrets, and **`reel-pipeline` repo secrets** are all independent. `reel-pipeline`'s own secrets are now moot (see "Trigger repos" above) but not yet deleted. `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are auto-injected into edge functions — don't set them manually. See `docs/deployment.md` for the engine's own (separate, simpler) secret stores.
+- **Three remaining separate secret stores (legacy news path only, down from four)**: root `.env` (local), `signal-studio` GitHub Actions secrets, and Supabase edge-function secrets are all independent. The fourth, **`reel-pipeline` repo secrets**, was deleted along with that repo's archival on 2026-09-28 (see "Trigger repos" above). `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are auto-injected into edge functions — don't set them manually. See `docs/deployment.md` for the engine's own (separate, simpler) secret stores.
 - **`.env` is a template — many values are blank placeholders with inline comments** (e.g. `GITHUB_PAT=    # GitHub Personal Access Token`). Never blindly copy a `.env` value into a secret: a naive `grep|cut` captures the _comment_ as the value (this is what caused the dashboard 502). Strip inline comments and verify the value is non-empty / well-formed before setting.
 - **oneprovider.dev double-encodes responses.** When `ANTHROPIC_BASE_URL` is the proxy, responses come back as a JSON string. Use `parseResponse()` (`packages/ai/claude.js`, still used by the news pipeline) / `getText()` (edge fns) — never read `content[0].text` raw.
 - **`packages/config`'s `env.js` validation throws at import (legacy path only).** Throws if any of `SUPABASE_URL`, `SUPABASE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_KEY`, `FAL_KEY` is missing — but nothing in `apps/worker`/`apps/api` imports `@signal-studio/config` at all (confirmed by grep, not assumed); only `packages/ai`/`media`/`database` do, which the news pipeline still depends on. `packages/config/schema.js`'s `optional` list still has a lot of dead Wild-Eye-channel entries (`FB_PAGE_ID_NATURE_PULSE` etc.) from before 2026-09-28's deletion — harmless, just stale, not yet pruned.
-- **`expand-brief` failure reverts to `brief`.** One of the 6 now-orphaned edge functions (see "Supabase edge functions" above) — kept here for whoever eventually deletes it. On unparseable Claude JSON it stores the raw output (truncated) in `status_note` and resets `status='brief'`.
 
 ## Key docs
 
