@@ -26,13 +26,16 @@
 # Revisit if this ever needs to run across more than one worker host, since
 # a single-box Postgres can't be shared then.
 #
-# **`api`'s port is deliberately bound to 127.0.0.1 only, not 0.0.0.0** —
-# nothing public needs to reach it yet (no dashboard is deployed anywhere
-# that would call it), so it's reachable only via an SSH tunnel for now
-# rather than sitting open on the internet with no TLS/firewall in front of
-# it. Revisit once a real client (the dashboard, once it has a deploy
-# target) needs to reach this box directly — that's the point to add a
-# reverse proxy + TLS + firewall rules, not before.
+# **`api`'s own container port stays bound to 127.0.0.1 only, not 0.0.0.0**
+# — nothing reaches it directly from the internet. Real public HTTPS access
+# (P4.5, needed for claude.ai's remote-connector UI to reach `/mcp`) goes
+# through the `caddy` service below instead, which reverse-proxies to `api`
+# over the internal `signal-studio_default` docker network (`api:8787`),
+# not via the host-bound port. Caddy gets a real Let's Encrypt cert for
+# `157.180.83.180.sslip.io` (a free wildcard-DNS-to-IP service — sslip.io
+# resolves any `<ip>.sslip.io` name to that literal IP, so no real domain
+# was needed to get a real, browser-trusted cert). Revisit with a real
+# domain if/when one exists; sslip.io has no uptime guarantee of its own.
 #
 # Usage (on the server):
 #   docker compose -f compose.prod.yml --env-file deploy.env pull
@@ -102,7 +105,32 @@ services:
       DOCKER_API_VERSION: '1.44'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: ['--interval', '60', 'worker', 'api']
+    # A second real bug found at P4.5: watchtower matches by *actual*
+    # container name, not the compose service name — `worker`/`api` never
+    # matched anything (Compose v2 names containers
+    # `signal-studio-<service>-1`), so `Scanned=0` on every run since P4.2's
+    # original deploy and the P4.5 MCP image was never auto-pulled. Fixed by
+    # using the real container names.
+    command:
+      ['--interval', '60', 'signal-studio-worker-1', 'signal-studio-api-1', 'signal-studio-caddy-1']
+
+  # P4.5 — public HTTPS front door. Only this container publishes host
+  # ports (80 for the Let's Encrypt HTTP-01 challenge + redirect, 443 for
+  # real traffic); `api` itself stays off the public interface entirely.
+  caddy:
+    image: caddy:2
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
 
 volumes:
   queue-db-data:
+  caddy-data:
+  caddy-config:

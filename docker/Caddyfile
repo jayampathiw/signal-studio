@@ -1,0 +1,8 @@
+# P4.5 — public HTTPS front for `api`, so claude.ai's remote-connector UI
+# (which needs a real public HTTPS URL, not a bare IP/SSH tunnel) can reach
+# `/mcp`. Caddy gets automatic Let's Encrypt certs for any real hostname,
+# including an sslip.io one (it resolves to this box's own IP, so the
+# HTTP-01 challenge lands here correctly).
+157.180.83.180.sslip.io {
+	reverse_proxy api:8787
+}
