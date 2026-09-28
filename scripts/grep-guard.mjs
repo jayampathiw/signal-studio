@@ -75,12 +75,15 @@ for (const rel of BANNED_PATHS) {
   }
 }
 
+const SELF = 'scripts/grep-guard.mjs';
+
 const trackedFiles = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' })
   .split('\n')
   .filter(Boolean)
   .filter((f) => SCAN_EXTENSIONS.has(path.extname(f)))
   .filter((f) => !EXCLUDE_FILES.has(path.basename(f)))
-  .filter((f) => !f.startsWith('docs/'));
+  .filter((f) => !f.startsWith('docs/'))
+  .filter((f) => f !== SELF); // this file's own banned-pattern literals would self-match
 
 // A line is treated as "just a comment" if, once trimmed, it starts with
 // `//` or `*` (a JSDoc/block-comment continuation line). Deliberately
