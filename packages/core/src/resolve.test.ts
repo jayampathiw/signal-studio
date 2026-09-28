@@ -6,7 +6,7 @@ import { Manifest } from './schemas/manifest.v1.ts';
 import { Project } from './schemas/project.v1.ts';
 
 const project = Project.parse({
-  slug: 'wild-eye',
+  slug: 'test-project',
   orgId: 'org-1',
   defaults: { template: 'clips-overlay', voice: 'af_heart', speed: 1.0, outputs: ['fb', 'ig'] },
   gates: ['image-quality-gate'],
@@ -35,7 +35,7 @@ test('resolveJob snapshot: manifest fields win, gates are additive', () => {
 
   assert.deepEqual(resolved, {
     manifest,
-    projectSlug: 'wild-eye',
+    projectSlug: 'test-project',
     orgId: 'org-1',
     template: 'clips-overlay',
     voice: 'bm_george', // manifest's own zod default wins over project's af_heart

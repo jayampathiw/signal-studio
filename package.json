@@ -3,24 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "apps/video",
-    "apps/dashboard",
-    "projects/assemblex-factory/pilot",
-    "packages/ai",
-    "packages/render/core",
-    "packages/render/ffmpeg",
-    "packages/render/remotion",
-    "packages/media",
-    "packages/database",
-    "packages/publishers",
-    "packages/config",
-    "packages/types",
-    "packages/shared",
-    "packages/core",
-    "packages/db",
-    "packages/providers"
-  ],
   "scripts": {
     "evals": "node evals/run.js",
     "bootstrap": "node scripts/bootstrap.js",
@@ -29,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "node scripts/typecheck.mjs",
+    "grep-guard": "node scripts/grep-guard.mjs",
     "test": "vitest run && pnpm --filter '!dashboard' -r --if-present run test && node --experimental-strip-types --test 'scripts/golden/*.test.ts'"
   },
   "engines": {
