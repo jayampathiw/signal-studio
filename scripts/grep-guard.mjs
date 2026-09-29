@@ -47,6 +47,12 @@ const BANNED_PATHS = [
   'supabase/functions/upload-still',
   'supabase/functions/import-shotlist',
   'supabase/functions/auto-match-still',
+  'supabase/functions/generate-caption',
+  'supabase/functions/generate-image',
+  'supabase/functions/post-to-facebook',
+  'supabase/functions/queue-on-this-day',
+  'supabase/functions/post-on-this-day',
+  'supabase/functions/analyze-upload',
 ];
 
 // Only real source/config files, never docs — CLAUDE.md and
