@@ -21,7 +21,6 @@ const TS_PROJECTS = [
   'packages/core/tsconfig.json',
   'packages/db/tsconfig.json',
   'packages/providers/tsconfig.json',
-  'projects/assemblex-factory/pilot/tsconfig.json',
   'projects/assemblex-factory/packs/tsconfig.json',
   'packages/templates/clips-overlay/tsconfig.json',
   'packages/templates/compilation/tsconfig.json',
