@@ -122,6 +122,10 @@ export interface PublishProvider {
     scheduleAt?: string;
     // P3.5 additions — additive/optional, existing callers unaffected.
     title?: string;
+    // YouTube's real `snippet.tags` metadata array (plain keywords, no
+    // `#`) — ignored by every other platform's provider, same as
+    // `aiDisclosure` below is ignored by Facebook.
+    tags?: string[];
     // Real, currently-documented AI-disclosure flag for YouTube
     // (`status.containsSyntheticMedia` on the Video resource — verified
     // against Google's own discovery doc, not guessed). **No equivalent

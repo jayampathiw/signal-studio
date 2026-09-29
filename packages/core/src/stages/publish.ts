@@ -31,6 +31,7 @@ export type PublishFn = (args: {
   video: string;
   caption: string;
   title?: string;
+  tags?: string[];
   scheduleAt?: string;
   aiDisclosure?: boolean;
 }) => Promise<{ postId: string; url?: string }>;
@@ -56,6 +57,7 @@ type PublishManifest = {
     instagram?: string;
     youtube_shorts_title?: string;
     youtube_description?: string;
+    youtube_tags?: string[];
     hashtags_facebook?: string[];
     hashtags_instagram?: string[];
   };
@@ -68,7 +70,7 @@ function hashtagLine(tags?: string[]): string {
 function buildCaption(
   platform: string,
   manifest: PublishManifest,
-): { caption: string; title?: string } {
+): { caption: string; title?: string; tags?: string[] } {
   const c = manifest.captions ?? {};
   const disclosureLine =
     manifest.disclosure && manifest.end_card?.disclosure ? manifest.end_card.disclosure : '';
@@ -88,7 +90,11 @@ function buildCaption(
   }
   if (platform === 'youtube') {
     const parts = [c.youtube_description, disclosureLine];
-    return { caption: parts.filter(Boolean).join('\n\n'), title: c.youtube_shorts_title };
+    return {
+      caption: parts.filter(Boolean).join('\n\n'),
+      title: c.youtube_shorts_title,
+      tags: c.youtube_tags,
+    };
   }
   // Unknown platform: no per-platform caption fields exist yet for it —
   // fail clearly rather than silently publish with an empty caption.
@@ -132,7 +138,7 @@ export function createPublishStage(opts: PublishStageOptions): StageDefinition {
           );
         }
 
-        const { caption, title } = buildCaption(platform, manifest);
+        const { caption, title, tags } = buildCaption(platform, manifest);
         if (!caption) {
           throw new Error(
             `publish stage: empty caption for platform "${platform}" — check manifest.captions`,
@@ -145,6 +151,7 @@ export function createPublishStage(opts: PublishStageOptions): StageDefinition {
           video,
           caption,
           title,
+          tags,
           scheduleAt: opts.scheduleAt,
           aiDisclosure: opts.aiDisclosure,
         });

@@ -73,6 +73,7 @@ export function createYoutubePublishProvider(opts: {
             snippet: {
               title: args.title ?? 'Untitled',
               description: args.caption,
+              tags: args.tags?.length ? args.tags : undefined,
               categoryId: opts.categoryId ?? '15', // 15 = Pets & Animals, this repo's own default
             },
             status: {
