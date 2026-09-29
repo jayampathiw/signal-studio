@@ -125,6 +125,12 @@ export const Captions = z
     // Facebook/Instagram caption bodies (which are written for different
     // platforms' tone/length).
     youtube_description: z.string().optional(),
+    // The real YouTube Data API `snippet.tags` field — plain keyword
+    // strings (no `#`), distinct from `hashtags_facebook`/`hashtags_instagram`
+    // above (those get rendered as `#tag` text inside the caption body;
+    // YouTube's tags are a separate metadata array, never shown in the
+    // description).
+    youtube_tags: z.array(z.string()).default([]),
     hashtags_facebook: z.array(z.string()).default([]),
     hashtags_instagram: z.array(z.string()).default([]),
   })

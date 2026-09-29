@@ -69,6 +69,7 @@ test('publish stage: youtube caption uses youtube_description + title from youtu
       captions: {
         youtube_shorts_title: 'A real Short title',
         youtube_description: 'A real Short description.',
+        youtube_tags: ['wildlife', 'octopus'],
       },
     }),
     cancelled: () => false,
@@ -76,6 +77,7 @@ test('publish stage: youtube caption uses youtube_description + title from youtu
 
   assert.equal(calls[0].title, 'A real Short title');
   assert.equal(calls[0].caption, 'A real Short description.\n\nAI-narrated.');
+  assert.deepEqual(calls[0].tags, ['wildlife', 'octopus']);
 });
 
 test('publish stage: throws a clear error when no publishTarget is configured for a platform', async () => {

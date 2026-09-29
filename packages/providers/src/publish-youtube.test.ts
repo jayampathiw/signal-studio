@@ -26,15 +26,41 @@ test('publish-youtube: uploads with title/description/containsSyntheticMedia, pu
     video: 'https://cdn/x.mp4',
     caption: 'A real description',
     title: 'A real title',
+    tags: ['wildlife', 'octopus'],
     aiDisclosure: true,
   });
 
   assert.equal(captured?.requestBody.snippet.title, 'A real title');
   assert.equal(captured?.requestBody.snippet.description, 'A real description');
+  assert.deepEqual(captured?.requestBody.snippet.tags, ['wildlife', 'octopus']);
   assert.equal(captured?.requestBody.status.containsSyntheticMedia, true);
   assert.equal(captured?.requestBody.status.privacyStatus, 'public');
   assert.equal(captured?.requestBody.status.publishAt, undefined);
   assert.deepEqual(result, { postId: 'yt123', url: 'https://www.youtube.com/shorts/yt123' });
+});
+
+test('publish-youtube: no tags supplied omits snippet.tags rather than sending an empty array', async () => {
+  let captured: Parameters<YoutubeVideosInsertClient['videos']['insert']>[0] | undefined;
+  const youtubeClient: YoutubeVideosInsertClient = {
+    videos: {
+      async insert(args) {
+        captured = args;
+        return { data: { id: 'yt2' } };
+      },
+    },
+  };
+  const fetchFn = (async () => fakeVideoBytes()) as typeof fetch;
+
+  const provider = createYoutubePublishProvider({ youtubeClient, fetchFn });
+  await provider.post({
+    platform: 'youtube',
+    pageRef: 'EN',
+    video: 'https://cdn/x.mp4',
+    caption: 'x',
+    tags: [],
+  });
+
+  assert.equal(captured?.requestBody.snippet.tags, undefined);
 });
 
 test('publish-youtube: scheduleAt sets privacyStatus=private + publishAt (real YouTube scheduled-publish mechanism)', async () => {
