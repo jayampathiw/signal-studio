@@ -17,11 +17,6 @@ const LEGACY_ALLOWED_PATHS = [
   '.claude/**',
 ];
 
-// Scripts whose entire job is printing progress for a human running them at
-// a terminal (not "production paths" in the CLAUDE.md sense) — console.log
-// is the correct tool here, not a lint violation to grandfather in.
-const CLI_SCRIPT_PATHS = ['projects/assemblex-factory/pilot/scripts/**'];
-
 export default tseslint.config(
   {
     ignores: [
@@ -35,7 +30,6 @@ export default tseslint.config(
       'apps/dashboard/**',
       'content/**',
       'projects/assemblex-factory/content/**',
-      'projects/assemblex-factory/pilot/public/**',
       'data/**',
     ],
   },
@@ -72,12 +66,6 @@ export default tseslint.config(
       'no-useless-escape': 'warn',
       'no-useless-assignment': 'warn',
       'preserve-caught-error': 'warn',
-    },
-  },
-  {
-    files: CLI_SCRIPT_PATHS,
-    rules: {
-      'no-console': 'off',
     },
   },
   {

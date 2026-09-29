@@ -1,4 +1,10 @@
-# AssembleX Factory — pilot bridge (P0.8)
+# ADR-001: AssembleX Factory — pilot bridge (P0.8)
+
+**Status: retired 2026-09-29.** `projects/assemblex-factory/pilot/` is deleted — its job (proving
+the `Post`/`EndCard`/`FactOverlay`/`Compilation` compositions and schema, then lifting them into the
+engine unchanged) was completed in Phase 2 (`clips-overlay` is now a fully proven engine template,
+driven by real jobs through `apps/worker`, not this standalone script chain). What follows is kept
+as a historical record of what the bridge did and why, not a live README.
 
 Standalone Remotion + Node pipeline for one AssembleX post: `prep → tts → render → captions → log`.
 Built on top of `@signal-studio/render-core`-style conventions but self-contained — no DB, no API,
