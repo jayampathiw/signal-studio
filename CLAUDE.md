@@ -88,6 +88,17 @@ Override via `ANTHROPIC_MODEL` for proxy/Sonnet sessions.
 - No `console.log` in production paths — `console.error` for errors
 - Per-page credentials: `FB_PAGE_ID_XX` / `FB_ACCESS_TOKEN_XX` suffix pattern
 
+## Git workflow
+
+`main` is the stable branch, only updated at real merge points; `refactor` is the active development branch. As of 2026-09-29, **`refactor` is protected — direct pushes are rejected** (`GH006`). All changes land via PR:
+
+- Branch off `refactor`: `<type>/<short-desc>` (e.g. `feat/mcp-tls`, `fix/watchtower-filter`, `chore/grep-guard`)
+- One branch per logical unit of change (a feature, a fix, a deletion pass) — not per tiny edit. A pure-docs tweak with no CI-relevant code (e.g. a tracker percentage update) can skip the branch/PR and go straight to a PR anyway, since direct push is blocked regardless
+- Open a PR into `refactor`, wait for the `ci` check to pass (required — the job id in `ci.yml` is lowercase `ci`, which must match the branch protection context exactly, case-sensitive), then merge (`gh pr merge --squash --delete-branch`)
+- Branches auto-delete on merge (`delete_branch_on_merge` repo setting) — no manual cleanup needed
+- No required review count (solo repo) — the gate is CI passing, not approval
+- Verified working end-to-end 2026-09-29: a direct push to `refactor` was rejected, and a real PR (branch → push → CI green → squash-merge → auto-delete) completed successfully
+
 ## Supabase project
 
 Shared across all apps: `nnxtvbolhuvihlpwppbj`
