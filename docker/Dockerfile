@@ -21,7 +21,6 @@ RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 WORKDIR /repo
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml .npmrc ./
 COPY apps/dashboard/package.json apps/dashboard/package.json
-COPY projects/assemblex-factory/pilot/package.json projects/assemblex-factory/pilot/package.json
 COPY projects/assemblex-factory/packs/package.json projects/assemblex-factory/packs/package.json
 COPY packages/ai/package.json packages/ai/package.json
 COPY packages/render/core/package.json packages/render/core/package.json
