@@ -105,6 +105,17 @@ test('qa stage: a black segment inside ignoreBlackAfterSec is excluded entirely 
   assert.ok(checks.some((c) => c.name === 'blackFrames' && c.status === 'pass'));
 });
 
+test('qa stage: an end card starting a fraction of a frame before ignoreBlackAfterSec is still excluded', async () => {
+  const stage = createQaStage({
+    measure: async () => goodMeasurement,
+    detectBlackFrames: async () => [{ startSec: 12.0333, endSec: 13.5 }],
+    expected: () => ({ ...goodExpected, ignoreBlackAfterSec: 12.034 }),
+  });
+  const result = await stage.run({ job, outputId: 'fb', cancelled: () => false });
+  const checks = (result?.outputs as { checks: Array<{ name: string; status: string }> }).checks;
+  assert.ok(checks.some((c) => c.name === 'blackFrames' && c.status === 'pass'));
+});
+
 test('qa stage: a black segment before ignoreBlackAfterSec still fails', async () => {
   const stage = createQaStage({
     measure: async () => goodMeasurement,
