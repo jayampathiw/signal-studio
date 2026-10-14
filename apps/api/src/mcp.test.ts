@@ -198,6 +198,27 @@ test('approve_gate rejects a job not awaiting review', async () => {
   assert.match(firstText(result as never), /not awaiting review/);
 });
 
+test('approve_gate on the last gate queues the job for publish-only dispatch', async () => {
+  const deps = fakeDeps();
+  const dispatchCalls: Array<[string, string | undefined]> = [];
+  deps.dispatcher = { dispatch: async (id, mode) => void dispatchCalls.push([id, mode]) };
+  const client = await connectedClient(deps, ORG_ID);
+  const created = await client.callTool({
+    name: 'create_job',
+    arguments: {
+      projectSlug: 'test-project',
+      manifest: { ...validManifest(), gates: ['review'], publish: ['facebook'] },
+    },
+  });
+  const job = JSON.parse(firstText(created as never));
+  await deps.jobsRepo.updateStatus(job.id, 'awaiting_review:review');
+
+  const result = await client.callTool({ name: 'approve_gate', arguments: { id: job.id } });
+  assert.equal(result.isError, undefined);
+  assert.equal(JSON.parse(firstText(result as never)).status, 'queued');
+  assert.deepEqual(dispatchCalls, [[job.id, 'publish']]);
+});
+
 test('presign_upload returns a real presigned URL shape from the fake storage provider', async () => {
   const deps = fakeDeps();
   const client = await connectedClient(deps, ORG_ID);

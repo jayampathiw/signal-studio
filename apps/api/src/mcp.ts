@@ -1,18 +1,17 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { resolveJob } from '@signal-studio/core/resolve';
 import { Manifest } from '@signal-studio/core/schemas';
-import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
 import { z } from 'zod';
 
 import type { AppDeps } from './app.ts';
+import { approveGate } from './approve.ts';
 
 /**
  * P4.5 (optional) — the 5 tools the plan asks for, each a thin wrapper over
  * the exact same `deps` the REST routes in `app.ts` already use (not a
  * second implementation of job-creation/presigning logic). `approve_gate`
- * maps to the existing `awaiting_review -> running` transition (`POST
- * /jobs/:id/approve`'s own logic) — "gate" is the plan's name for what the
- * rest of this codebase calls a review gate.
+ * shares `POST /jobs/:id/approve`'s `approveGate()` — "gate" is the plan's
+ * name for what the rest of this codebase calls a review gate.
  *
  * One `McpServer` per request (`createMcpServer` is called fresh from the
  * `/mcp` route handler each time), with `orgId` closed over from
@@ -87,7 +86,8 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
     'approve_gate',
     {
       title: 'Approve review gate',
-      description: 'Approve a job currently awaiting review, moving it to running.',
+      description:
+        'Approve the review gate a job is waiting on. Moves it to the next gate, or publishes the already-rendered video (status queued), or marks it delivered when there is nothing to publish.',
       inputSchema: { id: z.string().min(1) },
     },
     async ({ id }) => {
@@ -101,13 +101,8 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
           isError: true,
         };
       }
-      assertJobTransition(job.status, 'running');
-      await deps.jobsRepo.updateStatus(id, 'running');
-      return {
-        content: [
-          { type: 'text', text: JSON.stringify({ ...job, status: 'running' as JobStatus }) },
-        ],
-      };
+      const status = await approveGate(deps, job);
+      return { content: [{ type: 'text', text: JSON.stringify({ ...job, status }) }] };
     },
   );
 

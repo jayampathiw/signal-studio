@@ -32,6 +32,10 @@ test('awaiting_review:<gate> is treated as the awaiting_review family', () => {
   assert.doesNotThrow(() => assertJobTransition('running', 'awaiting_review:image-quality'));
   assert.doesNotThrow(() => assertJobTransition('awaiting_review:seo', 'running'));
   assert.throws(() => assertJobTransition('published', 'awaiting_review:seo'));
+  assert.doesNotThrow(() => assertJobTransition('awaiting_review:seo', 'queued'));
+  assert.doesNotThrow(() =>
+    assertJobTransition('awaiting_review:seo', 'awaiting_review:image-quality'),
+  );
 });
 
 test('every legal stage transition passes', () => {

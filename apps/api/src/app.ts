@@ -16,6 +16,7 @@ import type {
 import type { StorageProvider } from '@signal-studio/providers/contracts';
 import { cors } from 'hono/cors';
 
+import { approveGate } from './approve.ts';
 import type { Dispatcher } from './dispatcher.ts';
 import type { Logger } from './logger.ts';
 import { createMcpServer } from './mcp.ts';
@@ -454,7 +455,7 @@ export function createApp(deps: AppDeps) {
       responses: {
         200: {
           content: { 'application/json': { schema: JobResponse } },
-          description: 'Approved, now running',
+          description: 'Approved: next gate, queued to publish, or delivered',
         },
         400: {
           content: { 'application/json': { schema: ErrorResponse } },
@@ -474,9 +475,8 @@ export function createApp(deps: AppDeps) {
       if (!job.status.startsWith('awaiting_review:')) {
         return c.json({ error: `Job is "${job.status}", not awaiting review` }, 400);
       }
-      assertJobTransition(job.status, 'running');
-      await deps.jobsRepo.updateStatus(id, 'running');
-      return c.json({ ...job, status: 'running' as JobStatus }, 200);
+      const status = await approveGate(deps, job);
+      return c.json({ ...job, status }, 200);
     },
   );
 

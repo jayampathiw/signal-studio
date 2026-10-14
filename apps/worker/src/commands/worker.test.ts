@@ -10,14 +10,15 @@ import {
 } from './worker.ts';
 import { createLogger } from '../logger.ts';
 
-test('handleJob: calls runJob with the payload jobId, resolves on success', async () => {
+test('handleJob: calls runJob with the payload jobId + mode (full when absent), resolves on success', async () => {
   const calls: string[] = [];
-  await handleJob(
-    { jobId: 'job-1' },
-    { runJob: async (jobId) => void calls.push(jobId), heartbeat: async () => {} },
-    createLogger({ level: 'error' }),
-  );
-  assert.deepEqual(calls, ['job-1']);
+  const deps = {
+    runJob: async (jobId: string, mode: string) => void calls.push(`${jobId}:${mode}`),
+    heartbeat: async () => {},
+  };
+  await handleJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
+  await handleJob({ jobId: 'job-2', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+  assert.deepEqual(calls, ['job-1:full', 'job-2:publish']);
 });
 
 test("handleJob: rethrows runJob's error so pg-boss can retry/dead-letter", async () => {

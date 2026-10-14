@@ -1606,3 +1606,94 @@ test('runJob: carousel handler stops at awaiting_review when the job has gates, 
     await rm(workDir, { recursive: true, force: true });
   }
 });
+
+function publishOnlyDeps(
+  rows: Array<{
+    stage_name: string;
+    kind: string;
+    url: string;
+    metadata: Record<string, unknown>;
+    created_at: string;
+  }>,
+) {
+  const deps = fakeDeps('/unused.mp4', { publish: ['facebook'], gates: ['review'] });
+  const recorded: Array<{ stage: string; kind: string; url: string }> = [];
+  deps.createArtifactsRepo = () =>
+    ({
+      async listForJob() {
+        return rows;
+      },
+      async record(_jobId: string, stage: string, kind: string, url: string) {
+        recorded.push({ stage, kind, url });
+      },
+    }) as never;
+  deps.render = async () => {
+    throw new Error('publish-only mode must not render');
+  };
+  deps.synthesise = async () => {
+    throw new Error('publish-only mode must not synthesise');
+  };
+  return { deps, recorded };
+}
+
+test('runJob publish mode: posts the latest rendered video without re-rendering, then delivers', async () => {
+  const { deps, recorded } = publishOnlyDeps([
+    {
+      stage_name: 'render',
+      kind: 'video',
+      url: 'https://r2.test/old/fb.mp4',
+      metadata: { outputId: 'fb' },
+      created_at: '2026-10-14T06:00:00Z',
+    },
+    {
+      stage_name: 'render',
+      kind: 'video',
+      url: 'https://r2.test/new/fb.mp4',
+      metadata: { outputId: 'fb' },
+      created_at: '2026-10-14T07:00:00Z',
+    },
+  ]);
+
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+
+  assert.equal(deps.statusUpdates.at(-1), 'delivered');
+  assert.equal(deps.publishCalls.length, 1);
+  assert.equal(deps.publishCalls[0].video, 'https://r2.test/new/fb.mp4');
+  assert.equal(deps.publishCalls[0].pageRef, 'TEST');
+  assert.deepEqual(recorded, [{ stage: 'publish', kind: 'post', url: 'https://facebook.com/p1' }]);
+});
+
+test('runJob publish mode: never re-posts a platform that already has a publish artifact', async () => {
+  const { deps } = publishOnlyDeps([
+    {
+      stage_name: 'render',
+      kind: 'video',
+      url: 'https://r2.test/fb.mp4',
+      metadata: { outputId: 'fb' },
+      created_at: '2026-10-14T07:00:00Z',
+    },
+    {
+      stage_name: 'publish',
+      kind: 'post',
+      url: 'https://facebook.com/p0',
+      metadata: { platform: 'facebook', postId: 'p0' },
+      created_at: '2026-10-14T07:01:00Z',
+    },
+  ]);
+
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+
+  assert.equal(deps.publishCalls.length, 0);
+  assert.equal(deps.statusUpdates.at(-1), 'delivered');
+});
+
+test('runJob publish mode: fails clearly when the job has no rendered video', async () => {
+  const { deps } = publishOnlyDeps([]);
+
+  await assert.rejects(
+    () => runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' })),
+    /no rendered video for "facebook"/,
+  );
+  assert.equal(deps.publishCalls.length, 0);
+  assert.equal(deps.statusUpdates.at(-1), 'failed');
+});
