@@ -6,14 +6,16 @@ import { createLogger } from '../logger.ts';
 
 function fakeDeps(job: { id: string; org_id: string; status: string } | null) {
   const statusUpdates: string[] = [];
+  const failures: Array<{ stage: string; error: string }> = [];
   const artifacts: Array<{ jobId: string; kind: string; url: string }> = [];
   return {
     jobsRepo: {
       async getById() {
         return job;
       },
-      async updateStatus(id: string, status: string) {
-        statusUpdates.push(status);
+      async markFailed(_id: string, failure: { stage: string; error: string }) {
+        statusUpdates.push('failed');
+        failures.push(failure);
       },
     } as never,
     createArtifactsRepo: () =>
@@ -23,6 +25,7 @@ function fakeDeps(job: { id: string; org_id: string; status: string } | null) {
         },
       }) as never,
     statusUpdates,
+    failures,
     artifacts,
   };
 }
@@ -36,6 +39,8 @@ test('mark-failed: forces status to failed and records the run URL as an artifac
   );
 
   assert.deepEqual(deps.statusUpdates, ['failed']);
+  assert.equal(deps.failures[0].stage, 'ci');
+  assert.match(deps.failures[0].error, /actions\/runs\/1/);
   assert.deepEqual(deps.artifacts, [
     { jobId: 'job-1', kind: 'ci-failure-log', url: 'https://github.com/x/y/actions/runs/1' },
   ]);

@@ -86,7 +86,9 @@ export type QaStageOptions = {
   safeZoneMargin?: number;
 };
 
-export class QaFailedError extends Error {}
+export class QaFailedError extends Error {
+  readonly retryable = false;
+}
 
 export function createQaStage(opts: QaStageOptions): StageDefinition {
   const durationTol = opts.durationToleranceSec ?? 1.0;

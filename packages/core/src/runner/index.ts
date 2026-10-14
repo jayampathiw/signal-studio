@@ -6,6 +6,8 @@
  * package doesn't depend on @signal-studio/db to avoid a cycle).
  */
 
+import { recordFailedStage } from '../state/index.ts';
+
 export type Job = {
   id: string;
   manifest: { outputs: string[]; [key: string]: unknown };
@@ -74,6 +76,8 @@ export type JobStageStore = {
 };
 
 export class CancelledError extends Error {
+  readonly retryable = false;
+
   constructor(stage: string) {
     super(`Job cancelled before stage "${stage}"`);
     this.name = 'CancelledError';
@@ -144,6 +148,7 @@ export class StageRunner {
           const message = err instanceof Error ? err.message : String(err);
           await this.store.recordEnd(job.id, stage.name, { hash, status: 'failed' }, outputId);
           await this.store.log(job.id, stage.name, `failed: ${message}`);
+          recordFailedStage(err, stage.name, true);
           throw err;
         }
       }

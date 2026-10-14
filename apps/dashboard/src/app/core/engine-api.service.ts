@@ -11,6 +11,7 @@ export type EngineJob = {
   created_at: string;
   updated_at: string;
   heartbeat_at?: string | null;
+  error?: { stage: string; error: string; retryable: boolean } | null;
 };
 
 export type EngineProject = {

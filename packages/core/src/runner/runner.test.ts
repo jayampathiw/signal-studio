@@ -8,6 +8,7 @@ import {
   type JobStageStore,
   type StageRunRecord,
 } from './index.ts';
+import { toFailedPayload } from '../state/index.ts';
 
 function makeFakeStore() {
   const runs = new Map<string, StageRunRecord>();
@@ -119,10 +120,19 @@ test('failure mid-way stops later stages and records failed status', async () =>
       run: async () => void calls.push('publish'),
     });
 
-  await assert.rejects(() => runner.run(job()), /boom/);
+  let thrown: unknown;
+  await assert.rejects(async () => {
+    try {
+      await runner.run(job());
+    } catch (err) {
+      thrown = err;
+      throw err;
+    }
+  }, /boom/);
   assert.deepEqual(calls, ['prep']);
   assert.equal(runs.get('job-1:render:')?.status, 'failed');
   assert.equal(runs.has('job-1:publish:'), false);
+  assert.equal(toFailedPayload(thrown, 'run-job').stage, 'render');
 });
 
 test('multiOutput stage runs once per manifest output', async () => {

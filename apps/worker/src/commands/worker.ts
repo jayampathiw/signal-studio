@@ -1,3 +1,5 @@
+import { toFailedPayload } from '@signal-studio/core/state';
+
 import type { Logger } from '../logger.ts';
 
 /**
@@ -135,11 +137,18 @@ export async function handleJob(
     await deps.runJob(payload.jobId, mode);
     logger.info('job completed', { jobId: payload.jobId });
   } catch (err) {
+    const { retryable } = toFailedPayload(err, 'worker');
     logger.error('job failed', {
       jobId: payload.jobId,
       error: err instanceof Error ? err.message : String(err),
+      retryable,
     });
     deps.reportError?.(err, { jobId: payload.jobId });
+    // A deterministic failure (QA rejected the render, missing asset, bad
+    // manifest) would fail the same way again — complete the queue job
+    // instead of letting pg-boss re-run it. The job row is already `failed`
+    // with its reason.
+    if (!retryable) return;
     throw err; // let pg-boss's own retry/dead-letter policy decide what happens next
   } finally {
     clearInterval(interval);

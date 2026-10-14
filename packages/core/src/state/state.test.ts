@@ -5,7 +5,10 @@ import {
   assertJobTransition,
   assertStageTransition,
   JOB_TRANSITIONS,
+  NonRetryableError,
+  recordFailedStage,
   STAGE_TRANSITIONS,
+  toFailedPayload,
   type JobStatus,
   type StageStatus,
 } from './index.ts';
@@ -54,4 +57,25 @@ test('every illegal stage transition throws', () => {
       assert.throws(() => assertStageTransition(from, to));
     }
   }
+});
+
+test('toFailedPayload: plain errors are retryable and fall back to the given stage', () => {
+  assert.deepEqual(toFailedPayload(new Error('network down'), 'render'), {
+    stage: 'render',
+    error: 'network down',
+    retryable: true,
+  });
+});
+
+test('toFailedPayload: errors with retryable=false are not retried', () => {
+  const payload = toFailedPayload(new NonRetryableError('bad manifest'), 'run-job');
+  assert.equal(payload.retryable, false);
+  assert.equal(payload.error, 'bad manifest');
+});
+
+test('toFailedPayload: the stage recorded by the runner wins over the fallback', () => {
+  const err = new Error('qa said no');
+  recordFailedStage(err, 'qa');
+  recordFailedStage(err, 'outer');
+  assert.equal(toFailedPayload(err, 'run-job').stage, 'qa');
 });

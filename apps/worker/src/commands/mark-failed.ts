@@ -34,7 +34,11 @@ export async function markFailedCommand(
   if (!job) throw new Error(`mark-failed: no job found with id "${opts.jobId}"`);
 
   if (job.status !== 'failed') {
-    await deps.jobsRepo.updateStatus(opts.jobId, 'failed');
+    await deps.jobsRepo.markFailed(opts.jobId, {
+      stage: 'ci',
+      error: `run-job.yml failed before the job could record its own failure${opts.runUrl ? ` — see ${opts.runUrl}` : ''}`,
+      retryable: true,
+    });
     logger.info(`job ${job.status} -> failed (forced by CI safety net)`, { jobId: opts.jobId });
   } else {
     logger.info('job already failed — run-job.ts got there first', { jobId: opts.jobId });

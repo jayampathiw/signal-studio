@@ -3,9 +3,8 @@ import { test } from 'node:test';
 
 import { JobsRepo } from './jobs.ts';
 
-// Only `listByProject`/`markDispatched` are covered here (what this pass
-// added) — `create`/`updateStatus`/`getById` had no test coverage before
-// this file existed either; not backfilled, out of this task's scope.
+// `create`/`getById` had no test coverage before this file existed either;
+// not backfilled, out of this task's scope.
 
 test('listByProject: filters by org_id and project_id, orders newest first', async () => {
   const calls: Array<{ method: string; args: unknown[] }> = [];
@@ -139,11 +138,14 @@ test('reapStaleRunning: only touches running jobs with a non-null, stale heartbe
   const reaped = await repo.reapStaleRunning(staleBefore);
 
   assert.deepEqual(reaped, [{ id: 'job-1', status: 'failed' }]);
-  assert.deepEqual(calls.find((c) => c.method === 'update')?.args[0], {
-    status: 'failed',
-    updated_at: (calls.find((c) => c.method === 'update')!.args[0] as { updated_at: string })
-      .updated_at,
-  });
+  const update = calls.find((c) => c.method === 'update')!.args[0] as {
+    status: string;
+    error: { stage: string; error: string; retryable: boolean };
+  };
+  assert.equal(update.status, 'failed');
+  assert.equal(update.error.stage, 'worker');
+  assert.equal(update.error.retryable, true);
+  assert.match(update.error.error, /No worker heartbeat since before 2026-01-01T00:00:00.000Z/);
   assert.deepEqual(calls.find((c) => c.method === 'eq')?.args, ['status', 'running']);
   assert.deepEqual(calls.find((c) => c.method === 'not')?.args, ['heartbeat_at', 'is', null]);
   assert.deepEqual(calls.find((c) => c.method === 'lt')?.args, [
@@ -210,4 +212,39 @@ test('countsByStatus: throws a clear error when a query fails', async () => {
   const repo = new JobsRepo(client as never);
 
   await assert.rejects(() => repo.countsByStatus('org-1'), /timeout/);
+});
+
+function updateChain() {
+  const calls: Array<{ method: string; args: unknown[] }> = [];
+  const chain = {
+    update: (...args: unknown[]) => {
+      calls.push({ method: 'update', args });
+      return chain;
+    },
+    eq: async (...args: unknown[]) => {
+      calls.push({ method: 'eq', args });
+      return { error: null };
+    },
+  };
+  return { repo: new JobsRepo({ from: () => chain } as never), calls };
+}
+
+test('markFailed: sets status failed and the failure payload, scoped to the job', async () => {
+  const { repo, calls } = updateChain();
+  const failure = { stage: 'qa', error: 'blackFrames', retryable: false };
+  await repo.markFailed('job-1', failure);
+  const update = calls[0].args[0] as Record<string, unknown>;
+  assert.equal(update.status, 'failed');
+  assert.deepEqual(update.error, failure);
+  assert.deepEqual(calls[1].args, ['id', 'job-1']);
+});
+
+test('updateStatus: clears error only when re-queueing', async () => {
+  const queued = updateChain();
+  await queued.repo.updateStatus('job-1', 'queued');
+  assert.equal((queued.calls[0].args[0] as Record<string, unknown>).error, null);
+
+  const running = updateChain();
+  await running.repo.updateStatus('job-1', 'running');
+  assert.equal('error' in (running.calls[0].args[0] as Record<string, unknown>), false);
 });

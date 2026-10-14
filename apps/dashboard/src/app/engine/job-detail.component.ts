@@ -86,6 +86,21 @@ type ShotAsset = {
           </div>
         </div>
 
+        @if (j.status === 'failed' && j.error; as failure) {
+          <div
+            class="ink-surface"
+            style="padding:16px;margin-bottom:16px;display:flex;flex-direction:column;gap:6px;"
+          >
+            <div style="font-size:12px;font-weight:600;color:var(--ink-breaking);">
+              Failed at {{ failure.stage
+              }}{{ failure.retryable ? '' : ' — will fail again until the cause is fixed' }}
+            </div>
+            <div style="font-size:13px;color:var(--ink-text);white-space:pre-wrap;">
+              {{ failure.error }}
+            </div>
+          </div>
+        }
+
         @if (j.status.startsWith('awaiting_review:')) {
           <div
             class="ink-surface"

@@ -45,6 +45,11 @@ const JobResponse = z.object({
   status: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
+  // Why the job failed — set with `status: 'failed'`, cleared on re-queue.
+  error: z
+    .object({ stage: z.string(), error: z.string(), retryable: z.boolean() })
+    .nullable()
+    .optional(),
 });
 
 const ErrorResponse = z.object({ error: z.string() });
