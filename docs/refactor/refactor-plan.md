@@ -502,7 +502,7 @@ How to use this section:
 | ---------------------------------- | ------- | --------------------- |
 | P0.8 — Pilot bridge                | 86%     | 47 / 7 / 5            |
 | P0 — Safety net & hygiene          | 87%     | 45 / 11 / 2           |
-| P1 — Core domain / IR              | 80%     | 37 / 1 / 9            |
+| P1 — Core domain / IR              | 81%     | 38 / 0 / 9            |
 | P2 — `clips-overlay` + M1 runtime  | 89%     | 62 / 15 / 1           |
 | P3 — Remaining templates/providers | 85%     | 73 / 3 / 12           |
 | P4 — Worker hardening/deploy       | 77%     | 43 / 2 / 12           |
@@ -679,7 +679,7 @@ Goal: one Mode C post rendered `_fb` + `_ig` with no manual editing; published ~
   - [x] Job statuses exactly as listed, `awaiting_review:<gate>` modeled as a template-literal family (`awaiting_review:${string}`) rather than one fixed value, checked against a base `awaiting_review` row in the transition table
   - [x] Stage statuses exactly as listed
   - [x] `JOB_TRANSITIONS`/`STAGE_TRANSITIONS` tables as plain data; `assertJobTransition`/`assertStageTransition` throw with both state names
-  - [~] `failed` payload `{stage, error, retryable}` — the _type_ (`FailedPayload`) is defined; nothing in P1.2 yet actually constructs and stores one (that's the stage runner's job, P1.3, which currently only threads the raw error message through `job_log`, not this shaped payload) — flagged as a loose end for whoever wires job-failure handling into the API/worker in P2
+  - [x] `failed` payload `{stage, error, retryable}` — the _type_ (`FailedPayload`) is defined; nothing in P1.2 yet actually constructs and stores one (that's the stage runner's job, P1.3, which currently only threads the raw error message through `job_log`, not this shaped payload) — flagged as a loose end for whoever wires job-failure handling into the API/worker in P2 **Done 2026-10-14 (#19, #20):** stored as `jobs.error` (migration `20261014100000_jobs_error.sql`, applied) via `JobsRepo.markFailed()` from every failure path: worker `failJob()`, the stale-job reaper (`stage: worker`), and `ss mark-failed` (`stage: ci`). `StageRunner`/`withStage()` attribute the step. `retryable: false` (QA, missing asset, cancelled, bad manifest, missing target or render) makes `handleJob` complete the queue job instead of letting pg-boss re-run it; before this, a QA failure was re-rendered twice more (~15 min). The dashboard job page shows "Failed at <stage>". Verified live: job `bd481dd3` (queued with no clip) → `{stage: assets, retryable: false}`, picked up once, never retried; `/retry` replaced the error with the new failure.
   - [x] Unit tests generated from the tables themselves (every table entry checked for the legal direction, every non-listed pair checked for the illegal direction) — 5 tests, all green
 - [x] **P1.3 Stage runner** (`packages/core/src/runner/`) (2026-09-18)
   - [x] `StageDefinition {name, inputsHash(job), run(ctx)}` + ordered registry (`StageRunner.register()`, chainable)
