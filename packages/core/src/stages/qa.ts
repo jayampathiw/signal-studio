@@ -60,8 +60,14 @@ export type QaExpected = {
   // would risk missing a real defect elsewhere in the frame), a caller
   // that knows a trailing window is intentionally dark passes its start
   // time here and any black segment starting at or after it is ignored.
+  // Matched within `IGNORE_BLACK_TOLERANCE_SEC`: that start time comes from
+  // ffprobe's measured clip duration, while blackdetect reports frame
+  // boundaries, so a dark end card can begin a fraction of a frame earlier
+  // (real case: 12.0333s black start vs a 12.034s clip).
   ignoreBlackAfterSec?: number;
 };
+
+const IGNORE_BLACK_TOLERANCE_SEC = 0.1;
 
 export type QaCheck = { name: string; status: 'pass' | 'warn' | 'fail'; detail: string };
 
@@ -168,7 +174,9 @@ export function createQaStage(opts: QaStageOptions): StageDefinition {
       const blackSegs =
         expected.ignoreBlackAfterSec == null
           ? allBlackSegs
-          : allBlackSegs.filter((s) => s.startSec < expected.ignoreBlackAfterSec!);
+          : allBlackSegs.filter(
+              (s) => s.startSec < expected.ignoreBlackAfterSec! - IGNORE_BLACK_TOLERANCE_SEC,
+            );
       const longBlack = blackSegs.filter((s) => s.endSec - s.startSec >= blackFailSec);
       if (longBlack.length) {
         checks.push({
