@@ -16,7 +16,13 @@ import {
 } from '@signal-studio/core/stages/qa';
 import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/tts';
 import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
-import type { ArtifactsRepo, JobRow, JobsRepo, ProjectsRepo } from '@signal-studio/db/repos';
+import type {
+  ArtifactRow,
+  ArtifactsRepo,
+  JobRow,
+  JobsRepo,
+  ProjectsRepo,
+} from '@signal-studio/db/repos';
 import type {
   CarouselPublishProvider,
   PublishProvider,
@@ -112,11 +118,13 @@ const OUTPUT_TO_PLATFORM: Record<string, string> = {
  * gate logic lives in packages/providers" — not built yet). This command
  * only marks a job `awaiting_review:<firstGate>` when gates are present,
  * exactly as the state machine's own transition table allows; it does not
- * evaluate anything.
+ * evaluate anything. A human approves each gate (apps/api's `approveGate`);
+ * approving the last one queues the job back here in `mode: 'publish'`
+ * (`runPublishOnly`), which posts the already-rendered outputs.
  *
  * **Publish** fires once every output has rendered, and only when the job
- * has *no* gates (a gated job stops at `awaiting_review:<gate>` — no real
- * gate-approval path exists yet to unblock it from there). Dispatches each
+ * has *no* gates (a gated job stops at `awaiting_review:<gate>` and is
+ * published by `runPublishOnly` once approved). Dispatches each
  * `manifest.publish[]` platform to a real `PublishProvider` (`deps.
  * createPublishProviderFor`), resolving `pageRef` from
  * `project.publishTargets[]` and each platform's rendered video URL from
@@ -131,6 +139,9 @@ const OUTPUT_TO_PLATFORM: Record<string, string> = {
 
 export type RunJobOptions = {
   jobId: string;
+  // `publish`: the job's last review gate was approved — post the outputs
+  // it already rendered (and passed QA on) instead of running it again.
+  mode?: 'full' | 'publish';
 };
 
 export type RunJobDeps = {
@@ -839,7 +850,7 @@ async function runCarouselJob(
       const next = `awaiting_review:${resolvedJob.gates[0]}` as JobStatus;
       assertJobTransition('running', next);
       await deps.jobsRepo.updateStatus(job.id, next);
-      logger.info('job running -> awaiting_review (gates present, not evaluated)', {
+      logger.info('job running -> awaiting_review (waiting for approval)', {
         gates: resolvedJob.gates,
       });
     } else {
@@ -847,6 +858,131 @@ async function runCarouselJob(
       await deps.jobsRepo.updateStatus(job.id, 'delivered');
       logger.info('job running -> delivered');
     }
+  } catch (err) {
+    await deps.jobsRepo.updateStatus(job.id, 'failed');
+    throw err;
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true });
+  }
+}
+
+// Latest artifact per key — a job retried before reaching its gate can
+// hold more than one render of the same output/slide.
+function latestBy(rows: ArtifactRow[], key: (row: ArtifactRow) => string | undefined) {
+  const latest = new Map<string, ArtifactRow>();
+  for (const row of rows) {
+    const k = key(row);
+    if (k === undefined) continue;
+    const prev = latest.get(k);
+    if (!prev || row.created_at > prev.created_at) latest.set(k, row);
+  }
+  return latest;
+}
+
+/**
+ * Publish-only run for a job whose last review gate was approved (apps/api's
+ * `approveGate`). It rendered and passed QA before stopping at
+ * `awaiting_review`, so this only posts those recorded `render` artifacts.
+ * Platforms that already have a `publish` artifact are skipped, so a retry
+ * after a partial failure never double-posts.
+ */
+async function runPublishOnly(
+  job: JobRow,
+  project: ProjectT,
+  deps: RunJobDeps,
+  logger: Logger,
+): Promise<void> {
+  const artifactsRepo = deps.createArtifactsRepo(job.org_id);
+  const tmpDir = await mkdtemp(path.join(os.tmpdir(), `ss-run-job-${job.id}-`));
+  try {
+    await advanceToRunning(deps.jobsRepo, job, logger);
+
+    const artifacts = await artifactsRepo.listForJob(job.id);
+    const alreadyPosted = new Set(
+      artifacts.filter((a) => a.stage_name === 'publish').map((a) => a.metadata.platform as string),
+    );
+    const platforms = job.manifest.publish.filter((p) => !alreadyPosted.has(p));
+    if (alreadyPosted.size > 0) {
+      logger.info('skipping platforms already posted', { platforms: [...alreadyPosted] });
+    }
+
+    const publishTargets: Record<string, string> = {};
+    for (const target of project.publishTargets) {
+      publishTargets[target.platform] = target.credentialRef;
+    }
+    const renders = artifacts.filter((a) => a.stage_name === 'render');
+
+    if (platforms.length > 0 && job.manifest.visual.mode === 'carousel') {
+      const config = job.manifest.carousel;
+      if (!config) throw new Error('run-job: carousel jobs require manifest.carousel');
+      const slides = [
+        ...latestBy(
+          renders.filter((a) => a.kind === 'image'),
+          (a) => (typeof a.metadata.slide === 'number' ? String(a.metadata.slide) : undefined),
+        ).values(),
+      ].sort((a, b) => (a.metadata.slide as number) - (b.metadata.slide as number));
+      if (slides.length === 0) {
+        throw new Error(`run-job: job "${job.id}" has no rendered carousel slides to publish`);
+      }
+      for (const platform of platforms) {
+        const credentialRef = publishTargets[platform];
+        if (!credentialRef) {
+          throw new Error(`run-job: no publishTarget configured for platform "${platform}"`);
+        }
+        const post = await deps.createCarouselPublishProviderFor(platform, credentialRef).post({
+          platform,
+          pageRef: credentialRef,
+          images: slides.map((s) => s.url),
+          caption: config.postCaption,
+        });
+        await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
+          platform,
+          postId: post.postId,
+        });
+        logger.info(`published ${platform}`, post);
+      }
+    } else if (platforms.length > 0) {
+      const renderedVideoUrls: Record<string, string> = {};
+      const videos = latestBy(
+        renders.filter((a) => a.kind === 'video'),
+        (a) => a.metadata.outputId as string | undefined,
+      );
+      for (const [outputId, row] of videos) {
+        const platform = OUTPUT_TO_PLATFORM[outputId];
+        if (platform) renderedVideoUrls[platform] = row.url;
+      }
+      for (const platform of platforms) {
+        if (!renderedVideoUrls[platform]) {
+          throw new Error(
+            `run-job: job "${job.id}" has no rendered video for "${platform}" — it must render and pass QA before its gate can publish`,
+          );
+        }
+      }
+
+      const publish: PublishFn = async (args) =>
+        deps.createPublishProviderFor(args.platform, publishTargets[args.platform]).post(args);
+      const runner = new StageRunner(deps.createStageStore(job.org_id));
+      runner.register(createPublishStage({ publish, publishTargets, renderedVideoUrls }));
+      const stageJob: Job = {
+        id: job.id,
+        manifest: { ...job.manifest, publish: platforms },
+        workDir: tmpDir,
+      };
+      const publishOutputs = await runner.run(stageJob);
+      const posts = publishOutputs.get('publish:') as
+        { posts: Record<string, { postId: string; url?: string }> } | undefined;
+      for (const [platform, post] of Object.entries(posts?.posts ?? {})) {
+        await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
+          platform,
+          postId: post.postId,
+        });
+        logger.info(`published ${platform}`, post);
+      }
+    }
+
+    assertJobTransition('running', 'delivered');
+    await deps.jobsRepo.updateStatus(job.id, 'delivered');
+    logger.info('job running -> delivered (publish-only)');
   } catch (err) {
     await deps.jobsRepo.updateStatus(job.id, 'failed');
     throw err;
@@ -863,6 +999,10 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
   if (!projectRow)
     throw new Error(`run-job: job "${job.id}" references missing project_id "${job.project_id}"`);
   const project: ProjectT = projectRow.config;
+
+  if (opts.mode === 'publish') {
+    return runPublishOnly(job, project, deps, logger);
+  }
 
   if (job.manifest.visual.mode === 'carousel') {
     return runCarouselJob(job, project, deps, logger);
@@ -1002,8 +1142,8 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
     );
     await runner.run(stageJob);
 
-    // Publish only fires for a gate-free job — see this file's own header
-    // for why a gated job stops at `awaiting_review` instead.
+    // Publish only fires here for a gate-free job — a gated job stops at
+    // `awaiting_review` and is published by `runPublishOnly` once approved.
     if (resolvedJob.gates.length === 0 && job.manifest.publish.length > 0) {
       const publishTargets: Record<string, string> = {};
       for (const target of project.publishTargets) {
@@ -1037,7 +1177,7 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
       const next = `awaiting_review:${resolvedJob.gates[0]}` as JobStatus;
       assertJobTransition('running', next);
       await deps.jobsRepo.updateStatus(job.id, next);
-      logger.info('job running -> awaiting_review (gates present, not evaluated)', {
+      logger.info('job running -> awaiting_review (waiting for approval)', {
         gates: resolvedJob.gates,
       });
     } else {

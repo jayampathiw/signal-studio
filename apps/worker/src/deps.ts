@@ -206,7 +206,7 @@ export function realDigestDeps(): DigestDeps {
   };
 }
 
-export function realWorkerDeps(runJob: (jobId: string) => Promise<void>): WorkerDeps {
+export function realWorkerDeps(runJob: WorkerDeps['runJob']): WorkerDeps {
   const client = createEngineClient();
   const jobsRepo = new JobsRepo(client);
   const healthchecksUrl = process.env.HEALTHCHECKS_PING_URL;

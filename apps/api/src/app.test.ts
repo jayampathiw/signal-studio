@@ -304,8 +304,31 @@ test('POST /jobs/:id/assets: returns a presigned URL using the ss-upload key con
   assert.ok(url.includes(key));
 });
 
-test('POST /jobs/:id/approve: 400 when not awaiting_review, 200 + status running otherwise', async () => {
-  const { deps, jobs } = fakeDeps();
+async function createAwaitingJob(
+  app: ReturnType<typeof createApp>,
+  jobs: Map<string, Record<string, unknown>>,
+  manifest: Record<string, unknown>,
+  gate: string,
+) {
+  const createRes = await app.request('/jobs', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${API_KEY}` },
+    body: JSON.stringify({ projectSlug: 'test-project', manifest }),
+  });
+  const created = await createRes.json();
+  jobs.get(created.id)!.status = `awaiting_review:${gate}`;
+  return created.id as string;
+}
+
+async function approve(app: ReturnType<typeof createApp>, id: string) {
+  return app.request(`/jobs/${id}/approve`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${API_KEY}` },
+  });
+}
+
+test('POST /jobs/:id/approve: 400 when not awaiting_review', async () => {
+  const { deps } = fakeDeps();
   const app = createApp(deps);
   const createRes = await app.request('/jobs', {
     method: 'POST',
@@ -313,20 +336,62 @@ test('POST /jobs/:id/approve: 400 when not awaiting_review, 200 + status running
     body: JSON.stringify({ projectSlug: 'test-project', manifest: validManifest() }),
   });
   const created = await createRes.json();
+  assert.equal((await approve(app, created.id)).status, 400);
+});
 
-  const tooEarly = await app.request(`/jobs/${created.id}/approve`, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${API_KEY}` },
+test('POST /jobs/:id/approve: last gate + publish targets -> queued and dispatched in publish mode', async () => {
+  const dispatchCalls: Array<[string, string | undefined]> = [];
+  const { deps, jobs } = fakeDeps({
+    dispatcher: {
+      dispatch: async (id: string, mode?: string) => void dispatchCalls.push([id, mode]),
+    },
   });
-  assert.equal(tooEarly.status, 400);
-
-  jobs.get(created.id)!.status = 'awaiting_review:manual-review';
-  const res = await app.request(`/jobs/${created.id}/approve`, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${API_KEY}` },
-  });
+  const app = createApp(deps);
+  const id = await createAwaitingJob(
+    app,
+    jobs,
+    { ...validManifest(), gates: ['review'], publish: ['facebook'] },
+    'review',
+  );
+  const res = await approve(app, id);
   assert.equal(res.status, 200);
-  assert.equal((await res.json()).status, 'running');
+  assert.equal((await res.json()).status, 'queued');
+  assert.equal(jobs.get(id)!.status, 'queued');
+  assert.deepEqual(dispatchCalls, [[id, 'publish']]);
+});
+
+test('POST /jobs/:id/approve: moves to the next gate without dispatching', async () => {
+  const dispatchCalls: string[] = [];
+  const { deps, jobs } = fakeDeps({
+    dispatcher: { dispatch: async (id: string) => void dispatchCalls.push(id) },
+  });
+  const app = createApp(deps);
+  const id = await createAwaitingJob(
+    app,
+    jobs,
+    { ...validManifest(), gates: ['copy', 'final'], publish: ['facebook'] },
+    'copy',
+  );
+  const res = await approve(app, id);
+  assert.equal((await res.json()).status, 'awaiting_review:final');
+  assert.deepEqual(dispatchCalls, []);
+});
+
+test('POST /jobs/:id/approve: nothing to publish -> delivered, no dispatch', async () => {
+  const dispatchCalls: string[] = [];
+  const { deps, jobs } = fakeDeps({
+    dispatcher: { dispatch: async (id: string) => void dispatchCalls.push(id) },
+  });
+  const app = createApp(deps);
+  const id = await createAwaitingJob(
+    app,
+    jobs,
+    { ...validManifest(), gates: ['review'] },
+    'review',
+  );
+  const res = await approve(app, id);
+  assert.equal((await res.json()).status, 'delivered');
+  assert.deepEqual(dispatchCalls, []);
 });
 
 test('POST /jobs/:id/dispatch: calls the dispatcher only when queued', async () => {

@@ -91,9 +91,9 @@ test('dispatch: throws DispatchError on a non-ok GitHub response', async () => {
   await assert.rejects(() => dispatcher.dispatch('job-1'), DispatchError);
 });
 
-test('queue dispatch: calls markDispatched, then send()s to pg-boss with {jobId}', async () => {
+test('queue dispatch: calls markDispatched, then send()s to pg-boss with {jobId, mode}', async () => {
   const { repo, calls } = fakeJobsRepo(true);
-  const sendCalls: Array<{ queue: string; data: { jobId: string } }> = [];
+  const sendCalls: Array<{ queue: string; data: { jobId: string; mode: string } }> = [];
   const dispatcher = createQueueDispatcher({
     queue: 'run-job',
     jobsRepo: repo as never,
@@ -104,9 +104,13 @@ test('queue dispatch: calls markDispatched, then send()s to pg-boss with {jobId}
   });
 
   await dispatcher.dispatch('job-1');
+  await dispatcher.dispatch('job-2', 'publish');
 
-  assert.deepEqual(calls, ['job-1']);
-  assert.deepEqual(sendCalls, [{ queue: 'run-job', data: { jobId: 'job-1' } }]);
+  assert.deepEqual(calls, ['job-1', 'job-2']);
+  assert.deepEqual(sendCalls, [
+    { queue: 'run-job', data: { jobId: 'job-1', mode: 'full' } },
+    { queue: 'run-job', data: { jobId: 'job-2', mode: 'publish' } },
+  ]);
 });
 
 test('queue dispatch: skips send() entirely when markDispatched loses the race', async () => {
@@ -134,4 +138,19 @@ test('queue dispatch: throws DispatchError when send() returns null', async () =
   });
 
   await assert.rejects(() => dispatcher.dispatch('job-1'), DispatchError);
+});
+
+test('github dispatch: refuses publish mode before marking the job dispatched', async () => {
+  const { repo, calls } = fakeJobsRepo(true);
+  const dispatcher = createGithubDispatcher({
+    owner: 'acme',
+    repo: 'signal-studio',
+    workflowFile: 'run-job.yml',
+    ref: 'refactor',
+    token: 'gh-token',
+    jobsRepo: repo as never,
+    fetchFn: (async () => new Response(null, { status: 204 })) as typeof fetch,
+  });
+  await assert.rejects(() => dispatcher.dispatch('job-1', 'publish'), DispatchError);
+  assert.deepEqual(calls, []);
 });

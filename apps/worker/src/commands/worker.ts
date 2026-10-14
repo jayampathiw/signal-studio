@@ -62,6 +62,12 @@ import type { Logger } from '../logger.ts';
  * behaves exactly as before, not with a silently-failing ping loop.
  */
 
+export type RunMode = 'full' | 'publish';
+
+// `mode` is set by apps/api's queue dispatcher; payloads queued before it
+// existed have none and run in full.
+export type JobPayload = { jobId: string; mode?: RunMode };
+
 export type WorkerOptions = {
   queue: string;
   connectionString: string;
@@ -81,14 +87,14 @@ export type BossQueue = {
   work: (
     queue: string,
     options: { batchSize: number },
-    handler: (jobs: Array<{ data: { jobId: string } }>) => Promise<void>,
+    handler: (jobs: Array<{ data: JobPayload }>) => Promise<void>,
   ) => Promise<unknown>;
   start: () => Promise<unknown>;
   stop: (options?: { graceful?: boolean; timeout?: number }) => Promise<void>;
 };
 
 export type WorkerDeps = {
-  runJob: (jobId: string) => Promise<void>;
+  runJob: (jobId: string, mode: RunMode) => Promise<void>;
   heartbeat: (jobId: string) => Promise<void>;
   reapStaleRunning: (staleBefore: Date) => Promise<Array<{ id: string }>>;
   createBoss: (connectionString: string) => Promise<BossQueue>;
@@ -106,12 +112,13 @@ export type WorkerDeps = {
 };
 
 export async function handleJob(
-  payload: { jobId: string },
+  payload: JobPayload,
   deps: Pick<WorkerDeps, 'runJob' | 'heartbeat' | 'reportError'>,
   logger: Logger,
   heartbeatIntervalMs = 30_000,
 ): Promise<void> {
-  logger.info('picked up job from queue', { jobId: payload.jobId });
+  const mode: RunMode = payload.mode === 'publish' ? 'publish' : 'full';
+  logger.info('picked up job from queue', { jobId: payload.jobId, mode });
 
   const beat = () => {
     deps.heartbeat(payload.jobId).catch((err) => {
@@ -125,7 +132,7 @@ export async function handleJob(
   const interval = setInterval(beat, heartbeatIntervalMs);
 
   try {
-    await deps.runJob(payload.jobId);
+    await deps.runJob(payload.jobId, mode);
     logger.info('job completed', { jobId: payload.jobId });
   } catch (err) {
     logger.error('job failed', {

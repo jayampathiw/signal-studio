@@ -7,8 +7,13 @@ import type { JobsRepo } from '@signal-studio/db/repos';
  * triggers `run-job.yml` via GitHub's `workflow_dispatch` REST endpoint.
  */
 
+// `publish`: the job already rendered and passed QA, and its last review
+// gate was approved — the worker only runs the publish stage on the
+// rendered artifacts (see run-job.ts's `runPublishOnly`).
+export type DispatchMode = 'full' | 'publish';
+
 export type Dispatcher = {
-  dispatch(jobId: string): Promise<void>;
+  dispatch(jobId: string, mode?: DispatchMode): Promise<void>;
 };
 
 export type GithubDispatcherOptions = {
@@ -27,7 +32,14 @@ export function createGithubDispatcher(opts: GithubDispatcherOptions): Dispatche
   const fetchFn = opts.fetchFn ?? fetch;
 
   return {
-    async dispatch(jobId: string): Promise<void> {
+    async dispatch(jobId: string, mode: DispatchMode = 'full'): Promise<void> {
+      // run-job.yml only takes a job_id; checked before markDispatched so a
+      // refused call doesn't strand the job at `dispatched`.
+      if (mode === 'publish') {
+        throw new DispatchError(
+          `publish-only dispatch for job "${jobId}" needs DISPATCH_MODE=queue — the github dispatcher can't pass a mode`,
+        );
+      }
       const won = await opts.jobsRepo.markDispatched(jobId);
       // Someone else already dispatched this job (or it was never `queued`)
       // — not an error, just nothing for this call to do.
@@ -74,18 +86,18 @@ export type QueueDispatcherOptions = {
   // could silently drift from the worker's own.
   queue: string;
   jobsRepo: JobsRepo;
-  send: (queue: string, data: { jobId: string }) => Promise<string | null>;
+  send: (queue: string, data: { jobId: string; mode: DispatchMode }) => Promise<string | null>;
 };
 
 export function createQueueDispatcher(opts: QueueDispatcherOptions): Dispatcher {
   return {
-    async dispatch(jobId: string): Promise<void> {
+    async dispatch(jobId: string, mode: DispatchMode = 'full'): Promise<void> {
       const won = await opts.jobsRepo.markDispatched(jobId);
       // Someone else already dispatched this job (or it was never `queued`)
       // — not an error, just nothing for this call to do, same as `github`.
       if (!won) return;
 
-      const messageId = await opts.send(opts.queue, { jobId });
+      const messageId = await opts.send(opts.queue, { jobId, mode });
       if (messageId === null) {
         throw new DispatchError(
           `queue dispatch failed for job "${jobId}": pg-boss send() returned null (queue "${opts.queue}" may not exist — has ss worker created it?)`,

@@ -64,7 +64,14 @@ async function main(): Promise<number> {
     }
 
     case 'run-job': {
-      await runJob({ jobId: requireFlag(flags, 'id') }, realRunJobDeps(), logger);
+      await runJob(
+        {
+          jobId: requireFlag(flags, 'id'),
+          mode: flags['publish-only'] === true ? 'publish' : 'full',
+        },
+        realRunJobDeps(),
+        logger,
+      );
       return 0;
     }
 
@@ -102,7 +109,7 @@ async function main(): Promise<number> {
           reapStaleAfterMs: num('reap-stale-after-ms'),
           shutdownTimeoutMs: num('shutdown-timeout-ms'),
         },
-        realWorkerDeps((jobId) => runJob({ jobId }, jobDeps, logger)),
+        realWorkerDeps((jobId, mode) => runJob({ jobId, mode }, jobDeps, logger)),
         logger,
       );
       return 0;

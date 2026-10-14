@@ -34,7 +34,10 @@ const JOB_TRANSITIONS: Record<string, string[]> = {
   queued: ['dispatched', 'cancelled', 'failed'],
   dispatched: ['running', 'failed', 'cancelled'],
   running: ['awaiting_review', 'delivered', 'failed', 'cancelled'],
-  awaiting_review: ['running', 'delivered', 'failed', 'cancelled'],
+  // `queued`: the last gate approved on a job with publish targets — the
+  // worker picks it back up in publish-only mode. `awaiting_review`: one
+  // gate approved, the next gate still pending.
+  awaiting_review: ['running', 'queued', 'awaiting_review', 'delivered', 'failed', 'cancelled'],
   delivered: ['published', 'failed'],
   published: [],
   failed: ['queued'],
