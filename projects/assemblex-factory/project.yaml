@@ -29,11 +29,11 @@ defaults:
 
 gates: []
 
-# Empty on purpose, not an oversight: publishing for this project is
-# manual (a human posts the rendered video), per the plan's own "publish
-# targets manual" — there's no credentialRef-driven automated publish
-# target to configure yet.
-publishTargets: []
+# France Aujourd'hui (Facebook Page 1120408947821948) — credentials live in
+# FB_PAGE_ID_FR/FB_ACCESS_TOKEN_FR (VPS deploy.env), never inlined here.
+publishTargets:
+  - platform: facebook
+    credentialRef: FR
 
 providers:
   tts: kokoro-js
