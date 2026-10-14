@@ -1761,3 +1761,19 @@ test('runJob publish mode: fails clearly when the job has no rendered video', as
     { stage: 'publish', retryable: false },
   );
 });
+
+test('runJob: a missing upload fails at the assets step, not retryable', async () => {
+  const deps = fakeDeps('/unused.mp4');
+  deps.fetchFn = (async () =>
+    new Response('not found', { status: 404 })) as unknown as typeof fetch;
+
+  await assert.rejects(
+    () => runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' })),
+    /raw asset not found for shot "s1"/,
+  );
+  assert.equal(deps.statusUpdates.at(-1), 'failed');
+  assert.deepEqual(
+    { stage: deps.failures[0].stage, retryable: deps.failures[0].retryable },
+    { stage: 'assets', retryable: false },
+  );
+});
