@@ -250,19 +250,21 @@ async function downloadRawAsset(
   destDir: string,
   fetchFn: typeof fetch,
 ): Promise<string> {
-  const key = `jobs/${jobId}/uploads/${shotId}/${file}`;
-  const url = await storage.signedUrl(key);
-  const res = await fetchFn(url);
-  if (!res.ok) {
-    const Err = res.status === 403 || res.status === 404 ? NonRetryableError : Error;
-    throw new Err(
-      `run-job: raw asset not found for shot "${shotId}" (${key}) — run \`ss upload --job ${jobId} --shot ${shotId} --file <file>\` first`,
-    );
-  }
-  const dest = path.join(destDir, file);
-  await mkdir(path.dirname(dest), { recursive: true });
-  await writeFile(dest, Buffer.from(await res.arrayBuffer()));
-  return dest;
+  return withStage('assets', async () => {
+    const key = `jobs/${jobId}/uploads/${shotId}/${file}`;
+    const url = await storage.signedUrl(key);
+    const res = await fetchFn(url);
+    if (!res.ok) {
+      const Err = res.status === 403 || res.status === 404 ? NonRetryableError : Error;
+      throw new Err(
+        `run-job: raw asset not found for shot "${shotId}" (${key}) — upload it (dashboard, MCP presign_upload, or \`ss upload --job ${jobId} --shot ${shotId} --file <file>\`) and re-run`,
+      );
+    }
+    const dest = path.join(destDir, file);
+    await mkdir(path.dirname(dest), { recursive: true });
+    await writeFile(dest, Buffer.from(await res.arrayBuffer()));
+    return dest;
+  });
 }
 
 // Shared "expected" shape the render/QA loop needs from every handler,
