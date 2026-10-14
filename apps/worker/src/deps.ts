@@ -6,7 +6,6 @@ import path from 'node:path';
 import { createEngineClient } from '@signal-studio/db/client';
 import { ArtifactsRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
 import { createAnthropicProvider } from '@signal-studio/providers/llm-anthropic';
-import { createKokoroJsProvider } from '@signal-studio/providers/tts-kokoro-js';
 import { getEngine } from '@signal-studio/render-core/engine';
 import { renderCarouselStills } from '@signal-studio/render-remotion/render-stills';
 import { compile as compileCarousel } from '@signal-studio/template-carousel/compile';
@@ -31,6 +30,7 @@ import { detectBlackFrames, measureVideo } from './qa-measure.ts';
 import { createVisionCheck } from './qa-vision.ts';
 import { createErrorReporter } from './sentry.ts';
 import { createStorageProviderFor } from './storage.ts';
+import { createRealTts } from './tts.ts';
 
 /**
  * Real (non-test) dependency wiring for each command — kept in one file so
@@ -42,7 +42,7 @@ import { createStorageProviderFor } from './storage.ts';
  */
 
 function realTts() {
-  return createKokoroJsProvider().synthesise;
+  return createRealTts();
 }
 
 function realRender() {
