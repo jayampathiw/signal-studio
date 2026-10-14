@@ -6,9 +6,7 @@ export const environment = {
   engineSupabaseUrl: 'https://tgvugvhhtfnrzpmwkhoe.supabase.co',
   engineSupabaseAnonKey:
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRndnVndmhodGZucnpwbXdraG9lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MTIyNTgsImV4cCI6MjEwNTI4ODI1OH0.vt-Kixxa1Y8PHtEaz9zxn7343vdVs2u9qcqtR836-Xk',
-  // P5.1 — genuinely unset: apps/api has no production deploy target yet
-  // (P4.2's hosting decision is still open). A production build of the
-  // dashboard's /engine/* console will fail loudly against this placeholder
-  // rather than silently pointing at localhost — flagged here, not guessed.
-  apiBaseUrl: 'https://engine-api.not-yet-deployed.invalid',
+  // The production `api` behind Caddy (docker/Caddyfile) on the GCP VM.
+  // Its CORS_ORIGINS must include this dashboard's Vercel origin.
+  apiBaseUrl: 'https://34.14.146.86.sslip.io',
 };

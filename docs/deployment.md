@@ -117,6 +117,32 @@ GHCR: the "set to private" step's real result is unverified (see the
 same P2.6 entry) — this repo being public, the package may currently be
 public too.
 
+## Production host (since 2026-10-03)
+
+The engine runs on a **Google Cloud Compute Engine VM** (free-trial credit,
+expires 2027-01-02), after Hetzner closed the account behind the original
+CX23 (`157.180.83.180`, gone — that IP now belongs to someone else).
+
+|            |                                                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------------------- |
+| VM         | `signal-studio`, `e2-standard-2` (2 vCPU / 8 GB), `asia-south1-a`, Ubuntu 24.04, 30 GB balanced disk, 2 GB swap |
+| IP         | `34.14.146.86` (reserved static: `signal-studio-ip`)                                                            |
+| Public URL | `https://34.14.146.86.sslip.io` (Caddy, Let's Encrypt) — `/health`, `/mcp`                                      |
+| SSH        | `ssh jayampathiw@34.14.146.86` (key only, no password)                                                          |
+| Files      | `/opt/signal-studio/{compose.prod.yml,Caddyfile,.env,deploy.env}`                                               |
+
+**`ENGINE_SUPABASE_URL` must be `https://tgvugvhhtfnrzpmwkhoe.supabase.co`**
+(the engine project), not the legacy `nnxtvbolhuvihlpwppbj`. Pairing the
+legacy URL with the engine keys starts cleanly but every authenticated
+request then 500s with `ApiKeysRepo.findByHash: Invalid API key` — this
+happened on the 2026-10-03 migration.
+
+Moving hosts again: create the VM, install Docker, copy the four files
+above, point `docker/Caddyfile` + the dashboard's `environment.prod.ts`
+`apiBaseUrl` at the new `<ip>.sslip.io`, `docker compose -f compose.prod.yml
+up -d`, then re-add the claude.ai connector (its URL can't be edited). Release
+the old static IP afterwards — GCP bills unattached reserved IPs.
+
 ## Secrets (P4.4, 2026-09-26)
 
 **Real inventory, not assumed** — every secret name below was cross-checked
@@ -124,7 +150,7 @@ against actual `Deno.env.get()`/`secrets.*` usage in the real source of each
 consumer (workflow YAML, edge function `index.ts`), not just listed from
 `gh secret list`/`supabase secrets list`.
 
-### Engine (this repo → Hetzner) — the two stores P4.4 targets
+### Engine (this repo → production VM) — the two stores P4.4 targets
 
 | Secret                                                                                                      | Store                                               | Used by                                                           |
 | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------- |

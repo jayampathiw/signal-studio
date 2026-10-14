@@ -32,7 +32,7 @@
 # through the `caddy` service below instead, which reverse-proxies to `api`
 # over the internal `signal-studio_default` docker network (`api:8787`),
 # not via the host-bound port. Caddy gets a real Let's Encrypt cert for
-# `157.180.83.180.sslip.io` (a free wildcard-DNS-to-IP service — sslip.io
+# `34.14.146.86.sslip.io` (a free wildcard-DNS-to-IP service — sslip.io
 # resolves any `<ip>.sslip.io` name to that literal IP, so no real domain
 # was needed to get a real, browser-trusted cert). Revisit with a real
 # domain if/when one exists; sslip.io has no uptime guarantee of its own.
