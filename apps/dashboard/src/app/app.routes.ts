@@ -1,64 +1,50 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth.guard';
+import { engineAuthGuard } from './core/engine-auth.guard';
 
+// P3.7/P5.7 (2026-09-28) — the legacy news/video console (articles, reels,
+// on-this-day, longform, metrics, upload) and its login/auth surface were
+// retired here: both pipelines it reviewed (Wild Eye reels, news posting)
+// are permanently stopped, so the review UI for them had no reason left to
+// exist. The engine console below is now the only app.
 export const routes: Routes = [
-  { path: '', redirectTo: 'articles', pathMatch: 'full' },
+  { path: '', redirectTo: 'engine/projects', pathMatch: 'full' },
   {
-    path: 'login',
+    path: 'engine/login',
     loadComponent: () =>
-      import('./auth/login.component').then((m) => m.LoginComponent),
+      import('./engine/engine-login.component').then((m) => m.EngineLoginComponent),
   },
   {
-    path: 'articles',
+    path: 'engine/projects',
     loadComponent: () =>
-      import('./articles/article-list.component').then(
-        (m) => m.ArticleListComponent
-      ),
-    canActivate: [authGuard],
+      import('./engine/project-list.component').then((m) => m.ProjectListComponent),
+    canActivate: [engineAuthGuard],
   },
   {
-    path: 'metrics',
+    path: 'engine/projects/:slug',
     loadComponent: () =>
-      import('./metrics/metrics.component').then((m) => m.MetricsComponent),
-    canActivate: [authGuard],
+      import('./engine/project-detail.component').then((m) => m.ProjectDetailComponent),
+    canActivate: [engineAuthGuard],
   },
   {
-    path: 'upload',
-    loadComponent: () =>
-      import('./upload/upload.component').then((m) => m.UploadComponent),
-    canActivate: [authGuard],
+    path: 'engine/projects/:slug/jobs',
+    loadComponent: () => import('./engine/job-list.component').then((m) => m.JobListComponent),
+    canActivate: [engineAuthGuard],
   },
   {
-    path: 'reels',
-    loadComponent: () =>
-      import('./reels/reel-list.component').then((m) => m.ReelListComponent),
-    canActivate: [authGuard],
+    path: 'engine/projects/:slug/jobs/new',
+    loadComponent: () => import('./engine/new-job.component').then((m) => m.NewJobComponent),
+    canActivate: [engineAuthGuard],
   },
   {
-    path: 'on-this-day',
-    loadComponent: () =>
-      import('./on-this-day/on-this-day.component').then(
-        (m) => m.OnThisDayComponent
-      ),
-    canActivate: [authGuard],
+    path: 'engine/jobs/:id',
+    loadComponent: () => import('./engine/job-detail.component').then((m) => m.JobDetailComponent),
+    canActivate: [engineAuthGuard],
   },
   {
-    path: 'longform',
+    path: 'engine/generation-attempts',
     loadComponent: () =>
-      import('./longform/longform-list.component').then((m) => m.LongformListComponent),
-    canActivate: [authGuard],
+      import('./engine/generation-attempts.component').then((m) => m.GenerationAttemptsComponent),
+    canActivate: [engineAuthGuard],
   },
-  {
-    path: 'longform/channel/:slug',
-    loadComponent: () =>
-      import('./longform/longform-videos.component').then((m) => m.LongformVideosComponent),
-    canActivate: [authGuard],
-  },
-  {
-    path: 'longform/video/:id',
-    loadComponent: () =>
-      import('./longform/longform-detail.component').then((m) => m.LongformDetailComponent),
-    canActivate: [authGuard],
-  },
-  { path: '**', redirectTo: 'articles' },
+  { path: '**', redirectTo: 'engine/projects' },
 ];

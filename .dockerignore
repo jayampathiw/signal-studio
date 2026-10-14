@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+**/node_modules
+dist
+**/dist
+.env
+.env.local
+content
+golden/**/*.mp4
+projects/**/clips
+projects/**/vo
+projects/**/out
+projects/**/qa
+docs
+*.md

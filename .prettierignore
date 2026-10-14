@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+.angular
+.remotion
+out
+output
+temp
+productions
+content
+projects/assemblex-factory/content
+pnpm-lock.yaml
+package-lock.json
+*.mp4
+*.wav
+*.mp3

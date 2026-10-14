@@ -10,42 +10,42 @@
 
 ## 1. Decisions (locked with user 2026-07-05)
 
-| # | Decision | Choice |
-|---|---|---|
-| D1 | Multi-still schema | **New `content_stills` child table** — one row per still/cut, `content_clips` stays the scene row (VO, duration, kind) |
-| D2 | Editor layer | **Full ffmpeg automation** — eased Ken Burns, A/B/C cuts, timed overlays, grain, music bed, −14 LUFS. Parallax approximated as PUSH for now |
-| D3 | Output resolution | **1920×1080** (stills generated at 2K → headroom for 1.15–1.30 zooms) |
-| D4 | Playbook guidelines | **New skill** `.claude/skills/longform-doc-playbook` — auto-applied to every future long-form script/shotlist/prompt review |
-| D5 | Music beds | **Curated free library** (Pixabay Music / YouTube Audio Library) — one-time download of 5 mood beds into a reusable channel audio kit, rehosted to R2 |
-| D6 | SFX | **Curated free kit** (Pixabay SFX / Freesound CC0) — ~11 generic cues downloaded once, reused across all videos |
-| D7 | Mix design | **Segmented bed + ambience**: per-act music segments from `audio_plan` jsonb, 2s crossfades, stadium-ambience layer, sidechain ducking under VO, hard gaps at scripted silences, −14 LUFS master |
-| D8 | Image generation | **Manual for now**: user copies prompts from the UI into Google Flow and uploads the results back through the UI. The image stage is a *paused gate*, not an API call. Gemini API path stays scaffold-able later without redesign (image_source routing) |
-| D9 | Review model | **Paused gates in UI** — 4 checkpoints: script/shotlist → kit reference sheets → per-act stills (kit drift) → final preview. Orchestrated runs stop at each; dashboard approval advances |
-| D10 | UI | **Extend the Angular dashboard** (`apps/dashboard`) with a long-form section |
-| D11 | Runtime | **GitHub Actions from day one** (public `reel-pipeline` repo pattern, deploy-key checkout). Because gates + manual images make runs multi-day, the pipeline is **event-driven**: each stage is a short dispatched job; state lives in Supabase; the dashboard dispatches the next stage |
+| #   | Decision            | Choice                                                                                                                                                                                                                                                                                  |
+| --- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Multi-still schema  | **New `content_stills` child table** — one row per still/cut, `content_clips` stays the scene row (VO, duration, kind)                                                                                                                                                                  |
+| D2  | Editor layer        | **Full ffmpeg automation** — eased Ken Burns, A/B/C cuts, timed overlays, grain, music bed, −14 LUFS. Parallax approximated as PUSH for now                                                                                                                                             |
+| D3  | Output resolution   | **1920×1080** (stills generated at 2K → headroom for 1.15–1.30 zooms)                                                                                                                                                                                                                   |
+| D4  | Playbook guidelines | **New skill** `.claude/skills/longform-doc-playbook` — auto-applied to every future long-form script/shotlist/prompt review                                                                                                                                                             |
+| D5  | Music beds          | **Curated free library** (Pixabay Music / YouTube Audio Library) — one-time download of 5 mood beds into a reusable channel audio kit, rehosted to R2                                                                                                                                   |
+| D6  | SFX                 | **Curated free kit** (Pixabay SFX / Freesound CC0) — ~11 generic cues downloaded once, reused across all videos                                                                                                                                                                         |
+| D7  | Mix design          | **Segmented bed + ambience**: per-act music segments from `audio_plan` jsonb, 2s crossfades, stadium-ambience layer, sidechain ducking under VO, hard gaps at scripted silences, −14 LUFS master                                                                                        |
+| D8  | Image generation    | **Manual for now**: user copies prompts from the UI into Google Flow and uploads the results back through the UI. The image stage is a _paused gate_, not an API call. Gemini API path stays scaffold-able later without redesign (image_source routing)                                |
+| D9  | Review model        | **Paused gates in UI** — 4 checkpoints: script/shotlist → kit reference sheets → per-act stills (kit drift) → final preview. Orchestrated runs stop at each; dashboard approval advances                                                                                                |
+| D10 | UI                  | **Extend the Angular dashboard** (`apps/dashboard`) with a long-form section                                                                                                                                                                                                            |
+| D11 | Runtime             | **GitHub Actions from day one** (public `reel-pipeline` repo pattern, deploy-key checkout). Because gates + manual images make runs multi-day, the pipeline is **event-driven**: each stage is a short dispatched job; state lives in Supabase; the dashboard dispatches the next stage |
 
 ---
 
 ## 2. Gap analysis — current code vs. v2 flow
 
-| # | Gap | Where | Severity |
-|---|---|---|---|
-| 1 | One image per scene only (`unique(project_id, scene_n)`, single `clip_url`) — v2 needs 1–3 stills/scene with per-cut timecodes | schema | blocking |
-| 2 | Single linear zoom `zoom+0.0015` capped at **1.5×** — violates the 1.08–1.15 guideline, no easing, no PULL/SMASH/pan/micro-push | `assemble-longform.mjs buildStill()` | blocking |
-| 3 | No audio engineering: raw VO mux, no −14 LUFS master, no music bed at −22…−25 dB, no scripted silences | `assemble-longform.mjs` | blocking |
-| 4 | Timed text overlays on stills unsupported (`text_overlay` only rendered for `text_card`) — S12 "16 years"@2:07, S21 card-over-still, S25 "21 shots · 16 corners"@4:22, S30 "GOAL DISALLOWED"@5:13, S40 scoreline@7:00, S48 | `assemble-longform.mjs` | blocking |
-| 5 | Asset-reuse scenes (S43 = regraded S04-B, S44 = S07 reversed) and editor-build graphics (S14 flags/ranking, S51 end plate) have no representation | schema + assembly | blocking |
-| 6 | `import-stills.mjs` only matches `S<n>.png` — v2 files are `S01-A.png` | import | blocking |
-| 7 | `prompt-sheet.mjs` prefixes ART_DIRECTION — v2 prompts are **self-contained** (double-prefix would corrupt them); no cut IDs, no act-by-act generation-order output, no kit-reference-sheet step | prompt sheet | blocking |
-| 8 | Output 1280×720 hardcoded | assembly | high |
-| 9 | No unified grain/particle pass, no warm↔cold grade support | assembly | high |
-| 10 | Kit reference sheets (GK-GILL, PY-OUTFIELD, DE-OUTFIELD, DE-GK, GK-90s) not seeded as `content_references` rows for #29 | data | high |
-| 11 | VO text changed in v2 (TTS-normalized: "twenty ten", "June twenty-ninth", "one-hundred-and-second minute") — affected scenes' `vo_url` must be re-generated, unchanged ones preserved | data + TTS | high |
-| 12 | Title cards: plain 60px drawtext, no serif, no hold/fade timing (S50: hold then fade) | assembly | medium |
-| 13 | `generate-stills.mjs` reads `content_clips` — must route per-`content_stills` row | generation | medium |
-| 14 | Google workflow plan (G2/G4) keys rows as `29-S14` — must become `29-S14-A` | docs | minor |
-| 15 | `docs/*.md:Zone.Identifier` Windows artifacts checked in | repo hygiene | minor |
-| 16 | v2 shotlist lives only in `docs/` — scripts read `content/longform/<id>/`; canonical copies needed there | data | minor |
+| #   | Gap                                                                                                                                                                                                                        | Where                                | Severity |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | -------- |
+| 1   | One image per scene only (`unique(project_id, scene_n)`, single `clip_url`) — v2 needs 1–3 stills/scene with per-cut timecodes                                                                                             | schema                               | blocking |
+| 2   | Single linear zoom `zoom+0.0015` capped at **1.5×** — violates the 1.08–1.15 guideline, no easing, no PULL/SMASH/pan/micro-push                                                                                            | `assemble-longform.mjs buildStill()` | blocking |
+| 3   | No audio engineering: raw VO mux, no −14 LUFS master, no music bed at −22…−25 dB, no scripted silences                                                                                                                     | `assemble-longform.mjs`              | blocking |
+| 4   | Timed text overlays on stills unsupported (`text_overlay` only rendered for `text_card`) — S12 "16 years"@2:07, S21 card-over-still, S25 "21 shots · 16 corners"@4:22, S30 "GOAL DISALLOWED"@5:13, S40 scoreline@7:00, S48 | `assemble-longform.mjs`              | blocking |
+| 5   | Asset-reuse scenes (S43 = regraded S04-B, S44 = S07 reversed) and editor-build graphics (S14 flags/ranking, S51 end plate) have no representation                                                                          | schema + assembly                    | blocking |
+| 6   | `import-stills.mjs` only matches `S<n>.png` — v2 files are `S01-A.png`                                                                                                                                                     | import                               | blocking |
+| 7   | `prompt-sheet.mjs` prefixes ART_DIRECTION — v2 prompts are **self-contained** (double-prefix would corrupt them); no cut IDs, no act-by-act generation-order output, no kit-reference-sheet step                           | prompt sheet                         | blocking |
+| 8   | Output 1280×720 hardcoded                                                                                                                                                                                                  | assembly                             | high     |
+| 9   | No unified grain/particle pass, no warm↔cold grade support                                                                                                                                                                 | assembly                             | high     |
+| 10  | Kit reference sheets (GK-GILL, PY-OUTFIELD, DE-OUTFIELD, DE-GK, GK-90s) not seeded as `content_references` rows for #29                                                                                                    | data                                 | high     |
+| 11  | VO text changed in v2 (TTS-normalized: "twenty ten", "June twenty-ninth", "one-hundred-and-second minute") — affected scenes' `vo_url` must be re-generated, unchanged ones preserved                                      | data + TTS                           | high     |
+| 12  | Title cards: plain 60px drawtext, no serif, no hold/fade timing (S50: hold then fade)                                                                                                                                      | assembly                             | medium   |
+| 13  | `generate-stills.mjs` reads `content_clips` — must route per-`content_stills` row                                                                                                                                          | generation                           | medium   |
+| 14  | Google workflow plan (G2/G4) keys rows as `29-S14` — must become `29-S14-A`                                                                                                                                                | docs                                 | minor    |
+| 15  | `docs/*.md:Zone.Identifier` Windows artifacts checked in                                                                                                                                                                   | repo hygiene                         | minor    |
+| 16  | v2 shotlist lives only in `docs/` — scripts read `content/longform/<id>/`; canonical copies needed there                                                                                                                   | data                                 | minor    |
 
 ---
 
@@ -94,7 +94,7 @@ alter table content_items add column if not exists audio_plan jsonb;
 -- seeded from act boundaries; human-editable before assembly.
 ```
 
-**Back-compat rule (load-bearing):** the assembler treats `content_stills` as *optional*. A `still`
+**Back-compat rule (load-bearing):** the assembler treats `content_stills` as _optional_. A `still`
 scene with zero `content_stills` rows falls back to `content_clips.clip_url` exactly as today, so v1
 projects and mixed states keep working. Nothing in `content_clips` is dropped or renamed.
 
@@ -103,6 +103,7 @@ projects and mixed states keep working. Nothing in `content_clips` is dropped or
 ## 4. Build phases
 
 ### V0 — Files (this commit, no code)
+
 - [x] This plan.
 - [x] `content/longform/29/prompts-v2.md` — canonical copy of the 62-prompt Generation Prompts v2.
 - [x] `.claude/skills/longform-doc-playbook/SKILL.md` — production playbook skill (D4).
@@ -110,11 +111,14 @@ projects and mixed states keep working. Nothing in `content_clips` is dropped or
 - [ ] Delete `*.md:Zone.Identifier` artifacts (gap 15).
 
 ### V1 — Migration
+
 As §3. Apply via the reconciled `db push` flow (memory: `project-migration-apply`).
 
 ### V2 — Seeder: `seed-stills-v2.mjs --project 29 [--dry]`
+
 Parses `content/longform/29/prompts-v2.md` (prompt table: ID, scene, timecode, notes, prompt) and
 `shotlist-v2.md` (motion lines, VO, overlays, audio cues) and:
+
 - **Upserts `content_stills`**: 62 generated rows (`image_source='google'`) + reuse rows
   (S43-A `reuse_of='S04-B'` `regrade='warm_amber'`; S44-A/B `reuse_of='S07-B'/'S07-A'`).
   Motion parsed from the 🎞️ line (PUSH/PULL/SMASH/micro/pan/parallax); timecodes → `start_sec`/`end_sec`
@@ -128,6 +132,7 @@ Parses `content/longform/29/prompts-v2.md` (prompt table: ID, scene, timecode, n
   background + inline kit spec). These are generated & approved **before** any scene stills.
 
 ### V3 — Prompt sheet v2: rewrite `prompt-sheet.mjs`
+
 - Source: `content_stills` (`status='pending'`, `image_source='google'`), joined to refs.
 - **No ART_DIRECTION prefix** — v2 prompts are self-contained (prefix would double the style block).
 - Output ordered by the mandated generation order: ① 5 kit reference sheets (with approval checklist)
@@ -137,6 +142,7 @@ Parses `content/longform/29/prompts-v2.md` (prompt table: ID, scene, timecode, n
   attach in Flow's img2img slot per still.
 
 ### V4 — Import v2: update `import-stills.mjs`
+
 - Filename regex → `/^S(\d+)(?:-([A-D]))?\./i`; with a cut letter → match `content_stills` row;
   without → legacy `content_clips` path (unchanged, keeps v1 projects importable).
 - `--refs` mode: `GK-GILL.png` etc. → upload to `longform/<p>/refs/` → `content_references.url`,
@@ -144,6 +150,7 @@ Parses `content/longform/29/prompts-v2.md` (prompt table: ID, scene, timecode, n
 - R2 keys: `longform/<p>/stills/S<n>-<cut>.png`. Same idempotent skip guard (`generated`/`passed`).
 
 ### V5 — Assembly v2: rewrite `assemble-longform.mjs`
+
 Constants: **1920×1080 @ 25fps** (D3). Per scene:
 
 1. Fetch `content_stills` ordered by `cut`; fall back to `content_clips.clip_url` if none (§3 rule).
@@ -173,11 +180,13 @@ Constants: **1920×1080 @ 25fps** (D3). Per scene:
     `longform/<p>/final.mp4`, update `content_items` — unchanged.
 
 ### V6 — Generation routing: `generate-stills.mjs`
+
 - Add `--table stills` mode (default when `content_stills` rows exist): iterate per-still rows;
   `google` → skip (Flow/Sheet owns it, log points at prompt sheet + import), `higgsfield` →
   existing soul.js route (kept as rollback), `reference`/`reuse` → no-op (assembly resolves).
 
 ### A1 — Channel audio kit (one-time, manual download + scripted import)
+
 The only manual step in the audio pipeline, done **once** and reused by every future video.
 
 - Location: `content/audio-kit/` (gitignored binaries) → rehosted to R2 `audio-kit/<key>.<ext>` by
@@ -188,48 +197,52 @@ The only manual step in the audio pipeline, done **once** and reused by every fu
 **Shopping list — music beds** (Pixabay Music / YouTube Audio Library; instrumental, no vocals,
 license: free for monetized YouTube):
 
-| Key | Mood | Search terms | Min length |
-|---|---|---|---|
-| `bed_somber` | melancholic piano/strings, ~60–70 BPM | "sad cinematic piano documentary" | 2 min |
-| `bed_tension` | dark pulsing build, low percussion | "dark tension cinematic suspense build" | 2.5 min |
-| `bed_drone` | minimal dark ambient, no melody/percussion | "dark ambient drone minimal" | 2 min |
-| `bed_release` | triumphant emotional orchestral swell | "epic emotional triumph orchestral" | 1 min |
-| `bed_reflective` | warm, hopeful, sparse piano | "hopeful calm reflective piano ambient" | 2 min |
+| Key              | Mood                                       | Search terms                            | Min length |
+| ---------------- | ------------------------------------------ | --------------------------------------- | ---------- |
+| `bed_somber`     | melancholic piano/strings, ~60–70 BPM      | "sad cinematic piano documentary"       | 2 min      |
+| `bed_tension`    | dark pulsing build, low percussion         | "dark tension cinematic suspense build" | 2.5 min    |
+| `bed_drone`      | minimal dark ambient, no melody/percussion | "dark ambient drone minimal"            | 2 min      |
+| `bed_release`    | triumphant emotional orchestral swell      | "epic emotional triumph orchestral"     | 1 min      |
+| `bed_reflective` | warm, hopeful, sparse piano                | "hopeful calm reflective piano ambient" | 2 min      |
 
 **Shopping list — SFX** (Pixabay SFX / Freesound CC0):
 
-| Key | Sound | Used at (#29) |
-|---|---|---|
-| `stadium_hum` | crowd murmur ambience, loopable ≥60s | S1 rise, ambience layer all match scenes |
-| `crowd_surge` | crowd roar swell 3–5s | S33 save |
-| `crowd_eruption` | full celebration roar 8–12s | S39–40 release |
-| `drum_hit` | low cinematic drum/boom | S7 wall smash |
-| `bass_pulse` | deep sub pulse/drop | S8 name beat |
-| `musical_hit` | impact braam/stinger | S20, S27 goals, title card |
-| `whistle` | single referee whistle | S30 |
-| `heartbeat` | slow heartbeat, loopable | S37 strip-down |
-| `riser` | 1.5s tension riser | smash-cut entries |
-| `hum_cut` | abrupt cut-to-silence tail (or handled in mix) | S2, S28 collapse |
+| Key              | Sound                                          | Used at (#29)                            |
+| ---------------- | ---------------------------------------------- | ---------------------------------------- |
+| `stadium_hum`    | crowd murmur ambience, loopable ≥60s           | S1 rise, ambience layer all match scenes |
+| `crowd_surge`    | crowd roar swell 3–5s                          | S33 save                                 |
+| `crowd_eruption` | full celebration roar 8–12s                    | S39–40 release                           |
+| `drum_hit`       | low cinematic drum/boom                        | S7 wall smash                            |
+| `bass_pulse`     | deep sub pulse/drop                            | S8 name beat                             |
+| `musical_hit`    | impact braam/stinger                           | S20, S27 goals, title card               |
+| `whistle`        | single referee whistle                         | S30                                      |
+| `heartbeat`      | slow heartbeat, loopable                       | S37 strip-down                           |
+| `riser`          | 1.5s tension riser                             | smash-cut entries                        |
+| `hum_cut`        | abrupt cut-to-silence tail (or handled in mix) | S2, S28 collapse                         |
 
 ### A2 — Seeder: 🔊 → structured audio (extends V2)
+
 - Keyword-map each scene's `audio_cue` text to `sfx` jsonb entries (`hum→stadium_hum`,
   `drum→drum_hit`, `whistle→whistle`, `heartbeat→heartbeat`, `erupt/crowd→crowd_*`,
   `silence/do not fill→{key:'silence'}`). Unmatched cues are logged for manual mapping — never
   silently dropped.
 - Seed `content_items.audio_plan` from act boundaries (#29):
   `0:00–0:31 none (hum only) → 0:31–3:17 bed_somber → 3:17–5:18 bed_tension →
-   5:18–6:54 bed_drone → 6:54–7:15 bed_release → 7:15–9:03 bed_reflective`.
+ 5:18–6:54 bed_drone → 6:54–7:15 bed_release → 7:15–9:03 bed_reflective`.
 
 ### A3 — Assembly audio graph (extends V5 step 9)
+
 Four layers mixed after video concat, then mastered:
+
 1. **VO** — per-scene, placed at scene starts (level anchor).
 2. **Ambience** — `stadium_hum` looped at −30 dB under match scenes (audio_plan can scope it).
 3. **Music** — audio_plan segments at −23 dB, 2s crossfades (`acrossfade`), sidechain-ducked
    −6 dB under VO (`sidechaincompress`), hard-gapped across `silence` directives and scripted holds.
 4. **SFX** — one-shots via `adelay` at absolute offsets from `sfx` jsonb.
-Master: two-pass `loudnorm` → **−14 LUFS integrated, −1.0 dBTP**.
+   Master: two-pass `loudnorm` → **−14 LUFS integrated, −1.0 dBTP**.
 
 ### V7 — Docs + G-plan touch-ups
+
 - `docs/google-image-workflow-plan.md`: Sheet `row_key` → `29-S01-A`; export reads `content_stills`.
 - `docs/longform-29-how-we-made-it.md`: append v2 flow steps.
 - `CLAUDE.md` (project): one line pointing at the playbook skill for long-form work.
@@ -295,7 +308,7 @@ and resumable (same guards as the V-phase scripts) — re-dispatching a stage ne
   target filename (`S01-A.png`), attached-ref reminder, **drag-drop upload slot** (presigned R2),
   thumbnail once uploaded, approve/reject per still, **approve act** button (locked until all
   stills in the act are approved — enforces the act-by-act drift rule). Reject → status `pending`
-  + card returns to the queue.
+  - card returns to the queue.
 - **U4 — Audio panel**: `audio_plan` segment editor (track dropdown from the kit manifest, from/to,
   gain) + per-scene `sfx` table with unmatched-cue warnings from the seeder.
 - **U5 — Gate 4 (final review)**: preview player on `rendered_video_url`, scene timeline with
@@ -327,6 +340,7 @@ and from-scratch script stage matter most for video #2 onward.
 7. Peaks rule: if S33/S38/S39 feel dead as stills, generate motion for those 2–3 scenes only.
 
 ## 7. Rollback
+
 - `content_clips` untouched for v1 projects; assembler falls back when `content_stills` is empty.
 - Higgsfield route stays live behind `--source higgsfield` (needs credits).
 - Migration is additive-only (new table, widened check, new nullable column).

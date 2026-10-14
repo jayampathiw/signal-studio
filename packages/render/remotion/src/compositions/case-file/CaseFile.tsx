@@ -1,24 +1,31 @@
+import type { CaptionWord, HighlightBox, ZoomRegion } from '@signal-studio/types/timeline';
 import { AbsoluteFill, Audio, Img, Sequence, useVideoConfig } from 'remotion';
-import { IntroOutroCard } from './IntroOutroCard';
-import { DocumentHighlight } from './DocumentHighlight';
-import { StockVideo } from './StockVideo';
+
 import { CaptionLayer } from './CaptionLayer';
+import { StockVideo } from './StockVideo';
 import { resolveAsset } from '../resolve-asset';
 import { AnimatedCounter, type CounterVisual } from './charts/AnimatedCounter';
 import { BarChart, type BarChartVisual } from './charts/BarChart';
 import { MechanismScene, type MechanismVisual } from './charts/MechanismScene';
+import { PointerCard, type PointerCardVisual } from './charts/PointerCard';
 import { ResolutionScene, type ResolutionVisual } from './charts/ResolutionScene';
 import { SpeechBubbles, type SpeechBubblesVisual } from './charts/SpeechBubbles';
 import { WaveformOverlay } from './charts/WaveformOverlay';
-import { PointerCard, type PointerCardVisual } from './charts/PointerCard';
+import { DocumentHighlight } from './DocumentHighlight';
+import { IntroOutroCard } from './IntroOutroCard';
 import { PALETTE } from './palette';
-import type { CaptionWord, HighlightBox, ZoomRegion } from '@signal-studio/types/timeline';
 
 export const OUTRO_FRAMES = 75; // 2.5s @ 30fps
 const FULL_PAGE: ZoomRegion = { x: 0, y: 0, width: 1, height: 1 };
 const isVideoAsset = (url: string) => /\.(mp4|mov|webm)$/i.test(url);
 
-type SceneVisual = CounterVisual | BarChartVisual | MechanismVisual | ResolutionVisual | SpeechBubblesVisual | PointerCardVisual;
+type SceneVisual =
+  | CounterVisual
+  | BarChartVisual
+  | MechanismVisual
+  | ResolutionVisual
+  | SpeechBubblesVisual
+  | PointerCardVisual;
 
 export type CaseFileScene = {
   id: string;
@@ -35,7 +42,12 @@ export type CaseFileScene = {
 };
 
 export type CaseFileProps = {
-  caseMeta?: { caseId: string; sourceCitation?: string; specimen?: boolean; showOutro?: boolean } | null;
+  caseMeta?: {
+    caseId: string;
+    sourceCitation?: string;
+    specimen?: boolean;
+    showOutro?: boolean;
+  } | null;
   watermarkUrl?: string;
   scenes: CaseFileScene[];
 };
@@ -46,7 +58,13 @@ function renderVisual(visual: SceneVisual) {
       return <AnimatedCounter visual={visual} />;
     case 'barChart':
       return (
-        <AbsoluteFill style={{ backgroundColor: PALETTE.background, justifyContent: 'center', alignItems: 'center' }}>
+        <AbsoluteFill
+          style={{
+            backgroundColor: PALETTE.background,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
           <BarChart visual={visual} />
         </AbsoluteFill>
       );
@@ -90,7 +108,14 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
     cursor += durationInFrames;
 
     if (scene.visual) {
-      return { scene, from, durationInFrames, imageUrl: '', zoomFrom: FULL_PAGE, zoomTo: FULL_PAGE };
+      return {
+        scene,
+        from,
+        durationInFrames,
+        imageUrl: '',
+        zoomFrom: FULL_PAGE,
+        zoomTo: FULL_PAGE,
+      };
     }
 
     const imageUrl = scene.imageUrl || lastImageUrl;
@@ -108,10 +133,19 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
     <AbsoluteFill>
       {placedScenes.map(({ scene, imageUrl, zoomFrom, zoomTo, from, durationInFrames }) => (
         <Sequence key={scene.id} from={from} durationInFrames={durationInFrames}>
-          {scene.visual ? renderVisual(scene.visual) : isVideoAsset(imageUrl) ? (
-            <StockVideo videoUrl={imageUrl}>{scene.waveformOverlay && <WaveformOverlay />}</StockVideo>
+          {scene.visual ? (
+            renderVisual(scene.visual)
+          ) : isVideoAsset(imageUrl) ? (
+            <StockVideo videoUrl={imageUrl}>
+              {scene.waveformOverlay && <WaveformOverlay />}
+            </StockVideo>
           ) : (
-            <DocumentHighlight imageUrl={imageUrl} highlights={scene.highlights} zoomFrom={zoomFrom} zoomTo={zoomTo} />
+            <DocumentHighlight
+              imageUrl={imageUrl}
+              highlights={scene.highlights}
+              zoomFrom={zoomFrom}
+              zoomTo={zoomTo}
+            />
           )}
           <CaptionLayer text={scene.captionText} words={scene.words} />
           {scene.narrationUrl && <Audio src={resolveAsset(scene.narrationUrl)} />}
@@ -131,17 +165,34 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
         />
       )}
       {caseMeta?.specimen && (
-        <div style={{
-          position: 'absolute', top: 24, left: '50%', transform: 'translateX(-50%)',
-          background: PALETTE.highlight, color: PALETTE.background,
-          fontWeight: 700, fontSize: 20, letterSpacing: 1.5,
-          padding: '8px 20px', borderRadius: 6,
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: PALETTE.highlight,
+            color: PALETTE.background,
+            fontWeight: 700,
+            fontSize: 20,
+            letterSpacing: 1.5,
+            padding: '8px 20px',
+            borderRadius: 6,
+          }}
+        >
           SPECIMEN — NOT A REAL CASE
         </div>
       )}
       {caseMeta?.sourceCitation && (
-        <div style={{ position: 'absolute', bottom: 16, left: 32, color: 'rgba(244,239,230,0.6)', fontSize: 16 }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 16,
+            left: 32,
+            color: 'rgba(244,239,230,0.6)',
+            fontSize: 16,
+          }}
+        >
           {caseMeta.sourceCitation}
         </div>
       )}
@@ -149,7 +200,14 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
   );
 };
 
-export function totalCaseFileFrames(scenes: CaseFileScene[], fps: number, showOutro = true): number {
-  const scenesFrames = scenes.reduce((sum, s) => sum + Math.max(1, Math.round(s.durationSecs * fps)), 0);
+export function totalCaseFileFrames(
+  scenes: CaseFileScene[],
+  fps: number,
+  showOutro = true,
+): number {
+  const scenesFrames = scenes.reduce(
+    (sum, s) => sum + Math.max(1, Math.round(s.durationSecs * fps)),
+    0,
+  );
   return (showOutro ? OUTRO_FRAMES : 0) + scenesFrames;
 }

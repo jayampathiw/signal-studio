@@ -1,6 +1,7 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { readFileSync } from 'fs';
 import { basename } from 'path';
+
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { env } from '@signal-studio/config';
 
 let _r2 = null;
@@ -30,12 +31,14 @@ export async function uploadToR2(localPath, { bucket, key } = {}) {
   const resolvedBucket = bucket ?? env.R2_BUCKET_RENDERED;
   const resolvedKey = key ?? basename(localPath);
 
-  await getR2Client().send(new PutObjectCommand({
-    Bucket: resolvedBucket,
-    Key: resolvedKey,
-    Body: readFileSync(localPath),
-    ContentType: localPath.endsWith('.mp4') ? 'video/mp4' : 'application/octet-stream',
-  }));
+  await getR2Client().send(
+    new PutObjectCommand({
+      Bucket: resolvedBucket,
+      Key: resolvedKey,
+      Body: readFileSync(localPath),
+      ContentType: localPath.endsWith('.mp4') ? 'video/mp4' : 'application/octet-stream',
+    }),
+  );
 
   return `${env.R2_PUBLIC_BASE_URL}/${resolvedKey}`;
 }

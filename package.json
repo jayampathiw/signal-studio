@@ -3,31 +3,32 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "apps/news",
-    "apps/video",
-    "apps/dashboard",
-    "packages/ai",
-    "packages/render/core",
-    "packages/render/ffmpeg",
-    "packages/render/remotion",
-    "packages/media",
-    "packages/database",
-    "packages/publishers",
-    "packages/config",
-    "packages/types"
-  ],
   "scripts": {
-    "news": "node apps/news/src/pipeline.js",
-    "recompute-scores": "node apps/news/src/scripts/recompute-scores.js",
-    "scrape-metrics": "node apps/news/src/scrapers/post-metrics.js",
-    "google-trends": "node apps/news/src/scrapers/google-trends.js",
-    "trending-pages": "node apps/news/src/scrapers/trending-pages.js",
-    "video": "node apps/video/src/pipeline.js",
     "evals": "node evals/run.js",
-    "bootstrap": "node scripts/bootstrap.js"
+    "bootstrap": "node scripts/bootstrap.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "node scripts/typecheck.mjs",
+    "grep-guard": "node scripts/grep-guard.mjs",
+    "test": "vitest run && pnpm --filter '!dashboard' -r --if-present run test && node --experimental-strip-types --test 'scripts/golden/*.test.ts'"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.1",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.17.1",
+    "globals": "^17.12.0",
+    "playwright": "^1.63.0",
+    "prettier": "^3.9.7",
+    "sharp": "^0.33.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^4.1.11"
   }
 }

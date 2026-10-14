@@ -17,7 +17,7 @@ export async function generateWithGoogle(prompt) {
         instances: [{ prompt }],
         parameters: { sampleCount: 1 },
       }),
-    }
+    },
   );
 
   if (!res.ok) {

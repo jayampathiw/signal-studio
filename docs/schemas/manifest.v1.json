@@ -1,0 +1,278 @@
+{
+  "$ref": "#/definitions/manifest.v1",
+  "definitions": {
+    "manifest.v1": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "const": "1"
+        },
+        "projectRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "template": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inputs": {
+          "type": "object",
+          "properties": {
+            "jobs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "ref": {
+                    "type": "string"
+                  }
+                },
+                "required": ["kind", "ref"],
+                "additionalProperties": false
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "jobs": []
+          }
+        },
+        "shots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string"
+              },
+              "image": {
+                "type": "string"
+              },
+              "clip": {
+                "type": "string"
+              },
+              "trim_in_s": {
+                "type": "number",
+                "minimum": 0,
+                "default": 0
+              },
+              "speed": {
+                "type": "number",
+                "minimum": 0.25,
+                "maximum": 4,
+                "default": 1
+              },
+              "overlay_text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "overlay_in_s": {
+                "type": "number",
+                "minimum": 0,
+                "default": 0.4
+              },
+              "overlay_out_s": {
+                "type": "number",
+                "minimum": 0
+              },
+              "voiceover_text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "ig_optional": {
+                "type": "boolean",
+                "default": false
+              },
+              "audio": {
+                "type": "object",
+                "properties": {
+                  "strip_native_audio": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "keep_native_sfx": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "additionalProperties": false,
+                "default": {
+                  "strip_native_audio": false,
+                  "keep_native_sfx": true
+                }
+              },
+              "fact_confidence": {
+                "type": "string",
+                "enum": ["high", "medium", "low"]
+              },
+              "verify": {
+                "type": "string"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 6
+        },
+        "visual": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string"
+            }
+          },
+          "required": ["mode"],
+          "additionalProperties": false
+        },
+        "audio": {
+          "type": "object",
+          "properties": {
+            "voice": {
+              "type": "string",
+              "default": "bm_george"
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 2,
+              "default": 1
+            },
+            "music": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "mood": {
+                  "type": "string"
+                },
+                "gain_db": {
+                  "type": "number",
+                  "default": -18
+                },
+                "duck": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": false,
+              "default": {
+                "gain_db": -18,
+                "duck": true
+              }
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "voice": "bm_george",
+            "speed": 1,
+            "music": {
+              "gain_db": -18,
+              "duck": true
+            }
+          }
+        },
+        "end_card": {
+          "type": "object",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "minLength": 1
+            },
+            "disclosure": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["subject", "disclosure"],
+          "additionalProperties": false
+        },
+        "watermark": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "default": "AI visualisation"
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "text": "AI visualisation"
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "captions": {
+          "type": "object",
+          "properties": {
+            "facebook": {
+              "type": "string"
+            },
+            "facebook_question": {
+              "type": "string"
+            },
+            "instagram": {
+              "type": "string"
+            },
+            "youtube_shorts_title": {
+              "type": "string"
+            },
+            "hashtags_facebook": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "hashtags_instagram": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        },
+        "disclosure": {
+          "type": "boolean",
+          "default": true
+        },
+        "gates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "publish": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "required": ["version", "projectRef", "template", "shots", "visual", "end_card", "outputs"],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

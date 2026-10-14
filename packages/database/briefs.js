@@ -4,13 +4,13 @@ export async function createBrief({ channelKey, format, title, description, slot
   const { data, error } = await getServiceClient()
     .from('content_items')
     .insert({
-      channel_key:   channelKey,
+      channel_key: channelKey,
       format,
       title,
       description,
-      status:        'brief',
-      scenes:        [],
-      slot:          slot ?? null,
+      status: 'brief',
+      scenes: [],
+      slot: slot ?? null,
       scheduled_for: scheduledFor ?? null,
     })
     .select('id, title, format, slot')

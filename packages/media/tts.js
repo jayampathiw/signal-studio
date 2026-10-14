@@ -1,8 +1,8 @@
 import { execFile } from 'child_process';
-import { promisify } from 'util';
+import { existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
+import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 const mediaDir = dirname(fileURLToPath(import.meta.url));

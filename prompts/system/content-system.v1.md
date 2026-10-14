@@ -3,6 +3,7 @@
 **Status:** Stub — migrate full prompt from `facebook-news-pipeline/src/services/claude.js` (`CONTENT_SYSTEM_PROMPT` constant).
 
 The full prompt covers:
+
 - Facebook caption writing (7-block structure: hook, context, details, stakes, engagement question, source, CTA)
 - SEO title + description generation
 - Multi-language support: FR, IT, AU, SE

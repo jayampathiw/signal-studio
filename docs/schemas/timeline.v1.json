@@ -1,0 +1,267 @@
+{
+  "$ref": "#/definitions/timeline.v1",
+  "definitions": {
+    "timeline.v1": {
+      "type": "object",
+      "properties": {
+        "contentId": {
+          "type": "string"
+        },
+        "aspectRatio": {
+          "type": "string",
+          "enum": ["9:16", "16:9", "1:1"]
+        },
+        "scenes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "durationSecs": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "localPath": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["image", "video"]
+                  }
+                },
+                "required": ["localPath", "type"],
+                "additionalProperties": false
+              },
+              "narrationPath": {
+                "type": "string"
+              },
+              "subtitleSrtPath": {
+                "type": "string"
+              },
+              "captionText": {
+                "type": "string"
+              },
+              "highlight": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "fromSec": {
+                    "type": "number"
+                  },
+                  "toSec": {
+                    "type": "number"
+                  },
+                  "opacity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.55
+                  }
+                },
+                "required": ["x", "y", "width", "height", "fromSec", "toSec"],
+                "additionalProperties": false
+              },
+              "highlights": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/timeline.v1/properties/scenes/items/properties/highlight"
+                }
+              },
+              "zoomFrom": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": ["x", "y", "width", "height"],
+                "additionalProperties": false
+              },
+              "zoomTo": {
+                "$ref": "#/definitions/timeline.v1/properties/scenes/items/properties/zoomFrom"
+              },
+              "visual": {
+                "type": "object",
+                "additionalProperties": {}
+              },
+              "waveformOverlay": {
+                "type": "boolean"
+              },
+              "words": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "start": {
+                      "type": "number"
+                    },
+                    "end": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["text", "start", "end"],
+                  "additionalProperties": false
+                }
+              },
+              "playbackRate": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "default": 1
+              },
+              "overlay": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "inSec": {
+                    "type": "number"
+                  },
+                  "outSec": {
+                    "type": "number"
+                  }
+                },
+                "required": ["text", "inSec", "outSec"],
+                "additionalProperties": false
+              },
+              "voStartSec": {
+                "type": "number"
+              }
+            },
+            "required": ["id", "durationSecs"],
+            "additionalProperties": false
+          }
+        },
+        "music": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "fadeOutSecs": {
+              "type": "number"
+            },
+            "duckUnderVoice": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "required": ["path", "fadeOutSecs"],
+          "additionalProperties": false
+        },
+        "cta": {
+          "type": "object",
+          "properties": {
+            "line1": {
+              "type": "string"
+            },
+            "line2": {
+              "type": "string"
+            },
+            "durationSecs": {
+              "type": "number"
+            },
+            "position": {
+              "type": "string",
+              "enum": ["end", "throughout"]
+            }
+          },
+          "required": ["line1", "line2", "durationSecs", "position"],
+          "additionalProperties": false
+        },
+        "watermark": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "position": {
+              "type": "string",
+              "enum": ["bottom-right", "bottom-left"]
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["position", "opacity"],
+          "additionalProperties": false
+        },
+        "template": {
+          "type": "string",
+          "default": "news-card"
+        },
+        "caseMeta": {
+          "type": "object",
+          "properties": {
+            "caseId": {
+              "type": "string"
+            },
+            "sourceCitation": {
+              "type": "string"
+            },
+            "specimen": {
+              "type": "boolean"
+            }
+          },
+          "required": ["caseId"],
+          "additionalProperties": false
+        },
+        "outputId": {
+          "type": "string"
+        }
+      },
+      "required": ["contentId", "aspectRatio", "scenes"],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -3,8 +3,9 @@
  * Usage: node scripts/set-status.mjs --project 29 --status rendering [--note "reason"]
  */
 import { parseArgs } from 'util';
-import { createClient } from '@supabase/supabase-js';
+
 import { env } from '@signal-studio/config';
+import { createClient } from '@supabase/supabase-js';
 
 const ALLOWED_STATUSES = [
   'brief',
@@ -25,15 +26,15 @@ const ALLOWED_STATUSES = [
 const { values } = parseArgs({
   options: {
     project: { type: 'string' },
-    status:  { type: 'string' },
-    note:    { type: 'string', default: '' },
+    status: { type: 'string' },
+    note: { type: 'string', default: '' },
   },
   strict: false,
 });
 
 const projectId = Number(values.project);
-const status    = values.status;
-const note      = values.note;
+const status = values.status;
+const note = values.note;
 
 if (!projectId || !status) {
   console.error('Usage: set-status.mjs --project <id> --status <status> [--note "..."]');
@@ -64,4 +65,6 @@ if (error) {
   process.exit(1);
 }
 
-console.log(`project ${data.id}: status=${data.status}${data.status_note ? ` note="${data.status_note}"` : ''}`);
+console.log(
+  `project ${data.id}: status=${data.status}${data.status_note ? ` note="${data.status_note}"` : ''}`,
+);

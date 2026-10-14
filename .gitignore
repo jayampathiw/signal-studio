@@ -2,6 +2,15 @@
 .env
 .env.local
 
+# Real credentials kept on disk for durability (not committed — see
+# secrets/README.md). Losing the Hetzner deploy key to an ephemeral session
+# scratchpad on 2026-09-28 caused a real lockout; this directory exists so
+# that never has to happen again.
+secrets/
+
+# Windows/WSL zone-identifier artefacts on downloaded files
+*:Zone.Identifier
+
 # Dependencies
 node_modules/
 **/node_modules/
@@ -69,3 +78,27 @@ content/shorts/*/src/*.mp4
 content/shorts/*/vertical-assets/
 content/shorts/*/vo-overrides/
 content/shorts/_final-review/
+
+# AssembleX pilot bridge (P0.8) — generated media, regenerable from pack.json
+projects/**/clips/
+projects/**/vo/
+projects/**/out/
+projects/**/qa/
+projects/**/stills/
+projects/**/refs/
+projects/assemblex-factory/pilot/public/staged/
+
+# examples/clips-overlay (P2's T-L gate fixture) — clips/raw/*.mp4 is the
+# committed source fixture (tiny, synthetic, deterministic); everything
+# else here is the assets/tts stages' generated output, regenerable by
+# just running `ss run-local` against it again.
+examples/**/clips/*.mp4
+examples/**/clips/.*.hash
+examples/**/vo/
+examples/**/qa/
+
+# P0.1 golden references — the .mp4s are real production-adjacent media (same
+# reason content/ moved out in P0.4); only golden.json is committed. R2 isn't
+# configured yet (see docs/refactor/refactor-plan.md P0.1), so the .mp4s stay
+# local-only for now instead of being uploaded to golden/ in R2.
+golden/**/*.mp4

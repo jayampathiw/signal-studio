@@ -1,0 +1,43 @@
+# AssembleX Factory — project config, in the engine's project.v1 shape
+# (P2.8). Replaces the pilot bridge's older ad-hoc {voice, speed, music,
+# fonts} shape at this same path (P0.8-04) — packages/db/scripts/seed.ts
+# already scans for and seeds any project.yaml matching this schema; this
+# is the first real one. The pilot's own props.ts doesn't actually read
+# this file (only references it in a comment), so nothing breaks by
+# changing its shape here.
+
+slug: assemblex-factory
+orgId: 6e95f606-17df-41df-8908-d46541032932 # the real org-1 row in signal-studio-engine-dev
+
+brand:
+  fonts:
+    - Inter
+  colours: []
+  musicBeds: []
+
+defaults:
+  template: clips-overlay
+  # Provisional — same as the pilot bridge's own placeholder default. The
+  # 3-voice listening test (bm_george/am_michael/af_heart, samples
+  # generated during P0.8-04) still hasn't had a final human pick; swap
+  # this if/when one does.
+  voice: bm_george
+  speed: 1.0
+  outputs:
+    - fb
+    - ig
+
+gates: []
+
+# France Aujourd'hui (Facebook Page 1120408947821948) — credentials live in
+# FB_PAGE_ID_FR/FB_ACCESS_TOKEN_FR (VPS deploy.env), never inlined here.
+publishTargets:
+  - platform: facebook
+    credentialRef: FR
+
+providers:
+  tts: kokoro-js
+  captions: whisper
+  image: fal
+  storage: r2
+  publish: facebook

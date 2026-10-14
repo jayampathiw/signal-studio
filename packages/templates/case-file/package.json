@@ -1,0 +1,15 @@
+{
+  "name": "@signal-studio/template-case-file",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'"
+  },
+  "exports": {
+    "./compile": "./src/compile.ts"
+  },
+  "dependencies": {
+    "@signal-studio/core": "workspace:*"
+  }
+}

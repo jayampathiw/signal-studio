@@ -1,7 +1,8 @@
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { loadFont } from '@remotion/google-fonts/PTSerif';
-import { PALETTE } from './palette';
 import type { CaptionWord } from '@signal-studio/types/timeline';
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+
+import { PALETTE } from './palette';
 
 const { fontFamily } = loadFont();
 
@@ -19,7 +20,8 @@ type Props = {
 // in as its time window starts and is replaced by the next, rather than holding
 // the entire sentence on screen throughout the scene.
 const CHUNK_SIZE = 4;
-const STROKE = '-2px -2px 0 #0b1620, 2px -2px 0 #0b1620, -2px 2px 0 #0b1620, 2px 2px 0 #0b1620, 0 0 8px rgba(0,0,0,0.9)';
+const STROKE =
+  '-2px -2px 0 #0b1620, 2px -2px 0 #0b1620, -2px 2px 0 #0b1620, 2px 2px 0 #0b1620, 0 0 8px rgba(0,0,0,0.9)';
 
 type Word = { text: string; start: number; end: number };
 
@@ -74,7 +76,10 @@ export const CaptionLayer: React.FC<Props> = ({ text, words }) => {
   const { fps, width, height } = useVideoConfig();
   if (!text) return null;
 
-  const allWords: Word[] = words && words.length > 0 ? words : text.split(/\s+/).map((w) => ({ text: w, start: 0, end: 0 }));
+  const allWords: Word[] =
+    words && words.length > 0
+      ? words
+      : text.split(/\s+/).map((w) => ({ text: w, start: 0, end: 0 }));
   const chunks = chunkWords(allWords);
   const t = frame / fps;
 
@@ -88,8 +93,14 @@ export const CaptionLayer: React.FC<Props> = ({ text, words }) => {
   const chunk = chunks[chunkIdx];
   const chunkStartFrame = chunk[0].start * fps;
 
-  const opacity = interpolate(frame, [chunkStartFrame, chunkStartFrame + 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const translateY = interpolate(frame, [chunkStartFrame, chunkStartFrame + 8], [14, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const opacity = interpolate(frame, [chunkStartFrame, chunkStartFrame + 8], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const translateY = interpolate(frame, [chunkStartFrame, chunkStartFrame + 8], [14, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // Sticky selection: the highlight follows the last word whose start time has
   // passed, not a strict start<=t<end window. Whisper word timings frequently
@@ -118,34 +129,44 @@ export const CaptionLayer: React.FC<Props> = ({ text, words }) => {
   return (
     <AbsoluteFill style={{ alignItems: 'center' }}>
       <div
-        style={isPortrait ? {
-          position: 'absolute',
-          top: height * CAPTION_TOP_FRACTION,
-          left: 0,
-          right: 0,
-          padding: '0 48px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          opacity,
-          transform: `translateY(${translateY}px)`,
-        } : {
-          position: 'absolute',
-          bottom: 72,
-          left: 0,
-          right: 0,
-          padding: '0 48px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          opacity,
-          transform: `translateY(${translateY}px)`,
-        }}>
+        style={
+          isPortrait
+            ? {
+                position: 'absolute',
+                top: height * CAPTION_TOP_FRACTION,
+                left: 0,
+                right: 0,
+                padding: '0 48px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                opacity,
+                transform: `translateY(${translateY}px)`,
+              }
+            : {
+                position: 'absolute',
+                bottom: 72,
+                left: 0,
+                right: 0,
+                padding: '0 48px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                opacity,
+                transform: `translateY(${translateY}px)`,
+              }
+        }
+      >
         {lines.map((line, lineIdx) => (
           <p
             key={lineIdx}
             style={{
-              fontFamily, fontWeight: 700, fontSize, lineHeight: 1.35, margin: 0, textAlign: 'center',
+              fontFamily,
+              fontWeight: 700,
+              fontSize,
+              lineHeight: 1.35,
+              margin: 0,
+              textAlign: 'center',
               whiteSpace: 'nowrap',
             }}
           >

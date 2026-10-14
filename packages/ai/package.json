@@ -13,6 +13,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "@signal-studio/config": "*"
+    "@signal-studio/config": "workspace:*"
   }
 }

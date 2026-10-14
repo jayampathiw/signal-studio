@@ -1,0 +1,97 @@
+{
+  "_placeholder": true,
+  "_note": "Scaffold pack for P0.8-01 — schema-plausible example, NOT real master-prompt output. Replace with the real pack.json once the master prompt is run (Mode C) and delete this field. Field names/defaults follow refactor-plan.md §10 P0.8-02..08; not yet validated against the original Built Layer by Layer docs (unavailable).",
+  "post_id": "standalone_sample-001",
+  "mode": "C",
+  "subject": "Mimic octopus",
+  "fact_confidence": "high",
+  "verify": "https://en.wikipedia.org/wiki/Mimic_octopus",
+  "audio": {
+    "voice_id": "bm_george",
+    "voice_speed": 1
+  },
+  "music": {
+    "mood": "curious",
+    "gain_db": -18,
+    "duck": true
+  },
+  "end_card": {
+    "subject": "Mimic Octopus",
+    "disclosure": "AI-narrated. Footage: user-supplied."
+  },
+  "watermark": {
+    "text": "AI visualisation"
+  },
+  "outputs": ["fb", "ig"],
+  "shots": [
+    {
+      "id": "s1",
+      "clip_file": "s1.mp4",
+      "trim_in_s": 0,
+      "speed": 1,
+      "overlay_text": "This octopus can impersonate 15+ other species",
+      "overlay_in_s": 0.4,
+      "overlay_out_s": 4.5,
+      "voiceover_text": "The mimic octopus doesn't just hide from predators. It impersonates them.",
+      "ig_optional": false,
+      "audio": {
+        "strip_native_audio": false,
+        "keep_native_sfx": true
+      },
+      "fact_confidence": "high",
+      "verify": "https://en.wikipedia.org/wiki/Mimic_octopus",
+      "voiceover_file": "vo/s1_vo_n.wav",
+      "voiceover_duration_s": 5.6,
+      "duration_s": 8.011
+    },
+    {
+      "id": "s2",
+      "clip_file": "s2.mp4",
+      "trim_in_s": 0,
+      "speed": 1,
+      "overlay_text": "It flattens itself to mimic a flatfish",
+      "overlay_in_s": 0.4,
+      "overlay_out_s": 4.5,
+      "voiceover_text": "Watch it flatten its body and undulate like a venomous sole.",
+      "ig_optional": false,
+      "audio": {
+        "strip_native_audio": false,
+        "keep_native_sfx": true
+      },
+      "fact_confidence": "high",
+      "verify": "https://en.wikipedia.org/wiki/Mimic_octopus",
+      "voiceover_file": "vo/s2_vo_n.wav",
+      "voiceover_duration_s": 4.7,
+      "duration_s": 8.011
+    },
+    {
+      "id": "s3",
+      "clip_file": "s3.mp4",
+      "trim_in_s": 0,
+      "speed": 1,
+      "overlay_text": "Only discovered by science in 1998",
+      "overlay_in_s": 0.4,
+      "overlay_out_s": 4.5,
+      "voiceover_text": "It was only formally described by scientists in 1998.",
+      "ig_optional": true,
+      "audio": {
+        "strip_native_audio": false,
+        "keep_native_sfx": true
+      },
+      "fact_confidence": "medium",
+      "verify": "https://en.wikipedia.org/wiki/Mimic_octopus",
+      "voiceover_file": "vo/s3_vo_n.wav",
+      "voiceover_duration_s": 5.15,
+      "duration_s": 8
+    }
+  ],
+  "captions": {
+    "facebook": "Meet the mimic octopus — nature's greatest impersonator.",
+    "facebook_question": "Which animal do you think it copies best?",
+    "instagram": "The mimic octopus can impersonate over 15 species. 🐙",
+    "youtube_shorts_title": "The Octopus That Can Impersonate 15 Species",
+    "hashtags_facebook": ["#wildlife", "#ocean", "#didyouknow"],
+    "hashtags_instagram": ["#wildlife", "#ocean", "#animalfacts", "#nature"]
+  },
+  "disclosure": true
+}

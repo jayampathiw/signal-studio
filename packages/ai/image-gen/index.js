@@ -1,6 +1,7 @@
 import { env } from '@signal-studio/config';
-import { generateWithFal } from './fal.js';
+
 import { generateWithCloudflare } from './cloudflare.js';
+import { generateWithFal } from './fal.js';
 import { generateWithGoogle } from './google.js';
 
 /**
@@ -17,9 +18,9 @@ export async function generateImage(prompt, opts = {}) {
   const providers = forced
     ? [{ name: forced, fn: pickProvider(forced) }]
     : [
-        { name: 'fal',        fn: generateWithFal },
+        { name: 'fal', fn: generateWithFal },
         { name: 'cloudflare', fn: generateWithCloudflare },
-        { name: 'google',     fn: generateWithGoogle },
+        { name: 'google', fn: generateWithGoogle },
       ];
 
   let lastError;
@@ -37,9 +38,13 @@ export async function generateImage(prompt, opts = {}) {
 
 function pickProvider(name) {
   switch (name) {
-    case 'fal':        return generateWithFal;
-    case 'cloudflare': return generateWithCloudflare;
-    case 'google':     return generateWithGoogle;
-    default: throw new Error(`Unknown IMAGE_PROVIDER: ${name}`);
+    case 'fal':
+      return generateWithFal;
+    case 'cloudflare':
+      return generateWithCloudflare;
+    case 'google':
+      return generateWithGoogle;
+    default:
+      throw new Error(`Unknown IMAGE_PROVIDER: ${name}`);
   }
 }

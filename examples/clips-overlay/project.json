@@ -1,0 +1,18 @@
+{
+  "slug": "examples-clips-overlay",
+  "orgId": "org-example",
+  "gates": [],
+  "defaults": {
+    "template": "clips-overlay",
+    "voice": "bm_george",
+    "speed": 1,
+    "outputs": ["fb"]
+  },
+  "providers": {
+    "tts": "kokoro-js",
+    "captions": "whisper",
+    "image": "fal",
+    "storage": "local",
+    "publish": "facebook"
+  }
+}

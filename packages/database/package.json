@@ -11,6 +11,6 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
-    "@signal-studio/config": "*"
+    "@signal-studio/config": "workspace:*"
   }
 }

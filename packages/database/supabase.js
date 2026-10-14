@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { env } from '@signal-studio/config';
+import { createClient } from '@supabase/supabase-js';
 
 let _client = null;
 let _serviceClient = null;

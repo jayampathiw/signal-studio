@@ -14,7 +14,7 @@ research (Tifo, HITC Sevens, Football Iconic, AI Football Narrative) — full re
 - **Cold open, stakes-first**: open in media res at peak tension/paradox. 0:00–0:15 paradox →
   0:15–0:30 value promise → 0:30–1:00 antagonist + title stinger. No intros, no throat-clearing.
 - **ABT engine**: connect every beat with "But"/"Therefore", never "And then". Chronology is not story.
-- **Known-result pivot**: acknowledge the known outcome early, promise the untold *how/why/cost*.
+- **Known-result pivot**: acknowledge the known outcome early, promise the untold _how/why/cost_.
 - **Word budget**: 140–150 WPM → 1,100–1,400 words for a 9-minute video, leaving ~1 min of
   scripted silence/music. Climax lands at the 70–80% mark.
 - **Tense protocol**: past tense for history/biography; present tense strictly for on-pitch action.
@@ -47,7 +47,7 @@ research (Tifo, HITC Sevens, Football Iconic, AI Football Narrative) — full re
   micro-PUSH →1.06; 2.5D parallax reserved for hero shots. Never exceed 1.15 on a standard push.
 - **Pattern interrupt every 5–8s**: any scene ≥10s needs an A/B cut, a timed text overlay, or a
   hard SFX hit. One still + one slow 12s zoom = the slideshow look monetization policy punishes.
-- **Kit/consistency bible**: generate + approve kit reference sheets *before* bulk generation;
+- **Kit/consistency bible**: generate + approve kit reference sheets _before_ bulk generation;
   every prompt is self-contained (verbatim kit blocks, no shared prefix); generate act-by-act,
   reviewing each act for drift before the next. Never batch-generate everything then review.
 - **Anonymity**: silhouetted/shadowed/rearview figures only — no recognizable faces (bypasses AI

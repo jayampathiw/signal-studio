@@ -18,12 +18,23 @@ check('.env exists', existsSync(resolve('.env')), 'Run: cp .env.example .env and
 check('npm install done', existsSync(resolve('node_modules')), 'Run: npm install');
 
 // Key workspace packages linked
-const packages = ['ai', 'render/core', 'render/ffmpeg', 'media', 'database', 'publishers', 'config', 'types'];
+const packages = [
+  'ai',
+  'render/core',
+  'render/ffmpeg',
+  'media',
+  'database',
+  'publishers',
+  'config',
+  'types',
+];
 for (const pkg of packages) {
   check(
     `packages/${pkg} linked`,
-    existsSync(resolve('node_modules/@signal-studio', pkg.replace('/', '-').replace('render-', 'render-'))),
-    `Run: npm install (workspace linking)`
+    existsSync(
+      resolve('node_modules/@signal-studio', pkg.replace('/', '-').replace('render-', 'render-')),
+    ),
+    `Run: npm install (workspace linking)`,
   );
 }
 
@@ -36,5 +47,9 @@ for (const { label, pass, hint } of checks) {
   if (!pass && hint) console.log(`       → ${hint}`);
 }
 console.log();
-console.log(allPass ? '  All checks passed. Ready to develop.' : '  Fix the issues above before running pipelines.');
+console.log(
+  allPass
+    ? '  All checks passed. Ready to develop.'
+    : '  Fix the issues above before running pipelines.',
+);
 console.log();

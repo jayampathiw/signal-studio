@@ -1,5 +1,6 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 import { loadFont as loadCourierPrime } from '@remotion/google-fonts/CourierPrime';
+import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
+
 import { PALETTE } from '../palette';
 
 const { fontFamily: monoFont } = loadCourierPrime();
@@ -20,7 +21,14 @@ export const PointerCard: React.FC<{ visual: PointerCardVisual }> = ({ visual })
   const opacity = interpolate(frame, [0, 12, 999999], [0, 1, 1], { extrapolateRight: 'clamp' });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: PALETTE.background, justifyContent: 'center', alignItems: 'center', padding: '0 80px' }}>
+    <AbsoluteFill
+      style={{
+        backgroundColor: PALETTE.background,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0 80px',
+      }}
+    >
       <p
         style={{
           fontFamily: monoFont,

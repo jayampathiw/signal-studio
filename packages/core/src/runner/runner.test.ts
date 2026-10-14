@@ -1,0 +1,264 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+
+import {
+  StageRunner,
+  CancelledError,
+  type Job,
+  type JobStageStore,
+  type StageRunRecord,
+} from './index.ts';
+import { toFailedPayload } from '../state/index.ts';
+
+function makeFakeStore() {
+  const runs = new Map<string, StageRunRecord>();
+  const logs: string[] = [];
+
+  const key = (jobId: string, stage: string, outputId?: string) =>
+    `${jobId}:${stage}:${outputId ?? ''}`;
+
+  const store: JobStageStore = {
+    async getLastRun(jobId, stage, outputId) {
+      return runs.get(key(jobId, stage, outputId)) ?? null;
+    },
+    async recordStart() {},
+    async recordEnd(jobId, stage, result, outputId) {
+      runs.set(key(jobId, stage, outputId), {
+        hash: result.hash,
+        status: result.status,
+        outputs: result.outputs,
+      });
+    },
+    async log(jobId, stage, message) {
+      logs.push(`${jobId}/${stage}: ${message}`);
+    },
+  };
+
+  return { store, runs, logs };
+}
+
+function job(overrides: Partial<Job> = {}): Job {
+  return { id: 'job-1', manifest: { outputs: ['fb'] }, ...overrides };
+}
+
+test('full run executes every stage once', async () => {
+  const { store } = makeFakeStore();
+  const calls: string[] = [];
+  const runner = new StageRunner(store)
+    .register({ name: 'prep', inputsHash: () => 'h1', run: async () => void calls.push('prep') })
+    .register({
+      name: 'render',
+      inputsHash: () => 'h2',
+      run: async () => void calls.push('render'),
+    });
+
+  await runner.run(job());
+  assert.deepEqual(calls, ['prep', 'render']);
+});
+
+test('skips a stage when the hash is unchanged and the last run was done', async () => {
+  const { store } = makeFakeStore();
+  const calls: string[] = [];
+  const runner = new StageRunner(store).register({
+    name: 'prep',
+    inputsHash: () => 'stable-hash',
+    run: async () => void calls.push('ran'),
+  });
+
+  await runner.run(job());
+  await runner.run(job());
+  assert.deepEqual(calls, ['ran']);
+});
+
+test('does not skip when the hash changes', async () => {
+  const { store } = makeFakeStore();
+  let hash = 'h1';
+  const calls: string[] = [];
+  const runner = new StageRunner(store).register({
+    name: 'prep',
+    inputsHash: () => hash,
+    run: async () => void calls.push(hash),
+  });
+
+  await runner.run(job());
+  hash = 'h2';
+  await runner.run(job());
+  assert.deepEqual(calls, ['h1', 'h2']);
+});
+
+test('resume after crash: a stage left failed is re-run, not skipped', async () => {
+  const { store, runs } = makeFakeStore();
+  const calls: string[] = [];
+  const runner = new StageRunner(store).register({
+    name: 'render',
+    inputsHash: () => 'h1',
+    run: async () => void calls.push('ran'),
+  });
+
+  // Simulate a previous crash: a failed record already exists for this hash.
+  runs.set('job-1:render:', { hash: 'h1', status: 'failed' });
+
+  await runner.run(job());
+  assert.deepEqual(calls, ['ran']);
+});
+
+test('failure mid-way stops later stages and records failed status', async () => {
+  const { store, runs } = makeFakeStore();
+  const calls: string[] = [];
+  const runner = new StageRunner(store)
+    .register({ name: 'prep', inputsHash: () => 'h1', run: async () => void calls.push('prep') })
+    .register({
+      name: 'render',
+      inputsHash: () => 'h2',
+      run: async () => {
+        throw new Error('boom');
+      },
+    })
+    .register({
+      name: 'publish',
+      inputsHash: () => 'h3',
+      run: async () => void calls.push('publish'),
+    });
+
+  let thrown: unknown;
+  await assert.rejects(async () => {
+    try {
+      await runner.run(job());
+    } catch (err) {
+      thrown = err;
+      throw err;
+    }
+  }, /boom/);
+  assert.deepEqual(calls, ['prep']);
+  assert.equal(runs.get('job-1:render:')?.status, 'failed');
+  assert.equal(runs.has('job-1:publish:'), false);
+  assert.equal(toFailedPayload(thrown, 'run-job').stage, 'render');
+});
+
+test('multiOutput stage runs once per manifest output', async () => {
+  const { store } = makeFakeStore();
+  const seen: (string | undefined)[] = [];
+  const runner = new StageRunner(store).register({
+    name: 'render',
+    multiOutput: true,
+    inputsHash: () => 'h1',
+    run: async (ctx) => void seen.push(ctx.outputId),
+  });
+
+  await runner.run(job({ manifest: { outputs: ['fb', 'ig'] } }));
+  assert.deepEqual(seen, ['fb', 'ig']);
+});
+
+test('P2.5: run() returns fresh outputs, keyed by stage:outputId', async () => {
+  const { store } = makeFakeStore();
+  const runner = new StageRunner(store)
+    .register({
+      name: 'assets',
+      inputsHash: () => 'h1',
+      run: async () => ({ outputs: { durations: { s1: 4 } } }),
+    })
+    .register({
+      name: 'render',
+      multiOutput: true,
+      inputsHash: () => 'h2',
+      run: async (ctx) => ({ outputs: { path: `${ctx.outputId}.mp4` } }),
+    });
+
+  const outputs = await runner.run(job({ manifest: { outputs: ['fb', 'ig'] } }));
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
+  assert.deepEqual(outputs.get('render:fb'), { path: 'fb.mp4' });
+  assert.deepEqual(outputs.get('render:ig'), { path: 'ig.mp4' });
+});
+
+test('P2.5: run() recovers outputs from a skipped (unchanged-hash) stage, not just a fresh run', async () => {
+  const { store } = makeFakeStore();
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => ({ outputs: { durations: { s1: 4 } } }),
+  });
+
+  await runner.run(job());
+  const outputs = await runner.run(job()); // second run: hash unchanged -> skipped
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
+});
+
+test('P4.1: verifySkip returning false re-runs the stage instead of trusting a matching hash', async () => {
+  const { store } = makeFakeStore();
+  let calls = 0;
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => {
+      calls += 1;
+      return { outputs: { durations: { s1: 4 } } };
+    },
+    verifySkip: async () => false,
+  });
+
+  await runner.run(job());
+  const outputs = await runner.run(job()); // hash unchanged, but verifySkip says stale
+  assert.equal(calls, 2);
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
+});
+
+test('P4.1: verifySkip returning true still skips a stage with an unchanged hash', async () => {
+  const { store } = makeFakeStore();
+  let calls = 0;
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => {
+      calls += 1;
+      return { outputs: { durations: { s1: 4 } } };
+    },
+    verifySkip: async () => true,
+  });
+
+  await runner.run(job());
+  const outputs = await runner.run(job());
+  assert.equal(calls, 1);
+  assert.deepEqual(outputs.get('assets:'), { durations: { s1: 4 } });
+});
+
+test('P4.1: verifySkip receives the cached outputs and job context', async () => {
+  const { store } = makeFakeStore();
+  const seen: Array<{ outputs: unknown; jobId: string }> = [];
+  const runner = new StageRunner(store).register({
+    name: 'assets',
+    inputsHash: () => 'stable-hash',
+    run: async () => ({ outputs: { durations: { s1: 4 } } }),
+    verifySkip: async (outputs, ctx) => {
+      seen.push({ outputs, jobId: ctx.job.id });
+      return true;
+    },
+  });
+
+  await runner.run(job());
+  await runner.run(job());
+  assert.deepEqual(seen, [{ outputs: { durations: { s1: 4 } }, jobId: 'job-1' }]);
+});
+
+test('cancellation token is checked before each stage', async () => {
+  const { store } = makeFakeStore();
+  const calls: string[] = [];
+  const runner = new StageRunner(store)
+    .register({ name: 'prep', inputsHash: () => 'h1', run: async () => void calls.push('prep') })
+    .register({
+      name: 'render',
+      inputsHash: () => 'h2',
+      run: async () => void calls.push('render'),
+    });
+
+  let cancelAfterFirst = false;
+  await assert.rejects(
+    () =>
+      runner.run(job(), () => {
+        const cancel = cancelAfterFirst;
+        cancelAfterFirst = true;
+        return cancel;
+      }),
+    CancelledError,
+  );
+  assert.deepEqual(calls, ['prep']);
+});

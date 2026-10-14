@@ -1,7 +1,8 @@
-import { parseArgs } from 'util';
+import { createHash } from 'crypto';
 import { mkdirSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
-import { createHash } from 'crypto';
+import { parseArgs } from 'util';
+
 import { getServiceClient } from '@signal-studio/database';
 
 const { values } = parseArgs({
@@ -9,7 +10,10 @@ const { values } = parseArgs({
   strict: false,
 });
 
-if (!values.project) { console.error('Error: --project <id> required'); process.exit(2); }
+if (!values.project) {
+  console.error('Error: --project <id> required');
+  process.exit(2);
+}
 
 const projectId = Number(values.project);
 const db = getServiceClient();
@@ -24,7 +28,9 @@ async function main() {
 
   const { data: clips, error: cErr } = await db
     .from('content_clips')
-    .select('id, scene_n, kind, status, vo_url, clip_url, vo_text, fail_reason, image_source, duration_sec')
+    .select(
+      'id, scene_n, kind, status, vo_url, clip_url, vo_text, fail_reason, image_source, duration_sec',
+    )
     .eq('project_id', projectId)
     .order('scene_n');
   if (cErr) throw new Error(cErr.message);
@@ -42,7 +48,9 @@ async function main() {
     item,
     clips: (clips ?? []).map((c) => ({
       ...c,
-      vo_text_hash: c.vo_text ? createHash('sha256').update(c.vo_text).digest('hex').slice(0, 12) : null,
+      vo_text_hash: c.vo_text
+        ? createHash('sha256').update(c.vo_text).digest('hex').slice(0, 12)
+        : null,
       vo_text: undefined,
     })),
     refs: refs ?? [],
@@ -61,8 +69,14 @@ async function main() {
 
   console.log(`Snapshot written: ${outPath}`);
   console.log(`  content_items:     1 row`);
-  console.log(`  content_clips:     ${snapshot.summary.clips_total} rows`, snapshot.summary.clips_by_status);
-  console.log(`  content_references:${snapshot.summary.refs_total} rows`, snapshot.summary.refs_by_status);
+  console.log(
+    `  content_clips:     ${snapshot.summary.clips_total} rows`,
+    snapshot.summary.clips_by_status,
+  );
+  console.log(
+    `  content_references:${snapshot.summary.refs_total} rows`,
+    snapshot.summary.refs_by_status,
+  );
 }
 
 function countBy(arr, key) {
@@ -72,4 +86,7 @@ function countBy(arr, key) {
   }, {});
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});
