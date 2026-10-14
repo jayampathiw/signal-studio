@@ -111,8 +111,18 @@ services:
     # `signal-studio-<service>-1`), so `Scanned=0` on every run since P4.2's
     # original deploy and the P4.5 MCP image was never auto-pulled. Fixed by
     # using the real container names.
+    # `--cleanup`: delete the replaced image after each update. Without it
+    # every deploy left the old ~7.5 GB worker image behind — 2026-10-14
+    # found the 30 GB disk at 80% after three deploys in one day.
     command:
-      ['--interval', '60', 'signal-studio-worker-1', 'signal-studio-api-1', 'signal-studio-caddy-1']
+      [
+        '--interval',
+        '60',
+        '--cleanup',
+        'signal-studio-worker-1',
+        'signal-studio-api-1',
+        'signal-studio-caddy-1',
+      ]
 
   # P4.5 — public HTTPS front door. Only this container publishes host
   # ports (80 for the Let's Encrypt HTTP-01 challenge + redirect, 443 for
