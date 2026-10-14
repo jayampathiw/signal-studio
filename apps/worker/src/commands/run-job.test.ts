@@ -80,12 +80,14 @@ const baseProject = {
 
 type FakeDeps = RunJobDeps & {
   statusUpdates: string[];
+  failures: Array<{ stage: string; error: string; retryable: boolean }>;
   artifacts: Array<{ kind: string; url: string }>;
   publishCalls: Array<{ platform: string; pageRef: string; video: string; caption: string }>;
 };
 
 function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> = {}): FakeDeps {
   const statusUpdates: string[] = [];
+  const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
   const artifacts: Array<{ kind: string; url: string }> = [];
   const publishCalls: FakeDeps['publishCalls'] = [];
   const stageStore = new Map<
@@ -119,6 +121,10 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
       },
       async updateStatus(_id: string, status: string) {
         statusUpdates.push(status);
+      },
+      async markFailed(_id: string, failure: { stage: string; error: string; retryable: boolean }) {
+        statusUpdates.push('failed');
+        failures.push(failure);
       },
     } as never,
     projectsRepo: {
@@ -227,6 +233,7 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
       return new Response(bytes, { status: 200 });
     }) as unknown as typeof fetch,
     statusUpdates,
+    failures,
     artifacts,
     publishCalls,
   };
@@ -328,6 +335,9 @@ test('runJob: a qa stage failure marks the job failed and blocks publish', async
 
     assert.deepEqual(deps.statusUpdates, ['queued', 'dispatched', 'running', 'failed']);
     assert.equal(deps.publishCalls.length, 0);
+    assert.equal(deps.failures.length, 1);
+    assert.equal(deps.failures[0].stage, 'qa');
+    assert.equal(deps.failures[0].retryable, false);
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }
@@ -372,6 +382,7 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
       }
     >();
     const statusUpdates: string[] = [];
+    const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -392,6 +403,13 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
         },
         async updateStatus(_id: string, status: string) {
           statusUpdates.push(status);
+        },
+        async markFailed(
+          _id: string,
+          failure: { stage: string; error: string; retryable: boolean },
+        ) {
+          statusUpdates.push('failed');
+          failures.push(failure);
         },
       } as never,
       projectsRepo: {
@@ -545,6 +563,7 @@ test('runJob: throws a clear error for an unsupported visual.mode', async () => 
         };
       },
       async updateStatus() {},
+      async markFailed() {},
     } as never,
     projectsRepo: {
       async getById() {
@@ -693,6 +712,7 @@ test('runJob: stills-kenburns handler compiles, renders (real render-ffmpeg), an
       }
     >();
     const statusUpdates: string[] = [];
+    const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -713,6 +733,13 @@ test('runJob: stills-kenburns handler compiles, renders (real render-ffmpeg), an
         },
         async updateStatus(_id: string, status: string) {
           statusUpdates.push(status);
+        },
+        async markFailed(
+          _id: string,
+          failure: { stage: string; error: string; retryable: boolean },
+        ) {
+          statusUpdates.push('failed');
+          failures.push(failure);
         },
       } as never,
       projectsRepo: {
@@ -908,6 +935,7 @@ test('runJob: shorts-916 handler compiles, renders (real render-ffmpeg), and del
       }
     >();
     const statusUpdates: string[] = [];
+    const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -928,6 +956,13 @@ test('runJob: shorts-916 handler compiles, renders (real render-ffmpeg), and del
         },
         async updateStatus(_id: string, status: string) {
           statusUpdates.push(status);
+        },
+        async markFailed(
+          _id: string,
+          failure: { stage: string; error: string; retryable: boolean },
+        ) {
+          statusUpdates.push('failed');
+          failures.push(failure);
         },
       } as never,
       projectsRepo: {
@@ -1141,6 +1176,7 @@ test('runJob: compilation handler compiles, renders, and delivers using the real
       }
     >();
     const statusUpdates: string[] = [];
+    const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -1161,6 +1197,13 @@ test('runJob: compilation handler compiles, renders, and delivers using the real
         },
         async updateStatus(_id: string, status: string) {
           statusUpdates.push(status);
+        },
+        async markFailed(
+          _id: string,
+          failure: { stage: string; error: string; retryable: boolean },
+        ) {
+          statusUpdates.push('failed');
+          failures.push(failure);
         },
       } as never,
       projectsRepo: {
@@ -1323,6 +1366,7 @@ test('runJob: carousel handler renders N stills (real compileCarousel()), upload
       'jobs/job-1/uploads/watermark/logo.png': watermarkPath,
     };
     const statusUpdates: string[] = [];
+    const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
     const artifacts: Array<{ kind: string; url: string }> = [];
     const publishCalls: Array<{
       platform: string;
@@ -1346,6 +1390,13 @@ test('runJob: carousel handler renders N stills (real compileCarousel()), upload
         },
         async updateStatus(_id: string, status: string) {
           statusUpdates.push(status);
+        },
+        async markFailed(
+          _id: string,
+          failure: { stage: string; error: string; retryable: boolean },
+        ) {
+          statusUpdates.push('failed');
+          failures.push(failure);
         },
       } as never,
       projectsRepo: {
@@ -1485,6 +1536,8 @@ test('runJob: carousel handler stops at awaiting_review when the job has gates, 
     });
 
     const statusUpdates: string[] = [];
+
+    const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
     let publishCalled = false;
 
     const deps: RunJobDeps = {
@@ -1502,6 +1555,13 @@ test('runJob: carousel handler stops at awaiting_review when the job has gates, 
         },
         async updateStatus(_id: string, status: string) {
           statusUpdates.push(status);
+        },
+        async markFailed(
+          _id: string,
+          failure: { stage: string; error: string; retryable: boolean },
+        ) {
+          statusUpdates.push('failed');
+          failures.push(failure);
         },
       } as never,
       projectsRepo: {
@@ -1696,4 +1756,8 @@ test('runJob publish mode: fails clearly when the job has no rendered video', as
   );
   assert.equal(deps.publishCalls.length, 0);
   assert.equal(deps.statusUpdates.at(-1), 'failed');
+  assert.deepEqual(
+    { stage: deps.failures[0].stage, retryable: deps.failures[0].retryable },
+    { stage: 'publish', retryable: false },
+  );
 });

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { NonRetryableError } from '@signal-studio/core/state';
+
 import {
   handleJob,
   pingHealthcheckOnce,
@@ -19,6 +21,22 @@ test('handleJob: calls runJob with the payload jobId + mode (full when absent), 
   await handleJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
   await handleJob({ jobId: 'job-2', mode: 'publish' }, deps, createLogger({ level: 'error' }));
   assert.deepEqual(calls, ['job-1:full', 'job-2:publish']);
+});
+
+test('handleJob: a non-retryable failure completes the queue job instead of rethrowing', async () => {
+  const reported: unknown[] = [];
+  await handleJob(
+    { jobId: 'job-1' },
+    {
+      runJob: async () => {
+        throw new NonRetryableError('qa stage failed');
+      },
+      heartbeat: async () => {},
+      reportError: (err) => void reported.push(err),
+    },
+    createLogger({ level: 'error' }),
+  );
+  assert.equal(reported.length, 1);
 });
 
 test("handleJob: rethrows runJob's error so pg-boss can retry/dead-letter", async () => {

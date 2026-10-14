@@ -24,6 +24,42 @@ export type FailedPayload = {
   retryable: boolean;
 };
 
+/**
+ * Thrown for failures that will fail the same way on every retry (QA
+ * rejected the render, a required asset is missing, the manifest asks for
+ * something unsupported) — the worker records them and tells pg-boss not to
+ * retry, instead of re-rendering for nothing. Other error classes opt in the
+ * same way with their own `retryable = false` field.
+ */
+export class NonRetryableError extends Error {
+  readonly retryable = false;
+}
+
+// Which stage threw a given error (and whether that stage already wrote the
+// failure to job_log), recorded as the error passes through `StageRunner` or
+// a caller's own wrapper — kept off the error object itself so the original
+// error class/message is rethrown untouched. The innermost record wins.
+const failedStages = new WeakMap<object, { stage: string; logged: boolean }>();
+
+export function recordFailedStage(err: unknown, stage: string, logged = false): void {
+  if (typeof err === 'object' && err !== null && !failedStages.has(err)) {
+    failedStages.set(err, { stage, logged });
+  }
+}
+
+export function failureWasLogged(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && failedStages.get(err)?.logged === true;
+}
+
+export function toFailedPayload(err: unknown, fallbackStage: string): FailedPayload {
+  const isObject = typeof err === 'object' && err !== null;
+  return {
+    stage: (isObject && failedStages.get(err)?.stage) || fallbackStage,
+    error: err instanceof Error ? err.message : String(err),
+    retryable: !(isObject && (err as { retryable?: unknown }).retryable === false),
+  };
+}
+
 // `awaiting_review:<gate>` is a family of states (one per gate name), so the
 // table is keyed on the base statuses and treats any `awaiting_review:*`
 // value as reachable from `running` / back to `running` uniformly — checked

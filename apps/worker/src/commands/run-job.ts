@@ -15,7 +15,14 @@ import {
   type QaMeasurement,
 } from '@signal-studio/core/stages/qa';
 import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/tts';
-import { assertJobTransition, type JobStatus } from '@signal-studio/core/state';
+import {
+  assertJobTransition,
+  failureWasLogged,
+  NonRetryableError,
+  recordFailedStage,
+  toFailedPayload,
+  type JobStatus,
+} from '@signal-studio/core/state';
 import type {
   ArtifactRow,
   ArtifactsRepo,
@@ -214,10 +221,15 @@ const PATH_TO_RUNNING: Record<string, JobStatus[]> = {
   failed: ['queued', 'dispatched', 'running'],
 };
 
+// The job isn't in a state this command may run (e.g. cancelled while it
+// sat in the queue) — reported, but never recorded as a failure, since that
+// would overwrite the job's real status.
+class JobNotRunnableError extends NonRetryableError {}
+
 async function advanceToRunning(jobsRepo: JobsRepo, job: JobRow, logger: Logger): Promise<void> {
   const path_ = PATH_TO_RUNNING[job.status];
   if (!path_) {
-    throw new Error(
+    throw new JobNotRunnableError(
       `run-job: job "${job.id}" is in status "${job.status}", not runnable from here (expected one of created/queued/dispatched/failed)`,
     );
   }
@@ -242,7 +254,8 @@ async function downloadRawAsset(
   const url = await storage.signedUrl(key);
   const res = await fetchFn(url);
   if (!res.ok) {
-    throw new Error(
+    const Err = res.status === 403 || res.status === 404 ? NonRetryableError : Error;
+    throw new Err(
       `run-job: raw asset not found for shot "${shotId}" (${key}) — run \`ss upload --job ${jobId} --shot ${shotId} --file <file>\` first`,
     );
   }
@@ -345,7 +358,7 @@ const caseFileHandler: TemplateHandler = {
     const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
     const caseConfig = job.manifest.case_file;
     if (!caseConfig) {
-      throw new Error('run-job: case-file jobs require manifest.case_file');
+      throw new NonRetryableError('run-job: case-file jobs require manifest.case_file');
     }
 
     for (const shot of job.manifest.shots) {
@@ -422,7 +435,7 @@ const stillsKenburnsHandler: TemplateHandler = {
     const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
     const config = job.manifest.stillsKenburns;
     if (!config) {
-      throw new Error('run-job: stills-kenburns jobs require manifest.stillsKenburns');
+      throw new NonRetryableError('run-job: stills-kenburns jobs require manifest.stillsKenburns');
     }
 
     const parsed = deps.parseShotlistV2(config.shotlistText);
@@ -549,7 +562,7 @@ const shorts916Handler: TemplateHandler = {
     const { job, resolvedJob, tmpDir, storage, fetchFn, deps } = ctx;
     const config = job.manifest.shorts916;
     if (!config) {
-      throw new Error('run-job: shorts-916 jobs require manifest.shorts916');
+      throw new NonRetryableError('run-job: shorts-916 jobs require manifest.shorts916');
     }
 
     const imageLocalPaths: Record<string, string> = {};
@@ -580,7 +593,7 @@ const shorts916Handler: TemplateHandler = {
       const n = i + 1;
       if (scene.vo_parts) {
         if (scene.vo_parts.length !== 2) {
-          throw new Error(
+          throw new NonRetryableError(
             `run-job: shorts-916 scene ${n} has ${scene.vo_parts.length} vo_parts, expected exactly 2`,
           );
         }
@@ -610,7 +623,7 @@ const shorts916Handler: TemplateHandler = {
         config,
         resolveImagePath: (key) => {
           const resolved = imageLocalPaths[key];
-          if (!resolved) throw new Error(`run-job: no uploaded image for key "${key}"`);
+          if (!resolved) throw new NonRetryableError(`run-job: no uploaded image for key "${key}"`);
           return resolved;
         },
         sceneVo,
@@ -637,10 +650,10 @@ const compilationHandler: TemplateHandler = {
     const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
     const config = job.manifest.compilation;
     if (!config) {
-      throw new Error('run-job: compilation jobs require manifest.compilation');
+      throw new NonRetryableError('run-job: compilation jobs require manifest.compilation');
     }
     if (!job.manifest.end_card) {
-      throw new Error(
+      throw new NonRetryableError(
         'run-job: compilation jobs require manifest.end_card (the one shared end card for the whole compilation)',
       );
     }
@@ -778,7 +791,7 @@ async function runCarouselJob(
 ): Promise<void> {
   const config = job.manifest.carousel;
   if (!config) {
-    throw new Error('run-job: carousel jobs require manifest.carousel');
+    throw new NonRetryableError('run-job: carousel jobs require manifest.carousel');
   }
   const resolvedJob = resolveJob(project, job.manifest);
   const storage = deps.createStorage(resolvedJob.providers.storage);
@@ -808,10 +821,12 @@ async function runCarouselJob(
     });
 
     const renderOutDir = path.join(tmpDir, 'out');
-    const localPaths = await deps.renderCarouselStills(output, {
-      outputDir: renderOutDir,
-      watermarkPath: watermarkLocalPath,
-    });
+    const localPaths = await withStage('render', () =>
+      deps.renderCarouselStills(output, {
+        outputDir: renderOutDir,
+        watermarkPath: watermarkLocalPath,
+      }),
+    );
 
     const imageUrls: string[] = [];
     for (let i = 0; i < localPaths.length; i++) {
@@ -830,7 +845,9 @@ async function runCarouselJob(
       for (const platform of job.manifest.publish) {
         const credentialRef = publishTargets[platform];
         if (!credentialRef) {
-          throw new Error(`run-job: no publishTarget configured for platform "${platform}"`);
+          throw new NonRetryableError(
+            `run-job: no publishTarget configured for platform "${platform}"`,
+          );
         }
         const post = await deps.createCarouselPublishProviderFor(platform, credentialRef).post({
           platform,
@@ -858,9 +875,6 @@ async function runCarouselJob(
       await deps.jobsRepo.updateStatus(job.id, 'delivered');
       logger.info('job running -> delivered');
     }
-  } catch (err) {
-    await deps.jobsRepo.updateStatus(job.id, 'failed');
-    throw err;
   } finally {
     await rm(tmpDir, { recursive: true, force: true });
   }
@@ -914,7 +928,7 @@ async function runPublishOnly(
 
     if (platforms.length > 0 && job.manifest.visual.mode === 'carousel') {
       const config = job.manifest.carousel;
-      if (!config) throw new Error('run-job: carousel jobs require manifest.carousel');
+      if (!config) throw new NonRetryableError('run-job: carousel jobs require manifest.carousel');
       const slides = [
         ...latestBy(
           renders.filter((a) => a.kind === 'image'),
@@ -922,12 +936,16 @@ async function runPublishOnly(
         ).values(),
       ].sort((a, b) => (a.metadata.slide as number) - (b.metadata.slide as number));
       if (slides.length === 0) {
-        throw new Error(`run-job: job "${job.id}" has no rendered carousel slides to publish`);
+        throw new NonRetryableError(
+          `run-job: job "${job.id}" has no rendered carousel slides to publish`,
+        );
       }
       for (const platform of platforms) {
         const credentialRef = publishTargets[platform];
         if (!credentialRef) {
-          throw new Error(`run-job: no publishTarget configured for platform "${platform}"`);
+          throw new NonRetryableError(
+            `run-job: no publishTarget configured for platform "${platform}"`,
+          );
         }
         const post = await deps.createCarouselPublishProviderFor(platform, credentialRef).post({
           platform,
@@ -953,7 +971,7 @@ async function runPublishOnly(
       }
       for (const platform of platforms) {
         if (!renderedVideoUrls[platform]) {
-          throw new Error(
+          throw new NonRetryableError(
             `run-job: job "${job.id}" has no rendered video for "${platform}" — it must render and pass QA before its gate can publish`,
           );
         }
@@ -983,21 +1001,72 @@ async function runPublishOnly(
     assertJobTransition('running', 'delivered');
     await deps.jobsRepo.updateStatus(job.id, 'delivered');
     logger.info('job running -> delivered (publish-only)');
-  } catch (err) {
-    await deps.jobsRepo.updateStatus(job.id, 'failed');
-    throw err;
   } finally {
     await rm(tmpDir, { recursive: true, force: true });
   }
 }
 
+// Names the step for failures outside `StageRunner` (which records its own
+// stage names), so `jobs.error.stage` says "render" rather than "run-job".
+async function withStage<T>(stage: string, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    recordFailedStage(err, stage);
+    throw err;
+  }
+}
+
+// The one place a job is marked failed: stores `{stage, error, retryable}`
+// on the job, and mirrors failures that never went through `StageRunner`
+// into job_log so the log tells the whole story too. Best-effort — a DB
+// hiccup here must not hide the original error.
+async function failJob(
+  deps: RunJobDeps,
+  job: JobRow,
+  err: unknown,
+  fallbackStage: string,
+  logger: Logger,
+) {
+  if (err instanceof JobNotRunnableError) return;
+  const failure = toFailedPayload(err, fallbackStage);
+  try {
+    await deps.jobsRepo.markFailed(job.id, failure);
+    if (!failureWasLogged(err)) {
+      await deps
+        .createStageStore(job.org_id)
+        .log(job.id, failure.stage, `failed: ${failure.error}`);
+    }
+  } catch (recordErr) {
+    logger.error('could not record job failure', {
+      jobId: job.id,
+      error: recordErr instanceof Error ? recordErr.message : String(recordErr),
+    });
+  }
+}
+
 export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logger): Promise<void> {
   const job = await deps.jobsRepo.getById(opts.jobId);
-  if (!job) throw new Error(`run-job: no job found with id "${opts.jobId}"`);
+  if (!job) throw new NonRetryableError(`run-job: no job found with id "${opts.jobId}"`);
+  try {
+    await runLoadedJob(opts, job, deps, logger);
+  } catch (err) {
+    await failJob(deps, job, err, opts.mode === 'publish' ? 'publish' : 'run-job', logger);
+    throw err;
+  }
+}
 
+async function runLoadedJob(
+  opts: RunJobOptions,
+  job: JobRow,
+  deps: RunJobDeps,
+  logger: Logger,
+): Promise<void> {
   const projectRow = await deps.projectsRepo.getById(job.project_id);
   if (!projectRow)
-    throw new Error(`run-job: job "${job.id}" references missing project_id "${job.project_id}"`);
+    throw new NonRetryableError(
+      `run-job: job "${job.id}" references missing project_id "${job.project_id}"`,
+    );
   const project: ProjectT = projectRow.config;
 
   if (opts.mode === 'publish') {
@@ -1010,7 +1079,7 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
 
   const handler = TEMPLATE_HANDLERS[job.manifest.visual.mode];
   if (!handler) {
-    throw new Error(
+    throw new NonRetryableError(
       `run-job: unsupported visual.mode "${job.manifest.visual.mode}" (expected one of ${[...Object.keys(TEMPLATE_HANDLERS), 'carousel'].join(', ')})`,
     );
   }
@@ -1025,17 +1094,19 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
     await advanceToRunning(deps.jobsRepo, job, logger);
 
     const runner = new StageRunner(deps.createStageStore(job.org_id));
-    const { timelines, engine } = await handler.compileOutputs({
-      job,
-      project,
-      resolvedJob,
-      tmpDir,
-      storage,
-      fetchFn,
-      runner,
-      deps,
-      logger,
-    });
+    const { timelines, engine } = await withStage('compile', () =>
+      handler.compileOutputs({
+        job,
+        project,
+        resolvedJob,
+        tmpDir,
+        storage,
+        fetchFn,
+        runner,
+        deps,
+        logger,
+      }),
+    );
     if (engine === 'ffmpeg' && !deps.renderFfmpeg) {
       throw new Error('run-job: this template needs deps.renderFfmpeg, none was supplied');
     }
@@ -1056,7 +1127,9 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
       }
     > = {};
     for (const [outputId, timeline] of Object.entries(timelines)) {
-      const localPath = await render(timeline, { outputDir: renderOutDir });
+      const localPath = await withStage('render', () =>
+        render(timeline, { outputDir: renderOutDir }),
+      );
       outputLocalPaths[outputId] = localPath;
       // Real bug found running this for real (P3.6, 2026-09-24): the
       // actual rendered duration also includes `timeline.cta`'s own
@@ -1185,9 +1258,6 @@ export async function runJob(opts: RunJobOptions, deps: RunJobDeps, logger: Logg
       await deps.jobsRepo.updateStatus(job.id, 'delivered');
       logger.info('job running -> delivered');
     }
-  } catch (err) {
-    await deps.jobsRepo.updateStatus(job.id, 'failed');
-    throw err;
   } finally {
     await rm(tmpDir, { recursive: true, force: true });
   }

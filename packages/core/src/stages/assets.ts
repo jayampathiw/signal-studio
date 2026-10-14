@@ -10,6 +10,7 @@ import type { Job, StageDefinition } from '../runner/index.ts';
 const execFileAsync = promisify(execFile);
 
 export class MissingAssetsError extends Error {
+  readonly retryable = false;
   missing: Array<{ shotId: string; file: string }>;
 
   constructor(missing: Array<{ shotId: string; file: string }>) {

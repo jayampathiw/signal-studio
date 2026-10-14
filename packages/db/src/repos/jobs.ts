@@ -1,5 +1,5 @@
 import type { ManifestT } from '@signal-studio/core/schemas';
-import type { JobStatus } from '@signal-studio/core/state';
+import type { FailedPayload, JobStatus } from '@signal-studio/core/state';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type JobRow = {
@@ -13,6 +13,7 @@ export type JobRow = {
   // P4.1 addition — `ss worker`'s own liveness signal, touched every ~30s
   // while a job is actively processing. Null until the first heartbeat.
   heartbeat_at: string | null;
+  error: FailedPayload | null;
 };
 
 export class JobsRepo {
@@ -32,12 +33,26 @@ export class JobsRepo {
     return data as JobRow;
   }
 
+  // Re-queueing (a retry, or a gate approval) clears the previous failure's
+  // `error`, so it always describes the job's current failure.
   async updateStatus(jobId: string, status: JobStatus): Promise<void> {
     const { error } = await this.client
       .from('jobs')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+        ...(status === 'queued' ? { error: null } : {}),
+      })
       .eq('id', jobId);
     if (error) throw new Error(`JobsRepo.updateStatus: ${error.message}`);
+  }
+
+  async markFailed(jobId: string, failure: FailedPayload): Promise<void> {
+    const { error } = await this.client
+      .from('jobs')
+      .update({ status: 'failed', error: failure, updated_at: new Date().toISOString() })
+      .eq('id', jobId);
+    if (error) throw new Error(`JobsRepo.markFailed: ${error.message}`);
   }
 
   async getById(jobId: string): Promise<JobRow | null> {
@@ -101,7 +116,15 @@ export class JobsRepo {
   async reapStaleRunning(staleBefore: Date): Promise<JobRow[]> {
     const { data, error } = await this.client
       .from('jobs')
-      .update({ status: 'failed', updated_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        updated_at: new Date().toISOString(),
+        error: {
+          stage: 'worker',
+          error: `No worker heartbeat since before ${staleBefore.toISOString()} — the worker likely crashed or restarted mid-job`,
+          retryable: true,
+        } satisfies FailedPayload,
+      })
       .eq('status', 'running')
       .not('heartbeat_at', 'is', null)
       .lt('heartbeat_at', staleBefore.toISOString())
