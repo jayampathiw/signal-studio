@@ -96,7 +96,8 @@ export const ManifestAudio = z.object({
   music: z
     .object({
       // Track A (ADR-002). `auto`: pick from the music library by mood +
-      // platform. `none`: no music. `in-app`: no music in the render — a
+      // platform; with no `mood` (and no `file`) the video gets no music,
+      // on purpose — an unset mood is not a licence to play anything. `none`: no music. `in-app`: no music in the render — a
       // person adds a licensed trending sound in the FB/IG app when posting.
       // `file` (a library track id or an http(s) URL) overrides `auto`.
       mode: z.enum(['auto', 'none', 'in-app']).default('auto'),

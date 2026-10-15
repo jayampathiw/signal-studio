@@ -87,6 +87,10 @@ export async function resolveMusicBed(p: ResolveMusicParams): Promise<ResolvedMu
       return undefined;
     }
     if (music.file && isRemoteUrl(music.file)) return { path: music.file };
+    if (!music.file && !music.mood) {
+      p.logger.info('music: no mood set — rendering without music', { jobId: p.jobId });
+      return undefined;
+    }
 
     const library = await loadLibrary(p);
     if (!library) return undefined;

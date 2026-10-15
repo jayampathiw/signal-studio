@@ -125,6 +125,17 @@ test('resolveMusicBed: none and in-app modes render without music and fetch noth
   }
 });
 
+test('resolveMusicBed: auto mode with no mood renders without music and fetches nothing', async () => {
+  const t = await setup();
+  try {
+    assert.equal(await resolveMusicBed(t.params), undefined);
+    assert.deepEqual(t.fetched, []);
+    assert.equal(t.records.length, 0);
+  } finally {
+    await t.cleanup();
+  }
+});
+
 test('resolveMusicBed: file names a library track id; an http(s) URL passes straight through', async () => {
   const t = await setup({ music: { file: 'tension-01' } });
   try {
@@ -145,9 +156,12 @@ test('resolveMusicBed: file names a library track id; an http(s) URL passes stra
 
 test('resolveMusicBed: never throws — missing index, bad index, unknown id, failed download', async () => {
   const cases: Array<Parameters<typeof setup>[0]> = [
-    { files: { 'music/library.json': null } },
-    { files: { 'music/library.json': 'not json' } },
-    { files: { 'music/library.json': JSON.stringify({ version: 2, tracks: [] }) } },
+    { music: { mood: 'hope' }, files: { 'music/library.json': null } },
+    { music: { mood: 'hope' }, files: { 'music/library.json': 'not json' } },
+    {
+      music: { mood: 'hope' },
+      files: { 'music/library.json': JSON.stringify({ version: 2, tracks: [] }) },
+    },
     { music: { file: 'no-such-track' } },
     { music: { mood: 'tension' }, files: { 'music/tension-01.mp3': null } },
   ];
