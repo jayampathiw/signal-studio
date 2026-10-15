@@ -2,6 +2,7 @@
 import { parseFlags, requireFlag } from './args.ts';
 import { digestCommand } from './commands/digest.ts';
 import { markFailedCommand } from './commands/mark-failed.ts';
+import { musicListCommand, musicSyncCommand } from './commands/music.ts';
 import { runJob } from './commands/run-job.ts';
 import { runLocal } from './commands/run-local.ts';
 import { uploadCommand } from './commands/upload.ts';
@@ -11,6 +12,7 @@ import {
   fakeRunLocalDeps,
   realDigestDeps,
   realMarkFailedDeps,
+  realMusicDeps,
   realRunJobDeps,
   realRunLocalDeps,
   realUploadDeps,
@@ -132,6 +134,38 @@ async function main(): Promise<number> {
       return 0;
     }
 
+    case 'music': {
+      const sub = rest[0];
+      const deps = realMusicDeps(typeof flags.storage === 'string' ? flags.storage : 'r2');
+      if (sub === 'sync') {
+        const dir = typeof flags.dir === 'string' ? flags.dir : process.env.MUSIC_LIBRARY_DIR;
+        if (!dir) throw new Error('Missing required flag: --dir (or set MUSIC_LIBRARY_DIR)');
+        await musicSyncCommand(
+          {
+            libraryPath:
+              typeof flags.library === 'string' ? flags.library : 'projects/music/library.yaml',
+            dir,
+            force: flags.force === true,
+            dryRun: flags['dry-run'] === true,
+          },
+          deps,
+          logger,
+        );
+        return 0;
+      }
+      if (sub === 'list') {
+        await musicListCommand(deps, logger);
+        return 0;
+      }
+      logger.error(`Unknown music subcommand: ${sub ?? '(none)'}`, {
+        available: [
+          'music sync --dir <folder> [--library <yaml>] [--force] [--dry-run]',
+          'music list',
+        ],
+      });
+      return 1;
+    }
+
     default:
       logger.error(`Unknown command: ${command ?? '(none)'}`, {
         available: [
@@ -142,6 +176,7 @@ async function main(): Promise<number> {
           'worker',
           'digest',
           'mark-failed',
+          'music sync|list',
         ],
       });
       return 1;

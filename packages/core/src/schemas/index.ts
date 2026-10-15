@@ -26,3 +26,11 @@ export type {
 } from './timeline.v1.ts';
 export { CarouselSlide, CarouselOutput } from './carousel.v1.ts';
 export type { CarouselSlideT, CarouselOutputT } from './carousel.v1.ts';
+export {
+  LibraryTrack,
+  MusicLibrary,
+  MUSIC_SOURCES,
+  MUSIC_LIBRARY_INDEX_KEY,
+  musicTrackKey,
+} from './music-library.v1.ts';
+export type { LibraryTrackT, MusicLibraryT } from './music-library.v1.ts';

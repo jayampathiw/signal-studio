@@ -1,0 +1,88 @@
+# Track A (ADR-002) — the shared background-music library: one entry per
+# track, and the licence record if a copyright claim ever lands. Audio lives
+# in the local folder (MUSIC_LIBRARY_DIR, outside git) and on R2; publish
+# changes with `ss music sync --dir <folder>`.
+#
+# moods: what a job asks for via manifest.audio.music.mood.
+# platforms: 'all', or only the platforms the licence allows.
+# enabled: false keeps a track in the record but out of rotation.
+
+version: 1
+tracks:
+  # Sudden loss, accidents, heavy emotional stories (e.g. Fer-à-Cheval)
+  - id: emotional-tragedy-piano-violin-01
+    file: emotional-tragedy-piano-violin-01.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [tragedy, shock]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  - id: emotional-tragedy-sad-instrumental-02
+    file: emotional-tragedy-sad-instrumental-02.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [tragedy, shock]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  # Firefighters, volunteers, international help, courage stories
+  - id: solidarity-heroes-epic-cinematic-01
+    file: solidarity-heroes-epic-cinematic-01.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [solidarity, heroes]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  - id: solidarity-heroes-soft-epic-02
+    file: solidarity-heroes-soft-epic-02.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [solidarity, heroes]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  # Active fires, ongoing danger, unresolved situations
+  - id: tension-ongoing-struggle-01
+    file: tension-ongoing-struggle-01.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [tension, struggle]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  - id: tension-ongoing-struggle-02
+    file: tension-ongoing-struggle-02.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [tension, struggle]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  # Returns home, rebuild stories, quiet strength after disaster (e.g. Le Porge, Cap Ferret, Correns)
+  - id: aftermath-resilience-inspirational-01
+    file: aftermath-resilience-inspirational-01.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [aftermath, resilience]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  - id: aftermath-resilience-piano-02
+    file: aftermath-resilience-piano-02.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [aftermath, resilience]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download
+  # Positive endings, soft closings, hopeful moments
+  - id: hope-relief-positive-01
+    file: hope-relief-positive-01.mp3
+    source: pixabay
+    licence: pixabay-content-license
+    platforms: all
+    moods: [hope, relief, positive]
+    added: 2026-10-15
+    notes: France Aujourd'hui set; licence checked by the owner before download

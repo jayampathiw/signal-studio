@@ -50,6 +50,7 @@ import type { StillsKenburnsCompileParams } from '@signal-studio/template-stills
 import type { ParsedShotlist } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
 import type { Logger } from '../logger.ts';
+import { resolveMusicBed } from '../music.ts';
 
 const execFileAsync = promisify(execFile);
 
@@ -293,6 +294,32 @@ export type TemplateHandler = {
 
 // ---- clips-overlay ----
 
+// Track A (ADR-002) — shared by the two templates that take a music bed
+// from the job. A track must be allowed on every platform the job lands on:
+// its rendered outputs and its publish targets.
+async function resolveJobMusic(ctx: TemplateHandlerCtx): Promise<string | undefined> {
+  const { job, project, resolvedJob, tmpDir, storage, fetchFn, deps, logger } = ctx;
+  const platforms = new Set<string>(job.manifest.publish);
+  for (const outputId of resolvedJob.outputs) {
+    const platform = OUTPUT_TO_PLATFORM[outputId];
+    if (platform) platforms.add(platform);
+  }
+  const music = await resolveMusicBed({
+    jobId: job.id,
+    manifest: job.manifest,
+    platforms: [...platforms],
+    // `project` is the raw DB config, never parsed — a project created
+    // without a `brand` block has no `musicBeds` default to fall back on.
+    allowedIds: project.brand?.musicBeds ?? [],
+    storage,
+    fetchFn,
+    tmpDir,
+    artifactsRepo: deps.createArtifactsRepo(job.org_id),
+    logger,
+  });
+  return music?.path;
+}
+
 const clipsOverlayHandler: TemplateHandler = {
   async compileOutputs(ctx) {
     const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
@@ -340,9 +367,21 @@ const clipsOverlayHandler: TemplateHandler = {
       }
     }
 
+    const musicPath = await resolveJobMusic(ctx);
+    const withMusic: ResolvedJob = {
+      ...resolvedJob,
+      manifest: {
+        ...resolvedJob.manifest,
+        audio: {
+          ...resolvedJob.manifest.audio,
+          music: { ...resolvedJob.manifest.audio.music, file: musicPath },
+        },
+      },
+    };
+
     const timelines: Record<string, TimelineT> = {};
     for (const outputId of resolvedJob.outputs) {
-      timelines[outputId] = deps.compileClipsOverlay(resolvedJob, {
+      timelines[outputId] = deps.compileClipsOverlay(withMusic, {
         contentId: `${job.id}_${outputId}`,
         outputId,
         shotAssets,
@@ -707,9 +746,10 @@ const compilationHandler: TemplateHandler = {
       }
     }
 
-    const music = job.manifest.audio.music.file
+    const musicPath = await resolveJobMusic(ctx);
+    const music = musicPath
       ? {
-          path: job.manifest.audio.music.file,
+          path: musicPath,
           fadeOutSecs: 1.5,
           duckUnderVoice: job.manifest.audio.music.duck,
           gainDb: job.manifest.audio.music.gain_db,

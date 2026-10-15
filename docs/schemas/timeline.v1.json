@@ -170,6 +170,165 @@
               },
               "voStartSec": {
                 "type": "number"
+              },
+              "trimInSec": {
+                "type": "number",
+                "minimum": 0,
+                "default": 0
+              },
+              "sourceMuted": {
+                "type": "boolean",
+                "default": false
+              },
+              "sceneType": {
+                "type": "string",
+                "enum": ["shot", "title"],
+                "default": "shot"
+              },
+              "cuts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "imagePath": {
+                      "type": "string"
+                    },
+                    "motion": {
+                      "type": "string",
+                      "enum": [
+                        "push",
+                        "micro_push",
+                        "pull",
+                        "smash",
+                        "pan_lr",
+                        "pan_rl",
+                        "parallax",
+                        "hold",
+                        "static"
+                      ],
+                      "default": "push"
+                    },
+                    "regrade": {
+                      "type": "string",
+                      "enum": ["warm_amber", "cold_blue"]
+                    },
+                    "cropX": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "default": 0.5
+                    },
+                    "transition": {
+                      "type": "string",
+                      "enum": ["cut", "dissolve"],
+                      "default": "cut"
+                    },
+                    "durationSecs": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": ["imagePath", "durationSecs"],
+                  "additionalProperties": false
+                }
+              },
+              "kenBurnsOverlays": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "type": "string",
+                      "enum": ["tiered", "legacy"]
+                    },
+                    "tier": {
+                      "type": "number",
+                      "enum": [1, 2]
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "amberWord": {
+                      "type": "string"
+                    },
+                    "zone": {
+                      "type": "string"
+                    },
+                    "atSec": {
+                      "type": "number"
+                    },
+                    "durationSec": {
+                      "type": "number"
+                    },
+                    "words": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "offsetStartSec": {
+                            "type": "number"
+                          },
+                          "offsetEndSec": {
+                            "type": "number"
+                          }
+                        },
+                        "required": ["text", "offsetStartSec", "offsetEndSec"],
+                        "additionalProperties": false
+                      }
+                    },
+                    "style": {
+                      "type": "string",
+                      "enum": ["small_cream", "lower_third", "stamp"]
+                    },
+                    "y": {
+                      "type": "string"
+                    },
+                    "fadeIn": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["format"],
+                  "additionalProperties": false
+                }
+              },
+              "sfx": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "atSec": {
+                      "type": "number",
+                      "default": 0
+                    },
+                    "holdSec": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["key"],
+                  "additionalProperties": false
+                }
+              },
+              "bgImagePath": {
+                "type": "string"
+              },
+              "endCard": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "subtitle": {
+                    "type": "string"
+                  }
+                },
+                "required": ["title", "subtitle"],
+                "additionalProperties": false
               }
             },
             "required": ["id", "durationSecs"],
@@ -188,6 +347,10 @@
             "duckUnderVoice": {
               "type": "boolean",
               "default": true
+            },
+            "gainDb": {
+              "type": "number",
+              "default": -18
             }
           },
           "required": ["path", "fadeOutSecs"],
@@ -224,7 +387,7 @@
             },
             "position": {
               "type": "string",
-              "enum": ["bottom-right", "bottom-left"]
+              "enum": ["bottom-right", "bottom-left", "top-left"]
             },
             "opacity": {
               "type": "number",
@@ -250,6 +413,9 @@
             },
             "specimen": {
               "type": "boolean"
+            },
+            "showOutro": {
+              "type": "boolean"
             }
           },
           "required": ["caseId"],
@@ -257,6 +423,68 @@
         },
         "outputId": {
           "type": "string"
+        },
+        "musicPlan": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fromSec": {
+                "type": "number"
+              },
+              "toSec": {
+                "type": "number"
+              },
+              "track": {
+                "type": "string"
+              },
+              "gainDb": {
+                "type": "number",
+                "default": -23
+              }
+            },
+            "required": ["fromSec", "toSec", "track"],
+            "additionalProperties": false
+          }
+        },
+        "soundDesign": {
+          "type": "object",
+          "properties": {
+            "layers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": ["loop", "oneshot"]
+                  },
+                  "key": {
+                    "type": "string"
+                  },
+                  "startSec": {
+                    "type": "number"
+                  },
+                  "endSec": {
+                    "type": "number"
+                  },
+                  "gainDb": {
+                    "type": "number"
+                  },
+                  "fadeInSec": {
+                    "type": "number"
+                  },
+                  "fadeOutSec": {
+                    "type": "number"
+                  }
+                },
+                "required": ["kind", "key", "startSec", "gainDb"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["layers"],
+          "additionalProperties": false
         }
       },
       "required": ["contentId", "aspectRatio", "scenes"],

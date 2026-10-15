@@ -124,6 +124,29 @@
           },
           "required": ["tts", "captions", "image", "storage", "publish"],
           "additionalProperties": false
+        },
+        "qa": {
+          "type": "object",
+          "properties": {
+            "targetLufs": {
+              "type": "number",
+              "default": -14
+            },
+            "maxTruePeakDb": {
+              "type": "number",
+              "default": -1
+            },
+            "visionCheck": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "targetLufs": -14,
+            "maxTruePeakDb": -1,
+            "visionCheck": false
+          }
         }
       },
       "required": ["slug", "orgId", "defaults", "providers"],

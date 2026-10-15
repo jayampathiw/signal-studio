@@ -95,12 +95,17 @@ export const ManifestAudio = z.object({
   speed: z.number().min(0.5).max(2).default(1.0),
   music: z
     .object({
+      // Track A (ADR-002). `auto`: pick from the music library by mood +
+      // platform. `none`: no music. `in-app`: no music in the render — a
+      // person adds a licensed trending sound in the FB/IG app when posting.
+      // `file` (a library track id or an http(s) URL) overrides `auto`.
+      mode: z.enum(['auto', 'none', 'in-app']).default('auto'),
       file: z.string().optional(),
       mood: z.string().optional(),
       gain_db: z.number().default(-18),
       duck: z.boolean().default(true),
     })
-    .default({ gain_db: -18, duck: true }),
+    .default({ mode: 'auto', gain_db: -18, duck: true }),
 });
 
 export const EndCard = z.object({
@@ -309,7 +314,7 @@ export const Manifest = z
     audio: ManifestAudio.default({
       voice: 'bm_george',
       speed: 1.0,
-      music: { gain_db: -18, duck: true },
+      music: { mode: 'auto', gain_db: -18, duck: true },
     }),
     // P3.7 relaxation — was required unconditionally; `case-file` has no
     // end-card concept at all (see `CaseFileConfig`'s own header).
