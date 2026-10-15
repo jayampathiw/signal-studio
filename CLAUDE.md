@@ -115,4 +115,5 @@ Shared across all apps: `nnxtvbolhuvihlpwppbj`
 - Reel generation lifecycle (scenes, scenarios, status): `docs/video-generation-flow.md`
 - Higgsfield model IDs + params: `docs/higgsfield-models.md`
 - **Progress tracker / known bugs / roadmap:** `docs/PROJECT-STATUS.md`
+- **Background music plan (3-layer library, AI layer deferred):** `docs/decisions/ADR-002-background-music.md` — tracked as Track A in `docs/refactor/refactor-plan.md` §10
 - Docs index: `docs/README.md`
