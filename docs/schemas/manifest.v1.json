@@ -258,6 +258,11 @@
                   "type": "number",
                   "default": -18
                 },
+                "bed_lufs": {
+                  "type": "number",
+                  "maximum": -6,
+                  "default": -24
+                },
                 "duck": {
                   "type": "boolean",
                   "default": true
@@ -267,6 +272,7 @@
               "default": {
                 "mode": "auto",
                 "gain_db": -18,
+                "bed_lufs": -24,
                 "duck": true
               }
             }
@@ -278,6 +284,7 @@
             "music": {
               "mode": "auto",
               "gain_db": -18,
+              "bed_lufs": -24,
               "duck": true
             }
           }

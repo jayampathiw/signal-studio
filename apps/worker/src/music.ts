@@ -1,5 +1,7 @@
+import { execFile } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { pickTrack } from '@signal-studio/core/music';
 import {
@@ -26,9 +28,42 @@ export type ResolveMusicParams = {
   tmpDir: string;
   artifactsRepo: Pick<ArtifactsRepo, 'record'>;
   logger: Logger;
+  // How much of the track the video plays — the part whose loudness counts.
+  excerptSecs: number;
+  measureLoudness?: (filePath: string, seconds: number) => Promise<number>;
 };
 
-export type ResolvedMusic = { path: string; track?: LibraryTrackT };
+// `gainDb` is set only for a loudness-matched library track; otherwise the
+// manifest's own `gain_db` applies.
+export type ResolvedMusic = { path: string; track?: LibraryTrackT; gainDb?: number };
+
+const execFileAsync = promisify(execFile);
+
+// Boost cap: an excerpt quieter than this is a near-silent intro, and
+// matching it would amplify noise — fall back to `gain_db` instead.
+const MAX_BOOST_DB = 6;
+const NEAR_SILENT_LUFS = -50;
+
+/** Integrated loudness (LUFS) of the first `seconds` of an audio file. */
+export async function measureExcerptLufs(filePath: string, seconds: number): Promise<number> {
+  const { stderr } = await execFileAsync('ffmpeg', [
+    '-hide_banner',
+    '-nostats',
+    '-t',
+    String(seconds),
+    '-i',
+    filePath,
+    '-af',
+    'loudnorm=print_format=json',
+    '-f',
+    'null',
+    '-',
+  ]).catch((err: { stderr: string }) => err);
+  const match = stderr.match(/\{[^{}]*"input_i"[^{}]*\}/);
+  const lufs = match ? Number((JSON.parse(match[0]) as { input_i: string }).input_i) : NaN;
+  if (!Number.isFinite(lufs)) throw new Error(`measureExcerptLufs: no loudness for ${filePath}`);
+  return lufs;
+}
 
 const isRemoteUrl = (p: string) => /^https?:\/\//i.test(p);
 
@@ -97,16 +132,48 @@ export async function resolveMusicBed(p: ResolveMusicParams): Promise<ResolvedMu
     await mkdir(path.dirname(dest), { recursive: true });
     await writeFile(dest, Buffer.from(await res.arrayBuffer()));
 
+    const gainDb = await matchLoudness(p, dest);
     await p.artifactsRepo.record(p.jobId, 'music', 'music-bed', key, {
       trackId: track.id,
       mood: music.mood ?? null,
       source: track.source,
+      gainDb: gainDb?.gainDb ?? music.gain_db,
+      excerptLufs: gainDb?.excerptLufs ?? null,
       ...pickMeta,
     });
-    p.logger.info('music: bed selected', { jobId: p.jobId, trackId: track.id, mood: music.mood });
-    return { path: dest, track };
+    p.logger.info('music: bed selected', {
+      jobId: p.jobId,
+      trackId: track.id,
+      mood: music.mood,
+      gainDb: gainDb?.gainDb ?? music.gain_db,
+    });
+    return { path: dest, track, gainDb: gainDb?.gainDb };
   } catch (err) {
     p.logger.warn('music: unexpected error — rendering without music', {
+      jobId: p.jobId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return undefined;
+  }
+}
+
+async function matchLoudness(
+  p: ResolveMusicParams,
+  filePath: string,
+): Promise<{ gainDb: number; excerptLufs: number } | undefined> {
+  try {
+    const excerptLufs = await (p.measureLoudness ?? measureExcerptLufs)(filePath, p.excerptSecs);
+    if (excerptLufs < NEAR_SILENT_LUFS) {
+      p.logger.warn('music: excerpt is near-silent — using gain_db', {
+        jobId: p.jobId,
+        excerptLufs,
+      });
+      return undefined;
+    }
+    const gainDb = Math.min(p.manifest.audio.music.bed_lufs - excerptLufs, MAX_BOOST_DB);
+    return { gainDb: Math.round(gainDb * 10) / 10, excerptLufs };
+  } catch (err) {
+    p.logger.warn('music: loudness measurement failed — using gain_db', {
       jobId: p.jobId,
       error: err instanceof Error ? err.message : String(err),
     });

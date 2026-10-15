@@ -297,7 +297,10 @@ export type TemplateHandler = {
 // Track A (ADR-002) — shared by the two templates that take a music bed
 // from the job. A track must be allowed on every platform the job lands on:
 // its rendered outputs and its publish targets.
-async function resolveJobMusic(ctx: TemplateHandlerCtx): Promise<string | undefined> {
+async function resolveJobMusic(
+  ctx: TemplateHandlerCtx,
+  shotDurations: Record<string, number>,
+): Promise<{ path: string; gainDb?: number } | undefined> {
   const { job, project, resolvedJob, tmpDir, storage, fetchFn, deps, logger } = ctx;
   const platforms = new Set<string>(job.manifest.publish);
   for (const outputId of resolvedJob.outputs) {
@@ -316,8 +319,13 @@ async function resolveJobMusic(ctx: TemplateHandlerCtx): Promise<string | undefi
     tmpDir,
     artifactsRepo: deps.createArtifactsRepo(job.org_id),
     logger,
+    // Roughly the video's length: every shot plus a little for the end card.
+    excerptSecs: Math.min(
+      Math.max(Object.values(shotDurations).reduce((sum, d) => sum + d, 0) + 2, 5),
+      120,
+    ),
   });
-  return music?.path;
+  return music && { path: music.path, gainDb: music.gainDb };
 }
 
 const clipsOverlayHandler: TemplateHandler = {
@@ -367,14 +375,18 @@ const clipsOverlayHandler: TemplateHandler = {
       }
     }
 
-    const musicPath = await resolveJobMusic(ctx);
+    const music = await resolveJobMusic(ctx, assetsOut.durations);
     const withMusic: ResolvedJob = {
       ...resolvedJob,
       manifest: {
         ...resolvedJob.manifest,
         audio: {
           ...resolvedJob.manifest.audio,
-          music: { ...resolvedJob.manifest.audio.music, file: musicPath },
+          music: {
+            ...resolvedJob.manifest.audio.music,
+            file: music?.path,
+            gain_db: music?.gainDb ?? resolvedJob.manifest.audio.music.gain_db,
+          },
         },
       },
     };
@@ -746,13 +758,13 @@ const compilationHandler: TemplateHandler = {
       }
     }
 
-    const musicPath = await resolveJobMusic(ctx);
-    const music = musicPath
+    const musicBed = await resolveJobMusic(ctx, assetsOut.durations);
+    const music = musicBed
       ? {
-          path: musicPath,
+          path: musicBed.path,
           fadeOutSecs: 1.5,
           duckUnderVoice: job.manifest.audio.music.duck,
-          gainDb: job.manifest.audio.music.gain_db,
+          gainDb: musicBed.gainDb ?? job.manifest.audio.music.gain_db,
         }
       : undefined;
     const cta = {

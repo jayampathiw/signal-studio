@@ -92,6 +92,8 @@ async function setup(
       },
     },
     logger: createLogger({ level: 'error' }),
+    excerptSecs: 12,
+    measureLoudness: async () => -14,
   };
   return { params, fetched, records, cleanup: () => rm(tmpDir, { recursive: true, force: true }) };
 }
@@ -154,6 +156,32 @@ test('resolveMusicBed: never throws — missing index, bad index, unknown id, fa
     try {
       assert.equal(await resolveMusicBed(t.params), undefined);
       assert.equal(t.records.length, 0);
+    } finally {
+      await t.cleanup();
+    }
+  }
+});
+
+test('resolveMusicBed: loudness-matches the excerpt to bed_lufs, capping boosts and falling back to gain_db', async () => {
+  const cases: Array<[() => Promise<number>, number | undefined]> = [
+    [async () => -14, -10], // -24 target - (-14) measured
+    [async () => -32, 6], // would be +8, capped at +6
+    [async () => -60, undefined], // near-silent intro: don't amplify noise
+    [
+      async () => {
+        throw new Error('ffmpeg missing');
+      },
+      undefined,
+    ],
+  ];
+  for (const [measure, expected] of cases) {
+    const t = await setup({ music: { mood: 'hope' } });
+    try {
+      t.params.measureLoudness = measure;
+      const r = await resolveMusicBed(t.params);
+      assert.equal(r?.track?.id, 'hope-01');
+      assert.equal(r?.gainDb, expected);
+      assert.equal(t.records[0].meta.gainDb, expected ?? -18);
     } finally {
       await t.cleanup();
     }
