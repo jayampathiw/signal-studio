@@ -1777,3 +1777,57 @@ test('runJob: a missing upload fails at the assets step, not retryable', async (
     { stage: 'assets', retryable: false },
   );
 });
+
+test('runJob: clips-overlay mixes in a library music bed picked by mood, and records it', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-test-'));
+  try {
+    const clipPath = path.join(workDir, 's1.mp4');
+    await makeSyntheticClip(clipPath);
+
+    const deps = fakeDeps(clipPath, {
+      audio: { voice: 'bm_george', speed: 1, music: { mood: 'tension' } },
+    });
+    const library = {
+      version: 1,
+      tracks: [
+        {
+          id: 'tension-01',
+          file: 'tension-01.mp3',
+          source: 'pixabay',
+          licence: 'pixabay-content-license',
+          moods: ['tension'],
+        },
+        {
+          id: 'hope-01',
+          file: 'hope-01.mp3',
+          source: 'pixabay',
+          licence: 'pixabay-content-license',
+          moods: ['hope'],
+        },
+      ],
+    };
+    const clipFetch = deps.fetchFn!;
+    deps.fetchFn = (async (url: string) => {
+      if (url.endsWith('music/library.json')) return new Response(JSON.stringify(library));
+      if (url.endsWith('music/tension-01.mp3')) return new Response('tension-bytes');
+      return clipFetch(url);
+    }) as typeof fetch;
+    const rendered: Array<string | undefined> = [];
+    const render = deps.render;
+    deps.render = async (timeline, opts) => {
+      rendered.push(timeline.music?.path);
+      return render(timeline, opts);
+    };
+
+    await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
+
+    assert.equal(deps.statusUpdates.at(-1), 'delivered');
+    assert.equal(rendered.length, 1);
+    assert.match(rendered[0] ?? '', /music[\\/]tension-01\.mp3$/);
+    assert.ok(
+      deps.artifacts.some((a) => a.kind === 'music-bed' && a.url === 'music/tension-01.mp3'),
+    );
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});

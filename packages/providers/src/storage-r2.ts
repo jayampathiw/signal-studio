@@ -79,6 +79,9 @@ export function readR2ConfigFromEnv(bucketEnvVar = 'R2_BUCKET_RENDERED'): R2Conf
 function contentTypeFor(key: string): string {
   if (key.endsWith('.mp4')) return 'video/mp4';
   if (key.endsWith('.wav')) return 'audio/wav';
+  if (key.endsWith('.mp3')) return 'audio/mpeg';
+  if (key.endsWith('.m4a')) return 'audio/mp4';
+  if (key.endsWith('.json')) return 'application/json';
   if (key.endsWith('.png')) return 'image/png';
   if (key.endsWith('.jpg') || key.endsWith('.jpeg')) return 'image/jpeg';
   return 'application/octet-stream';

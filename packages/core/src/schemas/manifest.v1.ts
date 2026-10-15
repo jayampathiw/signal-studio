@@ -95,12 +95,24 @@ export const ManifestAudio = z.object({
   speed: z.number().min(0.5).max(2).default(1.0),
   music: z
     .object({
+      // Track A (ADR-002). `auto`: pick from the music library by mood +
+      // platform; with no `mood` (and no `file`) the video gets no music,
+      // on purpose — an unset mood is not a licence to play anything. `none`: no music. `in-app`: no music in the render — a
+      // person adds a licensed trending sound in the FB/IG app when posting.
+      // `file` (a library track id or an http(s) URL) overrides `auto`.
+      mode: z.enum(['auto', 'none', 'in-app']).default('auto'),
       file: z.string().optional(),
       mood: z.string().optional(),
       gain_db: z.number().default(-18),
+      // Library tracks are loudness-matched instead of using `gain_db`: the
+      // worker measures the part of the track the video actually plays and
+      // sets the gain so the bed sits at this level (before ducking under
+      // the voice). `gain_db` stays the fallback for URLs and failed
+      // measurements.
+      bed_lufs: z.number().max(-6).default(-24),
       duck: z.boolean().default(true),
     })
-    .default({ gain_db: -18, duck: true }),
+    .default({ mode: 'auto', gain_db: -18, bed_lufs: -24, duck: true }),
 });
 
 export const EndCard = z.object({
@@ -309,7 +321,7 @@ export const Manifest = z
     audio: ManifestAudio.default({
       voice: 'bm_george',
       speed: 1.0,
-      music: { gain_db: -18, duck: true },
+      music: { mode: 'auto', gain_db: -18, bed_lufs: -24, duck: true },
     }),
     // P3.7 relaxation — was required unconditionally; `case-file` has no
     // end-card concept at all (see `CaseFileConfig`'s own header).

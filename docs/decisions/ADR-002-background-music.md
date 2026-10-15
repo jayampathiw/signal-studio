@@ -98,7 +98,9 @@ For `auto`, the worker:
 
 1. Keeps tracks that are `enabled` and allowed on **every** platform the job publishes to. A job
    that also goes to YouTube never gets a Meta Sound Collection track.
-2. Narrows to `manifest.audio.music.mood` if given; widens back to all moods if none match.
+2. Narrows to `manifest.audio.music.mood`; widens back to all moods if none match. **A job with no
+   `mood` (and no `file`) gets no music** (owner's call, 2026-10-15): an unset mood is not a licence
+   to play any track.
 3. Narrows to the project's `brand.musicBeds` list of ids if it's non-empty.
 4. Picks deterministically from `hash(job.id)` so retries get the same track, preferring tracks the
    project hasn't used recently, to spread rotation.

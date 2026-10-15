@@ -7,6 +7,7 @@ import { createEngineClient } from '@signal-studio/db/client';
 import { ArtifactsRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
 import { createAnthropicProvider } from '@signal-studio/providers/llm-anthropic';
 import { getEngine } from '@signal-studio/render-core/engine';
+import { probeDuration } from '@signal-studio/render-ffmpeg/stills-render';
 import { renderCarouselStills } from '@signal-studio/render-remotion/render-stills';
 import { compile as compileCarousel } from '@signal-studio/template-carousel/compile';
 import { compile as compileCaseFile } from '@signal-studio/template-case-file/compile';
@@ -21,6 +22,7 @@ import '@signal-studio/render-ffmpeg';
 
 import type { DigestDeps } from './commands/digest.ts';
 import type { MarkFailedDeps } from './commands/mark-failed.ts';
+import type { MusicDeps } from './commands/music.ts';
 import type { RunJobDeps } from './commands/run-job.ts';
 import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
@@ -236,5 +238,13 @@ export function realWorkerDeps(runJob: WorkerDeps['runJob']): WorkerDeps {
         }
       : undefined,
     reportError: createErrorReporter(process.env.SENTRY_DSN),
+  };
+}
+
+export function realMusicDeps(storageProviderId: string): MusicDeps {
+  return {
+    storage: createStorageProviderFor(storageProviderId),
+    fetchFn: fetch,
+    probeDuration,
   };
 }

@@ -15,6 +15,7 @@
     "./state": "./src/state/index.ts",
     "./runner": "./src/runner/index.ts",
     "./resolve": "./src/resolve.ts",
+    "./music": "./src/music/pick.ts",
     "./stages/assets": "./src/stages/assets.ts",
     "./stages/tts": "./src/stages/tts.ts",
     "./stages/publish": "./src/stages/publish.ts",
