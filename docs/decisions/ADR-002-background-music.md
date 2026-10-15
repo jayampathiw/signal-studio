@@ -107,7 +107,9 @@ For `auto`, the worker:
 5. Records the chosen id on the job, so a retry or re-render reuses it and the dashboard can show it.
 6. Downloads `music/<id>` from R2 into the job's tmp dir (same pattern as the watermark), then
    hands the local path to the existing mixing.
-7. Appends the track's `attribution` to the captions when it has one.
+7. ~~Appends the track's `attribution` to the captions when it has one.~~ Dropped (owner's call,
+   2026-10-15): the current tracks need no credit. If a future track does, the credit goes in the
+   post description only, never on the video screen.
 
 **Empty library or nothing allowed:** the job renders without music and logs a warning. It never
 fails because of music. Once layer 3 exists, this is where an AI fallback could plug in.
