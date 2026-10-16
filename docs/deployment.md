@@ -109,13 +109,22 @@ file.
 ## CI (`image.yml`)
 
 Builds and pushes `ghcr.io/<owner>/signal-studio-worker:{sha,dev}` on push
-to `refactor`/`main` and on tags. Exercised for real repeatedly since
-P2.6 — `:dev` genuinely pulls and runs (a `:dev`-tagging bug and a
-Dockerfile deps-list gap were both found and fixed doing this; see
+to `refactor`/`main` only. Exercised for real repeatedly since P2.6 —
+`:dev` genuinely pulls and runs (a `:dev`-tagging bug and a Dockerfile
+deps-list gap were both found and fixed doing this; see
 `docs/refactor/refactor-plan.md`'s T-L gate entry). Image visibility on
 GHCR: the "set to private" step's real result is unverified (see the
 same P2.6 entry) — this repo being public, the package may currently be
 public too.
+
+**Releasing (P4 T-G, 2026-10-16)**: a push to `refactor`/`main` never
+rebuilds or retags for `:prod` — a tag push does, and only that. Pushing a
+version tag (`vX.Y.Z`) runs a separate `promote` job that copies the
+already-built `:dev` manifest to `:prod` and to the version tag via
+`docker buildx imagetools create` — no rebuild, so what ships under
+`:prod` is byte-identical to what was already tested under `:dev`. To
+ship: push to `refactor`, let CI build `:dev`, test it, then
+`git tag vX.Y.Z && git push origin vX.Y.Z`.
 
 ## Production host (since 2026-10-03)
 
@@ -142,6 +151,17 @@ above, point `docker/Caddyfile` + the dashboard's `environment.prod.ts`
 `apiBaseUrl` at the new `<ip>.sslip.io`, `docker compose -f compose.prod.yml
 up -d`, then re-add the claude.ai connector (its URL can't be edited). Release
 the old static IP afterwards — GCP bills unattached reserved IPs.
+
+**Runs `:prod`, not `:dev` (since 2026-10-16, `v0.1.0`)** — `compose.prod.yml`
+pulls `ghcr.io/<owner>/signal-studio-worker:prod`; Watchtower only redeploys
+when a new version tag is promoted (see the CI section above), not on every
+push. To redeploy a new release on the box: `docker compose -f
+compose.prod.yml --env-file deploy.env --env-file .env pull && up -d`
+(`.env` carries `GHCR_OWNER`, `deploy.env` carries everything else —
+`QUEUE_DB_PASSWORD` lives in `.env` too). Cutting over for the first time
+recreated all 4 containers (adding the second `--env-file` changed every
+service's computed config hash) — `queue-db`'s named volume was untouched,
+so no queue state was lost.
 
 ## Secrets (P4.4, 2026-09-26)
 
