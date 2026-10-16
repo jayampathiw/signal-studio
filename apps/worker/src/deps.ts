@@ -56,16 +56,38 @@ function realRenderFfmpeg() {
 }
 
 export function realRunLocalDeps(): RunLocalDeps {
-  return { synthesise: realTts(), compileClipsOverlay, render: realRender() };
+  return {
+    synthesise: realTts(),
+    compileClipsOverlay,
+    compileCaseFile,
+    compileStillsKenburns,
+    compileShorts916,
+    compileCarousel,
+    parseShotlistV2,
+    render: realRender(),
+    renderFfmpeg: realRenderFfmpeg(),
+    renderCarouselStills,
+  };
 }
 
 // P2's T-L gate ("ss run-local on examples/clips-overlay with fakes <
-// 3 min"): the `assets` stage still runs for real (ffmpeg is fast against a
-// tiny synthetic clip), but TTS synthesis and the Remotion render — the two
-// genuinely slow, model/browser-loading steps — are swapped for instant
-// stand-ins. This is for checking the pipeline's own wiring quickly during
-// development, not for judging real output quality.
+// 3 min"), generalized to all 4 templates run-local supports (P3's own T-L
+// gate, 2026-10-16): the `assets` stage still runs for real (ffmpeg is fast
+// against a tiny synthetic clip), but TTS synthesis and the actual
+// Remotion/ffmpeg render — the genuinely slow, model/browser-loading steps
+// — are swapped for instant stand-ins. This is for checking each
+// template's pipeline wiring quickly, not for judging real output quality.
 export function fakeRunLocalDeps(): RunLocalDeps {
+  async function fakeRender(
+    timeline: { contentId: string; scenes: unknown[] },
+    opts: { outputDir: string },
+  ) {
+    await mkdir(opts.outputDir, { recursive: true });
+    const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
+    await writeFile(outputPath, `fake render of ${timeline.scenes.length} scene(s)`);
+    return outputPath;
+  }
+
   return {
     async synthesise({ text }) {
       const wavPath = path.join(
@@ -76,11 +98,22 @@ export function fakeRunLocalDeps(): RunLocalDeps {
       return { wavPath, durationSec: 2 };
     },
     compileClipsOverlay,
-    async render(timeline, opts) {
+    compileCaseFile,
+    compileStillsKenburns,
+    compileShorts916,
+    compileCarousel,
+    parseShotlistV2,
+    render: fakeRender,
+    renderFfmpeg: fakeRender,
+    async renderCarouselStills(output, opts) {
       await mkdir(opts.outputDir, { recursive: true });
-      const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
-      await writeFile(outputPath, `fake render of ${timeline.scenes.length} scene(s)`);
-      return outputPath;
+      const paths: string[] = [];
+      for (let i = 0; i < output.slides.length; i++) {
+        const slidePath = path.join(opts.outputDir, `${output.contentId}_slide${i + 1}.png`);
+        await writeFile(slidePath, `fake slide ${i + 1}: ${output.slides[i].headline}`);
+        paths.push(slidePath);
+      }
+      return paths;
     },
   };
 }

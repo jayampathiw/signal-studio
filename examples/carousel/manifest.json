@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "projectRef": "examples-carousel",
+  "template": "carousel",
+  "visual": { "mode": "carousel" },
+  "carousel": {
+    "postCaption": "An example carousel post.",
+    "watermarkImage": "logo.png",
+    "slides": [
+      { "headline": "Step 1", "body": "An example first slide.", "showFolder": true },
+      { "headline": "Step 2", "body": "An example second slide." }
+    ]
+  },
+  "outputs": ["fb"]
+}

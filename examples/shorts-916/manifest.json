@@ -1,0 +1,19 @@
+{
+  "version": "1",
+  "projectRef": "examples-shorts-916",
+  "template": "shorts-916",
+  "visual": { "mode": "shorts-916" },
+  "shorts916": {
+    "output": "s1",
+    "images": { "S01-A": "s01-a.png" },
+    "scenes": [
+      {
+        "image": "S01-A",
+        "target_duration_sec": 4,
+        "vo": "This is an example short voiceover line.",
+        "hook": { "amber_word": "example" }
+      }
+    ]
+  },
+  "outputs": ["fb"]
+}
