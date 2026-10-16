@@ -1,8 +1,16 @@
-# P4.2 T-P — the real production stack, deployed to the Hetzner CX23 box.
-# Distinct from `compose.yml` (T-L, local-only, builds the image itself) —
-# this one pulls the already-published `ghcr.io/<owner>/signal-studio-worker`
-# image (built and pushed by `.github/workflows/image.yml` on every push to
-# `refactor`/`main`) and never builds locally on the box.
+# P4.2 T-P — the real production stack. Distinct from `compose.yml` (T-L,
+# local-only, builds the image itself) — this one pulls the already-
+# published `ghcr.io/<owner>/signal-studio-worker` image and never builds
+# locally on the box.
+#
+# **Runs `:prod`, not `:dev` (2026-10-16, P4 T-G)** — `:dev` moves on every
+# push to `refactor`/`main`, so production used to redeploy on every push,
+# untested. `:prod` only moves when a version tag (`vX.Y.Z`) is pushed:
+# `.github/workflows/image.yml`'s `promote` job then retags the exact
+# already-built `:dev` image as `:prod` (no rebuild — what gets promoted is
+# byte-identical to what was already running under `:dev`). To ship a
+# release: push to `refactor`, let CI build `:dev`, test it, then
+# `git tag vX.Y.Z && git push origin vX.Y.Z` to promote it.
 #
 # **Real Supabase project used, deliberately not a separate "prod" one** —
 # decided with you rather than defaulted into: this project has no external
@@ -56,7 +64,7 @@ services:
       retries: 20
 
   worker:
-    image: ghcr.io/${GHCR_OWNER}/signal-studio-worker:dev
+    image: ghcr.io/${GHCR_OWNER}/signal-studio-worker:prod
     restart: always
     command:
       [
@@ -73,7 +81,7 @@ services:
         condition: service_healthy
 
   api:
-    image: ghcr.io/${GHCR_OWNER}/signal-studio-worker:dev
+    image: ghcr.io/${GHCR_OWNER}/signal-studio-worker:prod
     restart: always
     entrypoint: ['node', '--experimental-strip-types']
     command: ['apps/api/src/index.ts']
@@ -89,7 +97,7 @@ services:
       queue-db:
         condition: service_healthy
 
-  # Auto-pulls a new `:dev` image whenever `image.yml` publishes one and
+  # Auto-pulls a new `:prod` image whenever a version tag is promoted and
   # restarts only the containers using it — the plan's own "restart:
   # always" continuous-deploy bullet, via the standard tool for it rather
   # than a hand-rolled polling script.
