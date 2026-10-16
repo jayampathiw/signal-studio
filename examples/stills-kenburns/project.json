@@ -1,0 +1,18 @@
+{
+  "slug": "examples-stills-kenburns",
+  "orgId": "org-example",
+  "gates": [],
+  "defaults": {
+    "template": "stills-kenburns",
+    "voice": "bm_george",
+    "speed": 1,
+    "outputs": ["fb"]
+  },
+  "providers": {
+    "tts": "kokoro-js",
+    "captions": "whisper",
+    "image": "fal",
+    "storage": "local",
+    "publish": "facebook"
+  }
+}

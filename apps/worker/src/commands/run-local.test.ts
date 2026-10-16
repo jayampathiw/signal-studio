@@ -105,17 +105,26 @@ test('runLocal: full pipeline (real assets-stage ffmpeg, fake tts + render) writ
   }
 });
 
-test('runLocal: throws a clear error for a non-clips-overlay template', async () => {
+test('runLocal: throws a clear error for "compilation" (not supported locally)', async () => {
   const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-local-test-'));
   try {
     const manifest = {
       version: '1',
       projectRef: 'test-project',
-      template: 'stills-kenburns',
-      visual: { mode: 'stills-kenburns' },
-      shots: [{ id: 's1', image: 'still.jpg', overlay_out_s: 1, voiceover_text: 'x' }],
+      template: 'compilation',
+      visual: { mode: 'compilation' },
+      shots: [
+        {
+          id: 's1',
+          clip: 's1.mp4',
+          overlay_out_s: 1,
+          voiceover_text: 'x',
+          episodeRef: 'ep1',
+        },
+      ],
       end_card: { subject: 'x', disclosure: 'x' },
       outputs: ['fb'],
+      compilation: { episodes: [{ ref: 'ep1', title: 'Episode 1' }] },
     };
     const project = {
       slug: 'test-project',
@@ -147,7 +156,7 @@ test('runLocal: throws a clear error for a non-clips-overlay template', async ()
           },
           createLogger({ level: 'error' }),
         ),
-      /only "clips-overlay" is supported/,
+      /unsupported visual\.mode "compilation"/,
     );
   } finally {
     await rm(workDir, { recursive: true, force: true });

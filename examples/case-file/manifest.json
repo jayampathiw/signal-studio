@@ -1,0 +1,16 @@
+{
+  "version": "1",
+  "projectRef": "examples-case-file",
+  "template": "case-file",
+  "visual": { "mode": "case-file" },
+  "shots": [
+    {
+      "id": "s1",
+      "image": "doc1.png",
+      "voiceover_text": "This is an example narration line for the case file.",
+      "text": "Fallback caption text."
+    }
+  ],
+  "case_file": { "caseId": "example-case", "aspectRatio": "16:9" },
+  "outputs": ["fb"]
+}
