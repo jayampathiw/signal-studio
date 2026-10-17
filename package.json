@@ -13,7 +13,9 @@
     "typecheck": "node scripts/typecheck.mjs",
     "grep-guard": "node scripts/grep-guard.mjs",
     "examples": "node scripts/run-examples.mjs",
-    "test": "vitest run && pnpm --filter '!dashboard' -r --if-present run test && node --experimental-strip-types --test 'scripts/golden/*.test.ts'"
+    "test": "vitest run && pnpm --filter '!dashboard' -r --if-present run test && node --experimental-strip-types --test 'scripts/golden/*.test.ts'",
+    "golden:ffmpeg": "node scripts/golden/verify-references.mjs underdog-longform underdog-short",
+    "golden:remotion": "node scripts/golden/verify-references.mjs policy-file-16x9 policy-file-9x16 pilot-clips-overlay-fb pilot-clips-overlay-ig"
   },
   "engines": {
     "node": ">=20"
