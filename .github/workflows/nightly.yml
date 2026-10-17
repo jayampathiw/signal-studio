@@ -1,0 +1,35 @@
+name: Nightly
+
+# P3 T-G — "Remotion golden suite in nightly.yml". Same R2-reference
+# integrity check as ci.yml's `golden:ffmpeg` step, but for the two
+# Remotion-rendered references (case-file's Policy File, clips-overlay's
+# pilot) — kept off every push since a real re-render pass for these
+# (heavier: Chromium bundling/launch) is the future addition this stands in
+# for; see scripts/golden/verify-references.mjs's own header for why this is
+# a reference-integrity check, not a re-render-from-source check.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  golden-remotion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - run: pnpm run golden:remotion

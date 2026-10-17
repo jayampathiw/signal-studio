@@ -32,3 +32,14 @@ jobs:
       - run: pnpm run grep-guard
       - run: pnpm run test
       - run: pnpm run examples
+
+      # P3 T-G — "ci.yml includes the ffmpeg golden suite". Downloads each
+      # ffmpeg-rendered reference's real reference.mp4 from its golden.json's
+      # public r2Url and re-checks it — a regression test for the golden
+      # tooling + uploaded-reference integrity, not a re-render-from-source
+      # (the real source assets for these aren't available to CI; see
+      # scripts/golden/verify-references.mjs's own header). The Remotion
+      # pair (case-file, clips-overlay) runs the same check in nightly.yml
+      # instead, kept off every push since a real re-render pass for those
+      # is the heavier future addition this is standing in for.
+      - run: pnpm run golden:ffmpeg

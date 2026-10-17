@@ -8,9 +8,10 @@
     "stillImages": {
       "S01-A": "s01-a.png",
       "S02-A": "s02-a.png",
-      "S02-B": "s02-b.png"
+      "S02-B": "s02-b.png",
+      "S03-A": "s03-a.png"
     },
-    "shotlistText": "**TITLE:** Example Documentary\n**TARGET_DURATION_SEC:** 25\n\n## COLD OPEN\n\n**SCENE 1 — 0:00–0:06 (6s)**\n🖼️ STILL A: An example subject under stadium lights [WIDE]\n🎞️ PUSH\n🎙️ \"This is an example voiceover line.\"\n🔊 Stadium hum rises\n📝 TIER 1 at 0:01: **26** — amber \"26\", upper right. 3s.\n\n**SCENE 2 — 0:06–0:21 (15s)** · WARM\n🖼️ STILL A: Close on an example detail\n🖼️ STILL B: Wide example shot\n🎞️ A: PUSH B: micro-PUSH\n🎙️ \"A second example voiceover line.\"\n🔤 running caption — lower third. holds ~2s.\n\n**SCENE 3 — 0:21–0:25 (4s)**\n📝 TIER 1 at 0:21: **THE END** — center-low. 4s.\n"
+    "shotlistText": "**TITLE:** Example Documentary\n**TARGET_DURATION_SEC:** 25\n\n## COLD OPEN\n\n**SCENE 1 — 0:00–0:06 (6s)**\n🖼️ STILL A: An example subject under stadium lights [WIDE]\n🎞️ PUSH\n🎙️ \"This is an example voiceover line.\"\n🔊 Stadium hum rises\n📝 TIER 1 at 0:01: **26** — amber \"26\", upper right. 3s.\n\n**SCENE 2 — 0:06–0:21 (15s)** · WARM\n🖼️ STILL A: Close on an example detail\n🖼️ STILL B: Wide example shot\n🎞️ A: PUSH B: micro-PUSH\n🎙️ \"A second example voiceover line.\"\n🔤 running caption — lower third. holds ~2s.\n\n**SCENE 3 — 0:21–0:25 (4s)**\n🖼️ STILL A: An example closing shot\n📝 TIER 1 at 0:21: **THE END** — center-low. 4s.\n"
   },
   "outputs": ["fb"]
 }
