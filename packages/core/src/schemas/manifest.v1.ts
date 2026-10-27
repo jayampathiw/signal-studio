@@ -80,6 +80,13 @@ export const Shot = z.object({
   zoomTo: ShotZoomRegion.optional(),
   holdExtraSecs: z.number().optional(),
   waveformOverlay: z.boolean().optional(),
+  // P3 T-P additions — the last two `case.json` scene fields real Policy
+  // File cases use: `durationSecs` is only read for a scene with no
+  // narration (narrated scenes are timed from the measured VO), and
+  // `visual` is CaseFile.tsx's own data-viz card config (`pointerCard`,
+  // `counter`, ...), passed through to the timeline untouched.
+  durationSecs: z.number().positive().optional(),
+  visual: z.record(z.string(), z.unknown()).optional(),
   // P3.7 addition — `compilation`-only field. A compilation job's shots
   // are still every episode's own flat `clips-overlay`-shaped shots (each
   // needs a `clip`, `overlay_text`, etc., same as any other clips-overlay
