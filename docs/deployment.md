@@ -182,7 +182,9 @@ consumer (workflow YAML, edge function `index.ts`), not just listed from
 | `QUEUE_DB_PASSWORD`, `GHCR_OWNER`                                                                           | VPS `.env` (compose-level)                          | `docker/compose.prod.yml`'s own interpolation                     |
 | — none —                                                                                                    | Engine Supabase edge-function secrets               | **Zero edge functions exist in this project** — see cleanup below |
 
-**Not yet in either store, real gaps**: `SENTRY_DSN`, `HEALTHCHECKS_PING_URL` (P4.3 built both wired-but-inactive; neither service has a real account yet), a working `GITHUB_PAT` (the one in root `.env` returns a real `401` — see P4.3's own tracker entry), and Facebook/YouTube publish credentials (no real page/OAuth tokens exist in this environment for the engine's own `publish-facebook`/`publish-youtube` providers).
+**Not yet in either store, real gaps**: `SENTRY_DSN`, `HEALTHCHECKS_PING_URL` (P4.3 built both wired-but-inactive; neither service has a real account yet), and Facebook/YouTube publish credentials (no real page/OAuth tokens exist in this environment for the engine's own `publish-facebook`/`publish-youtube` providers).
+
+**`GITHUB_PAT` replaced (2026-10-27)**: the old root-`.env` value (real `401`) swapped for a fine-grained token scoped to `jayampathiw/signal-studio` only, Actions read/write + Metadata read, expiring within a year (max 2027-10-27). Verified: repo read `200`, workflow list returns all 3 workflows, a `workflow_dispatch` against a non-existent ref returns `422 No ref found` (authorized — a missing write permission would be `403`), so nothing actually ran. Lives in root `.env` only: production runs `DISPATCH_MODE: queue` and `run-job.yml` doesn't read it, so neither the VPS `deploy.env` nor the GH Actions secrets need a copy. Copy it to `deploy.env` only if production ever switches to `DISPATCH_MODE: github`.
 
 ### Legacy (still-live news/video pipelines) — out of scope to touch until P3.7
 
