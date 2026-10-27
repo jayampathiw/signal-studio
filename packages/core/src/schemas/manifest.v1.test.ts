@@ -80,3 +80,27 @@ test('non-clips-overlay mode allows a shot with no clip/image', () => {
   );
   assert.equal(result.success, true);
 });
+
+test('case-file shot accepts durationSecs + visual, rejects a non-positive durationSecs', () => {
+  const caseFile = {
+    template: 'case-file',
+    visual: { mode: 'case-file' },
+    end_card: undefined,
+    case_file: { caseId: 'c1' },
+  };
+  const ok = Manifest.parse(
+    validManifest({
+      ...caseFile,
+      shots: [
+        { id: 's1', durationSecs: 4, visual: { kind: 'pointerCard', text: 'Ask in writing.' } },
+      ],
+    }),
+  );
+  assert.equal(ok.shots[0]!.durationSecs, 4);
+  assert.deepEqual(ok.shots[0]!.visual, { kind: 'pointerCard', text: 'Ask in writing.' });
+
+  const bad = Manifest.safeParse(
+    validManifest({ ...caseFile, shots: [{ id: 's1', durationSecs: 0 }] }),
+  );
+  assert.equal(bad.success, false);
+});

@@ -442,12 +442,13 @@ const caseFileHandler: TemplateHandler = {
       imagePath: shot.image ? path.join(tmpDir, 'images', shot.image) : undefined,
       narrationText: shot.voiceover_text,
       captionText: shot.text,
-      durationSecs: undefined,
+      durationSecs: shot.durationSecs,
       holdExtraSecs: shot.holdExtraSecs,
       highlight: shot.highlight,
       highlights: shot.highlights,
       zoomFrom: shot.zoomFrom,
       zoomTo: shot.zoomTo,
+      visual: shot.visual,
       waveformOverlay: shot.waveformOverlay,
     }));
 

@@ -361,6 +361,11 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
           voiceover_text: 'This is a real narration line for the case file.',
           text: 'Fallback caption text.',
         },
+        {
+          id: 's2',
+          durationSecs: 4.5,
+          visual: { kind: 'counter', value: 180, suffix: ' DAYS', label: 'TO FILE AN APPEAL' },
+        },
       ],
       case_file: { caseId: 'test-case', aspectRatio: '16:9' },
       outputs: ['fb'],
@@ -383,6 +388,7 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     >();
     const statusUpdates: string[] = [];
     const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
+    const renderedTimelines: Array<{ scenes: Array<Record<string, unknown>> }> = [];
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -495,6 +501,7 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
         await mkdir(opts.outputDir, { recursive: true });
         const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
         await writeFile(outputPath, 'fake-mp4-bytes');
+        renderedTimelines.push(timeline as never);
         qaMeasurements.set(outputPath, {
           // case-file's real CaseFile.tsx adds a fixed 2.5s outro card
           // whenever caseMeta.showOutro is set (the default) — matches
@@ -531,6 +538,14 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
 
     assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+    const silentScene = renderedTimelines[0]!.scenes[1]!;
+    assert.equal(silentScene.durationSecs, 4.5);
+    assert.deepEqual(silentScene.visual, {
+      kind: 'counter',
+      value: 180,
+      suffix: ' DAYS',
+      label: 'TO FILE AN APPEAL',
+    });
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }
