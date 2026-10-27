@@ -102,3 +102,4 @@ examples/**/qa/
 # configured yet (see docs/refactor/refactor-plan.md P0.1), so the .mp4s stay
 # local-only for now instead of being uploaded to golden/ in R2.
 golden/**/*.mp4
+coverage/
