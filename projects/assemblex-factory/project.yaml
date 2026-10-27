@@ -29,11 +29,13 @@ defaults:
 
 gates: []
 
-# France Aujourd'hui (Facebook Page 1120408947821948) — credentials live in
-# FB_PAGE_ID_FR/FB_ACCESS_TOKEN_FR (VPS deploy.env), never inlined here.
+# AssembleX's own Facebook Page (223994430799587, named "Star 01  265" on
+# Facebook) — credentials live in FB_PAGE_ID_ASSEMBLEX/FB_ACCESS_TOKEN_ASSEMBLEX
+# (VPS deploy.env), never inlined here. Was France Aujourd'hui (FR) as a
+# stand-in until 2026-10-27.
 publishTargets:
   - platform: facebook
-    credentialRef: FR
+    credentialRef: ASSEMBLEX
 
 providers:
   tts: kokoro-js
