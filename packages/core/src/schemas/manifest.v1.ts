@@ -214,14 +214,16 @@ export const StillsKenburnsConfig = z.object({
 // reused here rather than invented fresh. A scene's `image`/`image2` string
 // in `scenes[]` below is expected to BE one of these keys, not a real path —
 // `run-job.ts`'s handler resolves it; `compile()` never touches storage.
+const SCENE_1_BASED = { message: 'scenes are numbered from 1 (scene 1 = scenes[0])' };
+
 export const Shorts916SoundDesignConfig = z.object({
   hum: z.object({ key: z.string().min(1), gain_db: z.number().optional() }).optional(),
   bed: z
     .object({
       key: z.string().min(1),
       gain_db: z.number().optional(),
-      start_scene: z.number().int().positive(),
-      end_scene: z.number().int().positive().nullable().optional(),
+      start_scene: z.number().int().positive(SCENE_1_BASED),
+      end_scene: z.number().int().positive(SCENE_1_BASED).nullable().optional(),
       fade_in_sec: z.number().optional(),
       resume_gain_db: z.number().optional(),
       resume_fade_in_sec: z.number().optional(),
@@ -231,9 +233,9 @@ export const Shorts916SoundDesignConfig = z.object({
     .object({
       key: z.string().min(1),
       gain_db: z.number().optional(),
-      start_scene: z.number().int().positive(),
+      start_scene: z.number().int().positive(SCENE_1_BASED),
       start_offset_sec: z.number().optional(),
-      end_scene: z.number().int().positive(),
+      end_scene: z.number().int().positive(SCENE_1_BASED),
       fade_in_sec: z.number().optional(),
     })
     .optional(),
@@ -260,13 +262,42 @@ export const Shorts916SceneConfig = z.object({
   hit_on_start: z.boolean().optional(),
 });
 
-export const Shorts916Config = z.object({
-  output: z.string().min(1),
-  voice: z.string().optional(),
-  images: z.record(z.string(), z.string()).default({}),
-  scenes: z.array(Shorts916SceneConfig).min(1),
-  sound_design: Shorts916SoundDesignConfig.optional(),
-});
+// `sound_design`'s start_scene/end_scene are 1-based (scene 1 =
+// `scenes[0]`). The legacy assemble-short-rewrite.mjs read them 0-based, so
+// legacy configs need +1 (signal-studio-workspace's to-manifest.mjs does
+// that); out-of-range numbers are rejected here rather than at compile time.
+export const Shorts916Config = z
+  .object({
+    output: z.string().min(1),
+    voice: z.string().optional(),
+    images: z.record(z.string(), z.string()).default({}),
+    scenes: z.array(Shorts916SceneConfig).min(1),
+    sound_design: Shorts916SoundDesignConfig.optional(),
+  })
+  .superRefine((config, ctx) => {
+    const count = config.scenes.length;
+    for (const layer of ['bed', 'heartbeat'] as const) {
+      const l = config.sound_design?.[layer];
+      if (!l) continue;
+      for (const field of ['start_scene', 'end_scene'] as const) {
+        const n = l[field];
+        if (n != null && n > count) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['sound_design', layer, field],
+            message: `scene ${n} doesn't exist: scenes are numbered 1..${count} (1-based)`,
+          });
+        }
+      }
+      if (l.end_scene != null && l.end_scene < l.start_scene) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['sound_design', layer, 'end_scene'],
+          message: `end_scene (${l.end_scene}) is before start_scene (${l.start_scene})`,
+        });
+      }
+    }
+  });
 
 // P3.7 addition — `compilation`'s own top-level config: just the ordered
 // list of episodes this job compiles (`ref` matches shots' own
