@@ -104,3 +104,42 @@ test('case-file shot accepts durationSecs + visual, rejects a non-positive durat
   );
   assert.equal(bad.success, false);
 });
+
+test('shorts-916 sound_design scene numbers are 1-based and range-checked', () => {
+  const shorts = (sound_design: Record<string, unknown>) =>
+    Manifest.safeParse(
+      validManifest({
+        template: 'shorts-916',
+        visual: { mode: 'shorts-916' },
+        end_card: undefined,
+        shots: [],
+        shorts916: {
+          output: 'x.mp4',
+          scenes: [
+            { image: 'S01-A', vo: 'one', target_duration_sec: 3 },
+            { image: 'S02-A', vo: 'two', target_duration_sec: 3 },
+            { image: 'S03-A', vo: 'three', target_duration_sec: 3 },
+          ],
+          sound_design,
+        },
+      }),
+    );
+  const messages = (r: ReturnType<typeof shorts>) =>
+    r.success ? [] : r.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
+
+  assert.equal(shorts({ bed: { key: 'tension', start_scene: 1, end_scene: 3 } }).success, true);
+  assert.equal(shorts({ bed: { key: 'tension', start_scene: 3, end_scene: null } }).success, true);
+
+  assert.match(
+    messages(shorts({ bed: { key: 'tension', start_scene: 0 } })).join('\n'),
+    /bed\.start_scene: scenes are numbered from 1/,
+  );
+  assert.match(
+    messages(shorts({ heartbeat: { key: 'heartbeat', start_scene: 2, end_scene: 4 } })).join('\n'),
+    /heartbeat\.end_scene: scene 4 doesn't exist: scenes are numbered 1\.\.3/,
+  );
+  assert.match(
+    messages(shorts({ bed: { key: 'tension', start_scene: 3, end_scene: 2 } })).join('\n'),
+    /bed\.end_scene: end_scene \(2\) is before start_scene \(3\)/,
+  );
+});

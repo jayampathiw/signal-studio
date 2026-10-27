@@ -272,3 +272,29 @@ test('compile: sound design hum/bed/heartbeat layers use real scene start times,
   assert.equal(heartbeat?.startSec, scene2Start + 1);
   assert.equal(heartbeat?.endSec, scene3Start + 2.0);
 });
+
+test('compile: an out-of-range sound_design scene number throws a 1-based ShortsCompileError', () => {
+  const params = (start_scene: number) =>
+    baseParams({
+      config: {
+        output: 'x.mp4',
+        scenes: [
+          { image: 'a.jpg', vo: 'one', target_duration_sec: 3 },
+          { image: 'b.jpg', vo: 'two', target_duration_sec: 3 },
+        ],
+        sound_design: { bed: { key: 'tension', start_scene, end_scene: 2 } },
+      },
+      sceneVo: {
+        1: { path: '/vo/S01.wav', durationSec: 1.0 },
+        2: { path: '/vo/S02.wav', durationSec: 1.0 },
+      },
+    });
+
+  // A legacy 0-based config used unconverted.
+  assert.throws(() => compile(params(0)), {
+    name: 'Error',
+    message: 'sound_design.bed.start_scene is 0, but scenes are numbered 1..2 (1-based)',
+  });
+  assert.throws(() => compile(params(0)), ShortsCompileError);
+  assert.equal(compile(params(2)).soundDesign?.layers[0]?.startSec, 3);
+});

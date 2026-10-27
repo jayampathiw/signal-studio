@@ -230,6 +230,25 @@ type SceneMetaEntry = {
   hitOffsetInScene?: number;
 };
 
+// sound_design scene numbers are 1-based (scene 1 = config.scenes[0]). The
+// legacy assemble-short-rewrite.mjs indexed them 0-based, so a legacy config
+// used unconverted is silently one scene early — this only catches the
+// out-of-range half of that mistake (e.g. a 0, or N+1 for an N-scene short).
+function sceneAt(
+  sceneMeta: Record<number, SceneMetaEntry>,
+  n: number,
+  field: string,
+): SceneMetaEntry {
+  const meta = sceneMeta[n];
+  if (!meta) {
+    const count = Object.keys(sceneMeta).length;
+    throw new ShortsCompileError(
+      `sound_design.${field} is ${n}, but scenes are numbered 1..${count} (1-based)`,
+    );
+  }
+  return meta;
+}
+
 function buildSoundDesignLayers(
   sd: ShortsSoundDesignConfig,
   sceneMeta: Record<number, SceneMetaEntry>,
@@ -249,10 +268,10 @@ function buildSoundDesignLayers(
 
   if (sd.bed) {
     const b = sd.bed;
-    const startSec = sceneMeta[b.start_scene].startSec;
+    const startSec = sceneAt(sceneMeta, b.start_scene, 'bed.start_scene').startSec;
     // Omitting end_scene means "never cuts" — the bed runs to the end of
     // the video (a continuous build/swell with no hard cut).
-    const endScene = b.end_scene != null ? sceneMeta[b.end_scene] : null;
+    const endScene = b.end_scene != null ? sceneAt(sceneMeta, b.end_scene, 'bed.end_scene') : null;
     const endSec =
       endScene == null
         ? totalDur
@@ -285,8 +304,8 @@ function buildSoundDesignLayers(
 
   if (sd.heartbeat) {
     const hb = sd.heartbeat;
-    const startScene = sceneMeta[hb.start_scene];
-    const endScene = sceneMeta[hb.end_scene];
+    const startScene = sceneAt(sceneMeta, hb.start_scene, 'heartbeat.start_scene');
+    const endScene = sceneAt(sceneMeta, hb.end_scene, 'heartbeat.end_scene');
     const startSec = startScene.startSec + (hb.start_offset_sec ?? 0);
     const endSec =
       endScene.pauseStartInScene != null
