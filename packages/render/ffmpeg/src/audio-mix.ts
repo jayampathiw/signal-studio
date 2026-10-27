@@ -24,8 +24,8 @@ const SFX_GAIN_DB = -14;
 // AUDIO_KIT_DIR at a local checkout of projects/underdog-archive/audio-kit
 // there. No in-repo fallback path here (unlike the pre-P3.1 apps/video
 // version) — that fallback pointed at content/audio-kit, which no longer
-// exists in this repo at all (moved out at P0.4); AUDIO_KIT_DIR is
-// required now.
+// exists in this repo at all (moved out at P0.4). Optional since
+// 2026-10-27: without it, loadManifest() reads the manifest from R2.
 function audioKitDir(): string {
   if (!process.env.AUDIO_KIT_DIR) {
     throw new Error(
@@ -66,15 +66,35 @@ function probeDuration(filePath: string): number {
 
 export type AudioKitManifest = Record<string, { url: string }>;
 
-export function loadManifest(): AudioKitManifest {
-  const manifestPath = path.resolve(audioKitDir(), 'manifest.json');
-  if (!existsSync(manifestPath)) {
+// Only the manifest is needed locally: every entry's audio is downloaded from
+// its own (public R2) url. Without AUDIO_KIT_DIR — the production worker and
+// run-job.yml have no workspace checkout — the manifest is read from R2 next
+// to the files it lists, the same way the music library's index is.
+export const AUDIO_KIT_MANIFEST_KEY = 'audio-kit/manifest.json';
+
+export async function loadManifest(): Promise<AudioKitManifest> {
+  if (process.env.AUDIO_KIT_DIR) {
+    const manifestPath = path.resolve(audioKitDir(), 'manifest.json');
+    if (!existsSync(manifestPath)) {
+      throw new Error(
+        `Audio kit manifest not found at ${manifestPath}. ` +
+          'Set AUDIO_KIT_DIR to a local checkout of signal-studio-workspace/projects/underdog-archive/audio-kit.',
+      );
+    }
+    return JSON.parse(readFileSync(manifestPath, 'utf-8'));
+  }
+  const base = process.env.R2_PUBLIC_BASE_URL;
+  if (!base) {
     throw new Error(
-      `Audio kit manifest not found at ${manifestPath}. ` +
-        'Set AUDIO_KIT_DIR to a local checkout of signal-studio-workspace/projects/underdog-archive/audio-kit.',
+      'Audio kit manifest: set AUDIO_KIT_DIR (a local checkout of ' +
+        'signal-studio-workspace/projects/underdog-archive/audio-kit) or ' +
+        `R2_PUBLIC_BASE_URL (reads ${AUDIO_KIT_MANIFEST_KEY} from R2)`,
     );
   }
-  return JSON.parse(readFileSync(manifestPath, 'utf-8'));
+  const url = `${base.replace(/\/+$/, '')}/${AUDIO_KIT_MANIFEST_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Audio kit manifest: HTTP ${res.status} fetching ${url}`);
+  return (await res.json()) as AudioKitManifest;
 }
 
 // ── Download kit files needed for this project ────────────────────────────────
@@ -429,7 +449,7 @@ export async function buildAudioMix(opts: {
   workDir: string;
 }): Promise<{ loudnormStats: Record<string, string> }> {
   const { concatPath, clips, audioPlan, outputPath, workDir } = opts;
-  const manifest = loadManifest();
+  const manifest = await loadManifest();
 
   const neededKeys = new Set<string>(['stadium_hum']);
   for (const seg of audioPlan) {
