@@ -42,7 +42,7 @@ async function dl(url: string, dest: string): Promise<void> {
 }
 
 async function resolveKitSource(key: string, workDir: string): Promise<string> {
-  const manifest = loadManifest();
+  const manifest = await loadManifest();
   if (!manifest[key]) throw new Error(`Audio kit key "${key}" not in manifest`);
   const dest = path.join(workDir, `kit_${key}.mp3`);
   await dl(manifest[key].url, dest);
