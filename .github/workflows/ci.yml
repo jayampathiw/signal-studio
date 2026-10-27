@@ -33,6 +33,13 @@ jobs:
       - run: pnpm run test
       - run: pnpm run examples
 
+      # P1 T-L/T-G — coverage report for packages/core, kept as an artifact.
+      - run: pnpm --filter @signal-studio/core run coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-coverage
+          path: packages/core/coverage/lcov.info
+
       # P3 T-G — "ci.yml includes the ffmpeg golden suite". Downloads each
       # ffmpeg-rendered reference's real reference.mp4 from its golden.json's
       # public r2Url and re-checks it — a regression test for the golden

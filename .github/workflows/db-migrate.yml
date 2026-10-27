@@ -1,0 +1,62 @@
+name: DB migrate (dev)
+
+# P1 T-G — applies packages/db/migrations to the engine's `dev` Supabase
+# project with `supabase db push`, which only applies versions missing from
+# dev's supabase_migrations.schema_migrations.
+#
+# Runs on manual dispatch, and on any push to `refactor` that touches a
+# migration (or this file): a workflow_dispatch-only workflow isn't
+# dispatchable until it exists on the default branch (`main`), which only
+# moves at real merge points — see the plan's P2.7 note on run-job.yml.
+#
+# Secret: ENGINE_DB_URL — dev's Postgres connection string from the Supabase
+# dashboard (Connect → "Session pooler"; the direct db.<ref>.supabase.co host
+# is IPv6-only, which GitHub-hosted runners can't reach).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [refactor]
+    paths:
+      - 'packages/db/migrations/**'
+      - '.github/workflows/db-migrate.yml'
+
+concurrency:
+  group: db-migrate-dev
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      ENGINE_DB_URL: ${{ secrets.ENGINE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.117.0
+
+      - name: Check secret
+        run: |
+          if [ -z "$ENGINE_DB_URL" ]; then
+            echo "::error::ENGINE_DB_URL is not set (dev's session-pooler connection string)"
+            exit 1
+          fi
+
+      # supabase db push reads <workdir>/supabase/migrations; the engine's
+      # live in packages/db/migrations (top-level supabase/ is the legacy
+      # news/video project's).
+      - name: Stage migrations
+        run: |
+          mkdir -p .db/supabase/migrations
+          cp packages/db/migrations/*.sql .db/supabase/migrations/
+
+      - name: Pending migrations
+        run: supabase db push --workdir .db --db-url "$ENGINE_DB_URL" --dry-run
+
+      - name: Apply
+        run: supabase db push --workdir .db --db-url "$ENGINE_DB_URL"
+
+      - name: Migration history
+        run: supabase migration list --workdir .db --db-url "$ENGINE_DB_URL"
