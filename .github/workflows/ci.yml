@@ -23,8 +23,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # scripts/golden's tests shell out to ffmpeg/ffprobe (P0.1) — not
-      # guaranteed present on ubuntu-latest, install explicitly.
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      # guaranteed present on ubuntu-latest, install explicitly. poppler-utils:
+      # the worker's document-source tests (Track P) render and read a real PDF.
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg poppler-utils
 
       - run: pnpm run lint
       - run: pnpm run format:check

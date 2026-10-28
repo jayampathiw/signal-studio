@@ -66,6 +66,62 @@
                   "url": {
                     "type": "string",
                     "format": "uri"
+                  },
+                  "page": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "highlight": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "context": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "occurrence": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "fromSec": {
+                              "type": "number"
+                            },
+                            "toSec": {
+                              "type": "number"
+                            },
+                            "fromFraction": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "toFraction": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "opacity": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            }
+                          },
+                          "required": ["text"],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "minItems": 1
                   }
                 },
                 "required": ["url"],

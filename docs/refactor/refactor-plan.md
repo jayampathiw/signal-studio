@@ -513,8 +513,8 @@ How to use this section:
 | P6 — Split & hand-over kit         | 0%      | 0 / 0 / 20            |
 | Track C — Claude Code layer        | 0%      | 0 / 0 / 8             |
 | Track A — Background music         | 38%     | 9 / 4 / 16            |
-| Track P — Policy File / asset refs | 29%     | 9 / 1 / 26            |
-| **Overall (weighted)**             | **78%** | **391.5 / 505**       |
+| Track P — Policy File / asset refs | 46%     | 15 / 1 / 20           |
+| **Overall (weighted)**             | **79%** | **397.5 / 505**       |
 
 **2026-10-15:** overall drops 79% → 74% only because Track A (background music, 29 new items, ADR-002) was added — no existing item changed. Its layer 3 (A.4, AI generation) is deliberately deferred. Later the same day, A.1's engine side landed (library, picker, worker download, `ss music`), bringing Track A to 28% and overall to 76%. Then the loudness fix, the owner's "no mood → no music" call, the merge and a real production render with music: Track A 34%; then 38% once the owner ruled caption credits unnecessary.
 
@@ -1121,12 +1121,12 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] Downloaded by `apps/worker/src/sources.ts` (run in `run-job.ts` under the `assets` stage, before any template handler — not inside `packages/core`'s `assets.ts`, which stays clip probing): checks content type (`image/*` for still templates, `video/*` for clips-overlay/compilation), 200 MB cap, 2-min timeout, refuses private/loopback/metadata addresses; stored at the same R2 key an upload uses (`jobs/<id>/uploads/<shot>/source-<urlhash>.<ext>`), so every template reads it as `image`/`clip` with no template changes. Retries reuse the stored copy (ranged GET on R2), never hitting the site again.
   - [x] Failures name the shot + URL; 4xx/wrong type/too big are final, 5xx/429/timeouts retryable.
   - [x] `case-file` renders from it — covered by the real-`compileCaseFile()` run-job test. Real check: a live Wikimedia JPEG fetched byte-exact (9,022 B); a live PDF correctly refused (PDFs come with P.3).
-- [ ] **P.3 `document` asset source + highlight finder**
-  - [ ] Manifest: `{ url, page, highlight: ["quote", …] }`.
-  - [ ] `poppler-utils` in the worker image; page → PNG at the template's resolution.
-  - [ ] Port `resolve-highlights.py` (legacy, backed up in `signal-studio-workspace`) to TS: find each quote in the page's text layer → normalised `ShotHighlight` boxes. Whitespace/hyphenation tolerant.
-  - [ ] Quote not found, or page has no text (scanned) → clear failure naming the shot; hand-entered `highlight` boxes still win when given.
-  - [ ] Tests on a real court-document PDF fixture.
+- [x] **P.3 `document` asset source + highlight finder** (2026-10-28)
+  - [x] Manifest: `shots[].source: { url, page, highlight: [quote | { text, context?, occurrence?, fromSec/toSec/fromFraction/toFraction/opacity }] }` — `highlight` needs `page`. JSON schemas regenerated.
+  - [x] `poppler-utils` in the worker image (`docker/Dockerfile`) and in CI. Page → PNG at 220 DPI (`pdftoppm`); PDF and PNG both stored under the job's uploads, retries read the stored PDF instead of the site. PDFs recognised by their bytes (sites often send `application/octet-stream`).
+  - [x] `resolve-highlights.py` ported to TS (`apps/worker/src/documents.ts`) on `pdftotext -bbox-layout`: case/whitespace/ligature/quote-style-insensitive matching across words and lines (one box per line, line-end hyphens rejoined), partial words cut proportionally, `context`/`occurrence` for repeated quotes, substring guard (`2.46` never inside `42.46`). **All 23 `find` highlights of the real Mamboleo case resolve, within ~0.002 of the legacy boxes** (the difference is padding); visually checked on page 31.
+  - [x] Quote not found, ambiguous, page missing, or no text layer (scanned) → non-retryable failure naming shot + URL + page; hand-entered `highlight`/`highlights` win when given; PDF pages refused for clip templates.
+  - [x] Tests on a real court page fixture (`apps/worker/src/fixtures/complaint-p31.pdf`, 20 KB): 9 in `documents.test.ts`, 6 more in `sources.test.ts`. Worker 90/90 locally with the same poppler version as the image (Debian bookworm, 22.12).
 - [ ] **P.4 `assets_review` gate + case-file watermark**
   - [ ] `assets_review` shows each fetched page/image with its boxes drawn, in the dashboard job detail.
   - [ ] `case-file` handler passes the project's watermark (currently none is passed); checked on a real render.

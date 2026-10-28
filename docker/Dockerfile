@@ -83,6 +83,8 @@ FROM node:22-bookworm-slim AS runtime
 #   its own pinned "Chrome Headless Shell" binary and needs these system
 #   libraries present to run it): per Remotion's own documented Docker
 #   requirements (remotion.dev/docs/miscellaneous/docker).
+# poppler-utils: `document` asset sources (Track P, ADR-003) — pdftoppm
+#   renders a PDF page, pdftotext -bbox-layout finds quoted text on it.
 # fontconfig: PNG/video text rendering (FactOverlay etc. self-host their own
 #   TTFs under pilot/public/fonts, but fontconfig itself is still needed by
 #   Chromium/Cairo to resolve font families at all).
@@ -92,6 +94,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     espeak-ng \
     fontconfig \
+    poppler-utils \
     ca-certificates \
     libnss3 \
     libdbus-1-3 \

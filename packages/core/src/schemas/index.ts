@@ -1,5 +1,5 @@
 export { Manifest, Shot } from './manifest.v1.ts';
-export type { ManifestT, ShotT } from './manifest.v1.ts';
+export type { DocumentHighlightSpecT, ManifestT, ShotHighlightT, ShotT } from './manifest.v1.ts';
 export { Project } from './project.v1.ts';
 export type { ProjectT } from './project.v1.ts';
 export {
