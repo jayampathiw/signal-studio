@@ -212,6 +212,10 @@ type ShotAsset = {
                     <video [src]="a.url" controls style="max-width:100%;max-height:280px;"></video>
                   } @else if (isImage(a.url)) {
                     <img [src]="a.url" style="max-width:100%;max-height:280px;" />
+                  } @else if (a.kind === 'gate-approval') {
+                    <span style="font-size:12px;color:var(--ink-standard);"
+                      >approved {{ a.created_at }}</span
+                    >
                   } @else {
                     <a
                       [href]="a.url"

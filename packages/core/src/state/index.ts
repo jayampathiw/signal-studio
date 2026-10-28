@@ -60,6 +60,22 @@ export function toFailedPayload(err: unknown, fallbackStage: string): FailedPayl
   };
 }
 
+// Track P (ADR-003): gates that stop a job *before* rendering — the worker
+// pauses right after fetching assets. Every other gate runs after render +
+// QA. Approving a pre-render gate re-queues the job for a full render; the
+// approval is recorded as a `gate-approval` artifact so retries don't ask
+// again.
+export const PRE_RENDER_GATES: readonly string[] = ['assets_review'];
+export const GATE_APPROVAL_KIND = 'gate-approval';
+
+export function isPreRenderGate(gate: string): boolean {
+  return PRE_RENDER_GATES.includes(gate);
+}
+
+export function postRenderGates(gates: readonly string[]): string[] {
+  return gates.filter((g) => !isPreRenderGate(g));
+}
+
 // `awaiting_review:<gate>` is a family of states (one per gate name), so the
 // table is keyed on the base statuses and treats any `awaiting_review:*`
 // value as reachable from `running` / back to `running` uniformly — checked
