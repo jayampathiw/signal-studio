@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { Manifest } from '@signal-studio/core/schemas';
 import { NonRetryableError } from '@signal-studio/core/state';
@@ -259,7 +261,222 @@ test('manifest: source cannot be combined with an uploaded image/clip, and must 
     () => caseFileManifest([{ id: 's1', source: { url: 'ftp://example.com/a.png' } }]),
     /http\(s\)/,
   );
+  assert.throws(
+    () =>
+      caseFileManifest([{ id: 's1', source: { url: 'https://x.test/a.pdf', highlight: ['q'] } }]),
+    /needs source.page/,
+  );
   assert.throws(() =>
-    caseFileManifest([{ id: 's1', source: { url: 'https://x.test/a', page: 2 } }]),
+    caseFileManifest([{ id: 's1', source: { url: 'https://x.test/a.pdf', page: 0 } }]),
+  );
+  assert.throws(() =>
+    caseFileManifest([{ id: 's1', source: { url: 'https://x.test/a.pdf', page: 1, extra: 1 } }]),
+  );
+});
+
+// ---- document sources (P.3) ----
+
+const PDF_FIXTURE = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  'fixtures',
+  'complaint-p31.pdf',
+);
+const PDF_URL = 'https://court.example/complaint.pdf';
+const poppler = (() => {
+  try {
+    execFileSync('pdftotext', ['-v'], { stdio: 'ignore' });
+    return { skip: false };
+  } catch {
+    return { skip: 'poppler-utils not installed' };
+  }
+})();
+
+// R2 serves whatever was `put` (the real bytes); the court site serves the
+// fixture as application/octet-stream, as many sites do.
+function documentWorld() {
+  const files = new Map<string, Buffer>();
+  const calls: string[] = [];
+  const storage = {
+    async signedUrl(key: string) {
+      return `https://r2.test/${key}`;
+    },
+    async put({ localPath, key }: { localPath: string; key: string }) {
+      files.set(key, await readFile(localPath));
+      return { url: key };
+    },
+    async presignUpload(key: string) {
+      return key;
+    },
+  };
+  const fetchFn = (async (url: string) => {
+    calls.push(url);
+    if (url.startsWith('https://r2.test/')) {
+      const body = files.get(url.slice('https://r2.test/'.length));
+      return body
+        ? new Response(new Uint8Array(body), { status: 200 })
+        : new Response(null, { status: 404 });
+    }
+    if (url === PDF_URL) {
+      return new Response(new Uint8Array(await readFile(PDF_FIXTURE)), {
+        headers: { 'content-type': 'application/octet-stream' },
+      });
+    }
+    return new Response('<html>', { headers: { 'content-type': 'text/html' } });
+  }) as unknown as typeof fetch;
+  return { files, calls, storage, fetchFn };
+}
+
+test('a document source renders the page, stores PDF + PNG, and places highlights', poppler, () =>
+  withTmp(async (tmpDir) => {
+    const w = documentWorld();
+    const manifest = caseFileManifest([
+      {
+        id: 's1',
+        source: {
+          url: PDF_URL,
+          page: 1,
+          highlight: [
+            '$418,141',
+            { text: '7.1%', context: 'assumed interest rate of', fromFraction: 0.4 },
+          ],
+        },
+      },
+    ]);
+    const [shot] = await resolveShotSources({
+      jobId: 'j1',
+      manifest,
+      storage: w.storage,
+      fetchFn: w.fetchFn,
+      tmpDir,
+      logger,
+    });
+
+    assert.match(shot!.image!, /^source-[0-9a-f]{12}\.png$/);
+    const keys = [...w.files.keys()].sort();
+    assert.equal(keys.length, 2);
+    assert.match(keys[0]!, /^jobs\/j1\/uploads\/s1\/source-[0-9a-f]{12}\.pdf$/);
+    assert.equal(keys[1], `jobs/j1/uploads/s1/${shot!.image}`);
+    assert.equal(w.files.get(keys[1]!)!.subarray(1, 4).toString(), 'PNG');
+    assert.equal(shot!.highlights!.length, 2);
+    assert.ok(Math.abs(shot!.highlights![0]!.x - 0.2412) < 0.005);
+    assert.equal(shot!.highlights![1]!.fromFraction, 0.4);
+
+    // A retry reads the stored PDF and never calls the court site again.
+    w.calls.length = 0;
+    await resolveShotSources({
+      jobId: 'j1',
+      manifest,
+      storage: w.storage,
+      fetchFn: w.fetchFn,
+      tmpDir,
+      logger,
+    });
+    assert.ok(!w.calls.includes(PDF_URL));
+  }),
+);
+
+test('hand-entered highlight boxes win over document quotes', poppler, () =>
+  withTmp(async (tmpDir) => {
+    const w = documentWorld();
+    const hand = { x: 0.1, y: 0.1, width: 0.2, height: 0.05 };
+    const manifest = caseFileManifest([
+      { id: 's1', highlight: hand, source: { url: PDF_URL, page: 1, highlight: ['$418,141'] } },
+    ]);
+    const [shot] = await resolveShotSources({
+      jobId: 'j1',
+      manifest,
+      storage: w.storage,
+      fetchFn: w.fetchFn,
+      tmpDir,
+      logger,
+    });
+    assert.deepEqual(shot!.highlight, hand);
+    assert.equal(shot!.highlights, undefined);
+    assert.ok(shot!.image);
+  }),
+);
+
+test('a quote that is not on the page fails the job naming shot, URL and page', poppler, () =>
+  withTmp(async (tmpDir) => {
+    const w = documentWorld();
+    const manifest = caseFileManifest([
+      { id: 's4', source: { url: PDF_URL, page: 1, highlight: ['not on this page at all'] } },
+    ]);
+    await assert.rejects(
+      resolveShotSources({
+        jobId: 'j1',
+        manifest,
+        storage: w.storage,
+        fetchFn: w.fetchFn,
+        tmpDir,
+        logger,
+      }),
+      (err: Error) =>
+        err instanceof NonRetryableError &&
+        err.message.includes(`shot "s4" source ${PDF_URL} page 1`) &&
+        /not found/.test(err.message),
+    );
+  }),
+);
+
+test('a page past the end of the PDF fails clearly', poppler, () =>
+  withTmp(async (tmpDir) => {
+    const w = documentWorld();
+    const manifest = caseFileManifest([{ id: 's1', source: { url: PDF_URL, page: 9 } }]);
+    await assert.rejects(
+      resolveShotSources({
+        jobId: 'j1',
+        manifest,
+        storage: w.storage,
+        fetchFn: w.fetchFn,
+        tmpDir,
+        logger,
+      }),
+      (err: Error) => err instanceof NonRetryableError && /page 9/.test(err.message),
+    );
+  }),
+);
+
+test('a document link that is not a PDF is refused', () =>
+  withTmp(async (tmpDir) => {
+    const w = documentWorld();
+    const manifest = caseFileManifest([
+      { id: 's1', source: { url: 'https://court.example/page.html', page: 1 } },
+    ]);
+    await assert.rejects(
+      resolveShotSources({
+        jobId: 'j1',
+        manifest,
+        storage: w.storage,
+        fetchFn: w.fetchFn,
+        tmpDir,
+        logger,
+      }),
+      /expected a PDF, got "text\/html"/,
+    );
+  }));
+
+test('a PDF page source is refused for clip templates', async () => {
+  const w = documentWorld();
+  const manifest = Manifest.parse({
+    version: '1',
+    projectRef: 'p',
+    template: 'clips-overlay',
+    visual: { mode: 'clips-overlay' },
+    shots: [{ id: 's1', source: { url: PDF_URL, page: 1 }, overlay_out_s: 2 }],
+    end_card: { subject: 'x', disclosure: 'AI' },
+    outputs: ['fb'],
+    captions: {},
+  });
+  await assert.rejects(
+    resolveShotSources({
+      jobId: 'j1',
+      manifest,
+      storage: w.storage,
+      fetchFn: w.fetchFn,
+      tmpDir: os.tmpdir(),
+      logger,
+    }),
+    /needs video clips/,
   );
 });

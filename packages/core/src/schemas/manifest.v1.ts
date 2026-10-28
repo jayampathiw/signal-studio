@@ -52,17 +52,43 @@ export const ShotZoomRegion = z.object({
 });
 
 // Track P (ADR-003) — where the worker fetches a shot's visual from, instead
-// of the caller uploading it. Only `url` for now; `document`/`stock`/
-// `generate`/`inbox` join this later. The worker downloads it into the same
-// R2 key an upload would use, so every template reads it as `image`/`clip`.
+// of the caller uploading it. `{ url }` alone is a plain image/video link;
+// with `page` it's a PDF document: the worker renders that page and, for
+// each `highlight` quote, finds it in the page's text and places a box
+// (hand-entered `highlight`/`highlights` on the shot still win). The worker
+// stores the result under the same R2 key an upload would use, so every
+// template reads it as `image`/`clip`. `stock`/`generate`/`inbox` come later.
+export const DocumentHighlightSpec = z.union([
+  z.string().min(1),
+  z
+    .object({
+      text: z.string().min(1),
+      // Nearby text that picks one match when the quote appears more than once.
+      context: z.string().min(1).optional(),
+      occurrence: z.number().int().positive().optional(),
+      fromSec: z.number().optional(),
+      toSec: z.number().optional(),
+      fromFraction: z.number().min(0).max(1).optional(),
+      toFraction: z.number().min(0).max(1).optional(),
+      opacity: z.number().min(0).max(1).optional(),
+    })
+    .strict(),
+]);
+
 export const ShotSource = z
   .object({
     url: z
       .string()
       .url()
       .refine((u) => /^https?:\/\//i.test(u), 'source.url must be http(s)'),
+    page: z.number().int().positive().optional(),
+    highlight: z.array(DocumentHighlightSpec).min(1).optional(),
   })
-  .strict();
+  .strict()
+  .refine((s) => !s.highlight || s.page !== undefined, {
+    message: 'source.highlight needs source.page (it applies to a PDF page)',
+    path: ['highlight'],
+  });
 
 export const Shot = z.object({
   id: z.string().min(1),
@@ -498,4 +524,6 @@ export const Manifest = z
   });
 
 export type ShotT = z.infer<typeof Shot>;
+export type ShotHighlightT = z.infer<typeof ShotHighlight>;
+export type DocumentHighlightSpecT = z.infer<typeof DocumentHighlightSpec>;
 export type ManifestT = z.infer<typeof Manifest>;
