@@ -513,8 +513,8 @@ How to use this section:
 | P6 — Split & hand-over kit         | 0%      | 0 / 0 / 20            |
 | Track C — Claude Code layer        | 0%      | 0 / 0 / 8             |
 | Track A — Background music         | 38%     | 9 / 4 / 16            |
-| Track P — Policy File / asset refs | 50%     | 18 / 3 / 18           |
-| **Overall (weighted)**             | **79%** | **401.5 / 508**       |
+| Track P — Policy File / asset refs | 54%     | 20 / 4 / 17           |
+| **Overall (weighted)**             | **79%** | **404 / 510**         |
 
 **2026-10-15:** overall drops 79% → 74% only because Track A (background music, 29 new items, ADR-002) was added — no existing item changed. Its layer 3 (A.4, AI generation) is deliberately deferred. Later the same day, A.1's engine side landed (library, picker, worker download, `ss music`), bringing Track A to 28% and overall to 76%. Then the loudness fix, the owner's "no mood → no music" call, the merge and a real production render with music: Track A 34%; then 38% once the owner ruled caption credits unnecessary.
 
@@ -1136,9 +1136,10 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [ ] `FB_PAGE_ID_POLICY_FILE` / `FB_ACCESS_TOKEN_POLICY_FILE` in the server's `deploy.env`; services restarted.
   - [ ] `projects/policy-file/project.yaml` + DB row: `publishTargets: [facebook/POLICY_FILE]`, gates `assets_review` + `final_review`.
   - [ ] Upload `PolicyFile_Watermark.png` (legacy `assets/logos/`) to R2 and set `brand.watermark` to its key.
-- [ ] **P.6 claude.ai Project guide**
-  - [ ] Project instructions: how to write a `case-file` job (pages, exact quotes, script), caption rules (engine refuses to publish without one), `create_job` → `queue_job` → `get_job`.
-  - [ ] One worked example job in the guide.
+- [~] **P.6 claude.ai Project guide** (2026-10-28 — written; the owner pastes it into the claude.ai Project)
+  - [x] `signal-studio-workspace/projects/policy-file/claude-project-guide.md` (workspace PR #5): flow (`create_job` → `queue_job` → `assets_review` → `final_review` → publish, never self-approving), document sources (direct file links; `page` = file position, not the printed number; exact-quote highlights, `context`/`occurrence`, timing), data cards (`counter`/`barChart`/`pointerCard`/`speechBubbles`), narration (numbers as words), `case_file`, required captions, and a failure → fix table. Editorial/brand rules stay in the Project's own docs.
+  - [x] One worked example job in the guide — validated against `manifest.v1`.
+  - [ ] Owner adds the guide to the claude.ai Project's instructions.
 - [ ] **P.7 Release v0.1.2**
   - [ ] **T-L** — a `document` job renders locally from a real public PDF with correct highlight boxes and watermark.
   - [ ] **T-G** — CI green, PRs merged, `:dev` → `:prod` promoted.
@@ -1149,6 +1150,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [ ] `inbox` source (`reels-inbox` R2 bucket) for own footage — v0.1.4.
   - [ ] "Trigger only" mode: topic + project `prompt_pack`/`topic_source`, server-side script (§2.3) — France Aujourd'hui, once its content is decided.
   - [ ] OCR for scanned PDFs (only if hand-entered boxes prove too slow).
+  - [ ] Auto-zoom for `document` shots: push the camera toward the highlighted lines (today a page is shown whole, which is small in 9:16; zoom needs coordinates nobody has in the chat).
 
 ---
 
