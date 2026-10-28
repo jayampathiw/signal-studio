@@ -67,6 +67,41 @@ test('parseBboxLayout reads page size, words, line ends and entities', () => {
   assert.equal(parseBboxLayout('<doc></doc>'), null);
 });
 
+test('two columns poppler merged into one block are read column by column', () => {
+  // Left column wraps "requesting unnecessary / documentation", right column's
+  // line sits between them by height; a full-width line follows.
+  const line = (y: number, x: number, text: string) =>
+    `<line><word xMin="${x}" yMin="${y}" xMax="${x + 60}" yMax="${y + 10}">${text}</word></line>`;
+  const xhtml = `<page width="600.000000" height="800.000000"><flow><block>
+    <line><word xMin="50" yMin="100" xMax="110" yMax="110">requesting</word><word xMin="115" yMin="100" xMax="175" yMax="110">unnecessary</word></line>
+    ${line(105, 300, 'billing')}
+    ${line(112, 50, 'documentation;')}
+    ${line(117, 300, 'rules.')}
+    <line><word xMin="50" yMin="130" xMax="300" yMax="140">we</word><word xMin="305" yMin="130" xMax="560" yMax="140">reviewed</word></line>
+  </block></flow></page>`;
+  const p = parseBboxLayout(xhtml)!;
+  assert.deepEqual(
+    p.words.map((w) => w.text),
+    ['requesting', 'unnecessary', 'documentation;', 'billing', 'rules.', 'we', 'reviewed'],
+  );
+  assert.equal(findQuote(p, 'requesting unnecessary documentation').length, 2);
+  assert.equal(findQuote(p, 'billing rules').length, 2);
+});
+
+test('a box never reaches the line above when the font box is taller than the line pitch', () => {
+  // Word boxes 17pt tall, lines 13pt apart (a large-ascent font).
+  const xhtml = `<page width="600.000000" height="800.000000"><flow><block>
+    <line><word xMin="50" yMin="100" xMax="110" yMax="117">above</word></line>
+    <line><word xMin="50" yMin="113" xMax="110" yMax="130">target</word></line>
+  </block></flow></page>`;
+  const p = parseBboxLayout(xhtml)!;
+  const [box] = findQuote(p, 'target');
+  assert.equal(box!.y, 117);
+  assert.equal(box!.height, 13);
+  const [h] = toShotHighlights(p, [box!], 'target');
+  assert.ok(h!.y * 800 >= 116.4, 'pad stays small for a trimmed box');
+});
+
 test('a quote is matched across words, case and quote style insensitively', () => {
   const p = page(['the insurer’s “final” decision was DENIED today']);
   const [box] = findQuote(p, 'insurer\'s "final" decision was denied');

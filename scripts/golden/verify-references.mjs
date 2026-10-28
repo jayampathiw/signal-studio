@@ -33,10 +33,22 @@ import { measure } from './measure.mjs';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..', '..');
 
-async function downloadTo(url, destPath) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`download failed: ${url} -> HTTP ${res.status}`);
-  await pipeline(res.body, createWriteStream(destPath));
+// The public r2.dev URLs are rate-limited and drop long downloads now and
+// then (`TypeError: terminated`, three CI runs on 2026-10-28) — retried
+// rather than failing an unrelated PR.
+async function downloadTo(url, destPath, attempts = 4) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(5 * 60_000) });
+      if (!res.ok) throw new Error(`download failed: ${url} -> HTTP ${res.status}`);
+      await pipeline(res.body, createWriteStream(destPath));
+      return;
+    } catch (err) {
+      if (attempt >= attempts) throw err;
+      console.error(`download attempt ${attempt} failed (${err.message}); retrying`);
+      await new Promise((r) => setTimeout(r, attempt * 5_000));
+    }
+  }
 }
 
 async function verifyOne(template, tmpDir) {

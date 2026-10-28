@@ -16,9 +16,19 @@ const execFileAsync = promisify(execFile);
 
 export const DOCUMENT_DPI = 220;
 
-export type PdfWord = { text: string; x0: number; y0: number; x1: number; y1: number };
+// `room`: set when the next/previous line in the same column is closer than
+// the word's own box is tall (fonts with a large ascent) — the most a
+// highlight may be tall without covering that line.
+export type PdfWord = {
+  text: string;
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  room?: number;
+};
 export type PdfPage = { width: number; height: number; words: PdfWord[]; lineEnds: Set<number> };
-export type Box = { x: number; y: number; width: number; height: number };
+export type Box = { x: number; y: number; width: number; height: number; tight?: boolean };
 
 export class DocumentError extends Error {}
 
@@ -88,23 +98,104 @@ export function parseBboxLayout(xhtml: string): PdfPage | null {
   if (!pageMatch) return null;
   const words: PdfWord[] = [];
   const lineEnds = new Set<number>();
+  const allLines: PdfWord[][] = [];
+  const blockRe = /<block\b[^>]*>([\s\S]*?)<\/block>/g;
   const lineRe = /<line\b[^>]*>([\s\S]*?)<\/line>/g;
   const wordRe =
     /<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([\s\S]*?)<\/word>/g;
-  for (const line of xhtml.matchAll(lineRe)) {
-    const before = words.length;
-    for (const w of line[1]!.matchAll(wordRe)) {
-      words.push({
+  for (const block of xhtml.matchAll(blockRe)) {
+    const lines: PdfWord[][] = [];
+    for (const line of block[1]!.matchAll(lineRe)) {
+      const lineWords = [...line[1]!.matchAll(wordRe)].map((w) => ({
         x0: Number(w[1]),
         y0: Number(w[2]),
         x1: Number(w[3]),
         y1: Number(w[4]),
         text: decodeEntities(w[5]!),
-      });
+      }));
+      if (lineWords.length > 0) lines.push(lineWords);
     }
-    if (words.length > before) lineEnds.add(words.length - 1);
+    for (const line of inColumnOrder(lines)) {
+      words.push(...line);
+      lineEnds.add(words.length - 1);
+      allLines.push(line);
+    }
   }
+  limitToLinePitch(allLines);
   return { width: Number(pageMatch[1]), height: Number(pageMatch[2]), words, lineEnds };
+}
+
+function limitToLinePitch(lines: PdfWord[][]) {
+  const box = (l: PdfWord[]) => ({
+    x0: l[0]!.x0,
+    x1: l.at(-1)!.x1,
+    y0: Math.min(...l.map((w) => w.y0)),
+    y1: Math.max(...l.map((w) => w.y1)),
+  });
+  const boxes = lines.map(box);
+  boxes.forEach((b, i) => {
+    const h = b.y1 - b.y0;
+    let pitch = Infinity;
+    boxes.forEach((o, j) => {
+      if (i === j || Math.min(b.x1, o.x1) <= Math.max(b.x0, o.x0)) return;
+      const dy = Math.abs(o.y1 - b.y1);
+      if (dy > 0.3 * h) pitch = Math.min(pitch, dy);
+    });
+    if (pitch < h) for (const w of lines[i]!) w.room = pitch;
+  });
+}
+
+// poppler sometimes merges side-by-side columns into one block and
+// interleaves their lines by height, so a sentence that wraps inside one
+// column has the other column's line in between. Between full-width lines,
+// lines whose horizontal extents overlap form a column; columns are read
+// left to right, each top to bottom. A single-column block keeps its order.
+function inColumnOrder(lines: PdfWord[][]): PdfWord[][] {
+  if (lines.length < 2) return lines;
+  const extent = (l: PdfWord[]) => ({ x0: l[0]!.x0, x1: l.at(-1)!.x1 });
+  const left = Math.min(...lines.map((l) => extent(l).x0));
+  const right = Math.max(...lines.map((l) => extent(l).x1));
+  const isWide = (l: PdfWord[]) => extent(l).x1 - extent(l).x0 > 0.6 * (right - left);
+
+  const out: PdfWord[][] = [];
+  let segment: PdfWord[][] = [];
+  const flush = () => {
+    out.push(...columnsOf(segment));
+    segment = [];
+  };
+  for (const line of lines) {
+    if (isWide(line)) {
+      flush();
+      out.push(line);
+    } else {
+      segment.push(line);
+    }
+  }
+  flush();
+  return out;
+
+  function columnsOf(seg: PdfWord[][]): PdfWord[][] {
+    const columns: Array<{ x0: number; x1: number; lines: PdfWord[][] }> = [];
+    for (const line of seg) {
+      const e = extent(line);
+      const hits = columns.filter((c) => Math.min(c.x1, e.x1) > Math.max(c.x0, e.x0));
+      const target = hits[0] ?? { ...e, lines: [] };
+      if (!hits[0]) columns.push(target);
+      for (const other of hits.slice(1)) {
+        target.lines.push(...other.lines);
+        target.x0 = Math.min(target.x0, other.x0);
+        target.x1 = Math.max(target.x1, other.x1);
+        columns.splice(columns.indexOf(other), 1);
+      }
+      target.lines.push(line);
+      target.x0 = Math.min(target.x0, e.x0);
+      target.x1 = Math.max(target.x1, e.x1);
+    }
+    if (columns.length === 1) return seg;
+    return columns
+      .sort((a, b) => a.x0 - b.x0)
+      .flatMap((c) => c.lines.sort((a, b) => a[0]!.y0 - b[0]!.y0));
+  }
 }
 
 // Case-, whitespace-, ligature- and quote-style-insensitive, like the
@@ -170,7 +261,7 @@ function findOccurrences(page: PdfPage, stream: StreamChar[], text: string): Occ
 // One box per text line the span covers; partial words are cut
 // proportionally to their character count.
 function boxesForSpan(page: PdfPage, first: StreamChar, last: StreamChar): Box[] {
-  const lines: Array<{ x0: number; y0: number; x1: number; y1: number }> = [];
+  const lines: Array<{ x0: number; y0: number; x1: number; y1: number; tight: boolean }> = [];
   for (let wi = first.word; wi <= last.word; wi++) {
     const w = page.words[wi]!;
     const len = [...w.text].length || 1;
@@ -182,16 +273,27 @@ function boxesForSpan(page: PdfPage, first: StreamChar, last: StreamChar): Box[]
       const overlap = Math.min(l.y1, w.y1) - Math.max(l.y0, w.y0);
       return overlap >= 0.5 * Math.min(l.y1 - l.y0, w.y1 - w.y0);
     });
+    // Glyphs sit at the bottom of poppler's word box; trim the top so the
+    // box never reaches the line above.
+    const y0 = w.room !== undefined ? Math.max(w.y0, w.y1 - w.room) : w.y0;
+    const tight = w.room !== undefined;
     if (line) {
       line.x0 = Math.min(line.x0, x0);
       line.x1 = Math.max(line.x1, x1);
-      line.y0 = Math.min(line.y0, w.y0);
+      line.y0 = Math.min(line.y0, y0);
       line.y1 = Math.max(line.y1, w.y1);
+      line.tight ||= tight;
     } else {
-      lines.push({ x0, y0: w.y0, x1, y1: w.y1 });
+      lines.push({ x0, y0, x1, y1: w.y1, tight });
     }
   }
-  return lines.map((l) => ({ x: l.x0, y: l.y0, width: l.x1 - l.x0, height: l.y1 - l.y0 }));
+  return lines.map((l) => ({
+    x: l.x0,
+    y: l.y0,
+    width: l.x1 - l.x0,
+    height: l.y1 - l.y0,
+    ...(l.tight && { tight: true }),
+  }));
 }
 
 const center = (b: Box) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
@@ -265,7 +367,8 @@ export function toShotHighlights(
     typeof spec === 'string' ? ({} as Exclude<DocumentHighlightSpecT, string>) : spec;
   return boxes.map((b) => {
     const padX = b.height * 0.25;
-    const padY = b.height * 0.3;
+    // A box already trimmed to the line pitch gets almost no vertical pad.
+    const padY = b.height * (b.tight ? 0.04 : 0.3);
     const x = Math.max(0, (b.x - padX) / page.width);
     const y = Math.max(0, (b.y - padY) / page.height);
     const round = (v: number) => Math.round(v * 10000) / 10000;
