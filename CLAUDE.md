@@ -56,7 +56,7 @@ The engine's content model is templates + manifests, not the old Wild Eye "chann
 ## MCP servers
 
 - Root `.mcp.json`: supabase, github, context7, sequential-thinking, filesystem, memory
-- `apps/api`'s own `/mcp` (P4.5) — Streamable HTTP MCP server exposing the engine's `create_job`/`get_job`/`list_jobs`/`approve_gate`/`presign_upload` tools; see `docs/deployment.md` for the live connector URL/auth setup
+- `apps/api`'s own `/mcp` (P4.5) — Streamable HTTP MCP server exposing the engine's `create_job`/`queue_job`/`get_job`/`list_jobs`/`approve_gate`/`presign_upload` tools (`queue_job` added for Track P, 2026-10-28); see `docs/deployment.md` for the live connector URL/auth setup
 - Per-app `.mcp.json`: reserved for future niche servers; empty at launch
 - Higgsfield MCP is no longer used — it backed the now-deleted Wild Eye/`apps/video` pipeline only
 

@@ -513,8 +513,8 @@ How to use this section:
 | P6 — Split & hand-over kit         | 0%      | 0 / 0 / 20            |
 | Track C — Claude Code layer        | 0%      | 0 / 0 / 8             |
 | Track A — Background music         | 38%     | 9 / 4 / 16            |
-| Track P — Policy File / asset refs | 4%      | 1 / 1 / 34            |
-| **Overall (weighted)**             | **76%** | **383.5 / 505**       |
+| Track P — Policy File / asset refs | 15%     | 4 / 1 / 31            |
+| **Overall (weighted)**             | **77%** | **386.5 / 505**       |
 
 **2026-10-15:** overall drops 79% → 74% only because Track A (background music, 29 new items, ADR-002) was added — no existing item changed. Its layer 3 (A.4, AI generation) is deliberately deferred. Later the same day, A.1's engine side landed (library, picker, worker download, `ss music`), bringing Track A to 28% and overall to 76%. Then the loudness fix, the owner's "no mood → no music" call, the merge and a real production render with music: Track A 34%; then 38% once the owner ruled caption credits unnecessary.
 
@@ -1113,9 +1113,9 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
 - [~] **P.0 Plan** (2026-10-28)
   - [x] ADR-003 written; §2.2/§2.3 point to it; this section added.
   - [ ] Owner confirms ADR-003 (PR merged).
-- [ ] **P.1 `queue_job` MCP tool**
-  - [ ] `queue_job` in `apps/api/src/mcp.ts`, reusing the `POST /jobs/{id}/queue` logic (no duplicate rules).
-  - [ ] Tests: queues a `created` job; refuses any other status with the same error as the route.
+- [x] **P.1 `queue_job` MCP tool** (2026-10-28)
+  - [x] `queue_job` in `apps/api/src/mcp.ts`; the route and the tool both call `queueJob()` (`apps/api/src/queue.ts`), so the status rules live in one place.
+  - [x] Tests: queues a `created` job and dispatches it; refuses any other status with the route's exact error; another org's job → not found, nothing dispatched. API suite 53/53.
 - [ ] **P.2 `url` asset source**
   - [ ] Additive manifest field: a shot/scene asset may be `{ url }` instead of an uploaded key. JSON schemas regenerated.
   - [ ] `assets` stage downloads it, checks type/size, writes it to R2 under the job; cached on retry (content hash).

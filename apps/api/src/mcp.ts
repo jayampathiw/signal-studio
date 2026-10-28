@@ -5,12 +5,15 @@ import { z } from 'zod';
 
 import type { AppDeps } from './app.ts';
 import { approveGate } from './approve.ts';
+import { queueJob } from './queue.ts';
 
 /**
- * P4.5 (optional) — the 5 tools the plan asks for, each a thin wrapper over
+ * P4.5 (optional) — the 5 tools the plan asks for (plus `queue_job`, Track P
+ * P.1), each a thin wrapper over
  * the exact same `deps` the REST routes in `app.ts` already use (not a
  * second implementation of job-creation/presigning logic). `approve_gate`
- * shares `POST /jobs/:id/approve`'s `approveGate()` — "gate" is the plan's
+ * shares `POST /jobs/:id/approve`'s `approveGate()` and `queue_job` shares
+ * `POST /jobs/:id/queue`'s `queueJob()` — "gate" is the plan's
  * name for what the rest of this codebase calls a review gate.
  *
  * One `McpServer` per request (`createMcpServer` is called fresh from the
@@ -79,6 +82,25 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
       }
       const jobs = await deps.jobsRepo.listByProject(orgId, project.id);
       return { content: [{ type: 'text', text: JSON.stringify(jobs) }] };
+    },
+  );
+
+  server.registerTool(
+    'queue_job',
+    {
+      title: 'Queue job',
+      description:
+        'Start rendering a job created with create_job (status created or awaiting_assets). The job moves to queued and the worker picks it up; poll get_job for progress.',
+      inputSchema: { id: z.string().min(1) },
+    },
+    async ({ id }) => {
+      const job = await deps.jobsRepo.getById(id);
+      if (!job || job.org_id !== orgId) {
+        return { content: [{ type: 'text', text: 'Job not found' }], isError: true };
+      }
+      const error = await queueJob(deps, job);
+      if (error) return { content: [{ type: 'text', text: error }], isError: true };
+      return { content: [{ type: 'text', text: JSON.stringify({ ...job, status: 'queued' }) }] };
     },
   );
 
