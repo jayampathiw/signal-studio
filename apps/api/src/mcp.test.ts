@@ -237,10 +237,71 @@ test('presign_upload returns a real presigned URL shape from the fake storage pr
   assert.equal(body.key, `jobs/${job.id}/uploads/s1/clip.mp4`);
 });
 
-test('the server advertises exactly the 5 tools the plan asks for', async () => {
+test('queue_job queues a created job and dispatches it', async () => {
+  const deps = fakeDeps();
+  const dispatchCalls: Array<[string, string | undefined]> = [];
+  deps.dispatcher = { dispatch: async (id, mode) => void dispatchCalls.push([id, mode]) };
+  const client = await connectedClient(deps, ORG_ID);
+  const created = await client.callTool({
+    name: 'create_job',
+    arguments: { projectSlug: 'test-project', manifest: validManifest() },
+  });
+  const job = JSON.parse(firstText(created as never));
+
+  const result = await client.callTool({ name: 'queue_job', arguments: { id: job.id } });
+  assert.equal(result.isError, undefined);
+  assert.equal(JSON.parse(firstText(result as never)).status, 'queued');
+  assert.equal((await deps.jobsRepo.getById(job.id))!.status, 'queued');
+  assert.deepEqual(dispatchCalls, [[job.id, undefined]]);
+});
+
+test('queue_job refuses a job that is not created/awaiting_assets, same error as the route', async () => {
+  const deps = fakeDeps();
+  let dispatched = false;
+  deps.dispatcher = { dispatch: async () => void (dispatched = true) };
+  const client = await connectedClient(deps, ORG_ID);
+  const created = await client.callTool({
+    name: 'create_job',
+    arguments: { projectSlug: 'test-project', manifest: validManifest() },
+  });
+  const job = JSON.parse(firstText(created as never));
+  await deps.jobsRepo.updateStatus(job.id, 'running');
+
+  const result = await client.callTool({ name: 'queue_job', arguments: { id: job.id } });
+  assert.equal(result.isError, true);
+  assert.equal(firstText(result as never), 'Job is "running", not created/awaiting_assets');
+  assert.equal(dispatched, false);
+});
+
+test("queue_job on another org's job returns not found and does not dispatch", async () => {
+  const deps = fakeDeps();
+  let dispatched = false;
+  deps.dispatcher = { dispatch: async () => void (dispatched = true) };
+  const ownerClient = await connectedClient(deps, ORG_ID);
+  const created = await ownerClient.callTool({
+    name: 'create_job',
+    arguments: { projectSlug: 'test-project', manifest: validManifest() },
+  });
+  const job = JSON.parse(firstText(created as never));
+
+  const intruderClient = await connectedClient(deps, OTHER_ORG_ID);
+  const result = await intruderClient.callTool({ name: 'queue_job', arguments: { id: job.id } });
+  assert.equal(result.isError, true);
+  assert.equal(firstText(result as never), 'Job not found');
+  assert.equal(dispatched, false);
+});
+
+test('the server advertises the 5 planned tools plus queue_job', async () => {
   const deps = fakeDeps();
   const client = await connectedClient(deps, ORG_ID);
   const { tools } = await client.listTools();
   const names = tools.map((t) => t.name).sort();
-  assert.deepEqual(names, ['approve_gate', 'create_job', 'get_job', 'list_jobs', 'presign_upload']);
+  assert.deepEqual(names, [
+    'approve_gate',
+    'create_job',
+    'get_job',
+    'list_jobs',
+    'presign_upload',
+    'queue_job',
+  ]);
 });

@@ -22,6 +22,7 @@ import type { Logger } from './logger.ts';
 import { createMcpServer } from './mcp.ts';
 import type { AuthVariables } from './middleware/api-key.ts';
 import { combinedAuth, type CombinedAuthDeps } from './middleware/combined-auth.ts';
+import { queueJob } from './queue.ts';
 
 /**
  * P2.7 — `apps/api` (Hono): `POST /jobs`, `GET /jobs/:id`, `GET /jobs?project=`,
@@ -663,12 +664,8 @@ export function createApp(deps: AppDeps) {
       // writes, which both bypass this path entirely — this is the first
       // time anything exercised "dashboard creates a job, then asks for it
       // to actually run" end to end.
-      if (job.status !== 'created' && job.status !== 'awaiting_assets') {
-        return c.json({ error: `Job is "${job.status}", not created/awaiting_assets` }, 400);
-      }
-      assertJobTransition(job.status, 'queued');
-      await deps.jobsRepo.updateStatus(id, 'queued');
-      await deps.dispatcher.dispatch(id);
+      const error = await queueJob(deps, job);
+      if (error) return c.json({ error }, 400);
       return c.json({ dispatched: true }, 200);
     },
   );
