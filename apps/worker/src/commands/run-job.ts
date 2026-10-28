@@ -51,6 +51,7 @@ import type { ParsedShotlist } from '@signal-studio/template-stills-kenburns/par
 
 import type { Logger } from '../logger.ts';
 import { resolveMusicBed } from '../music.ts';
+import { resolveShotSources } from '../sources.ts';
 
 const execFileAsync = promisify(execFile);
 
@@ -1148,10 +1149,25 @@ async function runLoadedJob(
   try {
     await advanceToRunning(deps.jobsRepo, job, logger);
 
+    // Track P (ADR-003): fetch `shot.source` URLs into the job's uploads so
+    // every handler reads them like uploaded files.
+    const shots = await withStage('assets', () =>
+      resolveShotSources({
+        jobId: job.id,
+        manifest: job.manifest,
+        storage,
+        fetchFn,
+        tmpDir,
+        logger,
+      }),
+    );
+    const sourcedJob =
+      shots === job.manifest.shots ? job : { ...job, manifest: { ...job.manifest, shots } };
+
     const runner = new StageRunner(deps.createStageStore(job.org_id));
     const { timelines, engine } = await withStage('compile', () =>
       handler.compileOutputs({
-        job,
+        job: sourcedJob,
         project,
         resolvedJob,
         tmpDir,

@@ -60,6 +60,17 @@
               "clip": {
                 "type": "string"
               },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": ["url"],
+                "additionalProperties": false
+              },
               "trim_in_s": {
                 "type": "number",
                 "minimum": 0,
@@ -207,6 +218,14 @@
               },
               "waveformOverlay": {
                 "type": "boolean"
+              },
+              "durationSecs": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "visual": {
+                "type": "object",
+                "additionalProperties": {}
               },
               "episodeRef": {
                 "type": "string"
