@@ -51,6 +51,19 @@ export const ShotZoomRegion = z.object({
   height: z.number().min(0).max(1),
 });
 
+// Track P (ADR-003) — where the worker fetches a shot's visual from, instead
+// of the caller uploading it. Only `url` for now; `document`/`stock`/
+// `generate`/`inbox` join this later. The worker downloads it into the same
+// R2 key an upload would use, so every template reads it as `image`/`clip`.
+export const ShotSource = z
+  .object({
+    url: z
+      .string()
+      .url()
+      .refine((u) => /^https?:\/\//i.test(u), 'source.url must be http(s)'),
+  })
+  .strict();
+
 export const Shot = z.object({
   id: z.string().min(1),
   // Exactly one visual source per shot: a video clip, a still image, or a
@@ -60,6 +73,7 @@ export const Shot = z.object({
   text: z.string().optional(),
   image: z.string().optional(),
   clip: z.string().optional(),
+  source: ShotSource.optional(),
   trim_in_s: z.number().min(0).default(0),
   speed: z.number().min(0.25).max(4).default(1.0),
   overlay_text: z.string().min(1).max(120).optional(),
@@ -401,6 +415,15 @@ export const Manifest = z
           'at least one shot is required (except for visual.mode "stills-kenburns"/"shorts-916")',
       });
     }
+    manifest.shots.forEach((shot, i) => {
+      if (shot.source && (shot.image || shot.clip)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['shots', i, 'source'],
+          message: 'a shot takes either source or an uploaded image/clip, not both',
+        });
+      }
+    });
     // clips-overlay is the only template that requires every shot to carry
     // an actual video clip — other visual modes (stills-kenburns, etc.)
     // legitimately use image/text-only shots. Its shot-count cap (6) is
@@ -415,11 +438,12 @@ export const Manifest = z
         });
       }
       manifest.shots.forEach((shot, i) => {
-        if (!shot.clip) {
+        if (!shot.clip && !shot.source) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['shots', i, 'clip'],
-            message: 'clip is required for every shot when visual.mode is "clips-overlay"',
+            message:
+              'clip (or source) is required for every shot when visual.mode is "clips-overlay"',
           });
         }
       });
@@ -440,11 +464,12 @@ export const Manifest = z
       }
       const validRefs = new Set(manifest.compilation?.episodes.map((e) => e.ref) ?? []);
       manifest.shots.forEach((shot, i) => {
-        if (!shot.clip) {
+        if (!shot.clip && !shot.source) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['shots', i, 'clip'],
-            message: 'clip is required for every shot when visual.mode is "compilation"',
+            message:
+              'clip (or source) is required for every shot when visual.mode is "compilation"',
           });
         }
         if (!shot.episodeRef) {

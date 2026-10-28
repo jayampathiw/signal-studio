@@ -513,8 +513,8 @@ How to use this section:
 | P6 — Split & hand-over kit         | 0%      | 0 / 0 / 20            |
 | Track C — Claude Code layer        | 0%      | 0 / 0 / 8             |
 | Track A — Background music         | 38%     | 9 / 4 / 16            |
-| Track P — Policy File / asset refs | 15%     | 4 / 1 / 31            |
-| **Overall (weighted)**             | **77%** | **386.5 / 505**       |
+| Track P — Policy File / asset refs | 29%     | 9 / 1 / 26            |
+| **Overall (weighted)**             | **78%** | **391.5 / 505**       |
 
 **2026-10-15:** overall drops 79% → 74% only because Track A (background music, 29 new items, ADR-002) was added — no existing item changed. Its layer 3 (A.4, AI generation) is deliberately deferred. Later the same day, A.1's engine side landed (library, picker, worker download, `ss music`), bringing Track A to 28% and overall to 76%. Then the loudness fix, the owner's "no mood → no music" call, the merge and a real production render with music: Track A 34%; then 38% once the owner ruled caption credits unnecessary.
 
@@ -1116,11 +1116,11 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
 - [x] **P.1 `queue_job` MCP tool** (2026-10-28)
   - [x] `queue_job` in `apps/api/src/mcp.ts`; the route and the tool both call `queueJob()` (`apps/api/src/queue.ts`), so the status rules live in one place.
   - [x] Tests: queues a `created` job and dispatches it; refuses any other status with the route's exact error; another org's job → not found, nothing dispatched. API suite 53/53.
-- [ ] **P.2 `url` asset source**
-  - [ ] Additive manifest field: a shot/scene asset may be `{ url }` instead of an uploaded key. JSON schemas regenerated.
-  - [ ] `assets` stage downloads it, checks type/size, writes it to R2 under the job; cached on retry (content hash).
-  - [ ] Failed download fails the job naming the shot + URL (non-retryable for 4xx, retryable for 5xx/timeouts).
-  - [ ] `case-file` path in `run-job.ts` reads resolved assets, not only pre-uploaded ones.
+- [x] **P.2 `url` asset source** (2026-10-28)
+  - [x] Additive manifest field `shots[].source: { url }` (http(s) only; can't be combined with an uploaded `image`/`clip`; satisfies clips-overlay/compilation's clip rule). JSON schemas regenerated.
+  - [x] Downloaded by `apps/worker/src/sources.ts` (run in `run-job.ts` under the `assets` stage, before any template handler — not inside `packages/core`'s `assets.ts`, which stays clip probing): checks content type (`image/*` for still templates, `video/*` for clips-overlay/compilation), 200 MB cap, 2-min timeout, refuses private/loopback/metadata addresses; stored at the same R2 key an upload uses (`jobs/<id>/uploads/<shot>/source-<urlhash>.<ext>`), so every template reads it as `image`/`clip` with no template changes. Retries reuse the stored copy (ranged GET on R2), never hitting the site again.
+  - [x] Failures name the shot + URL; 4xx/wrong type/too big are final, 5xx/429/timeouts retryable.
+  - [x] `case-file` renders from it — covered by the real-`compileCaseFile()` run-job test. Real check: a live Wikimedia JPEG fetched byte-exact (9,022 B); a live PDF correctly refused (PDFs come with P.3).
 - [ ] **P.3 `document` asset source + highlight finder**
   - [ ] Manifest: `{ url, page, highlight: ["quote", …] }`.
   - [ ] `poppler-utils` in the worker image; page → PNG at the template's resolution.

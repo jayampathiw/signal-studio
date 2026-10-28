@@ -343,7 +343,7 @@ test('runJob: a qa stage failure marks the job failed and blocks publish', async
   }
 });
 
-test('runJob: case-file handler compiles, renders, and delivers using the real compileCaseFile()', async () => {
+test('runJob: case-file handler compiles, renders, and delivers using the real compileCaseFile(), fetching a source.url shot', async () => {
   const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-case-file-test-'));
   try {
     const imagePath = path.join(workDir, 'doc1.png');
@@ -360,6 +360,11 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
           image: 'doc1.png',
           voiceover_text: 'This is a real narration line for the case file.',
           text: 'Fallback caption text.',
+        },
+        {
+          id: 's3',
+          source: { url: 'https://example.com/docs/ruling-page.png' },
+          voiceover_text: 'A page fetched from a link, not uploaded.',
         },
         {
           id: 's2',
@@ -389,6 +394,8 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     const statusUpdates: string[] = [];
     const failures: Array<{ stage: string; error: string; retryable: boolean }> = [];
     const renderedTimelines: Array<{ scenes: Array<Record<string, unknown>> }> = [];
+    const storedKeys = new Set<string>();
+    let sourceFetches = 0;
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -460,6 +467,7 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
             return `https://fake-storage.test/${key}`;
           },
           async put({ key }: { localPath: string; key: string }) {
+            storedKeys.add(key);
             return { url: `https://fake-storage.test/${key}` };
           },
           async presignUpload(key: string) {
@@ -529,8 +537,16 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
         return m;
       },
       detectBlackFrames: async () => [],
-      fetchFn: (async () => {
+      fetchFn: (async (url: string) => {
         const bytes = await readFile(imagePath);
+        if (url === 'https://example.com/docs/ruling-page.png') {
+          sourceFetches++;
+          return new Response(bytes, { status: 200, headers: { 'content-type': 'image/png' } });
+        }
+        const key = new URL(url).pathname.replace(/^\//, '');
+        if (key.includes('/source-') && !storedKeys.has(key)) {
+          return new Response(null, { status: 404 });
+        }
         return new Response(bytes, { status: 200 });
       }) as unknown as typeof fetch,
     };
@@ -538,7 +554,16 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
 
     assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
-    const silentScene = renderedTimelines[0]!.scenes[1]!;
+    // Track P (P.2): the `source.url` shot was fetched once, stored under the
+    // job's uploads, and rendered from that local copy like an upload.
+    assert.equal(sourceFetches, 1);
+    const [sourceKey] = [...storedKeys].filter((k) => k.includes('/source-'));
+    assert.match(sourceKey!, /^jobs\/job-1\/uploads\/s3\/source-[0-9a-f]{12}\.png$/);
+    const sourcedScene = renderedTimelines[0]!.scenes[1]! as {
+      source?: { localPath: string };
+    };
+    assert.ok(sourcedScene.source?.localPath.endsWith(path.basename(sourceKey!)));
+    const silentScene = renderedTimelines[0]!.scenes[2]!;
     assert.equal(silentScene.durationSecs, 4.5);
     assert.deepEqual(silentScene.visual, {
       kind: 'counter',
