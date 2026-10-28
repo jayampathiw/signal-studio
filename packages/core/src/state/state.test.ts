@@ -5,7 +5,9 @@ import {
   assertJobTransition,
   assertStageTransition,
   JOB_TRANSITIONS,
+  isPreRenderGate,
   NonRetryableError,
+  postRenderGates,
   recordFailedStage,
   STAGE_TRANSITIONS,
   toFailedPayload,
@@ -78,4 +80,14 @@ test('toFailedPayload: the stage recorded by the runner wins over the fallback',
   recordFailedStage(err, 'qa');
   recordFailedStage(err, 'outer');
   assert.equal(toFailedPayload(err, 'run-job').stage, 'qa');
+});
+
+test('assets_review is the only pre-render gate; postRenderGates keeps the rest in order', () => {
+  assert.equal(isPreRenderGate('assets_review'), true);
+  assert.equal(isPreRenderGate('final_review'), false);
+  assert.deepEqual(postRenderGates(['assets_review', 'final_review', 'seo']), [
+    'final_review',
+    'seo',
+  ]);
+  assert.deepEqual(postRenderGates(['assets_review']), []);
 });

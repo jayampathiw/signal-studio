@@ -1871,3 +1871,239 @@ test('runJob: clips-overlay mixes in a library music bed picked by mood, and rec
     await rm(workDir, { recursive: true, force: true });
   }
 });
+
+// ---- Track P (P.4): assets_review gate + case-file brand watermark ----
+
+function gatedCaseFileWorld(imagePath: string, logoPath: string) {
+  const manifest = Manifest.parse({
+    version: '1',
+    projectRef: 'test-project',
+    template: 'case-file',
+    visual: { mode: 'case-file' },
+    shots: [
+      {
+        id: 's1',
+        image: 'doc1.png',
+        voiceover_text: 'A narrated page.',
+        highlights: [{ x: 0.1, y: 0.1, width: 0.2, height: 0.05 }],
+      },
+    ],
+    case_file: { caseId: 'test-case', aspectRatio: '16:9' },
+    outputs: ['fb'],
+    gates: ['assets_review'],
+    publish: [],
+    captions: {},
+  });
+  const statusUpdates: string[] = [];
+  const failures: Array<{ stage: string; error: string }> = [];
+  const artifacts: Array<{ stage_name: string; kind: string; url: string }> = [];
+  const rendered: Array<{ watermark?: { path?: string } }> = [];
+  const drawn: string[] = [];
+  let status = 'queued';
+  const stageStore = new Map<string, unknown>();
+
+  const deps: RunJobDeps = {
+    jobsRepo: {
+      async getById() {
+        return {
+          id: 'job-1',
+          org_id: 'org-test',
+          project_id: 'proj-1',
+          manifest,
+          status,
+          created_at: '',
+          updated_at: '',
+        };
+      },
+      async updateStatus(_id: string, s: string) {
+        statusUpdates.push(s);
+        status = s;
+      },
+      async markFailed(_id: string, failure: { stage: string; error: string }) {
+        statusUpdates.push('failed');
+        failures.push(failure);
+      },
+    } as never,
+    projectsRepo: {
+      async getById() {
+        return {
+          id: 'proj-1',
+          org_id: 'org-test',
+          slug: 'test-project',
+          config: {
+            slug: 'test-project',
+            orgId: 'org-test',
+            brand: { fonts: [], colours: [], musicBeds: [], watermark: 'brand/test/logo.png' },
+            defaults: { template: 'case-file', voice: 'bm_george', speed: 1, outputs: ['fb'] },
+            gates: [],
+            publishTargets: [],
+            providers: {
+              tts: 'kokoro-js',
+              captions: 'whisper',
+              image: 'fal',
+              storage: 'local',
+              publish: 'facebook',
+            },
+            qa: { targetLufs: -14, maxTruePeakDb: -1.0, visionCheck: false },
+          },
+        };
+      },
+    } as never,
+    createArtifactsRepo: () =>
+      ({
+        async record(_job: string, stage_name: string, kind: string, url: string) {
+          artifacts.push({ stage_name, kind, url });
+          return {};
+        },
+        async listForJob() {
+          return artifacts;
+        },
+      }) as never,
+    createStageStore: () =>
+      ({
+        async getLastRun(_jobId: string, stageName: string, outputId?: string) {
+          return stageStore.get(`${stageName}:${outputId ?? ''}`) ?? null;
+        },
+        async recordStart() {},
+        async recordEnd(_jobId: string, stageName: string, result: never, outputId?: string) {
+          stageStore.set(`${stageName}:${outputId ?? ''}`, result);
+        },
+        async log() {},
+      }) as never,
+    createStorage: () =>
+      ({
+        async signedUrl(key: string) {
+          return `https://fake-storage.test/${key}`;
+        },
+        async put({ key }: { localPath: string; key: string }) {
+          return { url: `https://fake-storage.test/${key}` };
+        },
+        async presignUpload(key: string) {
+          return key;
+        },
+      }) as never,
+    synthesise: async () => {
+      const wavPath = path.join(os.tmpdir(), `fake-vo-${Date.now()}.wav`);
+      await writeFile(wavPath, 'fake-wav-bytes');
+      return { wavPath, durationSec: 3.0 };
+    },
+    compileClipsOverlay: () => {
+      throw new Error('not used');
+    },
+    compileCaseFile,
+    compileStillsKenburns: () => {
+      throw new Error('not used');
+    },
+    compileShorts916: () => {
+      throw new Error('not used');
+    },
+    compileCompilation: () => {
+      throw new Error('not used');
+    },
+    compileCarousel: () => {
+      throw new Error('not used');
+    },
+    renderCarouselStills: () => {
+      throw new Error('not used');
+    },
+    createCarouselPublishProviderFor: () => {
+      throw new Error('not used');
+    },
+    parseShotlistV2: () => {
+      throw new Error('not used');
+    },
+    render: async (timeline, opts) => {
+      await mkdir(opts.outputDir, { recursive: true });
+      const outputPath = path.join(opts.outputDir, `${timeline.contentId}.mp4`);
+      await writeFile(outputPath, 'fake-mp4-bytes');
+      rendered.push(timeline as never);
+      return outputPath;
+    },
+    createPublishProviderFor: () => {
+      throw new Error('not used');
+    },
+    measureVideo: async () => ({
+      durationSec: 3 + 2.5,
+      width: 1920,
+      height: 1080,
+      fps: 30,
+      integratedLufs: -14,
+      truePeakDb: -3,
+    }),
+    detectBlackFrames: async () => [],
+    drawProof: async ({ output }) => {
+      drawn.push(output);
+      await writeFile(output, 'proof');
+    },
+    fetchFn: (async (url: string) => {
+      const file = url.endsWith('/logo.png') ? logoPath : imagePath;
+      return new Response(new Uint8Array(await readFile(file)), { status: 200 });
+    }) as unknown as typeof fetch,
+  };
+  return { deps, statusUpdates, failures, artifacts, rendered, drawn };
+}
+
+test('runJob: assets_review stops before rendering with proofs, then renders (with the brand watermark) once approved', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-assets-review-'));
+  try {
+    const imagePath = path.join(workDir, 'doc1.png');
+    const logoPath = path.join(workDir, 'logo.png');
+    await writeFile(imagePath, 'fake-image-bytes');
+    await writeFile(logoPath, 'fake-logo-bytes');
+    const w = gatedCaseFileWorld(imagePath, logoPath);
+    const logger = createLogger({ level: 'error' });
+
+    await runJob({ jobId: 'job-1' }, w.deps, logger);
+    assert.deepEqual(w.statusUpdates, ['dispatched', 'running', 'awaiting_review:assets_review']);
+    assert.equal(w.rendered.length, 0);
+    assert.equal(w.drawn.length, 1);
+    assert.deepEqual(
+      w.artifacts.map((a) => [a.stage_name, a.kind, a.url]),
+      [
+        [
+          'assets_review',
+          'assets-proof',
+          'https://fake-storage.test/jobs/job-1/review/assets_review/s1.png',
+        ],
+      ],
+    );
+
+    // What approveGate does for a pre-render gate: record + re-queue.
+    w.artifacts.push({ stage_name: 'assets_review', kind: 'gate-approval', url: '' });
+    await w.deps.jobsRepo.updateStatus('job-1', 'queued');
+    w.statusUpdates.length = 0;
+
+    await runJob({ jobId: 'job-1' }, w.deps, logger);
+    assert.deepEqual(w.failures, []);
+    assert.deepEqual(w.statusUpdates, ['dispatched', 'running', 'delivered']);
+    assert.equal(w.rendered.length, 1);
+    assert.equal(w.drawn.length, 1, 'no new proofs once approved');
+    assert.ok(w.rendered[0]!.watermark?.path?.endsWith(`${path.sep}logo.png`));
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});
+
+test('runJob: a brand watermark that cannot be downloaded fails the job, never renders unbranded', async () => {
+  const workDir = await mkdtemp(path.join(os.tmpdir(), 'run-job-watermark-'));
+  try {
+    const imagePath = path.join(workDir, 'doc1.png');
+    await writeFile(imagePath, 'fake-image-bytes');
+    const w = gatedCaseFileWorld(imagePath, path.join(workDir, 'missing.png'));
+    w.artifacts.push({ stage_name: 'assets_review', kind: 'gate-approval', url: '' });
+    w.deps.fetchFn = (async (url: string) =>
+      url.endsWith('/logo.png')
+        ? new Response(null, { status: 404 })
+        : new Response(new Uint8Array(await readFile(imagePath)))) as unknown as typeof fetch;
+
+    await runJob({ jobId: 'job-1' }, w.deps, createLogger({ level: 'error' })).catch(() => {});
+    assert.equal(w.rendered.length, 0);
+    assert.equal(w.statusUpdates.at(-1), 'failed');
+    assert.match(
+      w.failures[0]!.error,
+      /brand watermark "brand\/test\/logo.png" could not be downloaded/,
+    );
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});

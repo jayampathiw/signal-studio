@@ -19,6 +19,7 @@ import {
   assertJobTransition,
   failureWasLogged,
   NonRetryableError,
+  postRenderGates,
   recordFailedStage,
   toFailedPayload,
   type JobStatus,
@@ -49,6 +50,12 @@ import type {
 import type { StillsKenburnsCompileParams } from '@signal-studio/template-stills-kenburns/compile';
 import type { ParsedShotlist } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
+import {
+  ASSETS_REVIEW_GATE,
+  assetsReviewApproved,
+  recordAssetProofs,
+  type DrawProof,
+} from '../assets-review.ts';
 import type { Logger } from '../logger.ts';
 import { resolveMusicBed } from '../music.ts';
 import { resolveShotSources } from '../sources.ts';
@@ -121,6 +128,10 @@ const OUTPUT_TO_PLATFORM: Record<string, string> = {
  * writes to) via `storage.signedUrl()` + `fetch()`. If nothing was uploaded
  * there yet, this fails with a clear message telling the caller to run
  * `ss upload` first, rather than silently producing an empty render.
+ *
+ * **Pre-render gate** (Track P): `assets_review` stops the job right after
+ * its assets are fetched, with proof images recorded (`assets-review.ts`);
+ * approving it re-queues the job for a full render.
  *
  * **Also flagged, not implemented**: real gate evaluation. `manifest.gates`
  * names *which* gates apply (per `manifest.v1.ts`'s own comment, "the actual
@@ -208,6 +219,8 @@ export type RunJobDeps = {
   // ANTHROPIC_KEY never breaks a job that doesn't use it.
   visionCheck?: (localPath: string) => Promise<{ ok: boolean; notes: string }>;
   fetchFn?: typeof fetch;
+  // Track P (P.4): draws the `assets_review` proof images; ffmpeg by default.
+  drawProof?: DrawProof;
 };
 
 // Minimal legal path from wherever a job currently sits to `running`, per
@@ -407,6 +420,27 @@ const clipsOverlayHandler: TemplateHandler = {
 
 // ---- case-file ----
 
+// Track P (P.4): `project.brand.watermark` is an R2 key (or an http(s) URL)
+// for the brand's logo PNG. Set but unreachable fails the job — a Policy
+// File video must never go out unbranded by accident.
+async function downloadBrandWatermark(ctx: TemplateHandlerCtx): Promise<string | undefined> {
+  const ref = ctx.project.brand?.watermark;
+  if (!ref) return undefined;
+  return withStage('assets', async () => {
+    const url = /^https?:\/\//i.test(ref) ? ref : await ctx.storage.signedUrl(ref);
+    const res = await ctx.fetchFn(url);
+    if (!res.ok) {
+      throw new NonRetryableError(
+        `run-job: brand watermark "${ref}" could not be downloaded (HTTP ${res.status}) — check project.brand.watermark`,
+      );
+    }
+    const dest = path.join(ctx.tmpDir, 'watermark', path.basename(ref.split('?')[0]!));
+    await mkdir(path.dirname(dest), { recursive: true });
+    await writeFile(dest, Buffer.from(await res.arrayBuffer()));
+    return dest;
+  });
+}
+
 const caseFileHandler: TemplateHandler = {
   async compileOutputs(ctx) {
     const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
@@ -453,10 +487,13 @@ const caseFileHandler: TemplateHandler = {
       waveformOverlay: shot.waveformOverlay,
     }));
 
+    const watermarkPath = await downloadBrandWatermark(ctx);
+
     const timelines: Record<string, TimelineT> = {};
     for (const outputId of resolvedJob.outputs) {
       timelines[outputId] = deps.compileCaseFile({
         contentId: `${job.id}_${outputId}`,
+        watermarkPath,
         aspectRatio: caseConfig.aspectRatio,
         scenes,
         caseId: caseConfig.caseId,
@@ -893,7 +930,7 @@ async function runCarouselJob(
     }
     logger.info(`rendered ${imageUrls.length} carousel slides`);
 
-    if (resolvedJob.gates.length === 0 && job.manifest.publish.length > 0) {
+    if (postRenderGates(resolvedJob.gates).length === 0 && job.manifest.publish.length > 0) {
       const publishTargets: Record<string, string> = {};
       for (const target of project.publishTargets) {
         publishTargets[target.platform] = target.credentialRef;
@@ -919,8 +956,9 @@ async function runCarouselJob(
       }
     }
 
-    if (resolvedJob.gates.length > 0) {
-      const next = `awaiting_review:${resolvedJob.gates[0]}` as JobStatus;
+    const afterRender = postRenderGates(resolvedJob.gates);
+    if (afterRender.length > 0) {
+      const next = `awaiting_review:${afterRender[0]}` as JobStatus;
       assertJobTransition('running', next);
       await deps.jobsRepo.updateStatus(job.id, next);
       logger.info('job running -> awaiting_review (waiting for approval)', {
@@ -1164,6 +1202,31 @@ async function runLoadedJob(
     const sourcedJob =
       shots === job.manifest.shots ? job : { ...job, manifest: { ...job.manifest, shots } };
 
+    // Track P (P.4): an `assets_review` gate pauses here, before rendering,
+    // until someone approves the fetched assets (proofs in the dashboard).
+    if (
+      resolvedJob.gates.includes(ASSETS_REVIEW_GATE) &&
+      !(await assetsReviewApproved(artifactsRepo, job.id))
+    ) {
+      await withStage('assets', () =>
+        recordAssetProofs({
+          jobId: job.id,
+          shots,
+          storage,
+          fetchFn,
+          tmpDir,
+          artifactsRepo,
+          logger,
+          drawProof: deps.drawProof,
+        }),
+      );
+      const next: JobStatus = `awaiting_review:${ASSETS_REVIEW_GATE}`;
+      assertJobTransition('running', next);
+      await deps.jobsRepo.updateStatus(job.id, next);
+      logger.info('job running -> awaiting_review (assets fetched, waiting for approval)');
+      return;
+    }
+
     const runner = new StageRunner(deps.createStageStore(job.org_id));
     const { timelines, engine } = await withStage('compile', () =>
       handler.compileOutputs({
@@ -1288,7 +1351,7 @@ async function runLoadedJob(
 
     // Publish only fires here for a gate-free job — a gated job stops at
     // `awaiting_review` and is published by `runPublishOnly` once approved.
-    if (resolvedJob.gates.length === 0 && job.manifest.publish.length > 0) {
+    if (postRenderGates(resolvedJob.gates).length === 0 && job.manifest.publish.length > 0) {
       const publishTargets: Record<string, string> = {};
       for (const target of project.publishTargets) {
         publishTargets[target.platform] = target.credentialRef;
@@ -1317,8 +1380,9 @@ async function runLoadedJob(
       }
     }
 
-    if (resolvedJob.gates.length > 0) {
-      const next = `awaiting_review:${resolvedJob.gates[0]}` as JobStatus;
+    const afterRender = postRenderGates(resolvedJob.gates);
+    if (afterRender.length > 0) {
+      const next = `awaiting_review:${afterRender[0]}` as JobStatus;
       assertJobTransition('running', next);
       await deps.jobsRepo.updateStatus(job.id, next);
       logger.info('job running -> awaiting_review (waiting for approval)', {

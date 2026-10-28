@@ -106,6 +106,24 @@ function fakeDeps(overrides: Partial<AppDeps> = {}) {
     async listForJob(jobId: string) {
       return artifactRows.filter((a) => a.job_id === jobId);
     },
+    async record(
+      jobId: string,
+      stageName: string,
+      kind: string,
+      url: string,
+      metadata: Record<string, unknown> = {},
+    ) {
+      const row = {
+        id: `a-${artifactRows.length + 1}`,
+        job_id: jobId,
+        stage_name: stageName,
+        kind,
+        url,
+        metadata,
+      };
+      artifactRows.push(row as never);
+      return row;
+    },
   };
 
   const generationAttempts: Record<string, unknown>[] = [];
@@ -357,6 +375,46 @@ test('POST /jobs/:id/approve: last gate + publish targets -> queued and dispatch
   assert.equal(res.status, 200);
   assert.equal((await res.json()).status, 'queued');
   assert.equal(jobs.get(id)!.status, 'queued');
+  assert.deepEqual(dispatchCalls, [[id, 'publish']]);
+});
+
+test('POST /jobs/:id/approve: assets_review records the approval and queues a full render', async () => {
+  const dispatchCalls: Array<[string, string | undefined]> = [];
+  const { deps, jobs, artifactRows } = fakeDeps({
+    dispatcher: {
+      dispatch: async (id: string, mode?: string) => void dispatchCalls.push([id, mode]),
+    },
+  });
+  const app = createApp(deps);
+  const id = await createAwaitingJob(
+    app,
+    jobs,
+    { ...validManifest(), gates: ['assets_review', 'final_review'], publish: ['facebook'] },
+    'assets_review',
+  );
+  const res = await approve(app, id);
+  assert.equal((await res.json()).status, 'queued');
+  assert.deepEqual(dispatchCalls, [[id, undefined]]);
+  const approval = artifactRows.find((a) => a.job_id === id && a.kind === 'gate-approval');
+  assert.equal(approval?.stage_name, 'assets_review');
+});
+
+test('POST /jobs/:id/approve: final_review after assets_review is the last gate -> publish', async () => {
+  const dispatchCalls: Array<[string, string | undefined]> = [];
+  const { deps, jobs } = fakeDeps({
+    dispatcher: {
+      dispatch: async (id: string, mode?: string) => void dispatchCalls.push([id, mode]),
+    },
+  });
+  const app = createApp(deps);
+  const id = await createAwaitingJob(
+    app,
+    jobs,
+    { ...validManifest(), gates: ['assets_review', 'final_review'], publish: ['facebook'] },
+    'final_review',
+  );
+  const res = await approve(app, id);
+  assert.equal((await res.json()).status, 'queued');
   assert.deepEqual(dispatchCalls, [[id, 'publish']]);
 });
 

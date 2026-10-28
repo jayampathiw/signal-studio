@@ -513,8 +513,8 @@ How to use this section:
 | P6 — Split & hand-over kit         | 0%      | 0 / 0 / 20            |
 | Track C — Claude Code layer        | 0%      | 0 / 0 / 8             |
 | Track A — Background music         | 38%     | 9 / 4 / 16            |
-| Track P — Policy File / asset refs | 46%     | 15 / 1 / 20           |
-| **Overall (weighted)**             | **79%** | **397.5 / 505**       |
+| Track P — Policy File / asset refs | 50%     | 18 / 3 / 18           |
+| **Overall (weighted)**             | **79%** | **401.5 / 508**       |
 
 **2026-10-15:** overall drops 79% → 74% only because Track A (background music, 29 new items, ADR-002) was added — no existing item changed. Its layer 3 (A.4, AI generation) is deliberately deferred. Later the same day, A.1's engine side landed (library, picker, worker download, `ss music`), bringing Track A to 28% and overall to 76%. Then the loudness fix, the owner's "no mood → no music" call, the merge and a real production render with music: Track A 34%; then 38% once the owner ruled caption credits unnecessary.
 
@@ -1127,12 +1127,15 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] `resolve-highlights.py` ported to TS (`apps/worker/src/documents.ts`) on `pdftotext -bbox-layout`: case/whitespace/ligature/quote-style-insensitive matching across words and lines (one box per line, line-end hyphens rejoined), partial words cut proportionally, `context`/`occurrence` for repeated quotes, substring guard (`2.46` never inside `42.46`). **All 23 `find` highlights of the real Mamboleo case resolve, within ~0.002 of the legacy boxes** (the difference is padding); visually checked on page 31.
   - [x] Quote not found, ambiguous, page missing, or no text layer (scanned) → non-retryable failure naming shot + URL + page; hand-entered `highlight`/`highlights` win when given; PDF pages refused for clip templates.
   - [x] Tests on a real court page fixture (`apps/worker/src/fixtures/complaint-p31.pdf`, 20 KB): 9 in `documents.test.ts`, 6 more in `sources.test.ts`. Worker 90/90 locally with the same poppler version as the image (Debian bookworm, 22.12).
-- [ ] **P.4 `assets_review` gate + case-file watermark**
-  - [ ] `assets_review` shows each fetched page/image with its boxes drawn, in the dashboard job detail.
-  - [ ] `case-file` handler passes the project's watermark (currently none is passed); checked on a real render.
+- [~] **P.4 `assets_review` gate + case-file watermark** (2026-10-28 — code, tests and dashboard done; the real-render watermark check moves to P.7 T-L, once the logo is in R2 via P.5)
+  - [x] `assets_review` is a **pre-render gate** (`PRE_RENDER_GATES` in `packages/core/src/state`): the worker fetches assets, draws one proof PNG per shot (ffmpeg: yellow fill + red outline per box, ≤1280 px wide; first frame for clips), records them as `assets-proof` artifacts, and stops at `awaiting_review:assets_review` — nothing renders. The dashboard's job detail already shows image artifacts next to Approve/Reject, so no new page was needed (only a small "approved" label for the approval record).
+  - [x] Approving it (`approveGate`, so both the dashboard and MCP `approve_gate`) records a `gate-approval` artifact and re-queues the job for a full render; retries after that never stop at the gate again. Post-render gates (`final_review`, …) ignore `assets_review` when picking the next gate or deciding to publish.
+  - [~] `case-file` handler passes the brand watermark: `project.brand.watermark` = an R2 key (or URL) of the logo PNG, downloaded and given to `compileCaseFile` → `timeline.watermark`. Set but unreachable → the job fails (never renders unbranded). **Left:** upload `PolicyFile_Watermark.png` to R2 + set it in the project (P.5), then check on a real render (P.7 T-L).
+  - [x] Tests: core gate helpers; API approve (assets_review → approval + full-render dispatch; final_review after it → publish); proofs with real ffmpeg (box drawn, page scaled); a full run-job pass: stops with proofs → approved → renders with the watermark → delivered; a missing watermark fails. Worker 95/95, API 55/55, core 79/79, dashboard builds.
 - [ ] **P.5 Production setup (Step A) — owner's OK required first**
   - [ ] `FB_PAGE_ID_POLICY_FILE` / `FB_ACCESS_TOKEN_POLICY_FILE` in the server's `deploy.env`; services restarted.
   - [ ] `projects/policy-file/project.yaml` + DB row: `publishTargets: [facebook/POLICY_FILE]`, gates `assets_review` + `final_review`.
+  - [ ] Upload `PolicyFile_Watermark.png` (legacy `assets/logos/`) to R2 and set `brand.watermark` to its key.
 - [ ] **P.6 claude.ai Project guide**
   - [ ] Project instructions: how to write a `case-file` job (pages, exact quotes, script), caption rules (engine refuses to publish without one), `create_job` → `queue_job` → `get_job`.
   - [ ] One worked example job in the guide.
