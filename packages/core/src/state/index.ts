@@ -67,6 +67,7 @@ export function toFailedPayload(err: unknown, fallbackStage: string): FailedPayl
 // again.
 export const PRE_RENDER_GATES: readonly string[] = ['assets_review'];
 export const GATE_APPROVAL_KIND = 'gate-approval';
+export const ASSETS_PROOF_KIND = 'assets-proof';
 
 export function isPreRenderGate(gate: string): boolean {
   return PRE_RENDER_GATES.includes(gate);

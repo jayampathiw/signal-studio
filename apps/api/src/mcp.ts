@@ -6,10 +6,11 @@ import { z } from 'zod';
 import type { AppDeps } from './app.ts';
 import { approveGate } from './approve.ts';
 import { queueJob } from './queue.ts';
+import { buildReviewMedia, ffmpegReviewMedia, summarizeMedia } from './review-media.ts';
 
 /**
  * P4.5 (optional) — the 5 tools the plan asks for (plus `queue_job`, Track P
- * P.1), each a thin wrapper over
+ * P.1, and `get_review_media`, which `review-media.ts` explains), each a thin wrapper over
  * the exact same `deps` the REST routes in `app.ts` already use (not a
  * second implementation of job-creation/presigning logic). `approve_gate`
  * shares `POST /jobs/:id/approve`'s `approveGate()` and `queue_job` shares
@@ -53,7 +54,8 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
     'get_job',
     {
       title: 'Get job',
-      description: 'Fetch a single job by id.',
+      description:
+        'Fetch a single job by id. `media` lists its rendered video links, assets_review proof images and published post links.',
       inputSchema: { id: z.string().min(1) },
     },
     async ({ id }) => {
@@ -61,7 +63,8 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
       if (!job || job.org_id !== orgId) {
         return { content: [{ type: 'text', text: 'Job not found' }], isError: true };
       }
-      return { content: [{ type: 'text', text: JSON.stringify(job) }] };
+      const media = summarizeMedia(await deps.createArtifactsRepo(orgId).listForJob(id));
+      return { content: [{ type: 'text', text: JSON.stringify({ ...job, media }) }] };
     },
   );
 
@@ -125,6 +128,30 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
       }
       const status = await approveGate(deps, job);
       return { content: [{ type: 'text', text: JSON.stringify({ ...job, status }) }] };
+    },
+  );
+
+  server.registerTool(
+    'get_review_media',
+    {
+      title: 'Get review media',
+      description:
+        "Show a job's review images. At assets_review: each shot's proof (the fetched page with its highlight boxes). After render: evenly spaced frames from the video, plus the video link — give the owner that link to watch it with sound. Use this before asking the owner to approve a gate; never approve on their behalf.",
+      inputSchema: { id: z.string().min(1), frames: z.number().int().min(1).max(12).default(6) },
+    },
+    async ({ id, frames }) => {
+      const job = await deps.jobsRepo.getById(id);
+      if (!job || job.org_id !== orgId) {
+        return { content: [{ type: 'text', text: 'Job not found' }], isError: true };
+      }
+      const media = summarizeMedia(await deps.createArtifactsRepo(orgId).listForJob(id));
+      const content = await buildReviewMedia(
+        deps.reviewMedia ?? ffmpegReviewMedia,
+        job.status,
+        media,
+        frames,
+      );
+      return { content };
     },
   );
 

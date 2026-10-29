@@ -4,7 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import type { ManifestT, ShotHighlightT } from '@signal-studio/core/schemas';
-import { GATE_APPROVAL_KIND } from '@signal-studio/core/state';
+import { ASSETS_PROOF_KIND, GATE_APPROVAL_KIND } from '@signal-studio/core/state';
 import type { ArtifactsRepo } from '@signal-studio/db/repos';
 import type { StorageProvider } from '@signal-studio/providers/contracts';
 
@@ -19,7 +19,6 @@ import type { Logger } from './logger.ts';
  */
 
 export const ASSETS_REVIEW_GATE = 'assets_review';
-export const ASSETS_PROOF_KIND = 'assets-proof';
 
 const execFileAsync = promisify(execFile);
 
