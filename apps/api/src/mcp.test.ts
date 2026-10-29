@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import type { JobStatus } from '@signal-studio/core/state';
 
 import type { AppDeps } from './app.ts';
 import { createMcpServer } from './mcp.ts';
@@ -291,7 +292,141 @@ test("queue_job on another org's job returns not found and does not dispatch", a
   assert.equal(dispatched, false);
 });
 
-test('the server advertises the 5 planned tools plus queue_job', async () => {
+function artifact(
+  kind: string,
+  url: string,
+  metadata: Record<string, unknown>,
+  created_at: string,
+) {
+  return {
+    id: url,
+    org_id: ORG_ID,
+    job_id: 'job-1',
+    stage_name: 's',
+    kind,
+    url,
+    metadata,
+    created_at,
+    updated_at: created_at,
+  };
+}
+
+async function jobWithArtifacts(
+  status: JobStatus,
+  artifacts: unknown[],
+  frameBytes = Buffer.from('jpeg'),
+) {
+  const deps = fakeDeps();
+  const grabbed: Array<{ url: string; atSec?: number; width: number }> = [];
+  deps.createArtifactsRepo = () => ({ listForJob: async () => artifacts }) as never;
+  deps.reviewMedia = {
+    grabFrame: async (url, opts) => {
+      grabbed.push({ url, ...opts });
+      return frameBytes;
+    },
+    probeDuration: async () => 60,
+  };
+  const client = await connectedClient(deps, ORG_ID);
+  const created = await client.callTool({
+    name: 'create_job',
+    arguments: { projectSlug: 'test-project', manifest: validManifest() },
+  });
+  const job = JSON.parse(firstText(created as never));
+  await deps.jobsRepo.updateStatus(job.id, status);
+  return { client, job, grabbed };
+}
+
+const PROOF_S2 = artifact('assets-proof', 'https://r2/s2.png', { shotId: 's2', page: 5 }, '1');
+const PROOF_S3 = artifact('assets-proof', 'https://r2/s3.png', { shotId: 's3', page: 8 }, '2');
+const APPROVAL = artifact('gate-approval', '', { gate: 'assets_review' }, '3');
+const VIDEO = artifact('video', 'https://r2/fb.mp4', { outputId: 'fb' }, '4');
+const POST = artifact(
+  'post',
+  'https://facebook.com/reel/1',
+  { platform: 'facebook', postId: '1' },
+  '5',
+);
+
+test('get_job includes the media links from its artifacts', async () => {
+  const { client, job } = await jobWithArtifacts('delivered', [
+    POST,
+    VIDEO,
+    APPROVAL,
+    PROOF_S3,
+    PROOF_S2,
+  ]);
+  const result = await client.callTool({ name: 'get_job', arguments: { id: job.id } });
+  assert.deepEqual(JSON.parse(firstText(result as never)).media, {
+    videos: [{ outputId: 'fb', url: 'https://r2/fb.mp4' }],
+    proofs: [
+      { shotId: 's2', url: 'https://r2/s2.png', page: 5 },
+      { shotId: 's3', url: 'https://r2/s3.png', page: 8 },
+    ],
+    posts: [{ platform: 'facebook', url: 'https://facebook.com/reel/1' }],
+  });
+});
+
+test('get_review_media at assets_review returns each proof as an image', async () => {
+  const { client, job, grabbed } = await jobWithArtifacts('awaiting_review:assets_review', [
+    PROOF_S2,
+    PROOF_S3,
+  ]);
+  const result = (await client.callTool({
+    name: 'get_review_media',
+    arguments: { id: job.id },
+  })) as {
+    content: Array<{ type: string; text?: string; mimeType?: string }>;
+  };
+  const images = result.content.filter((b) => b.type === 'image');
+  assert.equal(images.length, 2);
+  assert.equal(images[0]!.mimeType, 'image/jpeg');
+  assert.ok(result.content.some((b) => b.text === 'Proof for shot s2, page 5'));
+  assert.deepEqual(
+    grabbed.map((g) => g.url),
+    ['https://r2/s2.png', 'https://r2/s3.png'],
+  );
+});
+
+test('get_review_media after render returns evenly spaced video frames and the link', async () => {
+  const { client, job, grabbed } = await jobWithArtifacts('awaiting_review:final_review', [
+    PROOF_S2,
+    APPROVAL,
+    VIDEO,
+  ]);
+  const result = (await client.callTool({
+    name: 'get_review_media',
+    arguments: { id: job.id, frames: 4 },
+  })) as { content: Array<{ type: string; text?: string }> };
+  assert.equal(result.content.filter((b) => b.type === 'image').length, 4);
+  assert.deepEqual(
+    grabbed.map((g) => g.atSec),
+    [7.5, 22.5, 37.5, 52.5],
+  );
+  assert.ok(grabbed.every((g) => g.url === 'https://r2/fb.mp4'));
+  assert.match(firstText(result as never), /https:\/\/r2\/fb\.mp4/);
+});
+
+test('get_review_media reports an unreadable frame as text instead of failing', async () => {
+  const { client, job } = await jobWithArtifacts(
+    'awaiting_review:assets_review',
+    [PROOF_S2],
+    Buffer.alloc(0),
+  );
+  const result = (await client.callTool({
+    name: 'get_review_media',
+    arguments: { id: job.id },
+  })) as {
+    isError?: boolean;
+    content: Array<{ type: string; text?: string }>;
+  };
+  assert.equal(result.isError, undefined);
+  assert.equal(result.content.filter((b) => b.type === 'image').length, 0);
+  assert.ok(
+    result.content.some((b) => /could not be read \(https:\/\/r2\/s2\.png\)/.test(b.text ?? '')),
+  );
+});
+
+test('the server advertises the 5 planned tools plus queue_job and get_review_media', async () => {
   const deps = fakeDeps();
   const client = await connectedClient(deps, ORG_ID);
   const { tools } = await client.listTools();
@@ -300,6 +435,7 @@ test('the server advertises the 5 planned tools plus queue_job', async () => {
     'approve_gate',
     'create_job',
     'get_job',
+    'get_review_media',
     'list_jobs',
     'presign_upload',
     'queue_job',

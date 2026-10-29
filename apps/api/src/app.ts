@@ -23,6 +23,7 @@ import { createMcpServer } from './mcp.ts';
 import type { AuthVariables } from './middleware/api-key.ts';
 import { combinedAuth, type CombinedAuthDeps } from './middleware/combined-auth.ts';
 import { queueJob } from './queue.ts';
+import type { ReviewMediaDeps } from './review-media.ts';
 
 /**
  * P2.7 — `apps/api` (Hono): `POST /jobs`, `GET /jobs/:id`, `GET /jobs?project=`,
@@ -137,6 +138,8 @@ export type AppDeps = {
   createGenerationAttemptsRepo: (orgId: string) => GenerationAttemptsRepo;
   // P5.1 addition — see the CORS middleware's own comment in createApp().
   corsOrigins?: string[];
+  // MCP `get_review_media` — defaults to real ffmpeg; tests pass fakes.
+  reviewMedia?: ReviewMediaDeps;
 };
 
 export function createApp(deps: AppDeps) {
