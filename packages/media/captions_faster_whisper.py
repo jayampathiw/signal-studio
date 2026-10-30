@@ -13,7 +13,22 @@ from faster_whisper import WhisperModel
 _MODEL_SIZE = "tiny"
 
 
+def load_model() -> WhisperModel:
+    # The worker image bakes the model in (docker/Dockerfile's prewarm stage),
+    # so try the local cache first: no Hugging Face request per job, and no
+    # dependency on the Hub being reachable. Anywhere without the baked copy
+    # (a dev machine) falls back to downloading it once.
+    try:
+        return WhisperModel(_MODEL_SIZE, device="cpu", compute_type="int8", local_files_only=True)
+    except Exception:
+        return WhisperModel(_MODEL_SIZE, device="cpu", compute_type="int8")
+
+
 def main() -> None:
+    if sys.argv[1:] == ["--warm"]:
+        load_model()
+        print("faster-whisper model cached", file=sys.stderr)
+        return
     if len(sys.argv) < 2:
         print("Usage: captions_faster_whisper.py <audio_path> [initial_prompt]", file=sys.stderr)
         sys.exit(1)
@@ -21,7 +36,7 @@ def main() -> None:
     audio_path = sys.argv[1]
     initial_prompt = sys.argv[2] if len(sys.argv) > 2 else None
 
-    model = WhisperModel(_MODEL_SIZE, device="cpu", compute_type="int8")
+    model = load_model()
     segments, _info = model.transcribe(
         audio_path,
         word_timestamps=True,

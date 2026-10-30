@@ -175,6 +175,12 @@ RUN node --experimental-strip-types docker/warm-kokoro-js.mjs
 # `import '@remotion/renderer'` directly.
 RUN node --experimental-strip-types docker/warm-remotion-browser.mjs
 
+# Bake the faster-whisper `tiny` model (~75MB) too: case-file captions
+# transcribe every job's narration (P.10), and without this the first job
+# after each restart downloaded it from Hugging Face, unauthenticated.
+# Same /root/.cache as above; the script loads it local-only at run time.
+RUN python3 packages/media/captions_faster_whisper.py --warm
+
 FROM prewarm AS final
 # P2.5: apps/worker/src/cli.ts is now the full `ss` command set (validate,
 # run-local, run-job, upload, worker) — packages/core/src/cli/ss.ts (what
