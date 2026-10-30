@@ -1192,7 +1192,8 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] `approve_gate` (MCP) and `POST /jobs/:id/approve` (optional JSON body) take `publishAt`: ISO 8601 with a timezone, 15 minutes to 29 days ahead, only on the approval that publishes. Stored on that gate's `gate-approval` artifact (`apps/api/src/approve.ts`); a bad value → 400 / tool error, job untouched.
   - [x] Worker publish-only run passes it to the platform as `scheduleAt` (Facebook: `published=false` + `scheduled_publish_time`, video and carousel); the post artifact records `scheduledFor`, which `get_job`'s `media.posts` shows. A time already within 10 minutes (worker down, late retry) posts immediately and logs it.
   - [x] Tests: API (stored, 4 invalid shapes, wrong gate), MCP (pass-through + tool error), worker (scheduled, too-late → now). PR #61.
-  - [ ] Release `v0.1.6`; guide + Project instructions updated (say the time in US Eastern; never approve without the owner's time).
+  - [x] Released: `v0.1.6` tagged at `487ae74`, no jobs in flight, 13 GB free; Watchtower restarted worker + api with the new code. Guide updated (workspace PR #12): ask the owner for the time, repeat it in US Eastern and IST, pass `publishAt` with the offset, never pick a time.
+  - [ ] Owner re-uploads the guide and reconnects the connector (so `approve_gate` shows `publishAt`).
   - [ ] **T-P** — one real reel scheduled from the chat goes live at the chosen time.
 
 ---
