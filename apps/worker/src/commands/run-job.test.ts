@@ -396,6 +396,7 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     const renderedTimelines: Array<{ scenes: Array<Record<string, unknown>> }> = [];
     const storedKeys = new Set<string>();
     let sourceFetches = 0;
+    const transcribed: string[] = [];
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -480,6 +481,15 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
         await writeFile(wavPath, 'fake-wav-bytes');
         return { wavPath, durationSec: 3.0 };
       },
+      wordTimings: async ({ wavPath, hintText }) => {
+        transcribed.push(path.basename(wavPath));
+        if (wavPath.endsWith('s3.wav')) throw new Error('whisper crashed');
+        assert.equal(hintText, 'This is a real narration line for the case file.');
+        return [
+          { text: 'This', start: 0.1, end: 0.3 },
+          { text: 'is', start: 0.3, end: 0.4 },
+        ];
+      },
       compileClipsOverlay: () => {
         throw new Error('compileClipsOverlay: not exercised by this case-file test');
       },
@@ -563,8 +573,21 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
       source?: { localPath: string };
     };
     assert.ok(sourcedScene.source?.localPath.endsWith(path.basename(sourceKey!)));
+    // On-video captions: Whisper's words for s1; s3's transcription failed,
+    // so its narration is spread evenly over its 3s of audio instead.
+    assert.deepEqual(transcribed, ['s1.wav', 's3.wav']);
+    const [s1Scene, s3Scene] = renderedTimelines[0]!.scenes as Array<{
+      captionText?: string;
+      words?: Array<{ text: string; start: number; end: number }>;
+    }>;
+    assert.equal(s1Scene!.captionText, 'This is');
+    assert.equal(s1Scene!.words![1]!.start, 0.3);
+    assert.equal(s3Scene!.captionText, 'A page fetched from a link, not uploaded.');
+    assert.equal(s3Scene!.words!.length, 8);
+    assert.equal(s3Scene!.words![7]!.end, 3);
     const silentScene = renderedTimelines[0]!.scenes[2]!;
     assert.equal(silentScene.durationSecs, 4.5);
+    assert.equal(silentScene.words, undefined);
     assert.deepEqual(silentScene.visual, {
       kind: 'counter',
       value: 180,
