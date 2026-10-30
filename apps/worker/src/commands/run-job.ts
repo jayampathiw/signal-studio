@@ -18,6 +18,7 @@ import { createTtsStage, type TtsSynthesiser } from '@signal-studio/core/stages/
 import {
   assertJobTransition,
   failureWasLogged,
+  GATE_APPROVAL_KIND,
   NonRetryableError,
   postRenderGates,
   recordFailedStage,
@@ -226,6 +227,8 @@ export type RunJobDeps = {
   // case-file's on-video captions (faster-whisper in production). Without it,
   // or when it fails, captions fall back to evenly timed narration words.
   wordTimings?: CaptionsProvider['wordTimings'];
+  // Clock for scheduled posting; tests pin it.
+  now?: () => number;
 };
 
 // Minimal legal path from wherever a job currently sits to `running`, per
@@ -1069,6 +1072,8 @@ async function runPublishOnly(
       publishTargets[target.platform] = target.credentialRef;
     }
     const renders = artifacts.filter((a) => a.stage_name === 'render');
+    const scheduleAt = scheduledPublishTime(artifacts, deps.now?.() ?? Date.now(), logger);
+    const scheduled = scheduleAt ? { scheduledFor: scheduleAt } : {};
 
     if (platforms.length > 0 && job.manifest.visual.mode === 'carousel') {
       const config = job.manifest.carousel;
@@ -1096,10 +1101,12 @@ async function runPublishOnly(
           pageRef: credentialRef,
           images: slides.map((s) => s.url),
           caption: config.postCaption,
+          scheduleAt,
         });
         await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
           platform,
           postId: post.postId,
+          ...scheduled,
         });
         logger.info(`published ${platform}`, post);
       }
@@ -1124,7 +1131,9 @@ async function runPublishOnly(
       const publish: PublishFn = async (args) =>
         deps.createPublishProviderFor(args.platform, publishTargets[args.platform]).post(args);
       const runner = new StageRunner(deps.createStageStore(job.org_id));
-      runner.register(createPublishStage({ publish, publishTargets, renderedVideoUrls }));
+      runner.register(
+        createPublishStage({ publish, publishTargets, renderedVideoUrls, scheduleAt }),
+      );
       const stageJob: Job = {
         id: job.id,
         manifest: { ...job.manifest, publish: platforms },
@@ -1137,6 +1146,7 @@ async function runPublishOnly(
         await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
           platform,
           postId: post.postId,
+          ...scheduled,
         });
         logger.info(`published ${platform}`, post);
       }
@@ -1148,6 +1158,27 @@ async function runPublishOnly(
   } finally {
     await rm(tmpDir, { recursive: true, force: true });
   }
+}
+
+// The owner's scheduled time from the approval that published (P.8), if any.
+// A time that has come within 10 minutes (the worker was down, the job was
+// retried late) can't be scheduled on Facebook any more, so it posts now.
+function scheduledPublishTime(
+  artifacts: Array<{ kind: string; metadata: Record<string, unknown>; created_at: string }>,
+  now: number,
+  logger: Logger,
+): string | undefined {
+  const publishAt = [...artifacts]
+    .sort((x, y) => x.created_at.localeCompare(y.created_at))
+    .filter((a) => a.kind === GATE_APPROVAL_KIND && typeof a.metadata.publishAt === 'string')
+    .map((a) => a.metadata.publishAt as string)
+    .at(-1);
+  if (!publishAt) return undefined;
+  if (Date.parse(publishAt) - now < 10 * 60 * 1000) {
+    logger.error('scheduled time already passed or too close, publishing now', { publishAt });
+    return undefined;
+  }
+  return publishAt;
 }
 
 // Names the step for failures outside `StageRunner` (which records its own

@@ -16,7 +16,7 @@ import type {
 import type { StorageProvider } from '@signal-studio/providers/contracts';
 import { cors } from 'hono/cors';
 
-import { approveGate } from './approve.ts';
+import { ApproveError, approveGate } from './approve.ts';
 import type { Dispatcher } from './dispatcher.ts';
 import type { Logger } from './logger.ts';
 import { createMcpServer } from './mcp.ts';
@@ -484,8 +484,17 @@ export function createApp(deps: AppDeps) {
       if (!job.status.startsWith('awaiting_review:')) {
         return c.json({ error: `Job is "${job.status}", not awaiting review` }, 400);
       }
-      const status = await approveGate(deps, job);
-      return c.json({ ...job, status }, 200);
+      // Optional body `{ publishAt }` (scheduled posting); the dashboard
+      // posts no body at all, so it's read leniently rather than declared.
+      const body = (await c.req.json().catch(() => ({}))) as { publishAt?: unknown };
+      const publishAt = typeof body.publishAt === 'string' ? body.publishAt : undefined;
+      try {
+        const status = await approveGate(deps, job, { publishAt });
+        return c.json({ ...job, status }, 200);
+      } catch (err) {
+        if (!(err instanceof ApproveError)) throw err;
+        return c.json({ error: err.message }, 400);
+      }
     },
   );
 

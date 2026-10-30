@@ -1157,7 +1157,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] **T-P** — first real Policy File reel (HHS OIG OEI-09-24-00330, June 2026, Medicare Advantage rehab/LTCH denials; every figure checked against the PDF): triggered from the claude.ai Project, both gates approved, live on the Policy File Facebook page — job `93eea6b5`. On the way the owner rejected the folder-and-document watermark at final review; the brand now uses the round folder icon (`brand/policy-file/watermark-circle.png`, 320 px, workspace PR #10 + DB row), and the reel was re-made with it. The published reel turned out to have **no on-video captions** — fixed in P.10.
   - [x] Owner reconnected the claude.ai connector.
 - [ ] **P.8 Later (kept here so nothing is missed)**
-  - [ ] **Scheduled posting** — the owner's top request (2026-10-29): final approval publishes immediately, and the US 40–65 evening falls around 4–7 am IST. The Facebook publisher already supports `scheduled_publish_time`; the job needs a `publishAt` passed through to it.
+  - [x] **Scheduled posting** — moved to P.12 (2026-10-30); the owner's top request (2026-10-29): final approval publishes immediately, and the US 40–65 evening falls around 4–7 am IST. The Facebook publisher already supports `scheduled_publish_time`; the job needs a `publishAt` passed through to it.
   - [ ] Instagram publisher (Policy File cross-posts Reels to Instagram by hand today).
   - [ ] `stock` source via `stock-pexels`, attribution recorded (AssembleX), with the clips-overlay dead-air fix.
   - [ ] `generate` source via `image-fal` (Underdog stills, stock fallback).
@@ -1188,6 +1188,12 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] Tests for both; a real render check on a document scene — `caption-words.test.ts` (4 tests, including `9c68674f`'s real tokens); a Remotion still of `9c68674f`'s s4 page with the plate.
   - [x] Released: `v0.1.5` tagged at `65ec6b7`, no jobs in flight, 13 GB free on the VPS before the pull; Watchtower restarted worker + api; the running worker has the new code. PR #59.
   - [ ] **T-P** — the next Policy File reel's captions read clearly over the page and show figures.
+- [~] **P.12 Scheduled posting — v0.1.6** (2026-10-30, owner's top request)
+  - [x] `approve_gate` (MCP) and `POST /jobs/:id/approve` (optional JSON body) take `publishAt`: ISO 8601 with a timezone, 15 minutes to 29 days ahead, only on the approval that publishes. Stored on that gate's `gate-approval` artifact (`apps/api/src/approve.ts`); a bad value → 400 / tool error, job untouched.
+  - [x] Worker publish-only run passes it to the platform as `scheduleAt` (Facebook: `published=false` + `scheduled_publish_time`, video and carousel); the post artifact records `scheduledFor`, which `get_job`'s `media.posts` shows. A time already within 10 minutes (worker down, late retry) posts immediately and logs it.
+  - [x] Tests: API (stored, 4 invalid shapes, wrong gate), MCP (pass-through + tool error), worker (scheduled, too-late → now). PR #61.
+  - [ ] Release `v0.1.6`; guide + Project instructions updated (say the time in US Eastern; never approve without the owner's time).
+  - [ ] **T-P** — one real reel scheduled from the chat goes live at the chosen time.
 
 ---
 

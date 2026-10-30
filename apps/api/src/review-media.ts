@@ -61,7 +61,7 @@ export const ffmpegReviewMedia: ReviewMediaDeps = {
 export type JobMedia = {
   videos: Array<{ outputId: string; url: string }>;
   proofs: Array<{ shotId: string; url: string; page?: number }>;
-  posts: Array<{ platform: string; url: string }>;
+  posts: Array<{ platform: string; url: string; scheduledFor?: string }>;
 };
 
 export function summarizeMedia(artifacts: ArtifactRow[]): JobMedia {
@@ -78,7 +78,11 @@ export function summarizeMedia(artifacts: ArtifactRow[]): JobMedia {
         ...(typeof meta.page === 'number' && { page: meta.page }),
       });
     } else if (a.kind === 'post') {
-      media.posts.push({ platform: String(meta.platform ?? ''), url: a.url });
+      media.posts.push({
+        platform: String(meta.platform ?? ''),
+        url: a.url,
+        ...(typeof meta.scheduledFor === 'string' && { scheduledFor: meta.scheduledFor }),
+      });
     }
   }
   return media;

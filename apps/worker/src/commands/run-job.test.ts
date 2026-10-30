@@ -82,7 +82,13 @@ type FakeDeps = RunJobDeps & {
   statusUpdates: string[];
   failures: Array<{ stage: string; error: string; retryable: boolean }>;
   artifacts: Array<{ kind: string; url: string }>;
-  publishCalls: Array<{ platform: string; pageRef: string; video: string; caption: string }>;
+  publishCalls: Array<{
+    platform: string;
+    pageRef: string;
+    video: string;
+    caption: string;
+    scheduleAt?: string;
+  }>;
 };
 
 function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> = {}): FakeDeps {
@@ -1807,6 +1813,45 @@ test('runJob publish mode: never re-posts a platform that already has a publish 
   await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
 
   assert.equal(deps.publishCalls.length, 0);
+  assert.equal(deps.statusUpdates.at(-1), 'delivered');
+});
+
+function scheduledRows(publishAt: string) {
+  return [
+    {
+      stage_name: 'render',
+      kind: 'video',
+      url: 'https://r2.test/fb.mp4',
+      metadata: { outputId: 'fb' },
+      created_at: '2026-10-30T07:00:00Z',
+    },
+    {
+      stage_name: 'review',
+      kind: 'gate-approval',
+      url: '',
+      metadata: { gate: 'review', publishAt },
+      created_at: '2026-10-30T08:00:00Z',
+    },
+  ];
+}
+
+test("runJob publish mode: schedules the post for the approval's publishAt", async () => {
+  const { deps } = publishOnlyDeps(scheduledRows('2026-10-30T23:00:00.000Z'));
+  deps.now = () => Date.parse('2026-10-30T08:01:00Z');
+
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+
+  assert.equal(deps.publishCalls[0].scheduleAt, '2026-10-30T23:00:00.000Z');
+  assert.equal(deps.statusUpdates.at(-1), 'delivered');
+});
+
+test('runJob publish mode: a scheduled time that has already come posts now', async () => {
+  const { deps } = publishOnlyDeps(scheduledRows('2026-10-30T08:05:00.000Z'));
+  deps.now = () => Date.parse('2026-10-30T08:01:00Z');
+
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+
+  assert.equal(deps.publishCalls[0].scheduleAt, undefined);
   assert.equal(deps.statusUpdates.at(-1), 'delivered');
 });
 

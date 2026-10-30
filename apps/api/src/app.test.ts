@@ -378,6 +378,84 @@ test('POST /jobs/:id/approve: last gate + publish targets -> queued and dispatch
   assert.deepEqual(dispatchCalls, [[id, 'publish']]);
 });
 
+async function approveAt(app: ReturnType<typeof createApp>, id: string, publishAt: string) {
+  return app.request(`/jobs/${id}/approve`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${API_KEY}` },
+    body: JSON.stringify({ publishAt }),
+  });
+}
+
+function inHours(h: number, offset = 'Z') {
+  const d = new Date(Date.now() + h * 3600_000);
+  return offset === 'Z' ? d.toISOString() : d.toISOString().replace('Z', offset);
+}
+
+test('POST /jobs/:id/approve: publishAt on the last gate is stored for the publish-only run', async () => {
+  const dispatchCalls: Array<[string, string | undefined]> = [];
+  const { deps, jobs, artifactRows } = fakeDeps({
+    dispatcher: {
+      dispatch: async (id: string, mode?: string) => void dispatchCalls.push([id, mode]),
+    },
+  });
+  const app = createApp(deps);
+  const id = await createAwaitingJob(
+    app,
+    jobs,
+    { ...validManifest(), gates: ['review'], publish: ['facebook'] },
+    'review',
+  );
+  const publishAt = inHours(5);
+  const res = await approveAt(app, id, publishAt);
+  assert.equal(res.status, 200);
+  assert.equal(jobs.get(id)!.status, 'queued');
+  assert.deepEqual(dispatchCalls, [[id, 'publish']]);
+  const approval = artifactRows.find((a) => a.kind === 'gate-approval');
+  assert.deepEqual(approval?.metadata, { gate: 'review', publishAt });
+});
+
+for (const [name, publishAt, message] of [
+  ['without a timezone', inHours(5).replace('Z', ''), /needs a timezone/],
+  ['too soon', inHours(0.1), /at least 15 minutes/],
+  ['too far ahead', inHours(24 * 40), /within 29 days/],
+  ['not a date', '2026-13-45T99:00:00Z', /not a valid date-time/],
+] as const) {
+  test(`POST /jobs/:id/approve: publishAt ${name} -> 400, job untouched`, async () => {
+    const dispatchCalls: string[] = [];
+    const { deps, jobs, artifactRows } = fakeDeps({
+      dispatcher: { dispatch: async (id: string) => void dispatchCalls.push(id) },
+    });
+    const app = createApp(deps);
+    const id = await createAwaitingJob(
+      app,
+      jobs,
+      { ...validManifest(), gates: ['review'], publish: ['facebook'] },
+      'review',
+    );
+    const res = await approveAt(app, id, publishAt);
+    assert.equal(res.status, 400);
+    assert.match((await res.json()).error, message);
+    assert.equal(jobs.get(id)!.status, 'awaiting_review:review');
+    assert.deepEqual(dispatchCalls, []);
+    assert.equal(artifactRows.length, 0);
+  });
+}
+
+test('POST /jobs/:id/approve: publishAt is refused on a gate that does not publish', async () => {
+  const { deps, jobs } = fakeDeps();
+  const app = createApp(deps);
+  const id = await createAwaitingJob(
+    app,
+    jobs,
+    { ...validManifest(), gates: ['assets_review', 'review'], publish: ['facebook'] },
+    'assets_review',
+  );
+  const res = await approveAt(app, id, inHours(5, '-04:00'));
+  assert.equal(res.status, 400);
+  assert.match((await res.json()).error, /last gate/);
+  assert.equal(jobs.get(id)!.status, 'awaiting_review:assets_review');
+});
+
 test('POST /jobs/:id/approve: assets_review records the approval and queues a full render', async () => {
   const dispatchCalls: Array<[string, string | undefined]> = [];
   const { deps, jobs, artifactRows } = fakeDeps({
