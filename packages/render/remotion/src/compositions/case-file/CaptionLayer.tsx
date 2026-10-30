@@ -9,6 +9,10 @@ const { fontFamily } = loadFont();
 type Props = {
   text?: string;
   words?: CaptionWord[] | null;
+  // A solid navy plate behind the words — for scenes that show a document or
+  // footage, where the outlined words alone get lost in the page's own print
+  // (P.11, job 9c68674f). Plain navy visual cards don't need it.
+  plate?: boolean;
 };
 
 // "Highlighter Sweep" — phrase-chunked, not the whole sentence at once. Round-3
@@ -71,7 +75,7 @@ function wrapLines(words: Word[], charsPerLine: number): number[][] {
 // bottom-anchored layout instead of the fixed band.
 const CAPTION_TOP_FRACTION = 0.74;
 
-export const CaptionLayer: React.FC<Props> = ({ text, words }) => {
+export const CaptionLayer: React.FC<Props> = ({ text, words, plate = false }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   if (!text) return null;
@@ -157,39 +161,52 @@ export const CaptionLayer: React.FC<Props> = ({ text, words }) => {
               }
         }
       >
-        {lines.map((line, lineIdx) => (
-          <p
-            key={lineIdx}
-            style={{
-              fontFamily,
-              fontWeight: 700,
-              fontSize,
-              lineHeight: 1.35,
-              margin: 0,
-              textAlign: 'center',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {line.map((i, k) => (
-              <span key={i}>
-                <span
-                  style={{
-                    display: 'inline-block',
-                    color: i === activeIndex ? PALETTE.background : PALETTE.paper,
-                    background: i === activeIndex ? PALETTE.highlight : 'transparent',
-                    boxShadow: i === activeIndex ? '0 2px 10px rgba(0,0,0,0.55)' : 'none',
-                    textShadow: i === activeIndex ? 'none' : STROKE,
-                    borderRadius: 6,
-                    padding: i === activeIndex ? '3px 12px' : '2px 0',
-                  }}
-                >
-                  {chunk[i].text}
+        <div
+          style={
+            plate
+              ? {
+                  background: PALETTE.background,
+                  borderRadius: 16,
+                  padding: '12px 28px',
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.45)',
+                }
+              : undefined
+          }
+        >
+          {lines.map((line, lineIdx) => (
+            <p
+              key={lineIdx}
+              style={{
+                fontFamily,
+                fontWeight: 700,
+                fontSize,
+                lineHeight: 1.35,
+                margin: 0,
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {line.map((i, k) => (
+                <span key={i}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      color: i === activeIndex ? PALETTE.background : PALETTE.paper,
+                      background: i === activeIndex ? PALETTE.highlight : 'transparent',
+                      boxShadow: i === activeIndex ? '0 2px 10px rgba(0,0,0,0.55)' : 'none',
+                      textShadow: i === activeIndex ? 'none' : STROKE,
+                      borderRadius: 6,
+                      padding: i === activeIndex ? '3px 12px' : '2px 0',
+                    }}
+                  >
+                    {chunk[i].text}
+                  </span>
+                  {k < line.length - 1 ? ' ' : ''}
                 </span>
-                {k < line.length - 1 ? ' ' : ''}
-              </span>
-            ))}
-          </p>
-        ))}
+              ))}
+            </p>
+          ))}
+        </div>
       </div>
     </AbsoluteFill>
   );
