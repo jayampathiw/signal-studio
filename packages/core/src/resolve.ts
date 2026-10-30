@@ -46,7 +46,7 @@ export function resolveJob(
     // template: manifest always names one explicitly (required field), so
     // there's no project/env fallback tier for it — it's not a "default".
     template: manifest.template,
-    voice: manifest.audio.voice || project.defaults.voice || env.defaultVoice || 'bm_george',
+    voice: manifest.audio.voice ?? (project.defaults.voice || env.defaultVoice || 'bm_george'),
     speed: manifest.audio.speed ?? project.defaults.speed ?? env.defaultSpeed ?? 1.0,
     outputs: manifest.outputs.length > 0 ? manifest.outputs : project.defaults.outputs,
     // Gates are additive, not overriding — a project can require gates on

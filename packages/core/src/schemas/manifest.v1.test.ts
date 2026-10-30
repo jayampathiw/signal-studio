@@ -30,7 +30,8 @@ test('valid manifest passes', () => {
 
 test('defaults apply (audio, watermark, gates, publish, inputs)', () => {
   const result = Manifest.parse(validManifest());
-  assert.equal(result.audio.voice, 'bm_george');
+  assert.equal(result.audio.voice, undefined); // left to the project's defaults
+  assert.equal(result.audio.speed, undefined);
   assert.equal(result.watermark.text, 'AI visualisation');
   assert.deepEqual(result.gates, []);
   assert.deepEqual(result.publish, []);

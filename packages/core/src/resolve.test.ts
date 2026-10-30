@@ -38,7 +38,7 @@ test('resolveJob snapshot: manifest fields win, gates are additive', () => {
     projectSlug: 'test-project',
     orgId: 'org-1',
     template: 'clips-overlay',
-    voice: 'bm_george', // manifest's own zod default wins over project's af_heart
+    voice: 'af_heart', // manifest sets no audio, so the project's default applies
     speed: 1.0,
     outputs: ['fb'], // manifest declared one output; project default (fb, ig) not used
     gates: ['image-quality-gate', 'continuity-checker'],
@@ -50,6 +50,22 @@ test('resolveJob snapshot: manifest fields win, gates are additive', () => {
       publish: 'facebook',
     },
   });
+});
+
+test('resolveJob: voice/speed come from the project unless the manifest sets them', () => {
+  const slow = Project.parse({ ...project, defaults: { ...project.defaults, speed: 1.15 } });
+  assert.deepEqual((({ voice, speed }) => ({ voice, speed }))(resolveJob(slow, manifest)), {
+    voice: 'af_heart',
+    speed: 1.15,
+  });
+  const own = Manifest.parse({ ...manifest, audio: { voice: 'am_michael', speed: 0.9 } });
+  const resolved = resolveJob(slow, own);
+  assert.deepEqual(
+    { voice: resolved.voice, speed: resolved.speed },
+    { voice: 'am_michael', speed: 0.9 },
+  );
+  const voiceOnly = Manifest.parse({ ...manifest, audio: { voice: 'am_michael' } });
+  assert.equal(resolveJob(slow, voiceOnly).speed, 1.15);
 });
 
 test('resolveJob falls back to project defaults.outputs when manifest.outputs somehow empty', () => {

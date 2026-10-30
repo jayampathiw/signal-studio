@@ -138,8 +138,11 @@ export const Shot = z.object({
 });
 
 export const ManifestAudio = z.object({
-  voice: z.string().default('bm_george'),
-  speed: z.number().min(0.5).max(2).default(1.0),
+  // No defaults on purpose: an unset voice/speed falls back to the project's
+  // `defaults` in `resolveJob`. A schema default here used to win over the
+  // project, so a job sent without `audio` got bm_george at 1.0 (P.8 bug).
+  voice: z.string().min(1).optional(),
+  speed: z.number().min(0.5).max(2).optional(),
   music: z
     .object({
       // Track A (ADR-002). `auto`: pick from the music library by mood +
@@ -397,8 +400,6 @@ export const Manifest = z
     shots: z.array(Shot).default([]),
     visual: Visual,
     audio: ManifestAudio.default({
-      voice: 'bm_george',
-      speed: 1.0,
       music: { mode: 'auto', gain_db: -18, bed_lufs: -24, duck: true },
     }),
     // P3.7 relaxation — was required unconditionally; `case-file` has no
