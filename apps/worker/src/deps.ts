@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import { createEngineClient } from '@signal-studio/db/client';
 import { ArtifactsRepo, JobsRepo, JobStagesRepo, ProjectsRepo } from '@signal-studio/db/repos';
+import { createFasterWhisperCaptionsProvider } from '@signal-studio/providers/captions-faster-whisper';
 import { createAnthropicProvider } from '@signal-studio/providers/llm-anthropic';
 import { getEngine } from '@signal-studio/render-core/engine';
 import { probeDuration } from '@signal-studio/render-ffmpeg/stills-render';
@@ -127,6 +128,7 @@ export function realRunJobDeps(): RunJobDeps {
     createStageStore: (orgId: string) => new JobStagesRepo(client, orgId),
     createStorage: createStorageProviderFor,
     synthesise: realTts(),
+    wordTimings: createFasterWhisperCaptionsProvider().wordTimings,
     compileClipsOverlay,
     compileCaseFile,
     compileStillsKenburns,

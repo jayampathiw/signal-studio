@@ -32,9 +32,11 @@ import type {
   ProjectsRepo,
 } from '@signal-studio/db/repos';
 import type {
+  CaptionsProvider,
   CarouselPublishProvider,
   PublishProvider,
   StorageProvider,
+  WordTimingT,
 } from '@signal-studio/providers/contracts';
 import { probeDuration } from '@signal-studio/render-ffmpeg/stills-render';
 import type { CarouselCompileParams } from '@signal-studio/template-carousel/compile';
@@ -110,12 +112,11 @@ const OUTPUT_TO_PLATFORM: Record<string, string> = {
  * returns `Record<outputId, TimelineT>`) that the render/upload/QA/publish
  * pipeline below runs identically regardless of which handler produced it.
  *
- * **Deliberately NOT wired for real Whisper transcription this pass,
- * flagged rather than silently skipped**: `case-file`/`stills-kenburns`/
- * `shorts-916`'s own `compile()` all accept an optional real-transcript
- * resolver (`transcribedWords`/`sceneCaptions`) and gracefully fall back to
- * the authored caption/script text when it returns nothing — every handler
- * below takes that fallback path. Building a reusable `captions`/whisper
+ * **Real Whisper transcription is wired for `case-file` only**
+ * (`narrationWordTimings()`). `stills-kenburns`/`shorts-916`'s own
+ * `compile()` also accept a real-transcript resolver
+ * (`transcribedWords`/`sceneCaptions`) but still take the fallback path of
+ * the authored caption/script text. Building a reusable `captions`/whisper
  * stage is real, separate scope; P3.1/P3.2/P3.3's own original real
  * verifications exercised the real-transcript path by hand, outside a real
  * job, which is what those templates' own tracker entries already record.
@@ -221,6 +222,9 @@ export type RunJobDeps = {
   fetchFn?: typeof fetch;
   // Track P (P.4): draws the `assets_review` proof images; ffmpeg by default.
   drawProof?: DrawProof;
+  // case-file's on-video captions (faster-whisper in production). Without it,
+  // or when it fails, captions fall back to evenly timed narration words.
+  wordTimings?: CaptionsProvider['wordTimings'];
 };
 
 // Minimal legal path from wherever a job currently sits to `running`, per
@@ -488,6 +492,12 @@ const caseFileHandler: TemplateHandler = {
     }));
 
     const watermarkPath = await downloadBrandWatermark(ctx);
+    const sceneWords = await narrationWordTimings(
+      ctx,
+      scenes,
+      ttsOut?.durations ?? {},
+      path.join(tmpDir, 'vo'),
+    );
 
     const timelines: Record<string, TimelineT> = {};
     for (const outputId of resolvedJob.outputs) {
@@ -506,15 +516,52 @@ const caseFileHandler: TemplateHandler = {
             ? path.join(tmpDir, 'vo', `${sceneId}.wav`)
             : null,
         narrationDurationSec: (sceneId) => ttsOut!.durations[sceneId],
-        // Real Whisper transcription isn't wired into a real job this pass
-        // (see this file's own header) — compile() falls back to the
-        // authored `captionText` when this returns null.
-        transcribedWords: () => null,
+        transcribedWords: (sceneId) => sceneWords[sceneId] ?? null,
       });
     }
     return { timelines, engine: 'remotion' };
   },
 };
+
+// The narration words of each voiced scene, timed against its TTS audio.
+// Policy File jobs never set `shot.text`, so without these the case-file
+// video has no on-video captions at all.
+async function narrationWordTimings(
+  ctx: TemplateHandlerCtx,
+  scenes: Array<{ id: string; narrationText?: string }>,
+  durations: Record<string, number>,
+  voDir: string,
+): Promise<Record<string, WordTimingT[]>> {
+  const { deps, logger, job } = ctx;
+  const out: Record<string, WordTimingT[]> = {};
+  for (const scene of scenes) {
+    const durationSec = durations[scene.id];
+    if (durationSec === undefined || !scene.narrationText) continue;
+    let words: WordTimingT[] = [];
+    if (deps.wordTimings) {
+      words = await deps
+        .wordTimings({
+          wavPath: path.join(voDir, `${scene.id}.wav`),
+          hintText: scene.narrationText,
+        })
+        .catch((err: unknown) => {
+          logger.error(`captions: transcription failed for ${scene.id}, using even timing`, {
+            jobId: job.id,
+            error: String(err),
+          });
+          return [];
+        });
+    }
+    out[scene.id] = words.length ? words : evenlyTimedWords(scene.narrationText, durationSec);
+  }
+  return out;
+}
+
+function evenlyTimedWords(text: string, durationSec: number): WordTimingT[] {
+  const tokens = text.split(/\s+/).filter(Boolean);
+  const step = durationSec / tokens.length;
+  return tokens.map((w, i) => ({ text: w, start: i * step, end: (i + 1) * step }));
+}
 
 // ---- stills-kenburns ----
 
