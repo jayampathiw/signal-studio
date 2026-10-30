@@ -10,6 +10,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 
+import { planAutoZoom, regionAt } from './auto-zoom';
 import { PALETTE } from './palette';
 import { resolveAsset } from '../resolve-asset';
 
@@ -18,6 +19,8 @@ type Props = {
   highlights?: HighlightBox[] | null;
   zoomFrom?: ZoomRegion | null;
   zoomTo?: ZoomRegion | null;
+  // Camera follows the highlight boxes instead of zoomFrom/zoomTo (auto-zoom.ts).
+  autoZoom?: boolean;
 };
 
 const FULL_PAGE: ZoomRegion = { x: 0, y: 0, width: 1, height: 1 };
@@ -58,7 +61,13 @@ function useImageNaturalSize(src: string): { width: number; height: number } | n
 // default to the full page (no motion) when omitted. The evidence highlight box (a
 // drawn rectangle, not just camera motion) animates in at highlight.fromSec/toSec,
 // independent of the camera move.
-export const DocumentHighlight: React.FC<Props> = ({ imageUrl, highlights, zoomFrom, zoomTo }) => {
+export const DocumentHighlight: React.FC<Props> = ({
+  imageUrl,
+  highlights,
+  zoomFrom,
+  zoomTo,
+  autoZoom,
+}) => {
   const frame = useCurrentFrame();
   const { durationInFrames, fps, width: frameWidth, height: frameHeight } = useVideoConfig();
   const resolvedUrl = resolveAsset(imageUrl);
@@ -67,12 +76,23 @@ export const DocumentHighlight: React.FC<Props> = ({ imageUrl, highlights, zoomF
   const from = zoomFrom ?? FULL_PAGE;
   const to = zoomTo ?? from;
   const t = interpolate(frame, [0, durationInFrames], [0, 1], { extrapolateRight: 'clamp' });
-  const region: ZoomRegion = {
-    x: lerp(from.x, to.x, t),
-    y: lerp(from.y, to.y, t),
-    width: lerp(from.width, to.width, t),
-    height: lerp(from.height, to.height, t),
-  };
+  const autoKeys =
+    autoZoom && naturalSize && highlights?.length
+      ? planAutoZoom(highlights, {
+          pageAspect: naturalSize.width / naturalSize.height,
+          frameAspect: frameWidth / frameHeight,
+          durationSec: durationInFrames / fps,
+        })
+      : [];
+  const region: ZoomRegion =
+    autoKeys.length > 0
+      ? regionAt(autoKeys, frame / fps)
+      : {
+          x: lerp(from.x, to.x, t),
+          y: lerp(from.y, to.y, t),
+          width: lerp(from.width, to.width, t),
+          height: lerp(from.height, to.height, t),
+        };
 
   // Default bumped from 0.55 — at that opacity the multiply-blended fill read as a
   // washed-out gray/tan wash rather than a solid highlighter mark (review feedback

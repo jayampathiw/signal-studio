@@ -487,6 +487,10 @@
             "showOutro": {
               "type": "boolean",
               "default": true
+            },
+            "autoZoom": {
+              "type": "boolean",
+              "default": true
             }
           },
           "required": ["caseId"],

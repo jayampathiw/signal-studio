@@ -130,6 +130,8 @@ test('showOutro/specimen default true/false and pass through when set', () => {
 
   const overridden = compile(baseParams({ showOutro: false, specimen: true }));
   assert.equal(overridden.caseMeta?.showOutro, false);
+  assert.equal(defaults.caseMeta?.autoZoom, false);
+  assert.equal(compile(baseParams({ autoZoom: true })).caseMeta?.autoZoom, true);
   assert.equal(overridden.caseMeta?.specimen, true);
 });
 

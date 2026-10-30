@@ -225,6 +225,9 @@ export const CaseFileConfig = z.object({
   hideSourceOnScreen: z.boolean().default(false),
   specimen: z.boolean().default(false),
   showOutro: z.boolean().default(true),
+  // P.13: push the camera in to each highlight on document scenes without a
+  // hand-set zoom, so the page is readable in 9:16. `false` shows pages whole.
+  autoZoom: z.boolean().default(true),
 });
 
 // P3.7 addition — `stills-kenburns`'s own top-level config. Its real input
