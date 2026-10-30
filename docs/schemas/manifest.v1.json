@@ -307,13 +307,12 @@
           "properties": {
             "voice": {
               "type": "string",
-              "default": "bm_george"
+              "minLength": 1
             },
             "speed": {
               "type": "number",
               "minimum": 0.5,
-              "maximum": 2,
-              "default": 1
+              "maximum": 2
             },
             "music": {
               "type": "object",
@@ -354,8 +353,6 @@
           },
           "additionalProperties": false,
           "default": {
-            "voice": "bm_george",
-            "speed": 1,
             "music": {
               "mode": "auto",
               "gain_db": -18,
