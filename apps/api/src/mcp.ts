@@ -4,7 +4,7 @@ import { Manifest } from '@signal-studio/core/schemas';
 import { z } from 'zod';
 
 import type { AppDeps } from './app.ts';
-import { approveGate } from './approve.ts';
+import { ApproveError, approveGate } from './approve.ts';
 import { queueJob } from './queue.ts';
 import { buildReviewMedia, ffmpegReviewMedia, summarizeMedia } from './review-media.ts';
 
@@ -112,10 +112,10 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
     {
       title: 'Approve review gate',
       description:
-        'Approve the review gate a job is waiting on. Moves it to the next gate, or publishes the already-rendered video (status queued), or marks it delivered when there is nothing to publish.',
-      inputSchema: { id: z.string().min(1) },
+        'Approve the review gate a job is waiting on. Moves it to the next gate, or publishes the already-rendered video (status queued), or marks it delivered when there is nothing to publish. On the last gate, optional `publishAt` (ISO 8601 with a timezone offset, 15 minutes to 29 days ahead) schedules the post on the platform instead of posting now; without it the post goes live immediately.',
+      inputSchema: { id: z.string().min(1), publishAt: z.string().min(1).optional() },
     },
-    async ({ id }) => {
+    async ({ id, publishAt }) => {
       const job = await deps.jobsRepo.getById(id);
       if (!job || job.org_id !== orgId) {
         return { content: [{ type: 'text', text: 'Job not found' }], isError: true };
@@ -126,8 +126,13 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
           isError: true,
         };
       }
-      const status = await approveGate(deps, job);
-      return { content: [{ type: 'text', text: JSON.stringify({ ...job, status }) }] };
+      try {
+        const status = await approveGate(deps, job, { publishAt });
+        return { content: [{ type: 'text', text: JSON.stringify({ ...job, status }) }] };
+      } catch (err) {
+        if (!(err instanceof ApproveError)) throw err;
+        return { content: [{ type: 'text', text: err.message }], isError: true };
+      }
     },
   );
 

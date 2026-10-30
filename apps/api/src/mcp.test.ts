@@ -220,6 +220,37 @@ test('approve_gate on the last gate queues the job for publish-only dispatch', a
   assert.deepEqual(dispatchCalls, [[job.id, 'publish']]);
 });
 
+test('approve_gate passes publishAt through, and reports a bad one as a tool error', async () => {
+  const deps = fakeDeps();
+  deps.dispatcher = { dispatch: async () => {} };
+  const client = await connectedClient(deps, ORG_ID);
+  const created = await client.callTool({
+    name: 'create_job',
+    arguments: {
+      projectSlug: 'test-project',
+      manifest: { ...validManifest(), gates: ['review'], publish: ['facebook'] },
+    },
+  });
+  const job = JSON.parse(firstText(created as never));
+  await deps.jobsRepo.updateStatus(job.id, 'awaiting_review:review');
+
+  const bad = await client.callTool({
+    name: 'approve_gate',
+    arguments: { id: job.id, publishAt: '2026-10-31T19:00:00' },
+  });
+  assert.equal(bad.isError, true);
+  assert.match(firstText(bad as never), /needs a timezone/);
+
+  const recorded: unknown[] = [];
+  deps.createArtifactsRepo = () =>
+    ({ record: async (...args: unknown[]) => void recorded.push(args[4]) }) as never;
+  const publishAt = new Date(Date.now() + 6 * 3600_000).toISOString();
+  const ok = await client.callTool({ name: 'approve_gate', arguments: { id: job.id, publishAt } });
+  assert.equal(ok.isError, undefined);
+  assert.equal(JSON.parse(firstText(ok as never)).status, 'queued');
+  assert.deepEqual(recorded, [{ gate: 'review', publishAt }]);
+});
+
 test('presign_upload returns a real presigned URL shape from the fake storage provider', async () => {
   const deps = fakeDeps();
   const client = await connectedClient(deps, ORG_ID);
