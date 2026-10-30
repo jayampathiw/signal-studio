@@ -1171,7 +1171,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [ ] Whisper captions are wired for `case-file` only; `stills-kenburns`/`shorts-916` (and `ss run-local`) still caption from authored text.
   - [ ] The faster-whisper `tiny` model downloads from Hugging Face on the first job after each worker restart (~13 s, unauthenticated); cache it in a volume or bake it into the image if that becomes a problem.
   - [x] Check how Whisper writes numbers in on-video captions ("54 percent" vs "fifty-four percent") on the first captioned reel — **answered 2026-10-30 (job `9c68674f`): as words, split at hyphens** ("twenty -twenty -four", "ninety -five percent"). Fix tracked in P.11.
-  - [ ] Auto-zoom for `document` shots: push the camera toward the highlighted lines (today a page is shown whole, which is small in 9:16; zoom needs coordinates nobody has in the chat).
+  - [x] Auto-zoom for `document` shots (moved to P.13, 2026-10-30): push the camera toward the highlighted lines (today a page is shown whole, which is small in 9:16; zoom needs coordinates nobody has in the chat).
 - [x] **P.9 Review gates from the chat — v0.1.3** (2026-10-29, owner's request)
   - [x] New MCP tool `get_review_media` (`apps/api/src/review-media.ts`): at `assets_review` returns each shot's proof image (page + highlight boxes); after render, evenly spaced video frames (ffmpeg in the API container, default 6, ~430 KB) plus the video link to watch with sound. `get_job` now includes `media`: video links, proof links, published post links. `ASSETS_PROOF_KIND` moved to `@signal-studio/core/state`.
   - [x] Tests: 4 new MCP tests (API suite green); real-ffmpeg check against job `ae6c70b9`'s video and proofs. PR #55.
@@ -1195,6 +1195,13 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] Released: `v0.1.6` tagged at `487ae74`, no jobs in flight, 13 GB free; Watchtower restarted worker + api with the new code. Guide updated (workspace PR #12): ask the owner for the time, repeat it in US Eastern and IST, pass `publishAt` with the offset, never pick a time.
   - [ ] Owner re-uploads the guide and reconnects the connector (so `approve_gate` shows `publishAt`).
   - [ ] **T-P** — one real reel scheduled from the chat goes live at the chosen time.
+- [~] **P.13 Auto-zoom on document scenes** (2026-10-30)
+  - [x] `packages/render/remotion/src/compositions/case-file/auto-zoom.ts`: the camera opens on the whole page, then pushes in to each highlight beat (boxes sharing a `fromSec`, so a wrapped quote stays whole) 0.3 s before it appears (0.9 s eased move), pans between beats, holds on the last. Frame-shaped region with a margin, at most ~1.7× the whole-page view (in 9:16 and 16:9 alike), never further out than the whole page.
+  - [x] On by default for new jobs: `case_file.autoZoom` (manifest, default `true`) → `caseMeta.autoZoom` → `DocumentHighlight`. Scenes with a hand-set `zoomFrom`/`zoomTo` and older timelines (no `autoZoom`) render as before.
+  - [x] Tests: 6 planner tests (the remotion package now runs its own `test`), compile pass-through. Remotion stills of job `9c68674f`'s real page and boxes (recomputed from the PDF) in 9:16 and 16:9.
+  - [ ] Known limit: a quote that wraps onto two lines zooms less (~1.2×), since both pieces must stay in view — the guide asks for short, single-line quotes.
+  - [ ] Release; guide's "Zoom: pages are shown whole" note replaced.
+  - [ ] **T-P** — the next Policy File reel's pages are readable on a phone.
 
 ---
 

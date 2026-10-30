@@ -73,6 +73,7 @@ export type CaseFileCompileParams = {
   hideSourceOnScreen?: boolean;
   specimen?: boolean;
   showOutro?: boolean;
+  autoZoom?: boolean;
   // Real, already-synthesized narration path for a scene, or null if this
   // scene has no narration (a silent connective beat).
   findNarrationPath: (sceneId: string) => string | null;
@@ -163,6 +164,7 @@ export function compile(params: CaseFileCompileParams): TimelineT {
       sourceCitation: params.hideSourceOnScreen ? undefined : params.sourceCitation,
       specimen: params.specimen ?? false,
       showOutro: params.showOutro ?? true,
+      autoZoom: params.autoZoom ?? false,
     },
     watermark: params.watermarkPath
       ? {

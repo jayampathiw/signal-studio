@@ -41,6 +41,9 @@ export const CaseMeta = z.object({
   // behavior. Making it explicit here so `compile()` can set it instead of
   // relying on the composition's own silent default.
   showOutro: z.boolean().optional(),
+  // P.13: the camera follows the highlight boxes on document scenes that
+  // set no zoomFrom/zoomTo. Absent = off, so older timelines render as before.
+  autoZoom: z.boolean().optional(),
 });
 
 export const MusicTrack = z.object({

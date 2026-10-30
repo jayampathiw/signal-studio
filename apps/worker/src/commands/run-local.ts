@@ -225,6 +225,7 @@ async function runCaseFileLocal(
       hideSourceOnScreen: caseConfig.hideSourceOnScreen,
       specimen: caseConfig.specimen,
       showOutro: caseConfig.showOutro,
+      autoZoom: caseConfig.autoZoom,
       findNarrationPath: (sceneId) => narrationPaths[sceneId] ?? null,
       narrationDurationSec: (sceneId) => narrationDurations[sceneId],
       transcribedWords: () => null,

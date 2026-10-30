@@ -47,6 +47,7 @@ export type CaseFileProps = {
     sourceCitation?: string;
     specimen?: boolean;
     showOutro?: boolean;
+    autoZoom?: boolean;
   } | null;
   watermarkUrl?: string;
   scenes: CaseFileScene[];
@@ -145,6 +146,7 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
               highlights={scene.highlights}
               zoomFrom={zoomFrom}
               zoomTo={zoomTo}
+              autoZoom={caseMeta?.autoZoom === true && !scene.zoomFrom && !scene.zoomTo}
             />
           )}
           <CaptionLayer text={scene.captionText} words={scene.words} plate={!scene.visual} />

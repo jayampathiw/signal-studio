@@ -515,6 +515,7 @@ const caseFileHandler: TemplateHandler = {
         hideSourceOnScreen: caseConfig.hideSourceOnScreen,
         specimen: caseConfig.specimen,
         showOutro: caseConfig.showOutro,
+        autoZoom: caseConfig.autoZoom,
         findNarrationPath: (sceneId) =>
           ttsOut?.durations[sceneId] !== undefined
             ? path.join(tmpDir, 'vo', `${sceneId}.wav`)

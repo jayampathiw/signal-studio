@@ -25,6 +25,7 @@
     "@signal-studio/types": "workspace:*"
   },
   "scripts": {
-    "studio": "npx remotion studio src/index.ts"
+    "studio": "npx remotion studio src/index.ts",
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'"
   }
 }

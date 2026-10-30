@@ -416,6 +416,9 @@
             },
             "showOutro": {
               "type": "boolean"
+            },
+            "autoZoom": {
+              "type": "boolean"
             }
           },
           "required": ["caseId"],
