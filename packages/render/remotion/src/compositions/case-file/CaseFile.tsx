@@ -147,7 +147,7 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
               zoomTo={zoomTo}
             />
           )}
-          <CaptionLayer text={scene.captionText} words={scene.words} />
+          <CaptionLayer text={scene.captionText} words={scene.words} plate={!scene.visual} />
           {scene.narrationUrl && <Audio src={resolveAsset(scene.narrationUrl)} />}
         </Sequence>
       ))}
