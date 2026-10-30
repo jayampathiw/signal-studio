@@ -1200,7 +1200,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] On by default for new jobs: `case_file.autoZoom` (manifest, default `true`) → `caseMeta.autoZoom` → `DocumentHighlight`. Scenes with a hand-set `zoomFrom`/`zoomTo` and older timelines (no `autoZoom`) render as before.
   - [x] Tests: 6 planner tests (the remotion package now runs its own `test`), compile pass-through. Remotion stills of job `9c68674f`'s real page and boxes (recomputed from the PDF) in 9:16 and 16:9.
   - [ ] Known limit: a quote that wraps onto two lines zooms less (~1.2×), since both pieces must stay in view — the guide asks for short, single-line quotes.
-  - [ ] Release; guide's "Zoom: pages are shown whole" note replaced.
+  - [x] Released in `v0.1.7` (tagged at `e4bc1d5`, with the voice-default fix and the baked Whisper model), no jobs in flight, 13 GB free; Watchtower restarted worker + api; the running worker has auto-zoom, the optional `audio.voice`, and the baked `faster-whisper-tiny` model. Guide updated (workspace PR #13): the camera zooms to each highlight; short single-line quotes zoom closest.
   - [ ] **T-P** — the next Policy File reel's pages are readable on a phone.
 
 ---
