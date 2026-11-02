@@ -1207,7 +1207,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] `case-file` `source.url` (no `page`) can now be a still or a video: a known extension decides, otherwise the response's content-type (`image/*` → `shot.image`, `video/*` → `shot.clip`, `.mp4`). A retry finds the stored copy under either name. `CaseFile.tsx` already plays video scenes (`StockVideo`, cover-fit, muted); the worker now downloads `image ?? clip` and `compile()` marks the scene `video`.
   - [x] `create_job` refuses a link in `shot.image`/`shot.clip` ("put a link in source: { url }"), so the Project sees it at once; a missing upload at `assets_review` is now non-retryable.
   - [x] Tests: sources (extension-less link → clip/still, retry from storage, HTML refused), schema (link in `clip`/`image`), run-job (case-file with a stock-clip scene → `video` source). Checked: a clip shorter than its scene holds its last frame (Remotion still at 3 s of a 1 s clip); the four real Pexels clips are H.264, 7–18 s, one 4K (26 MB).
-  - [ ] Release; guide: stock footage = `source: { url }` with the Pexels page's download link, never in `clip`.
+  - [x] Released: `v0.1.8` tagged at `53d24e6` (PR #67), no jobs in flight, 13 GB free; Watchtower restarted worker + api with the new code. Guide updated (workspace PR #14): stock footage = `source: { url }` with the Pexels download link, never in `clip`/`image`; footage is illustration only (never the people in the case, about half the scenes at most); footer line "Video clips are stock footage (Pexels), shown for illustration." when used.
   - [ ] **T-P** — the FTC imposter reel renders with its four Pexels clips and posts.
 
 ---
