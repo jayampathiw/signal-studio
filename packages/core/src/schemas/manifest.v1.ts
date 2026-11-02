@@ -453,6 +453,17 @@ export const Manifest = z
           message: 'a shot takes either source or an uploaded image/clip, not both',
         });
       }
+      // image/clip name a file uploaded with presign_upload. A link there
+      // used to fail only at render time (job 4e8b820c), so say where it goes.
+      for (const field of ['image', 'clip'] as const) {
+        if (/^https?:\/\//i.test(shot[field] ?? '')) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['shots', i, field],
+            message: `${field} is the name of an uploaded file, not a link — put a link in source: { url }`,
+          });
+        }
+      }
     });
     // clips-overlay is the only template that requires every shot to carry
     // an actual video clip — other visual modes (stills-kenburns, etc.)

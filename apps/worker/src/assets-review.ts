@@ -4,7 +4,11 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import type { ManifestT, ShotHighlightT } from '@signal-studio/core/schemas';
-import { ASSETS_PROOF_KIND, GATE_APPROVAL_KIND } from '@signal-studio/core/state';
+import {
+  ASSETS_PROOF_KIND,
+  GATE_APPROVAL_KIND,
+  NonRetryableError,
+} from '@signal-studio/core/state';
 import type { ArtifactsRepo } from '@signal-studio/db/repos';
 import type { StorageProvider } from '@signal-studio/providers/contracts';
 
@@ -80,7 +84,10 @@ export async function recordAssetProofs(params: {
     if (!file) continue;
     const res = await fetchFn(await storage.signedUrl(`jobs/${jobId}/uploads/${shot.id}/${file}`));
     if (!res.ok) {
-      throw new Error(`assets_review: could not read shot "${shot.id}" (${file}) for its proof`);
+      // The file was never uploaded (or the name is wrong): retrying can't fix it.
+      throw new NonRetryableError(
+        `assets_review: could not read shot "${shot.id}" (${file}) for its proof`,
+      );
     }
     const input = path.join(dir, `${shot.id}-${file}`);
     await writeFile(input, Buffer.from(await res.arrayBuffer()));

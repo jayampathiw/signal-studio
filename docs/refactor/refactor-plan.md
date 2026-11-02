@@ -1202,6 +1202,13 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [ ] Known limit: a quote that wraps onto two lines zooms less (~1.2×), since both pieces must stay in view — the guide asks for short, single-line quotes.
   - [x] Released in `v0.1.7` (tagged at `e4bc1d5`, with the voice-default fix and the baked Whisper model), no jobs in flight, 13 GB free; Watchtower restarted worker + api; the running worker has auto-zoom, the optional `audio.voice`, and the baked `faster-whisper-tiny` model. Guide updated (workspace PR #13): the camera zooms to each highlight; short single-line quotes zoom closest.
   - [ ] **T-P** — the next Policy File reel's pages are readable on a phone.
+- [~] **P.14 Stock footage from links in case-file — v0.1.8** (2026-11-02, owner's request; found on job `4e8b820c`)
+  - Job `4e8b820c` (FTC imposter scams) failed at `assets_review`: the Project put four Pexels links in `shot.clip`, which names an uploaded file, so the proof step looked for `jobs/<id>/uploads/s1/https://…` and got a 404, marked retryable, so the worker re-checked all the document pages three times. Pexels itself is fine: `pexels.com/download/video/<id>/` redirects to the MP4 from the production server (no Cloudflare block).
+  - [x] `case-file` `source.url` (no `page`) can now be a still or a video: a known extension decides, otherwise the response's content-type (`image/*` → `shot.image`, `video/*` → `shot.clip`, `.mp4`). A retry finds the stored copy under either name. `CaseFile.tsx` already plays video scenes (`StockVideo`, cover-fit, muted); the worker now downloads `image ?? clip` and `compile()` marks the scene `video`.
+  - [x] `create_job` refuses a link in `shot.image`/`shot.clip` ("put a link in source: { url }"), so the Project sees it at once; a missing upload at `assets_review` is now non-retryable.
+  - [x] Tests: sources (extension-less link → clip/still, retry from storage, HTML refused), schema (link in `clip`/`image`), run-job (case-file with a stock-clip scene → `video` source). Checked: a clip shorter than its scene holds its last frame (Remotion still at 3 s of a 1 s clip); the four real Pexels clips are H.264, 7–18 s, one 4K (26 MB).
+  - [ ] Release; guide: stock footage = `source: { url }` with the Pexels page's download link, never in `clip`.
+  - [ ] **T-P** — the FTC imposter reel renders with its four Pexels clips and posts.
 
 ---
 
