@@ -138,7 +138,12 @@ export function compile(params: CaseFileCompileParams): TimelineT {
     return {
       id: scene.id,
       durationSecs,
-      source: scene.imagePath ? { localPath: scene.imagePath, type: 'image' } : undefined,
+      source: scene.imagePath
+        ? {
+            localPath: scene.imagePath,
+            type: /\.(mp4|mov|webm|m4v)$/i.test(scene.imagePath) ? 'video' : 'image',
+          }
+        : undefined,
       narrationPath: narrationPath ?? undefined,
       captionText,
       highlights: highlights.length ? highlights : undefined,

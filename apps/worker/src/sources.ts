@@ -35,6 +35,9 @@ export type ResolveSourcesParams = {
 };
 
 type Kind = 'image' | 'clip';
+// What a shot's link may turn out to be: case-file plays stock video as well
+// as stills, so its link decides by what the site sends back.
+type Wanted = Kind | 'either';
 
 const DEFAULT_MAX_BYTES = 200 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 120_000;
@@ -44,16 +47,22 @@ const KNOWN_EXT: Record<Kind, string[]> = {
   clip: ['.mp4', '.mov', '.webm', '.m4v'],
 };
 
-// Templates whose shots are video clips; every other shot-based template
-// (case-file, …) takes stills.
+// Templates whose shots are video clips; case-file takes stills or stock
+// video (CaseFile.tsx's StockVideo); every other template takes stills.
 const CLIP_TEMPLATES = new Set(['clips-overlay', 'compilation']);
+const STILL_OR_CLIP_TEMPLATES = new Set(['case-file']);
 
 export async function resolveShotSources(
   params: ResolveSourcesParams,
 ): Promise<ManifestT['shots']> {
   const { manifest } = params;
   if (!manifest.shots.some((s) => s.source)) return manifest.shots;
-  const kind: Kind = CLIP_TEMPLATES.has(manifest.visual.mode) ? 'clip' : 'image';
+  const mode = manifest.visual.mode;
+  const wanted: Wanted = CLIP_TEMPLATES.has(mode)
+    ? 'clip'
+    : STILL_OR_CLIP_TEMPLATES.has(mode)
+      ? 'either'
+      : 'image';
 
   const shots: ManifestT['shots'] = [];
   for (const shot of manifest.shots) {
@@ -62,7 +71,7 @@ export async function resolveShotSources(
       continue;
     }
     if (shot.source.page !== undefined) {
-      if (kind === 'clip') {
+      if (wanted === 'clip') {
         throw new NonRetryableError(
           `run-job: shot "${shot.id}" — a PDF page source can't be used by "${manifest.visual.mode}", which needs video clips`,
         );
@@ -70,7 +79,7 @@ export async function resolveShotSources(
       shots.push(await resolveDocument(params, shot));
       continue;
     }
-    const file = await resolveUrl(params, shot.id, shot.source.url, kind);
+    const { kind, file } = await resolveUrl(params, shot.id, shot.source.url, wanted);
     shots.push({ ...shot, [kind]: file });
   }
   return shots;
@@ -90,35 +99,39 @@ type Fetched = { file: string; localPath?: string };
 /**
  * Makes sure `jobs/<id>/uploads/<shot>/<file>` holds the URL's bytes: reuses
  * the stored copy when there is one (downloading it only if `keepLocal`),
- * otherwise downloads from the site, checks it with `accept`, and stores it.
+ * otherwise downloads from the site and stores it. `accept` names the file
+ * from the response (null refuses it); `cachedFiles` are the names a stored
+ * copy may already have, tried in order.
  */
 async function fetchIntoStorage(
   params: ResolveSourcesParams,
   shotId: string,
   url: string,
-  file: string,
-  accept: { check: (type: string, body: Buffer) => boolean; expected: string },
+  cachedFiles: string[],
+  accept: { file: (type: string, body: Buffer) => string | null; expected: string },
   keepLocal: boolean,
 ): Promise<Fetched> {
   const { jobId, storage, fetchFn, tmpDir, logger } = params;
-  const key = `jobs/${jobId}/uploads/${shotId}/${file}`;
-  const localPath = path.join(tmpDir, 'sources', shotId, file);
+  const keyFor = (file: string) => `jobs/${jobId}/uploads/${shotId}/${file}`;
+  const localPathFor = (file: string) => path.join(tmpDir, 'sources', shotId, file);
   const fail = (reason: string, retryable = false) => {
     const Err = retryable ? Error : NonRetryableError;
     return new Err(`run-job: shot "${shotId}" source ${url} — ${reason}`);
   };
 
-  const storedUrl = await storage.signedUrl(key);
-  const cached = await fetchFn(
-    storedUrl,
-    keepLocal ? undefined : { headers: { Range: 'bytes=0-0' } },
-  ).catch(() => null);
-  if (cached?.ok) {
+  for (const file of cachedFiles) {
+    const key = keyFor(file);
+    const cached = await fetchFn(
+      await storage.signedUrl(key),
+      keepLocal ? undefined : { headers: { Range: 'bytes=0-0' } },
+    ).catch(() => null);
+    if (!cached?.ok) continue;
     logger.info('source already fetched', { jobId, shotId, key });
     if (!keepLocal) {
       await cached.body?.cancel();
       return { file };
     }
+    const localPath = localPathFor(file);
     await mkdir(path.dirname(localPath), { recursive: true });
     await writeFile(localPath, Buffer.from(await cached.arrayBuffer()));
     return { file, localPath };
@@ -152,10 +165,11 @@ async function fetchIntoStorage(
   const body = Buffer.from(await res.arrayBuffer());
   if (body.length > maxBytes) throw fail(`larger than ${maxBytes} bytes`);
   if (body.length === 0) throw fail('empty response');
-  if (!accept.check(type, body)) {
-    throw fail(`expected ${accept.expected}, got "${type || 'no content-type'}"`);
-  }
+  const file = accept.file(type, body);
+  if (!file) throw fail(`expected ${accept.expected}, got "${type || 'no content-type'}"`);
 
+  const key = keyFor(file);
+  const localPath = localPathFor(file);
   await mkdir(path.dirname(localPath), { recursive: true });
   await writeFile(localPath, body);
   await storage.put({ localPath, key });
@@ -169,36 +183,46 @@ async function resolveUrl(
   params: ResolveSourcesParams,
   shotId: string,
   url: string,
-  kind: Kind,
-): Promise<string> {
-  const wanted = kind === 'clip' ? 'video/' : 'image/';
+  wanted: Wanted,
+): Promise<{ kind: Kind; file: string }> {
+  const kinds: Kind[] = wanted === 'either' ? ['image', 'clip'] : [wanted];
+  // A link whose path ends in a known extension is that kind; otherwise
+  // (e.g. pexels.com/download/video/<id>/, which redirects) the response's
+  // content-type decides, so a stored copy may be under either name.
+  const ext = path.extname(new URL(url).pathname).toLowerCase();
+  const byExt = kinds.find((k) => KNOWN_EXT[k].includes(ext));
+  const cachedKinds = byExt ? [byExt] : kinds;
+  const kindOf = (type: string): Kind | undefined =>
+    cachedKinds.find((k) => type.startsWith(k === 'clip' ? 'video/' : 'image/'));
   const { file } = await fetchIntoStorage(
     params,
     shotId,
     url,
-    sourceFileName(url, kind),
-    { check: (type) => type.startsWith(wanted), expected: `${wanted}* for this template` },
+    cachedKinds.map((k) => sourceFileName(url, k)),
+    {
+      file: (type) => {
+        const kind = kindOf(type);
+        return kind ? sourceFileName(url, kind) : null;
+      },
+      expected: `${cachedKinds.map((k) => (k === 'clip' ? 'video/*' : 'image/*')).join(' or ')} for this template`,
+    },
     false,
   );
-  return file;
+  return { kind: KNOWN_EXT.clip.includes(path.extname(file)) ? 'clip' : 'image', file };
 }
 
 // Servers often send PDFs as application/octet-stream, so the bytes decide.
-const PDF_ACCEPT = {
-  check: (_type: string, body: Buffer) => body.subarray(0, 1024).includes('%PDF-'),
-  expected: 'a PDF',
-};
+function pdfAccept(file: string) {
+  return {
+    file: (_type: string, body: Buffer) => (body.subarray(0, 1024).includes('%PDF-') ? file : null),
+    expected: 'a PDF',
+  };
+}
 
 async function resolveDocument(params: ResolveSourcesParams, shot: ShotT): Promise<ShotT> {
   const { url, page, highlight } = shot.source!;
-  const pdf = await fetchIntoStorage(
-    params,
-    shot.id,
-    url,
-    `source-${urlHash(url)}.pdf`,
-    PDF_ACCEPT,
-    true,
-  );
+  const pdfFile = `source-${urlHash(url)}.pdf`;
+  const pdf = await fetchIntoStorage(params, shot.id, url, [pdfFile], pdfAccept(pdfFile), true);
   const fail = (err: unknown) => {
     if (!(err instanceof DocumentError)) return err;
     return new NonRetryableError(

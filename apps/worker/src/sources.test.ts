@@ -164,6 +164,59 @@ test('clips-overlay sources become clips and must be video', () =>
     );
   }));
 
+test('case-file: a link with no extension becomes a stock clip or a still by content-type', () =>
+  withTmp(async (tmpDir) => {
+    const { storage, stored } = fakeStorage();
+    // Like pexels.com/download/video/<id>/, which redirects to the .mp4.
+    const video = 'https://stock.test/download/video/8060389/';
+    const photo = 'https://stock.test/download/photo/123/';
+    const { fn } = fakeFetch(stored, (url) =>
+      url === video ? new Response('mp4', { headers: { 'content-type': 'video/mp4' } }) : PNG(),
+    );
+    const manifest = caseFileManifest([
+      { id: 's1', source: { url: video } },
+      { id: 's2', source: { url: photo } },
+    ]);
+    const shots = await resolveShotSources({
+      jobId: 'j1',
+      manifest,
+      storage,
+      fetchFn: fn,
+      tmpDir,
+      logger,
+    });
+    assert.equal(shots[0]!.clip, sourceFileName(video, 'clip'));
+    assert.match(shots[0]!.clip!, /\.mp4$/);
+    assert.equal(shots[0]!.image, undefined);
+    assert.equal(shots[1]!.image, sourceFileName(photo, 'image'));
+
+    // A retry finds the stored .mp4 without asking the site.
+    const again = fakeFetch(stored, () => {
+      throw new Error('source site must not be called');
+    });
+    const retried = await resolveShotSources({
+      jobId: 'j1',
+      manifest,
+      storage,
+      fetchFn: again.fn,
+      tmpDir,
+      logger,
+    });
+    assert.equal(retried[0]!.clip, shots[0]!.clip);
+    assert.ok(again.calls.every((c) => c.startsWith('https://r2.test/')));
+
+    stored.clear();
+    const html = fakeFetch(
+      stored,
+      () => new Response('<html>', { headers: { 'content-type': 'text/html' } }),
+    );
+    await assert.rejects(
+      resolveShotSources({ jobId: 'j1', manifest, storage, fetchFn: html.fn, tmpDir, logger }),
+      (err: Error) =>
+        err instanceof NonRetryableError && /expected image\/\* or video\/\*/.test(err.message),
+    );
+  }));
+
 test('failures name the shot and URL; 4xx is final, 5xx is retryable', () =>
   withTmp(async (tmpDir) => {
     const { storage, stored } = fakeStorage();
@@ -256,6 +309,15 @@ test('manifest: source cannot be combined with an uploaded image/clip, and must 
         { id: 's1', image: 'a.jpg', source: { url: 'https://example.com/a.png' } },
       ]),
     /either source or an uploaded image\/clip/,
+  );
+  // Job 4e8b820c: the Project put Pexels links in `clip`.
+  assert.throws(
+    () => caseFileManifest([{ id: 's1', clip: 'https://www.pexels.com/download/video/8060389/' }]),
+    /clip is the name of an uploaded file, not a link — put a link in source/,
+  );
+  assert.throws(
+    () => caseFileManifest([{ id: 's1', image: 'http://example.com/a.jpg' }]),
+    /image is the name of an uploaded file/,
   );
   assert.throws(
     () => caseFileManifest([{ id: 's1', source: { url: 'ftp://example.com/a.png' } }]),

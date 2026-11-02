@@ -17,7 +17,7 @@ import { PALETTE } from './palette';
 
 export const OUTRO_FRAMES = 75; // 2.5s @ 30fps
 const FULL_PAGE: ZoomRegion = { x: 0, y: 0, width: 1, height: 1 };
-const isVideoAsset = (url: string) => /\.(mp4|mov|webm)$/i.test(url);
+const isVideoAsset = (url: string) => /\.(mp4|mov|webm|m4v)$/i.test(url);
 
 type SceneVisual =
   | CounterVisual

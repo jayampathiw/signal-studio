@@ -457,16 +457,13 @@ const caseFileHandler: TemplateHandler = {
       throw new NonRetryableError('run-job: case-file jobs require manifest.case_file');
     }
 
+    // A scene's visual is a still or a stock clip (a `source.url` that turned
+    // out to be video); CaseFile.tsx tells them apart by file extension.
+    const visualFile = (shot: (typeof job.manifest.shots)[number]) => shot.image ?? shot.clip;
     for (const shot of job.manifest.shots) {
-      if (!shot.image) continue;
-      await downloadRawAsset(
-        storage,
-        job.id,
-        shot.id,
-        shot.image,
-        path.join(tmpDir, 'images'),
-        fetchFn,
-      );
+      const file = visualFile(shot);
+      if (!file) continue;
+      await downloadRawAsset(storage, job.id, shot.id, file, path.join(tmpDir, 'images'), fetchFn);
     }
 
     const stageJob: Job = { id: job.id, manifest: job.manifest, workDir: tmpDir };
@@ -482,7 +479,7 @@ const caseFileHandler: TemplateHandler = {
 
     const scenes = job.manifest.shots.map((shot) => ({
       id: shot.id,
-      imagePath: shot.image ? path.join(tmpDir, 'images', shot.image) : undefined,
+      imagePath: visualFile(shot) && path.join(tmpDir, 'images', visualFile(shot)!),
       narrationText: shot.voiceover_text,
       captionText: shot.text,
       durationSecs: shot.durationSecs,

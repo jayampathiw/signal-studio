@@ -377,6 +377,8 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
           durationSecs: 4.5,
           visual: { kind: 'counter', value: 180, suffix: ' DAYS', label: 'TO FILE AN APPEAL' },
         },
+        // Stock footage from a link (job 4e8b820c's Pexels clips).
+        { id: 's4', source: { url: 'https://stock.test/download/video/1/' }, durationSecs: 3 },
       ],
       case_file: { caseId: 'test-case', aspectRatio: '16:9' },
       outputs: ['fb'],
@@ -559,6 +561,12 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
           sourceFetches++;
           return new Response(bytes, { status: 200, headers: { 'content-type': 'image/png' } });
         }
+        if (url === 'https://stock.test/download/video/1/') {
+          return new Response('fake-mp4', {
+            status: 200,
+            headers: { 'content-type': 'video/mp4' },
+          });
+        }
         const key = new URL(url).pathname.replace(/^\//, '');
         if (key.includes('/source-') && !storedKeys.has(key)) {
           return new Response(null, { status: 404 });
@@ -573,7 +581,7 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     // Track P (P.2): the `source.url` shot was fetched once, stored under the
     // job's uploads, and rendered from that local copy like an upload.
     assert.equal(sourceFetches, 1);
-    const [sourceKey] = [...storedKeys].filter((k) => k.includes('/source-'));
+    const [sourceKey] = [...storedKeys].filter((k) => k.includes('/s3/source-'));
     assert.match(sourceKey!, /^jobs\/job-1\/uploads\/s3\/source-[0-9a-f]{12}\.png$/);
     const sourcedScene = renderedTimelines[0]!.scenes[1]! as {
       source?: { localPath: string };
@@ -600,6 +608,11 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
       suffix: ' DAYS',
       label: 'TO FILE AN APPEAL',
     });
+    const stockScene = renderedTimelines[0]!.scenes[3]! as {
+      source?: { localPath: string; type: string };
+    };
+    assert.equal(stockScene.source?.type, 'video');
+    assert.match(stockScene.source!.localPath, /images\/source-[0-9a-f]{12}\.mp4$/);
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }
