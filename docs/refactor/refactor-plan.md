@@ -1213,7 +1213,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - Jobs `04fb3b10`, `51edc869`, `797c5874` (agency imposters reel) failed with HTTP 403: since ~2026-11-04 Pexels puts a Cloudflare challenge (`cf-mitigated: challenge`) on `pexels.com/download/…` and its pages for the VPS's IP — even clips that worked on 2026-11-02. `videos.pexels.com` files and `api.pexels.com` still answer.
   - [x] `apps/worker/src/sources.ts`: a `pexels.com` video/photo page or download link is resolved through the Pexels API (`PEXELS_API_KEY`) to its file (an mp4 in the frame's orientation nearest 1080 on the short side; photos `large2x`), then downloaded from the file host. Only on a cache miss, so a retry never calls the API; the stored name stays keyed on the original link. No key or unknown id → non-retryable, with a clear message; API 5xx/429 → retryable. The credit name is logged (`pexels file resolved`).
   - [x] Tests: link parsing, API → file (orientation pick, no `www.pexels.com` fetch, retry from storage), no key / 404. Checked the real API for 9058050, 8877783, 6306262: each file downloads from the VPS (200, video/mp4).
-  - [ ] `PEXELS_API_KEY` in the VPS `deploy.env`; release.
+  - [x] `PEXELS_API_KEY` in the VPS `deploy.env` (owner's OK, backup kept); released `v0.1.9` at `f8e58c3`, no jobs in flight; after Watchtower, `docker compose up -d worker api` so the containers pick up the new env (Watchtower keeps the old env). Checked in the worker: API 200, file 200 video/mp4.
   - [ ] **T-P** — the agency imposters reel renders with its Pexels clips.
 
 ---
