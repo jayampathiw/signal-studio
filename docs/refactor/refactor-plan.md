@@ -1219,7 +1219,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - Job `8e4fde51`'s captions came from Whisper's transcript of the TTS audio: spelled-out acronyms showed as loose letters split across chunks ("F B I", "T C callers"), and an earlier run misheard a number ("three billion" → "20 billion").
   - [x] `apps/worker/src/caption-words.ts`: `scriptTimedWords` shows each shot's `voiceover_text` and takes only the timing from Whisper (word-level edit-distance alignment; missed words share the gap between their neighbours, extra heard words stretch the word before, words after the last heard one fill the rest of the audio; no transcript → even timing as before). `tidyCaptionWords` also joins spelled-out acronyms ("F T C" / "F-T-C" → "FTC", "A T Ms" → "ATMs") so one never splits across chunks.
   - [x] Tests: acronym joins (and "Plan A. I" left alone), misheard number and missed letter, extra heard word, tail fill; the case-file run-job test now expects the full script.
-  - [ ] Release (owner says "release").
+  - [x] Released `v0.1.10` at `25e1686` (owner said "release"), no jobs in flight; Watchtower restarted worker + api, `PEXELS_API_KEY` still set, new code confirmed in the worker.
   - [ ] **T-P** — the next Policy File reel's captions match its script, acronyms as one word.
 
 ---
