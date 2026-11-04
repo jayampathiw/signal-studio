@@ -1209,12 +1209,18 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] Tests: sources (extension-less link → clip/still, retry from storage, HTML refused), schema (link in `clip`/`image`), run-job (case-file with a stock-clip scene → `video` source). Checked: a clip shorter than its scene holds its last frame (Remotion still at 3 s of a 1 s clip); the four real Pexels clips are H.264, 7–18 s, one 4K (26 MB).
   - [x] Released: `v0.1.8` tagged at `53d24e6` (PR #67), no jobs in flight, 13 GB free; Watchtower restarted worker + api with the new code. Guide updated (workspace PR #14): stock footage = `source: { url }` with the Pexels download link, never in `clip`/`image`; footage is illustration only (never the people in the case, about half the scenes at most); footer line "Video clips are stock footage (Pexels), shown for illustration." when used.
   - [x] **T-P** — the FTC imposter reel renders with its four Pexels clips and posts. — **done 2026-11-02**: job `0f9aed97` (v5) delivered. Leftover copies `b5f9e40c` (v3) and `a4db685e` (v4) sit at `final_review` — never approve them.
-- [~] **P.15 Pexels links through the API — v0.1.9** (2026-11-04)
+- [x] **P.15 Pexels links through the API — v0.1.9** (2026-11-04)
   - Jobs `04fb3b10`, `51edc869`, `797c5874` (agency imposters reel) failed with HTTP 403: since ~2026-11-04 Pexels puts a Cloudflare challenge (`cf-mitigated: challenge`) on `pexels.com/download/…` and its pages for the VPS's IP — even clips that worked on 2026-11-02. `videos.pexels.com` files and `api.pexels.com` still answer.
   - [x] `apps/worker/src/sources.ts`: a `pexels.com` video/photo page or download link is resolved through the Pexels API (`PEXELS_API_KEY`) to its file (an mp4 in the frame's orientation nearest 1080 on the short side; photos `large2x`), then downloaded from the file host. Only on a cache miss, so a retry never calls the API; the stored name stays keyed on the original link. No key or unknown id → non-retryable, with a clear message; API 5xx/429 → retryable. The credit name is logged (`pexels file resolved`).
   - [x] Tests: link parsing, API → file (orientation pick, no `www.pexels.com` fetch, retry from storage), no key / 404. Checked the real API for 9058050, 8877783, 6306262: each file downloads from the VPS (200, video/mp4).
   - [x] `PEXELS_API_KEY` in the VPS `deploy.env` (owner's OK, backup kept); released `v0.1.9` at `f8e58c3`, no jobs in flight; after Watchtower, `docker compose up -d worker api` so the containers pick up the new env (Watchtower keeps the old env). Checked in the worker: API 200, file 200 video/mp4.
-  - [ ] **T-P** — the agency imposters reel renders with its Pexels clips.
+  - [x] **T-P** — job `8e4fde51` (agency imposters) rendered with all three Pexels clips through the API; scheduled on Facebook for 2026-11-05T00:00Z.
+- [~] **P.16 Captions from the script** (2026-11-04)
+  - Job `8e4fde51`'s captions came from Whisper's transcript of the TTS audio: spelled-out acronyms showed as loose letters split across chunks ("F B I", "T C callers"), and an earlier run misheard a number ("three billion" → "20 billion").
+  - [x] `apps/worker/src/caption-words.ts`: `scriptTimedWords` shows each shot's `voiceover_text` and takes only the timing from Whisper (word-level edit-distance alignment; missed words share the gap between their neighbours, extra heard words stretch the word before, words after the last heard one fill the rest of the audio; no transcript → even timing as before). `tidyCaptionWords` also joins spelled-out acronyms ("F T C" / "F-T-C" → "FTC", "A T Ms" → "ATMs") so one never splits across chunks.
+  - [x] Tests: acronym joins (and "Plan A. I" left alone), misheard number and missed letter, extra heard word, tail fill; the case-file run-job test now expects the full script.
+  - [ ] Release (owner says "release").
+  - [ ] **T-P** — the next Policy File reel's captions match its script, acronyms as one word.
 
 ---
 

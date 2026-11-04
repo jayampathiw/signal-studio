@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { tidyCaptionWords } from './caption-words.ts';
+import { scriptTimedWords, tidyCaptionWords } from './caption-words.ts';
 
 // One word per second, so merged timings are easy to read.
 function timed(...texts: string[]) {
@@ -86,4 +86,70 @@ test('punctuation ends a number; unknown shapes are left alone', () => {
     '95%',
     'here',
   ]);
+});
+
+test('spelled-out acronyms become one caption word', () => {
+  assert.deepEqual(texts(tidyCaptionWords(timed('the', 'F', 'T', 'C', 'says'))), [
+    'the',
+    'FTC',
+    'says',
+  ]);
+  assert.deepEqual(tidyCaptionWords(timed('F', 'B', 'I.'))[0], { text: 'FBI.', start: 0, end: 3 });
+  assert.deepEqual(texts(tidyCaptionWords(timed('at', 'A', 'T', 'Ms', 'today'))), [
+    'at',
+    'ATMs',
+    'today',
+  ]);
+  assert.deepEqual(texts(tidyCaptionWords(timed('the', 'F-T-C', 'says'))), ['the', 'FTC', 'says']);
+  assert.deepEqual(texts(tidyCaptionWords(timed('Plan', 'A.', 'I', 'agree'))), [
+    'Plan',
+    'A.',
+    'I',
+    'agree',
+  ]);
+});
+
+test('captions show the script and take their timing from Whisper', () => {
+  // Whisper misheard the number and dropped a letter; the script wins.
+  const heard = [
+    { text: 'The', start: 0.0, end: 0.2 },
+    { text: 'F', start: 0.2, end: 0.4 },
+    { text: 'C', start: 0.6, end: 0.8 },
+    { text: 'lost', start: 0.8, end: 1.1 },
+    { text: '20', start: 1.1, end: 1.5 },
+    { text: 'billion.', start: 1.5, end: 2.0 },
+  ];
+  const words = scriptTimedWords('The F T C lost three billion.', heard, 3);
+  assert.deepEqual(texts(words), ['The', 'F', 'T', 'C', 'lost', 'three', 'billion.']);
+  assert.deepEqual(words[5], { text: 'three', start: 1.1, end: 1.5 });
+  // "T" was missed, so it sits between the letters either side of it.
+  assert.deepEqual(words[2], { text: 'T', start: 0.4, end: 0.6 });
+  assert.deepEqual(texts(tidyCaptionWords(words)), ['The', 'FTC', 'lost', '3 billion.']);
+
+  // Words Whisper heard that the script lacks stretch the word before them.
+  const stretched = scriptTimedWords(
+    'Call now',
+    [
+      { text: 'Call', start: 0, end: 0.3 },
+      { text: 'um', start: 0.3, end: 0.6 },
+      { text: 'now', start: 0.6, end: 1 },
+    ],
+    1.5,
+  );
+  assert.deepEqual(stretched, [
+    { text: 'Call', start: 0, end: 0.6 },
+    { text: 'now', start: 0.6, end: 1 },
+  ]);
+
+  // Script words after Whisper's last word fill the rest of the audio.
+  const tail = scriptTimedWords('one two three four', [{ text: 'one', start: 0, end: 1 }], 4);
+  assert.deepEqual(
+    tail.map((w) => [w.start, w.end]),
+    [
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [3, 4],
+    ],
+  );
 });

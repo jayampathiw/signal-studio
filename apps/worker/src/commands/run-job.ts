@@ -59,7 +59,7 @@ import {
   recordAssetProofs,
   type DrawProof,
 } from '../assets-review.ts';
-import { tidyCaptionWords } from '../caption-words.ts';
+import { scriptTimedWords, tidyCaptionWords } from '../caption-words.ts';
 import type { Logger } from '../logger.ts';
 import { resolveMusicBed } from '../music.ts';
 import { resolveShotSources } from '../sources.ts';
@@ -554,17 +554,9 @@ async function narrationWordTimings(
           return [];
         });
     }
-    out[scene.id] = tidyCaptionWords(
-      words.length ? words : evenlyTimedWords(scene.narrationText, durationSec),
-    );
+    out[scene.id] = tidyCaptionWords(scriptTimedWords(scene.narrationText, words, durationSec));
   }
   return out;
-}
-
-function evenlyTimedWords(text: string, durationSec: number): WordTimingT[] {
-  const tokens = text.split(/\s+/).filter(Boolean);
-  const step = durationSec / tokens.length;
-  return tokens.map((w, i) => ({ text: w, start: i * step, end: (i + 1) * step }));
 }
 
 // ---- stills-kenburns ----

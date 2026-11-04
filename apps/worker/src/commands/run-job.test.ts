@@ -587,15 +587,17 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
       source?: { localPath: string };
     };
     assert.ok(sourcedScene.source?.localPath.endsWith(path.basename(sourceKey!)));
-    // On-video captions: Whisper's words for s1; s3's transcription failed,
-    // so its narration is spread evenly over its 3s of audio instead.
+    // On-video captions: s1 shows its script, timed by Whisper's two words and
+    // spread over the rest of its audio; s3's transcription failed, so its
+    // narration is spread evenly over its 3s of audio instead.
     assert.deepEqual(transcribed, ['s1.wav', 's3.wav']);
     const [s1Scene, s3Scene] = renderedTimelines[0]!.scenes as Array<{
       captionText?: string;
       words?: Array<{ text: string; start: number; end: number }>;
     }>;
-    assert.equal(s1Scene!.captionText, 'This is');
+    assert.equal(s1Scene!.captionText, 'This is a real narration line for the case file.');
     assert.equal(s1Scene!.words![1]!.start, 0.3);
+    assert.equal(s1Scene!.words![9]!.end, 3);
     assert.equal(s3Scene!.captionText, 'A page fetched from a link, not uploaded.');
     assert.equal(s3Scene!.words!.length, 8);
     assert.equal(s3Scene!.words![7]!.end, 3);
