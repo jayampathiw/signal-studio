@@ -10,7 +10,7 @@ import { Manifest } from '@signal-studio/core/schemas';
 import { NonRetryableError } from '@signal-studio/core/state';
 
 import { createLogger } from './logger.ts';
-import { isBlockedHost, resolveShotSources, sourceFileName } from './sources.ts';
+import { isBlockedHost, pexelsMedia, resolveShotSources, sourceFileName } from './sources.ts';
 
 const logger = createLogger({ level: 'error' });
 
@@ -542,3 +542,97 @@ test('a PDF page source is refused for clip templates', async () => {
     /needs video clips/,
   );
 });
+
+test('pexelsMedia reads the id from page and download links only', () => {
+  assert.deepEqual(pexelsMedia('https://www.pexels.com/download/video/8060389/'), {
+    type: 'video',
+    id: '8060389',
+  });
+  assert.deepEqual(
+    pexelsMedia('https://www.pexels.com/video/close-up-footage-of-a-cellphone-ringing-8060389/'),
+    { type: 'video', id: '8060389' },
+  );
+  assert.deepEqual(pexelsMedia('https://www.pexels.com/photo/an-old-man-123/'), {
+    type: 'photo',
+    id: '123',
+  });
+  assert.equal(
+    pexelsMedia('https://videos.pexels.com/video-files/1/1-hd_1080_1920_25fps.mp4'),
+    null,
+  );
+  assert.equal(pexelsMedia('https://www.pexels.com/search/phone/'), null);
+});
+
+test('case-file: a Pexels link is fetched from the file the API names, never pexels.com', () =>
+  withTmp(async (tmpDir) => {
+    const { storage, stored } = fakeStorage();
+    const link = 'https://www.pexels.com/download/video/8878247/';
+    const portraitHd = 'https://videos.pexels.com/video-files/8878247/hd_1080_1920.mp4';
+    const { fn, calls } = fakeFetch(stored, (url) => {
+      if (url === 'https://api.pexels.com/videos/videos/8878247') {
+        return Response.json({
+          user: { name: 'A Videographer' },
+          video_files: [
+            {
+              file_type: 'video/mp4',
+              link: 'https://videos.pexels.com/4k.mp4',
+              width: 2160,
+              height: 4096,
+            },
+            {
+              file_type: 'video/mp4',
+              link: 'https://videos.pexels.com/land.mp4',
+              width: 1920,
+              height: 1080,
+            },
+            { file_type: 'video/mp4', link: portraitHd, width: 1080, height: 1920 },
+          ],
+        });
+      }
+      if (url === portraitHd)
+        return new Response('mp4', { headers: { 'content-type': 'video/mp4' } });
+      throw new Error(`unexpected fetch ${url}`);
+    });
+    const manifest = {
+      ...caseFileManifest([{ id: 's1', source: { url: link } }]),
+      case_file: { caseId: 'c', aspectRatio: '9:16' as const },
+    } as ReturnType<typeof caseFileManifest>;
+    const params = {
+      jobId: 'j1',
+      manifest,
+      storage,
+      fetchFn: fn,
+      tmpDir,
+      logger,
+      pexelsApiKey: 'k',
+    };
+    const shots = await resolveShotSources(params);
+    assert.equal(shots[0]!.clip, sourceFileName(link, 'clip'));
+    assert.ok(!calls.some((c) => c.includes('www.pexels.com')));
+
+    // A retry reuses the stored copy without asking the API again.
+    const again = fakeFetch(stored, () => {
+      throw new Error('must not be called');
+    });
+    await resolveShotSources({ ...params, fetchFn: again.fn });
+  }));
+
+test('case-file: a Pexels link without an API key, or an unknown id, fails for good', () =>
+  withTmp(async (tmpDir) => {
+    const { storage, stored } = fakeStorage();
+    const { fn } = fakeFetch(stored, () => new Response(null, { status: 404 }));
+    const manifest = caseFileManifest([
+      { id: 's1', source: { url: 'https://www.pexels.com/download/video/1/' } },
+    ]);
+    const params = { jobId: 'j1', manifest, storage, fetchFn: fn, tmpDir, logger };
+    await assert.rejects(resolveShotSources(params), (err: Error) => {
+      assert.ok(err instanceof NonRetryableError);
+      assert.match(err.message, /PEXELS_API_KEY is not set/);
+      return true;
+    });
+    await assert.rejects(resolveShotSources({ ...params, pexelsApiKey: 'k' }), (err: Error) => {
+      assert.ok(err instanceof NonRetryableError);
+      assert.match(err.message, /Pexels has no video with id 1/);
+      return true;
+    });
+  }));

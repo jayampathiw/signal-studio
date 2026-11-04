@@ -1276,6 +1276,7 @@ async function runLoadedJob(
         fetchFn,
         tmpDir,
         logger,
+        pexelsApiKey: process.env.PEXELS_API_KEY,
       }),
     );
     const sourcedJob =

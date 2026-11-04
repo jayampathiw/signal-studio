@@ -32,6 +32,8 @@ export type ResolveSourcesParams = {
   logger: Logger;
   maxBytes?: number;
   timeoutMs?: number;
+  // Pexels links are turned into their direct file through the API (below).
+  pexelsApiKey?: string;
 };
 
 type Kind = 'image' | 'clip';
@@ -79,7 +81,8 @@ export async function resolveShotSources(
       shots.push(await resolveDocument(params, shot));
       continue;
     }
-    const { kind, file } = await resolveUrl(params, shot.id, shot.source.url, wanted);
+    const portrait = manifest.case_file?.aspectRatio !== '16:9';
+    const { kind, file } = await resolveUrl(params, shot.id, shot.source.url, wanted, portrait);
     shots.push({ ...shot, [kind]: file });
   }
   return shots;
@@ -110,6 +113,9 @@ async function fetchIntoStorage(
   cachedFiles: string[],
   accept: { file: (type: string, body: Buffer) => string | null; expected: string },
   keepLocal: boolean,
+  // Where to download from when it isn't `url` itself; only asked on a cache
+  // miss, so a retry never calls it.
+  downloadUrl?: () => Promise<string>,
 ): Promise<Fetched> {
   const { jobId, storage, fetchFn, tmpDir, logger } = params;
   const keyFor = (file: string) => `jobs/${jobId}/uploads/${shotId}/${file}`;
@@ -137,12 +143,13 @@ async function fetchIntoStorage(
     return { file, localPath };
   }
 
-  const host = new URL(url).hostname.replace(/^\[|\]$/g, '');
+  const fromUrl = downloadUrl ? await downloadUrl() : url;
+  const host = new URL(fromUrl).hostname.replace(/^\[|\]$/g, '');
   if (isBlockedHost(host)) throw fail('private or local addresses are not allowed');
 
   let res: Response;
   try {
-    res = await fetchFn(url, {
+    res = await fetchFn(fromUrl, {
       // Some sites (Wikimedia, many CDNs) refuse requests with Node's default
       // user agent.
       headers: { 'user-agent': USER_AGENT },
@@ -184,6 +191,7 @@ async function resolveUrl(
   shotId: string,
   url: string,
   wanted: Wanted,
+  portrait: boolean,
 ): Promise<{ kind: Kind; file: string }> {
   const kinds: Kind[] = wanted === 'either' ? ['image', 'clip'] : [wanted];
   // A link whose path ends in a known extension is that kind; otherwise
@@ -207,8 +215,95 @@ async function resolveUrl(
       expected: `${cachedKinds.map((k) => (k === 'clip' ? 'video/*' : 'image/*')).join(' or ')} for this template`,
     },
     false,
+    pexelsMedia(url) ? () => pexelsFileUrl(params, shotId, url, portrait) : undefined,
   );
   return { kind: KNOWN_EXT.clip.includes(path.extname(file)) ? 'clip' : 'image', file };
+}
+
+// Pexels' own pages and /download/ links sit behind a Cloudflare bot check
+// that refuses servers (HTTP 403 from 2026-11-04, jobs 04fb3b10/51edc869/
+// 797c5874), while its file hosts (videos.pexels.com, images.pexels.com) and
+// API don't. So the API names the file and the worker downloads that.
+const PEXELS_HOSTS = new Set(['pexels.com', 'www.pexels.com']);
+
+export function pexelsMedia(url: string): { type: 'video' | 'photo'; id: string } | null {
+  const u = new URL(url);
+  if (!PEXELS_HOSTS.has(u.hostname.toLowerCase())) return null;
+  // /download/video/<id>/, /video/<slug>-<id>/, and the same for photo.
+  const m = u.pathname.match(
+    /^\/(?:[a-z]{2}-[a-z]{2}\/)?(?:download\/)?(video|photo)\/(?:[^/]*-)?(\d+)\/?$/i,
+  );
+  return m ? { type: m[1]!.toLowerCase() as 'video' | 'photo', id: m[2]! } : null;
+}
+
+type PexelsVideoFile = { file_type?: string; link: string; width: number; height: number };
+
+async function pexelsFileUrl(
+  params: ResolveSourcesParams,
+  shotId: string,
+  url: string,
+  portrait: boolean,
+): Promise<string> {
+  const { type, id } = pexelsMedia(url)!;
+  const fail = (reason: string, retryable = false) => {
+    const Err = retryable ? Error : NonRetryableError;
+    return new Err(`run-job: shot "${shotId}" source ${url} — ${reason}`);
+  };
+  if (!params.pexelsApiKey) {
+    throw fail(
+      'Pexels blocks direct downloads from the engine and PEXELS_API_KEY is not set; use the file link (videos.pexels.com/… or images.pexels.com/…) instead',
+    );
+  }
+  const api =
+    type === 'video'
+      ? `https://api.pexels.com/videos/videos/${id}`
+      : `https://api.pexels.com/v1/photos/${id}`;
+  let res: Response;
+  try {
+    res = await params.fetchFn(api, {
+      headers: { Authorization: params.pexelsApiKey },
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch (err) {
+    throw fail(`Pexels API request failed (${(err as Error).message})`, true);
+  }
+  if (!res.ok) {
+    throw fail(
+      res.status === 404
+        ? `Pexels has no ${type} with id ${id}`
+        : `Pexels API answered HTTP ${res.status}`,
+      res.status >= 500 || res.status === 429,
+    );
+  }
+  const data = (await res.json()) as {
+    user?: { name?: string };
+    photographer?: string;
+    video_files?: PexelsVideoFile[];
+    src?: { original?: string; large2x?: string };
+  };
+
+  let link: string | undefined;
+  if (type === 'photo') {
+    link = data.src?.large2x ?? data.src?.original;
+  } else {
+    // An mp4 in the frame's orientation, as close to 1080 on its short side
+    // as there is (Pexels' 4K files are 25 MB+ for no gain at 1080×1920).
+    const short = (f: PexelsVideoFile) => Math.min(f.width, f.height);
+    const mp4s = (data.video_files ?? []).filter(
+      (f) => (f.file_type ?? 'video/mp4') === 'video/mp4' && f.link,
+    );
+    const fits = mp4s.filter((f) => f.height > f.width === portrait);
+    const pool = fits.length ? fits : mp4s;
+    link = pool.sort((a, b) => Math.abs(short(a) - 1080) - Math.abs(short(b) - 1080))[0]?.link;
+  }
+  if (!link) throw fail(`Pexels lists no downloadable file for ${type} ${id}`);
+  params.logger.info('pexels file resolved', {
+    jobId: params.jobId,
+    shotId,
+    link,
+    credit: data.user?.name ?? data.photographer,
+  });
+  return link;
 }
 
 // Servers often send PDFs as application/octet-stream, so the bytes decide.
