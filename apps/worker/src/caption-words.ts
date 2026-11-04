@@ -13,7 +13,135 @@ import type { WordTimingT } from '@signal-studio/providers/contracts';
  * captions change; the narration text is untouched.
  */
 export function tidyCaptionWords(words: WordTimingT[]): WordTimingT[] {
-  return numbersToFigures(joinHyphenPieces(words));
+  return numbersToFigures(joinAcronyms(joinHyphenPieces(words)));
+}
+
+/**
+ * The narration's own words, timed against what Whisper heard (P.16).
+ *
+ * Whisper mishears: spelled-out acronyms come back as loose letters split
+ * across caption chunks ("T C callers"), and numbers can be wrong outright
+ * ("three billion" heard as "20 billion"). The script is what the voice was
+ * given, so the captions show the script and only borrow Whisper's timing.
+ * The two are aligned word by word (edit distance); script words Whisper
+ * missed share the time between their aligned neighbours, and words Whisper
+ * heard that the script lacks stretch the word before them.
+ */
+export function scriptTimedWords(
+  script: string,
+  heard: WordTimingT[],
+  durationSec: number,
+): WordTimingT[] {
+  const tokens = script.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return [];
+  if (!heard.length) return evenlySpread(tokens, 0, durationSec);
+
+  const key = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+  const a = tokens.map(key);
+  const b = heard.map((w) => key(w.text));
+  const n = a.length;
+  const m = b.length;
+  const cost: number[][] = Array.from({ length: n + 1 }, (_, i) =>
+    Array.from({ length: m + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)),
+  );
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      cost[i]![j] = Math.min(
+        cost[i - 1]![j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1),
+        cost[i - 1]![j]! + 1,
+        cost[i]![j - 1]! + 1,
+      );
+    }
+  }
+
+  // Walk back: each script word gets the heard word it lines up with, if any.
+  const pair: Array<number | null> = new Array(n).fill(null);
+  const extraAfter: number[] = new Array(n).fill(-1);
+  let i = n;
+  let j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && cost[i]![j] === cost[i - 1]![j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1)) {
+      pair[i - 1] = j - 1;
+      i--;
+      j--;
+    } else if (i > 0 && cost[i]![j] === cost[i - 1]![j]! + 1) {
+      i--;
+    } else {
+      if (i > 0) extraAfter[i - 1] = Math.max(extraAfter[i - 1]!, j - 1);
+      j--;
+    }
+  }
+
+  const out: WordTimingT[] = tokens.map((text, k) => {
+    const h = pair[k];
+    if (h == null) return { text, start: NaN, end: NaN };
+    const end = extraAfter[k]! >= 0 ? heard[extraAfter[k]!]!.end : heard[h]!.end;
+    return { text, start: heard[h]!.start, end: Math.max(end, heard[h]!.end) };
+  });
+
+  for (let k = 0; k < n;) {
+    if (!Number.isNaN(out[k]!.start)) {
+      k++;
+      continue;
+    }
+    let e = k;
+    while (e < n && Number.isNaN(out[e]!.start)) e++;
+    const from = k > 0 ? out[k - 1]!.end : 0;
+    const to = e < n ? out[e]!.start : Math.max(durationSec, from);
+    evenlySpread(tokens.slice(k, e), from, to).forEach((w, x) => (out[k + x] = w));
+    k = e;
+  }
+  return out;
+}
+
+function evenlySpread(tokens: string[], from: number, to: number): WordTimingT[] {
+  const step = (to - from) / tokens.length;
+  return tokens.map((text, i) => ({ text, start: from + i * step, end: from + (i + 1) * step }));
+}
+
+// "F T C" / "F-T-C" → "FTC", "A T Ms" → "ATMs": a spelled-out acronym is one
+// caption word, so it is never split across chunks. Punctuation after a
+// letter ends the run ("Plan A. Then").
+function joinAcronyms(words: WordTimingT[]): WordTimingT[] {
+  const out: WordTimingT[] = [];
+  let i = 0;
+  while (i < words.length) {
+    const hyphenated = /^([^\p{L}\p{N}]*)((?:[A-Z]-)+[A-Z](?:s)?)([^\p{L}\p{N}]*)$/u.exec(
+      words[i]!.text,
+    );
+    if (hyphenated) {
+      out.push({
+        ...words[i]!,
+        text: hyphenated[1]! + hyphenated[2]!.replace(/-/g, '') + hyphenated[3]!,
+      });
+      i++;
+      continue;
+    }
+    let j = i;
+    while (j < words.length) {
+      const s = split(words[j]!.text);
+      const letter = /^[A-Z]$/.test(s.core);
+      const plural = j > i && /^[A-Z]s$/.test(s.core);
+      if (!(letter || plural) || (j > i && s.lead)) break;
+      j++;
+      if (s.trail || plural) break;
+    }
+    if (j - i < 2) {
+      out.push(words[i]!);
+      i++;
+      continue;
+    }
+    const run = words.slice(i, j);
+    const first = split(run[0]!.text);
+    const last = split(run[run.length - 1]!.text);
+    out.push({
+      text: first.lead + run.map((w) => split(w.text).core).join('') + last.trail,
+      start: run[0]!.start,
+      end: run[run.length - 1]!.end,
+    });
+    i = j;
+  }
+  return out;
 }
 
 function joinHyphenPieces(words: WordTimingT[]): WordTimingT[] {
