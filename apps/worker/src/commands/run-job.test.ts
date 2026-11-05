@@ -15,7 +15,7 @@ import { compile as compileShorts916 } from '@signal-studio/template-shorts-916/
 import { compile as compileStillsKenburns } from '@signal-studio/template-stills-kenburns/compile';
 import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
-import { runJob, type RunJobDeps } from './run-job.ts';
+import { fitsReel, runJob, type RunJobDeps } from './run-job.ts';
 import { createLogger } from '../logger.ts';
 
 const execFileAsync = promisify(execFile);
@@ -88,6 +88,8 @@ type FakeDeps = RunJobDeps & {
     video: string;
     caption: string;
     scheduleAt?: string;
+    reel?: boolean;
+    aiDisclosure?: boolean;
   }>;
 };
 
@@ -2189,4 +2191,26 @@ test('runJob: a brand watermark that cannot be downloaded fails the job, never r
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }
+});
+
+test('fitsReel: 9:16 and 3–90 s only; a render without its shape stays a plain video', () => {
+  assert.equal(fitsReel({ outputId: 'fb', aspectRatio: '9:16', durationSec: 76 }), true);
+  assert.equal(fitsReel({ outputId: 'fb', aspectRatio: '16:9', durationSec: 76 }), false);
+  assert.equal(fitsReel({ outputId: 'fb', aspectRatio: '9:16', durationSec: 95 }), false);
+  assert.equal(fitsReel({ outputId: 'fb' }), false);
+});
+
+test('runJob publish mode: a 9:16 render under 90 s publishes as a reel with the AI label', async () => {
+  const { deps } = publishOnlyDeps([
+    {
+      stage_name: 'render',
+      kind: 'video',
+      url: 'https://r2.test/fb.mp4',
+      metadata: { outputId: 'fb', aspectRatio: '9:16', durationSec: 64 },
+      created_at: '2026-11-05T07:00:00Z',
+    },
+  ]);
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+  assert.equal(deps.publishCalls[0]!.reel, true);
+  assert.equal(deps.publishCalls[0]!.aiDisclosure, true);
 });

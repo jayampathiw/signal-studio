@@ -126,14 +126,12 @@ export interface PublishProvider {
     // `#`) — ignored by every other platform's provider, same as
     // `aiDisclosure` below is ignored by Facebook.
     tags?: string[];
-    // Real, currently-documented AI-disclosure flag for YouTube
-    // (`status.containsSyntheticMedia` on the Video resource — verified
-    // against Google's own discovery doc, not guessed). **No equivalent
-    // exists in Meta's Graph API for a Page video post** — Facebook's
-    // AI-disclosure is a manual Meta Business Suite step, not an API
-    // parameter (see `publish-facebook.ts`'s own header); this flag is
-    // simply ignored there, not silently mis-mapped to something else.
+    // AI-disclosure: YouTube's `status.containsSyntheticMedia`; Facebook's
+    // `is_ai_generated` on the Reels API, so it only applies when `reel`.
     aiDisclosure?: boolean;
+    // The video fits Facebook Reels (9:16, 3–90 s): published through the
+    // Reels API, which carries the AI label. Otherwise a plain Page video.
+    reel?: boolean;
   }): Promise<PublishResultT>;
 }
 
