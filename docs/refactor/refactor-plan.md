@@ -1159,7 +1159,7 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
 - [ ] **P.8 Later (kept here so nothing is missed)**
   - [x] **Scheduled posting** — moved to P.12 (2026-10-30); the owner's top request (2026-10-29): final approval publishes immediately, and the US 40–65 evening falls around 4–7 am IST. The Facebook publisher already supports `scheduled_publish_time`; the job needs a `publishAt` passed through to it.
   - [ ] Instagram publisher (Policy File cross-posts Reels to Instagram by hand today). Checked 2026-11-05: no Facebook page has an Instagram business account linked yet (Graph API `instagram_business_account` empty for Policy File, AssembleX, Underdog) — owner links it first.
-  - [ ] Facebook AI label from the engine: Meta's Reels API has `is_ai_generated` on `/{page-id}/video_reels` (finish step); our publisher posts via `/videos` (`file_url`), which has no such field. Move the video publisher to the Reels flow (start → upload by URL → finish with `is_ai_generated`, `scheduled_publish_time`). Owner sets it by hand until then.
+  - [x] Facebook AI label from the engine: Meta's Reels API has `is_ai_generated` on `/{page-id}/video_reels` (finish step); our publisher posts via `/videos` (`file_url`), which has no such field. Move the video publisher to the Reels flow (start → upload by URL → finish with `is_ai_generated`, `scheduled_publish_time`). Owner sets it by hand until then. — moved to P.17 (2026-11-05).
   - [ ] `stock` source via `stock-pexels`, attribution recorded (AssembleX), with the clips-overlay dead-air fix.
   - [ ] `generate` source via `image-fal` (Underdog stills, stock fallback).
   - [ ] `inbox` source (`reels-inbox` R2 bucket) for own footage.
@@ -1222,6 +1222,13 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] Tests: acronym joins (and "Plan A. I" left alone), misheard number and missed letter, extra heard word, tail fill; the case-file run-job test now expects the full script.
   - [x] Released `v0.1.10` at `25e1686` (owner said "release"), no jobs in flight; Watchtower restarted worker + api, `PEXELS_API_KEY` still set, new code confirmed in the worker.
   - [ ] **T-P** — the next Policy File reel's captions match its script, acronyms as one word.
+- [~] **P.17 Facebook AI label from the engine — v0.1.11** (2026-11-05, owner's request)
+  - [x] `packages/providers/src/publish-facebook.ts`: a video that fits Reels (9:16, 3–90 s) is published through the Reels API — `POST /{page}/video_reels` start → `rupload.facebook.com` upload by `file_url` → finish with `video_state` PUBLISHED/SCHEDULED, `scheduled_publish_time`, and `is_ai_generated=true` when the manifest's `disclosure` is on (default). Then polls `status` (≤ 5 min): a processing/upload error fails the publish with Facebook's message; still processing at the end is fine. Post URL `facebook.com/reel/<id>`. Anything else (16:9, longer) still posts via `/videos`. If Facebook refuses the `is_ai_generated` field, finish is retried without it so the post never fails over the label.
+  - [x] Worker records `aspectRatio` + `durationSec` on each render artifact; `fitsReel()` decides per platform; `aiDisclosure` now flows from `manifest.disclosure` (it was never set before — YouTube's `containsSyntheticMedia` benefits too).
+  - [x] Tests: provider (reel flow, scheduled, no label when not disclosed, processing error, still processing, label refused → retried without), stage (disclosure + reel pass-through), worker (`fitsReel`, publish-only reel). Providers 54/54, core 81/81, worker 105/105.
+  - [ ] Live check before release: a draft reel on the TEST page was refused at the start step with Facebook error **368 "your account has limited access to the site for a few days"** (subcode 1404112) — a restriction on the account behind the page tokens, not the code. Not retried.
+  - [ ] Release `v0.1.11`.
+  - [ ] **T-P** — the next reel shows Facebook's AI label without the owner adding it.
 
 ---
 

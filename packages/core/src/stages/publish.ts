@@ -34,6 +34,7 @@ export type PublishFn = (args: {
   tags?: string[];
   scheduleAt?: string;
   aiDisclosure?: boolean;
+  reel?: boolean;
 }) => Promise<{ postId: string; url?: string }>;
 
 export type PublishStageOptions = {
@@ -44,7 +45,10 @@ export type PublishStageOptions = {
   // platform -> the real rendered/uploaded video URL to publish for it.
   renderedVideoUrls: Record<string, string>;
   scheduleAt?: string;
+  // Defaults to the manifest's own `disclosure` (true unless turned off).
   aiDisclosure?: boolean;
+  // platform -> its video fits that platform's short-form format (Reels).
+  reelVideos?: Record<string, boolean>;
 };
 
 type PublishManifest = {
@@ -153,7 +157,8 @@ export function createPublishStage(opts: PublishStageOptions): StageDefinition {
           title,
           tags,
           scheduleAt: opts.scheduleAt,
-          aiDisclosure: opts.aiDisclosure,
+          aiDisclosure: opts.aiDisclosure ?? manifest.disclosure !== false,
+          reel: opts.reelVideos?.[platform] ?? false,
         });
         posts[platform] = result;
       }

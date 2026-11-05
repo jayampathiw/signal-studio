@@ -166,3 +166,25 @@ test('publish stage: cancellation stops before publishing the next platform', as
   });
   assert.equal(calls, 0);
 });
+
+test('publish stage: AI disclosure follows the manifest, and reel eligibility is passed per platform', async () => {
+  const calls: Parameters<PublishFn>[0][] = [];
+  const publish: PublishFn = async (args) => {
+    calls.push(args);
+    return { postId: 'p1' };
+  };
+  const opts = {
+    publish,
+    publishTargets: { facebook: 'EN' },
+    renderedVideoUrls: { facebook: 'https://cdn/fb.mp4' },
+  };
+  await createPublishStage({ ...opts, reelVideos: { facebook: true } }).run({
+    job: job(),
+    cancelled: () => false,
+  });
+  await createPublishStage(opts).run({ job: job({ disclosure: false }), cancelled: () => false });
+  assert.equal(calls[0].aiDisclosure, true);
+  assert.equal(calls[0].reel, true);
+  assert.equal(calls[1].aiDisclosure, false);
+  assert.equal(calls[1].reel, false);
+});

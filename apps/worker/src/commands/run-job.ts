@@ -1019,6 +1019,13 @@ async function runCarouselJob(
 
 // Latest artifact per key — a job retried before reaching its gate can
 // hold more than one render of the same output/slide.
+// Facebook Reels take 9:16 videos of 3–90 s; anything else (or a render
+// recorded before its shape was stored) posts as a plain Page video.
+export function fitsReel(meta: Record<string, unknown>): boolean {
+  const d = meta.durationSec;
+  return meta.aspectRatio === '9:16' && typeof d === 'number' && d >= 3 && d <= 90;
+}
+
 function latestBy(rows: ArtifactRow[], key: (row: ArtifactRow) => string | undefined) {
   const latest = new Map<string, ArtifactRow>();
   for (const row of rows) {
@@ -1102,13 +1109,16 @@ async function runPublishOnly(
       }
     } else if (platforms.length > 0) {
       const renderedVideoUrls: Record<string, string> = {};
+      const reelVideos: Record<string, boolean> = {};
       const videos = latestBy(
         renders.filter((a) => a.kind === 'video'),
         (a) => a.metadata.outputId as string | undefined,
       );
       for (const [outputId, row] of videos) {
         const platform = OUTPUT_TO_PLATFORM[outputId];
-        if (platform) renderedVideoUrls[platform] = row.url;
+        if (!platform) continue;
+        renderedVideoUrls[platform] = row.url;
+        reelVideos[platform] = fitsReel(row.metadata);
       }
       for (const platform of platforms) {
         if (!renderedVideoUrls[platform]) {
@@ -1122,7 +1132,7 @@ async function runPublishOnly(
         deps.createPublishProviderFor(args.platform, publishTargets[args.platform]).post(args);
       const runner = new StageRunner(deps.createStageStore(job.org_id));
       runner.register(
-        createPublishStage({ publish, publishTargets, renderedVideoUrls, scheduleAt }),
+        createPublishStage({ publish, publishTargets, renderedVideoUrls, reelVideos, scheduleAt }),
       );
       const stageJob: Job = {
         id: job.id,
@@ -1322,6 +1332,7 @@ async function runLoadedJob(
     const stageJob: Job = { id: job.id, manifest: job.manifest, workDir: tmpDir };
     const renderOutDir = path.join(tmpDir, 'out');
     const renderedVideoUrls: Record<string, string> = {};
+    const reelVideos: Record<string, boolean> = {};
     const outputLocalPaths: Record<string, string> = {};
     const outputExpected: Record<
       string,
@@ -1384,11 +1395,19 @@ async function runLoadedJob(
       };
       const key = `jobs/${job.id}/rendered/${outputId}.mp4`;
       const { url } = await storage.put({ localPath, key });
-      await artifactsRepo.record(job.id, 'render', 'video', url, { outputId });
+      const videoMeta = {
+        outputId,
+        aspectRatio: timeline.aspectRatio,
+        durationSec: outputExpected[outputId]!.durationSec,
+      };
+      await artifactsRepo.record(job.id, 'render', 'video', url, videoMeta);
       logger.info(`uploaded ${outputId}`, { url });
 
       const platform = OUTPUT_TO_PLATFORM[outputId];
-      if (platform) renderedVideoUrls[platform] = url;
+      if (platform) {
+        renderedVideoUrls[platform] = url;
+        reelVideos[platform] = fitsReel(videoMeta);
+      }
     }
 
     // QA runs for every output before gates/publish — a failure here marks
@@ -1437,7 +1456,9 @@ async function runLoadedJob(
         return deps.createPublishProviderFor(args.platform, credentialRef).post(args);
       };
 
-      runner.register(createPublishStage({ publish, publishTargets, renderedVideoUrls }));
+      runner.register(
+        createPublishStage({ publish, publishTargets, renderedVideoUrls, reelVideos }),
+      );
       const publishOutputs = await runner.run(stageJob);
       const posts = publishOutputs.get('publish:') as
         { posts: Record<string, { postId: string; url?: string }> } | undefined;
