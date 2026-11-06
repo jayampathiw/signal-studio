@@ -4,9 +4,9 @@ import path from 'node:path';
 import { test } from 'node:test';
 
 import { resolveJob } from '@signal-studio/core/resolve';
-import type { ProjectT } from '@signal-studio/core/schemas';
+import { Shot, type ProjectT } from '@signal-studio/core/schemas';
 
-import { compile, type ShotAssetT, type ShotVoiceoverT } from './compile.ts';
+import { compile, shotDuration, type ShotAssetT, type ShotVoiceoverT } from './compile.ts';
 
 // packages/templates/clips-overlay/../../../projects/assemblex-factory/packs
 const PACKS_DIR = path.resolve(import.meta.dirname, '../../../../projects/assemblex-factory/packs');
@@ -122,7 +122,8 @@ test('compile: scene fields map correctly — duration/speed, overlay, VO start,
 
   const s1 = timeline.scenes[0];
   const packS1 = pack.shots[0];
-  assert.equal(s1.durationSecs, packS1.duration_s / packS1.speed);
+  // 8 s clip, 5.6 s line from 0.4 s: the shot ends 0.5 s after the voice.
+  assert.equal(s1.durationSecs, packS1.overlay_in_s + packS1.voiceover_duration_s + 0.5);
   assert.equal(s1.playbackRate, packS1.speed);
   assert.equal(s1.trimInSec, packS1.trim_in_s);
   assert.equal(s1.sourceMuted, !packS1.audio.keep_native_sfx);
@@ -166,4 +167,34 @@ test('compile: throws a clear error when a shot is missing its assets-stage outp
       }),
     /missing shotAssets\["s1"\]/,
   );
+});
+
+test('shotDuration: a narrated shot ends after its voiceover, never past its clip', () => {
+  const clip = { clipPath: '/c.mp4', durationS: 12 };
+  const vo = { path: '/v.wav', durationS: 4 };
+  const shot = (extra: Record<string, unknown> = {}) =>
+    Shot.parse({ id: 's1', clip: 'c.mp4', overlay_text: 'x', overlay_out_s: 3, ...extra });
+
+  assert.equal(shotDuration(shot(), clip, vo), 0.4 + 4 + 0.5);
+  assert.equal(shotDuration(shot(), clip, undefined), 12);
+  assert.equal(shotDuration(shot({ fit: 'clip' }), clip, vo), 12);
+  assert.equal(shotDuration(shot({ speed: 2 }), clip, { path: '/v.wav', durationS: 9 }), 6);
+  assert.equal(shotDuration(shot({ durationSecs: 7 }), clip, vo), 7);
+  assert.equal(shotDuration(shot({ durationSecs: 30 }), clip, vo), 12);
+});
+
+test('compile: an overlay never outlasts its shortened shot', async () => {
+  const { resolvedJob, pack } = await loadResolvedJob();
+  const { shotAssets, shotVoiceovers } = assetsAndVoiceoversFromPack(pack);
+  shotVoiceovers.s1 = { path: '/vo/s1.wav', durationS: 1 };
+
+  const s1 = compile(resolvedJob, {
+    contentId: 'standalone_sample-001',
+    outputId: 'fb',
+    shotAssets,
+    shotVoiceovers,
+  }).scenes[0];
+
+  assert.equal(s1.durationSecs, 1.9);
+  assert.equal(s1.overlay?.outSec, 1.9);
 });
