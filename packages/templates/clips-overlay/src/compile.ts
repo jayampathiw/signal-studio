@@ -39,6 +39,8 @@ export type CompileParams = {
 };
 
 const END_CARD_DURATION_SECS = 1.5;
+// Breath after the last word before a VO-fitted shot cuts.
+const VO_TAIL_SECS = 0.5;
 
 export class ClipsOverlayCompileError extends Error {}
 
@@ -48,6 +50,22 @@ function visibleShots(shots: ShotT[], outputId: string): ShotT[] {
   // them. Generalising further (e.g. a per-output allow-list) isn't
   // something any real manifest has asked for yet.
   return outputId === 'ig' ? shots.filter((s) => !s.ig_optional) : shots;
+}
+
+// Screen time is the clip's own length at the shot's speed (the pilot
+// bridge's `shotDurationInFrames()`), cut short so a stock clip longer than
+// its line doesn't leave dead air (the pearl post, job 6b32f136, had ~21 s
+// of it). Never longer than the clip: the narration plays inside the shot,
+// so a VO that outruns its clip is a script problem, not one to pad here.
+export function shotDuration(
+  shot: ShotT,
+  asset: ShotAssetT,
+  voiceover: ShotVoiceoverT | undefined,
+): number {
+  const clipSecs = asset.durationS / shot.speed;
+  if (shot.durationSecs !== undefined) return Math.min(shot.durationSecs, clipSecs);
+  if (!voiceover || shot.fit === 'clip') return clipSecs;
+  return Math.min(shot.overlay_in_s + voiceover.durationS + VO_TAIL_SECS, clipSecs);
 }
 
 export function compile(resolvedJob: ResolvedJob, params: CompileParams): TimelineT {
@@ -83,10 +101,7 @@ export function compile(resolvedJob: ResolvedJob, params: CompileParams): Timeli
     }
 
     const voiceover = params.shotVoiceovers[shot.id];
-    // Screen-time duration: the normalised clip's own measured duration,
-    // shortened/lengthened by the shot's playback speed — same formula as
-    // the pilot bridge's `shotDurationInFrames()`.
-    const durationSecs = asset.durationS / shot.speed;
+    const durationSecs = shotDuration(shot, asset, voiceover);
 
     return {
       id: shot.id,
@@ -95,7 +110,11 @@ export function compile(resolvedJob: ResolvedJob, params: CompileParams): Timeli
       trimInSec: shot.trim_in_s,
       playbackRate: shot.speed,
       sourceMuted: !shot.audio.keep_native_sfx,
-      overlay: { text: shot.overlay_text, inSec: shot.overlay_in_s, outSec: shot.overlay_out_s },
+      overlay: {
+        text: shot.overlay_text,
+        inSec: shot.overlay_in_s,
+        outSec: Math.min(shot.overlay_out_s, durationSecs),
+      },
       ...(voiceover ? { narrationPath: voiceover.path, voStartSec: shot.overlay_in_s } : {}),
     };
   });

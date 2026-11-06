@@ -125,7 +125,12 @@ export const Shot = z.object({
   // narration (narrated scenes are timed from the measured VO), and
   // `visual` is CaseFile.tsx's own data-viz card config (`pointerCard`,
   // `counter`, ...), passed through to the timeline untouched.
+  // clips-overlay also reads `durationSecs` as the shot's exact screen
+  // length (never longer than its clip).
   durationSecs: z.number().positive().optional(),
+  // clips-overlay: a narrated shot ends just after its voiceover (`vo`, the
+  // default when it has one) or plays its whole clip (`clip`).
+  fit: z.enum(['vo', 'clip']).optional(),
   visual: z.record(z.string(), z.unknown()).optional(),
   // P3.7 addition — `compilation`-only field. A compilation job's shots
   // are still every episode's own flat `clips-overlay`-shaped shots (each
