@@ -116,4 +116,5 @@ Shared across all apps: `nnxtvbolhuvihlpwppbj`
 - Higgsfield model IDs + params: `docs/higgsfield-models.md`
 - **Progress tracker / known bugs / roadmap:** `docs/PROJECT-STATUS.md`
 - **Background music plan (3-layer library, AI layer deferred):** `docs/decisions/ADR-002-background-music.md` — tracked as Track A in `docs/refactor/refactor-plan.md` §10
+- **claude.ai Project files per brand** (live in `signal-studio-workspace`, not here): Policy File `projects/policy-file/claude-project-guide.md`; AssembleX Factory `projects/assemblex-factory/claude-project/` (instructions, Video Document v4, Engine Guide, Automation Flows, Playbook v2, Content Plan v2). Update them when an engine change alters how a Project sends jobs.
 - Docs index: `docs/README.md`
