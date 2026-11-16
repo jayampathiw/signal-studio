@@ -91,3 +91,10 @@ test('assets_review is the only pre-render gate; postRenderGates keeps the rest 
   ]);
   assert.deepEqual(postRenderGates(['assets_review']), []);
 });
+
+test('a held reel: running → awaiting_publish_time → queued, and nothing else from there', () => {
+  assertJobTransition('running', 'awaiting_publish_time');
+  assertJobTransition('awaiting_publish_time', 'queued');
+  assertJobTransition('awaiting_publish_time', 'cancelled');
+  assert.throws(() => assertJobTransition('awaiting_publish_time', 'delivered'), /Illegal/);
+});

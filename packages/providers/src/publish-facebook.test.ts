@@ -137,23 +137,48 @@ test('publish-facebook: a reel goes start → upload by URL → finish with is_a
   assert.deepEqual(result, { postId: 'v77', url: 'https://www.facebook.com/reel/v77' });
 });
 
-test('publish-facebook: a scheduled reel uses SCHEDULED + scheduled_publish_time; no label when not disclosed', async () => {
-  const { calls, provider } = reelWorld([{ publishing_phase: { publish_status: 'scheduled' } }]);
-  await provider.post({
-    platform: 'facebook',
+test('publish-facebook: a reel is never scheduled on Facebook', async () => {
+  const { calls, provider } = reelWorld([]);
+  await assert.rejects(
+    () =>
+      provider.post({
+        platform: 'facebook',
+        pageRef: 'EN',
+        video: 'https://r2.test/fb.mp4',
+        caption: 'x',
+        reel: true,
+        scheduleAt: '2026-11-06T00:00:00Z',
+      }),
+    /not scheduled on Facebook/,
+  );
+  assert.equal(calls.length, 0);
+});
+
+test('publish-facebook: uploadReel stops before finish; finishReel publishes it later', async () => {
+  const { calls, provider } = reelWorld([{ processing_phase: { status: 'complete' } }]);
+  const { videoId } = await provider.uploadReel!({
     pageRef: 'EN',
     video: 'https://r2.test/fb.mp4',
+  });
+  assert.equal(videoId, 'v77');
+  assert.deepEqual(
+    calls.map((c) => (c.init?.body as URLSearchParams | undefined)?.get('upload_phase') ?? c.url),
+    ['start', 'https://rupload.facebook.com/video-upload/v22.0/v77'],
+  );
+
+  const result = await provider.finishReel!({
+    platform: 'facebook',
+    pageRef: 'EN',
     caption: 'x',
-    reel: true,
-    scheduleAt: '2026-11-06T00:00:00Z',
+    videoId,
   });
   const finish = calls[2]!.init!.body as URLSearchParams;
-  assert.equal(finish.get('video_state'), 'SCHEDULED');
-  assert.equal(
-    finish.get('scheduled_publish_time'),
-    String(Math.floor(Date.parse('2026-11-06T00:00:00Z') / 1000)),
-  );
+  assert.equal(finish.get('upload_phase'), 'finish');
+  assert.equal(finish.get('video_id'), 'v77');
+  assert.equal(finish.get('video_state'), 'PUBLISHED');
+  assert.equal(finish.get('scheduled_publish_time'), null);
   assert.equal(finish.get('is_ai_generated'), null);
+  assert.deepEqual(result, { postId: 'v77', url: 'https://www.facebook.com/reel/v77' });
 });
 
 test('publish-facebook: a reel Facebook rejects in processing fails with its message', async () => {
