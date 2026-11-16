@@ -1128,27 +1128,77 @@ async function runPublishOnly(
         }
       }
 
-      const publish: PublishFn = async (args) =>
-        deps.createPublishProviderFor(args.platform, publishTargets[args.platform]).post(args);
-      const runner = new StageRunner(deps.createStageStore(job.org_id));
-      runner.register(
-        createPublishStage({ publish, publishTargets, renderedVideoUrls, reelVideos, scheduleAt }),
+      const providerFor = (platform: string) =>
+        deps.createPublishProviderFor(platform, publishTargets[platform]);
+      const uploads = latestBy(
+        artifacts.filter((a) => a.kind === REEL_UPLOAD_KIND),
+        (a) => a.metadata.platform as string | undefined,
       );
-      const stageJob: Job = {
-        id: job.id,
-        manifest: { ...job.manifest, publish: platforms },
-        workDir: tmpDir,
-      };
-      const publishOutputs = await runner.run(stageJob);
-      const posts = publishOutputs.get('publish:') as
-        { posts: Record<string, { postId: string; url?: string }> } | undefined;
-      for (const [platform, post] of Object.entries(posts?.posts ?? {})) {
-        await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
-          platform,
-          postId: post.postId,
-          ...scheduled,
+
+      // Reels are never scheduled on Facebook: with a publish time still
+      // ahead, upload them now and wait at `awaiting_publish_time`; the
+      // worker re-queues the job once it has passed, and the run below
+      // finishes the stored upload.
+      const deferred = scheduleAt
+        ? platforms.filter((p) => reelVideos[p] && providerFor(p).uploadReel)
+        : [];
+      for (const platform of deferred) {
+        if (uploads.has(platform)) continue;
+        const { videoId } = await providerFor(platform).uploadReel!({
+          pageRef: publishTargets[platform],
+          video: renderedVideoUrls[platform],
         });
-        logger.info(`published ${platform}`, post);
+        await artifactsRepo.record(job.id, 'publish-upload', REEL_UPLOAD_KIND, '', {
+          platform,
+          videoId,
+          publishAt: scheduleAt,
+        });
+        logger.info(`uploaded ${platform} reel, going live at ${scheduleAt}`, { videoId });
+      }
+
+      const postNow = platforms.filter((p) => !deferred.includes(p));
+      if (postNow.length > 0) {
+        const publish: PublishFn = async (args) => {
+          const provider = providerFor(args.platform);
+          const videoId = uploads.get(args.platform)?.metadata.videoId;
+          if (args.reel && typeof videoId === 'string' && provider.finishReel) {
+            return provider.finishReel({ ...args, videoId });
+          }
+          return provider.post(args);
+        };
+        const runner = new StageRunner(deps.createStageStore(job.org_id));
+        runner.register(
+          createPublishStage({
+            publish,
+            publishTargets,
+            renderedVideoUrls,
+            reelVideos,
+            scheduleAt,
+          }),
+        );
+        const stageJob: Job = {
+          id: job.id,
+          manifest: { ...job.manifest, publish: postNow },
+          workDir: tmpDir,
+        };
+        const publishOutputs = await runner.run(stageJob);
+        const posts = publishOutputs.get('publish:') as
+          { posts: Record<string, { postId: string; url?: string }> } | undefined;
+        for (const [platform, post] of Object.entries(posts?.posts ?? {})) {
+          await artifactsRepo.record(job.id, 'publish', 'post', post.url ?? post.postId, {
+            platform,
+            postId: post.postId,
+            ...scheduled,
+          });
+          logger.info(`published ${platform}`, post);
+        }
+      }
+
+      if (deferred.length > 0) {
+        assertJobTransition('running', 'awaiting_publish_time');
+        await deps.jobsRepo.updateStatus(job.id, 'awaiting_publish_time');
+        logger.info('job running -> awaiting_publish_time', { publishAt: scheduleAt, deferred });
+        return;
       }
     }
 
@@ -1160,19 +1210,29 @@ async function runPublishOnly(
   }
 }
 
-// The owner's scheduled time from the approval that published (P.8), if any.
-// A time that has come within 10 minutes (the worker was down, the job was
-// retried late) can't be scheduled on Facebook any more, so it posts now.
+// A Facebook reel uploaded ahead of its publish time, finished once it passes.
+export const REEL_UPLOAD_KIND = 'reel-upload';
+
+/** The publish time from the approval that published (P.8), if any. */
+export function approvedPublishAt(
+  artifacts: Array<{ kind: string; metadata: Record<string, unknown>; created_at: string }>,
+): string | undefined {
+  return [...artifacts]
+    .sort((x, y) => x.created_at.localeCompare(y.created_at))
+    .filter((a) => a.kind === GATE_APPROVAL_KIND && typeof a.metadata.publishAt === 'string')
+    .map((a) => a.metadata.publishAt as string)
+    .at(-1);
+}
+
+// The owner's scheduled time, if it's still ahead. A time that has come
+// within 10 minutes (the worker was down, the job was retried late, or a
+// held reel's time has arrived) posts now.
 function scheduledPublishTime(
   artifacts: Array<{ kind: string; metadata: Record<string, unknown>; created_at: string }>,
   now: number,
   logger: Logger,
 ): string | undefined {
-  const publishAt = [...artifacts]
-    .sort((x, y) => x.created_at.localeCompare(y.created_at))
-    .filter((a) => a.kind === GATE_APPROVAL_KIND && typeof a.metadata.publishAt === 'string')
-    .map((a) => a.metadata.publishAt as string)
-    .at(-1);
+  const publishAt = approvedPublishAt(artifacts);
   if (!publishAt) return undefined;
   if (Date.parse(publishAt) - now < 10 * 60 * 1000) {
     logger.error('scheduled time already passed or too close, publishing now', { publishAt });

@@ -28,6 +28,11 @@ const FB_RUPLOAD = 'https://rupload.facebook.com/video-upload/v22.0';
  * whose finish step takes `is_ai_generated` — the label the owner used to
  * set by hand in Meta Business Suite. The plain `/videos` endpoint has no
  * such field, so any other video posts there without it.
+ *
+ * Reels are never scheduled on Facebook (`video_state=SCHEDULED` with
+ * `scheduled_publish_time`). A reel with a publish time is uploaded early
+ * with `uploadReel()` and goes live later through `finishReel()`, called by
+ * the worker once that time has passed.
  */
 export function createFacebookPublishProvider(opts?: {
   pageIdEnvPrefix?: string;
@@ -45,18 +50,29 @@ export function createFacebookPublishProvider(opts?: {
   const sleep = opts?.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
   const pollAttempts = opts?.pollAttempts ?? 30;
 
+  const page = (pageRef: string) => {
+    const pageId = env[`${pageIdPrefix}${pageRef}`];
+    const token = env[`${tokenPrefix}${pageRef}`];
+    if (!pageId || !token) {
+      throw new Error(
+        `createFacebookPublishProvider: missing ${pageIdPrefix}${pageRef} / ${tokenPrefix}${pageRef}`,
+      );
+    }
+    return { pageId, token, fetchFn, sleep, pollAttempts };
+  };
+
   return {
     async post(args): Promise<PublishResultT> {
-      const pageId = env[`${pageIdPrefix}${args.pageRef}`];
-      const token = env[`${tokenPrefix}${args.pageRef}`];
-      if (!pageId || !token) {
-        throw new Error(
-          `createFacebookPublishProvider: missing ${pageIdPrefix}${args.pageRef} / ${tokenPrefix}${args.pageRef}`,
-        );
-      }
+      const pg = page(args.pageRef);
+      const { pageId, token } = pg;
 
       if (args.reel) {
-        return postReel({ pageId, token, args, fetchFn, sleep, pollAttempts });
+        if (args.scheduleAt) {
+          throw new Error(
+            'Facebook reels are not scheduled on Facebook: upload with uploadReel() and call finishReel() at the publish time',
+          );
+        }
+        return finishReel(pg, await startAndUpload(pg, args.video), args);
       }
 
       const params = new URLSearchParams({
@@ -81,27 +97,40 @@ export function createFacebookPublishProvider(opts?: {
       const data = (await res.json()) as { id: string };
       return { postId: data.id, url: `https://www.facebook.com/${data.id}` };
     },
+
+    async uploadReel(args) {
+      return { videoId: await startAndUpload(page(args.pageRef), args.video) };
+    },
+
+    async finishReel(args) {
+      return finishReel(page(args.pageRef), args.videoId, args);
+    },
   };
 }
 
 type PostArgs = Parameters<PublishProvider['post']>[0];
 
-async function postReel(p: {
+type Page = {
   pageId: string;
   token: string;
-  args: PostArgs;
   fetchFn: typeof fetch;
   sleep: (ms: number) => Promise<void>;
   pollAttempts: number;
-}): Promise<PublishResultT> {
-  const { pageId, token, args, fetchFn } = p;
-  const call = async (step: string, url: string, init: RequestInit) => {
+};
+
+function reelCall(fetchFn: typeof fetch) {
+  return async (step: string, url: string, init: RequestInit) => {
     const res = await fetchFn(url, init);
     if (!res.ok) {
       throw new Error(`Facebook reel ${step} failed (${res.status}): ${await res.text()}`);
     }
     return (await res.json()) as Record<string, unknown>;
   };
+}
+
+async function startAndUpload(p: Page, video: string): Promise<string> {
+  const { pageId, token } = p;
+  const call = reelCall(p.fetchFn);
 
   const start = await call('start', `${FB_API}/${pageId}/video_reels`, {
     method: 'POST',
@@ -114,23 +143,27 @@ async function postReel(p: {
   // Facebook fetches the file itself from our public R2 URL.
   await call('upload', `${FB_RUPLOAD}/${videoId}`, {
     method: 'POST',
-    headers: { Authorization: `OAuth ${token}`, file_url: args.video },
+    headers: { Authorization: `OAuth ${token}`, file_url: video },
   });
+  return videoId;
+}
+
+async function finishReel(
+  p: Page,
+  videoId: string,
+  args: Omit<PostArgs, 'video'>,
+): Promise<PublishResultT> {
+  const { pageId, token } = p;
+  const call = reelCall(p.fetchFn);
 
   const finish = new URLSearchParams({
     access_token: token,
     video_id: videoId,
     upload_phase: 'finish',
-    video_state: args.scheduleAt ? 'SCHEDULED' : 'PUBLISHED',
+    video_state: 'PUBLISHED',
     description: args.caption,
   });
   if (args.title) finish.set('title', args.title);
-  if (args.scheduleAt) {
-    finish.set(
-      'scheduled_publish_time',
-      String(Math.floor(new Date(args.scheduleAt).getTime() / 1000)),
-    );
-  }
   if (args.aiDisclosure) finish.set('is_ai_generated', 'true');
   const finishUrl = `${FB_API}/${pageId}/video_reels`;
   let done: Record<string, unknown>;
@@ -160,11 +193,9 @@ async function postReel(p: {
     ).status as ReelStatus | undefined;
     const error = reelError(status);
     if (error) throw new Error(`Facebook reel ${videoId} failed: ${error}`);
-    const publish = status?.publishing_phase?.publish_status;
     if (
       DONE.has(status?.processing_phase?.status ?? '') ||
-      publish === 'published' ||
-      publish === 'scheduled'
+      status?.publishing_phase?.publish_status === 'published'
     ) {
       break;
     }

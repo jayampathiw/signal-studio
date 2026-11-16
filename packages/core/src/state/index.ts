@@ -11,6 +11,7 @@ export type JobStatus =
   | 'dispatched'
   | 'running'
   | `awaiting_review:${string}`
+  | 'awaiting_publish_time'
   | 'delivered'
   | 'published'
   | 'failed'
@@ -86,11 +87,14 @@ const JOB_TRANSITIONS: Record<string, string[]> = {
   awaiting_assets: ['queued', 'cancelled', 'failed'],
   queued: ['dispatched', 'cancelled', 'failed'],
   dispatched: ['running', 'failed', 'cancelled'],
-  running: ['awaiting_review', 'delivered', 'failed', 'cancelled'],
+  running: ['awaiting_review', 'awaiting_publish_time', 'delivered', 'failed', 'cancelled'],
   // `queued`: the last gate approved on a job with publish targets — the
   // worker picks it back up in publish-only mode. `awaiting_review`: one
   // gate approved, the next gate still pending.
   awaiting_review: ['running', 'queued', 'awaiting_review', 'delivered', 'failed', 'cancelled'],
+  // A Facebook reel approved with `publishAt` is uploaded but not finished;
+  // the worker re-queues it in publish mode once that time has passed.
+  awaiting_publish_time: ['queued', 'cancelled', 'failed'],
   delivered: ['published', 'failed'],
   published: [],
   failed: ['queued'],

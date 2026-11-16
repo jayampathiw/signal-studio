@@ -62,6 +62,12 @@ import type { Logger } from '../logger.ts';
  * file never constructs a URL or talks HTTP itself, it only calls whatever
  * `deps` hands it, so a worker with no Healthchecks account configured
  * behaves exactly as before, not with a silently-failing ping loop.
+ *
+ * **Held Facebook reels**: a job approved with `publishAt` whose reel was
+ * uploaded but not finished waits at `awaiting_publish_time` (Facebook's own
+ * reel scheduling is never used). Every `releaseIntervalMs` (default 60s,
+ * and once at startup) `deps.releaseDuePublishes` moves the jobs whose time
+ * has passed to `dispatched`, and this loop sends each one in publish mode.
  */
 
 export type RunMode = 'full' | 'publish';
@@ -80,6 +86,7 @@ export type WorkerOptions = {
   heartbeatIntervalMs?: number;
   reapIntervalMs?: number;
   reapStaleAfterMs?: number;
+  releaseIntervalMs?: number;
   shutdownTimeoutMs?: number;
 };
 
@@ -91,6 +98,7 @@ export type BossQueue = {
     options: { batchSize: number },
     handler: (jobs: Array<{ data: JobPayload }>) => Promise<void>,
   ) => Promise<unknown>;
+  send: (queue: string, data: JobPayload) => Promise<string | null>;
   start: () => Promise<unknown>;
   stop: (options?: { graceful?: boolean; timeout?: number }) => Promise<void>;
 };
@@ -99,6 +107,9 @@ export type WorkerDeps = {
   runJob: (jobId: string, mode: RunMode) => Promise<void>;
   heartbeat: (jobId: string) => Promise<void>;
   reapStaleRunning: (staleBefore: Date) => Promise<Array<{ id: string }>>;
+  // Jobs at `awaiting_publish_time` whose publish time has passed, moved to
+  // `dispatched`; returns their ids. Omitted in tests that don't need it.
+  releaseDuePublishes?: (now: Date) => Promise<string[]>;
   createBoss: (connectionString: string) => Promise<BossQueue>;
   // Injectable for tests only — real code always uses the real
   // `process.once`. Defaulted inside `workerCommand`, not here, so every
@@ -180,6 +191,29 @@ export async function reapOnce(
 }
 
 // Exported for its own direct test coverage, same reasoning as `reapOnce`.
+export async function releaseDueOnce(
+  releaseDuePublishes: NonNullable<WorkerDeps['releaseDuePublishes']>,
+  send: BossQueue['send'],
+  queue: string,
+  logger: Logger,
+): Promise<void> {
+  try {
+    for (const jobId of await releaseDuePublishes(new Date())) {
+      const messageId = await send(queue, { jobId, mode: 'publish' });
+      if (messageId === null) {
+        logger.error('held reel release: send returned null, job left dispatched', { jobId });
+      } else {
+        logger.info('publish time reached, queued held reel', { jobId });
+      }
+    }
+  } catch (err) {
+    logger.error('held reel release tick failed', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+// Exported for its own direct test coverage, same reasoning as `reapOnce`.
 export async function pingHealthcheckOnce(
   pingHealthcheck: () => Promise<void>,
   logger: Logger,
@@ -205,6 +239,7 @@ export async function workerCommand(
   const heartbeatIntervalMs = opts.heartbeatIntervalMs ?? 30_000;
   const reapIntervalMs = opts.reapIntervalMs ?? 60_000;
   const reapStaleAfterMs = opts.reapStaleAfterMs ?? 10 * 60_000;
+  const releaseIntervalMs = opts.releaseIntervalMs ?? 60_000;
   const shutdownTimeoutMs = opts.shutdownTimeoutMs ?? 5 * 60_000;
   const onSignal =
     deps.onSignal ??
@@ -218,6 +253,12 @@ export async function workerCommand(
     () => void reapOnce(deps.reapStaleRunning, reapStaleAfterMs, logger),
     reapIntervalMs,
   );
+  const release = deps.releaseDuePublishes;
+  const releaseTick = release
+    ? () => void releaseDueOnce(release, (q, d) => boss.send(q, d), opts.queue, logger)
+    : undefined;
+  releaseTick?.();
+  const releaseInterval = releaseTick ? setInterval(releaseTick, releaseIntervalMs) : undefined;
   const healthcheckInterval = deps.pingHealthcheck
     ? setInterval(() => void pingHealthcheckOnce(deps.pingHealthcheck!, logger), reapIntervalMs)
     : undefined;
@@ -237,12 +278,14 @@ export async function workerCommand(
     heartbeatIntervalMs,
     reapIntervalMs,
     reapStaleAfterMs,
+    releaseIntervalMs,
   });
 
   await new Promise<void>((resolve) => {
     const shutdown = (signal: 'SIGTERM' | 'SIGINT') => {
       logger.info('shutdown signal received, stopping gracefully', { signal });
       clearInterval(reaperInterval);
+      if (releaseInterval) clearInterval(releaseInterval);
       if (healthcheckInterval) clearInterval(healthcheckInterval);
       boss
         .stop({ graceful: true, timeout: shutdownTimeoutMs })

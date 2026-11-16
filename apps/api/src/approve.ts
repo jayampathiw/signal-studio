@@ -29,10 +29,11 @@ import type { AppDeps } from './app.ts';
  * `awaiting_review:*`.
  *
  * `publishAt` (P.8, scheduled posting) is only accepted on the approval that
- * publishes. It's stored on that gate's `gate-approval` artifact, and the
- * worker's publish-only run hands it to the platform's own scheduling
- * (Facebook `scheduled_publish_time`), so nothing on our side has to wake up
- * at that time.
+ * publishes. It's stored on that gate's `gate-approval` artifact. The
+ * worker's publish-only run hands it to the platform's own scheduling where
+ * that's used (YouTube, plain Facebook videos, carousels); a Facebook reel is
+ * uploaded at once and held at `awaiting_publish_time`, and the worker
+ * finishes it with `video_state=PUBLISHED` once the time has passed.
  */
 export async function approveGate(
   deps: Pick<AppDeps, 'jobsRepo' | 'projectsRepo' | 'dispatcher' | 'createArtifactsRepo'>,

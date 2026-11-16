@@ -7,6 +7,7 @@ import {
   handleJob,
   pingHealthcheckOnce,
   reapOnce,
+  releaseDueOnce,
   workerCommand,
   type BossQueue,
 } from './worker.ts';
@@ -214,6 +215,34 @@ test('pingHealthcheckOnce: a failed ping is caught, not thrown', async () => {
   );
 });
 
+test('releaseDueOnce: sends each released job in publish mode; a failed tick is caught', async () => {
+  const sent: unknown[] = [];
+  await releaseDueOnce(
+    async () => ['job-1', 'job-2'],
+    async (queue, data) => {
+      sent.push([queue, data]);
+      return 'msg';
+    },
+    'render-jobs',
+    createLogger({ level: 'error' }),
+  );
+  assert.deepEqual(sent, [
+    ['render-jobs', { jobId: 'job-1', mode: 'publish' }],
+    ['render-jobs', { jobId: 'job-2', mode: 'publish' }],
+  ]);
+
+  await assert.doesNotReject(() =>
+    releaseDueOnce(
+      async () => {
+        throw new Error('db down');
+      },
+      async () => 'msg',
+      'render-jobs',
+      createLogger({ level: 'error' }),
+    ),
+  );
+});
+
 function fakeBoss(overrides: Partial<BossQueue> = {}): {
   boss: BossQueue;
   calls: { createQueue?: unknown[]; work?: unknown[]; stop?: unknown[] };
@@ -225,6 +254,9 @@ function fakeBoss(overrides: Partial<BossQueue> = {}): {
     },
     async createQueue(name, options) {
       calls.createQueue = [name, options];
+    },
+    async send() {
+      return 'msg-1';
     },
     async work(queue, options, handler) {
       calls.work = [queue, options];

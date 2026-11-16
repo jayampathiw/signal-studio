@@ -1872,6 +1872,80 @@ test('runJob publish mode: a scheduled time that has already come posts now', as
   assert.equal(deps.statusUpdates.at(-1), 'delivered');
 });
 
+function reelRows(publishAt: string) {
+  const [render, approval] = scheduledRows(publishAt);
+  return [
+    { ...render, metadata: { outputId: 'fb', aspectRatio: '9:16', durationSec: 30 } },
+    approval,
+  ];
+}
+
+function reelProvider(deps: ReturnType<typeof publishOnlyDeps>['deps']) {
+  const calls: Array<{ method: string; args: Record<string, unknown> }> = [];
+  deps.createPublishProviderFor = () =>
+    ({
+      async post(args: Record<string, unknown>) {
+        calls.push({ method: 'post', args });
+        return { postId: 'p1', url: 'https://facebook.com/p1' };
+      },
+      async uploadReel(args: Record<string, unknown>) {
+        calls.push({ method: 'uploadReel', args });
+        return { videoId: 'v77' };
+      },
+      async finishReel(args: Record<string, unknown>) {
+        calls.push({ method: 'finishReel', args });
+        return { postId: 'v77', url: 'https://www.facebook.com/reel/v77' };
+      },
+    }) as never;
+  return calls;
+}
+
+test('runJob publish mode: a reel with a future publishAt is uploaded and held, not scheduled', async () => {
+  const { deps, recorded } = publishOnlyDeps(reelRows('2026-10-30T23:00:00.000Z'));
+  deps.now = () => Date.parse('2026-10-30T08:01:00Z');
+  const calls = reelProvider(deps);
+
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+
+  assert.deepEqual(
+    calls.map((c) => c.method),
+    ['uploadReel'],
+  );
+  assert.deepEqual(calls[0].args, { pageRef: 'TEST', video: 'https://r2.test/fb.mp4' });
+  assert.deepEqual(recorded, [{ stage: 'publish-upload', kind: 'reel-upload', url: '' }]);
+  assert.equal(deps.statusUpdates.at(-1), 'awaiting_publish_time');
+});
+
+test('runJob publish mode: once publishAt has passed, a held reel is finished, not re-uploaded', async () => {
+  const rows = [
+    ...reelRows('2026-10-30T23:00:00.000Z'),
+    {
+      stage_name: 'publish-upload',
+      kind: 'reel-upload',
+      url: '',
+      metadata: { platform: 'facebook', videoId: 'v77', publishAt: '2026-10-30T23:00:00.000Z' },
+      created_at: '2026-10-30T08:02:00Z',
+    },
+  ];
+  const { deps, recorded } = publishOnlyDeps(rows);
+  deps.now = () => Date.parse('2026-10-30T23:00:30Z');
+  const calls = reelProvider(deps);
+
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+
+  assert.deepEqual(
+    calls.map((c) => c.method),
+    ['finishReel'],
+  );
+  assert.equal(calls[0].args.videoId, 'v77');
+  assert.equal(calls[0].args.scheduleAt, undefined);
+  assert.equal(calls[0].args.reel, true);
+  assert.deepEqual(recorded, [
+    { stage: 'publish', kind: 'post', url: 'https://www.facebook.com/reel/v77' },
+  ]);
+  assert.equal(deps.statusUpdates.at(-1), 'delivered');
+});
+
 test('runJob publish mode: fails clearly when the job has no rendered video', async () => {
   const { deps } = publishOnlyDeps([]);
 

@@ -133,6 +133,13 @@ export interface PublishProvider {
     // Reels API, which carries the AI label. Otherwise a plain Page video.
     reel?: boolean;
   }): Promise<PublishResultT>;
+  // Facebook Reels only. A reel can't be scheduled on Facebook, so one with
+  // a publish time is uploaded now (start + upload, nothing goes live) and
+  // finished with `video_state=PUBLISHED` once that time has passed.
+  uploadReel?(args: { pageRef: string; video: string }): Promise<{ videoId: string }>;
+  finishReel?(
+    args: Omit<Parameters<PublishProvider['post']>[0], 'video'> & { videoId: string },
+  ): Promise<PublishResultT>;
 }
 
 /**

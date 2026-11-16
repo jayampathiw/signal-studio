@@ -24,7 +24,7 @@ import '@signal-studio/render-ffmpeg';
 import type { DigestDeps } from './commands/digest.ts';
 import type { MarkFailedDeps } from './commands/mark-failed.ts';
 import type { MusicDeps } from './commands/music.ts';
-import type { RunJobDeps } from './commands/run-job.ts';
+import { approvedPublishAt, type RunJobDeps } from './commands/run-job.ts';
 import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
 import type { BossQueue, WorkerDeps } from './commands/worker.ts';
@@ -251,6 +251,21 @@ export function realWorkerDeps(runJob: WorkerDeps['runJob']): WorkerDeps {
     runJob,
     heartbeat: (jobId: string) => jobsRepo.heartbeat(jobId),
     reapStaleRunning: (staleBefore: Date) => jobsRepo.reapStaleRunning(staleBefore),
+    async releaseDuePublishes(now: Date) {
+      const released: string[] = [];
+      for (const job of await jobsRepo.listByStatus('awaiting_publish_time')) {
+        const artifacts = await new ArtifactsRepo(client, job.org_id).listForJob(job.id);
+        const publishAt = approvedPublishAt(artifacts);
+        if (publishAt && Date.parse(publishAt) > now.getTime()) continue;
+        if (
+          (await jobsRepo.updateStatusIf(job.id, 'awaiting_publish_time', 'queued')) &&
+          (await jobsRepo.markDispatched(job.id))
+        ) {
+          released.push(job.id);
+        }
+      }
+      return released;
+    },
     async createBoss(connectionString: string) {
       const PgBoss = (await import('pg-boss')).default;
       // pg-boss's own real type is a superset of `BossQueue` (this file's

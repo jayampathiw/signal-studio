@@ -47,6 +47,30 @@ export class JobsRepo {
     if (error) throw new Error(`JobsRepo.updateStatus: ${error.message}`);
   }
 
+  // Like `updateStatus`, but only while the job is still `from`; returns
+  // whether this call made the change.
+  async updateStatusIf(jobId: string, from: JobStatus, to: JobStatus): Promise<boolean> {
+    const { data, error } = await this.client
+      .from('jobs')
+      .update({
+        status: to,
+        updated_at: new Date().toISOString(),
+        ...(to === 'queued' ? { error: null } : {}),
+      })
+      .eq('id', jobId)
+      .eq('status', from)
+      .select('id');
+    if (error) throw new Error(`JobsRepo.updateStatusIf: ${error.message}`);
+    return (data as unknown[]).length > 0;
+  }
+
+  // Across every org — the worker's own service-role scans only.
+  async listByStatus(status: JobStatus): Promise<JobRow[]> {
+    const { data, error } = await this.client.from('jobs').select().eq('status', status);
+    if (error) throw new Error(`JobsRepo.listByStatus: ${error.message}`);
+    return data as JobRow[];
+  }
+
   async markFailed(jobId: string, failure: FailedPayload): Promise<void> {
     const { error } = await this.client
       .from('jobs')

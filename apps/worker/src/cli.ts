@@ -109,6 +109,7 @@ async function main(): Promise<number> {
           heartbeatIntervalMs: num('heartbeat-interval-ms'),
           reapIntervalMs: num('reap-interval-ms'),
           reapStaleAfterMs: num('reap-stale-after-ms'),
+          releaseIntervalMs: num('release-interval-ms'),
           shutdownTimeoutMs: num('shutdown-timeout-ms'),
         },
         realWorkerDeps((jobId, mode) => runJob({ jobId, mode }, jobDeps, logger)),

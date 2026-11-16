@@ -112,7 +112,7 @@ export function createMcpServer(deps: AppDeps, orgId: string): McpServer {
     {
       title: 'Approve review gate',
       description:
-        'Approve the review gate a job is waiting on. Moves it to the next gate, or publishes the already-rendered video (status queued), or marks it delivered when there is nothing to publish. On the last gate, optional `publishAt` (ISO 8601 with a timezone offset, 15 minutes to 29 days ahead) schedules the post on the platform instead of posting now; without it the post goes live immediately.',
+        'Approve the review gate a job is waiting on. Moves it to the next gate, or publishes the already-rendered video (status queued), or marks it delivered when there is nothing to publish. On the last gate, optional `publishAt` (ISO 8601 with a timezone offset, 15 minutes to 29 days ahead) schedules the post instead of posting now (a Facebook reel is uploaded now, waits at status awaiting_publish_time, and the engine publishes it within about a minute of that time); without it the post goes live immediately.',
       inputSchema: { id: z.string().min(1), publishAt: z.string().min(1).optional() },
     },
     async ({ id, publishAt }) => {
