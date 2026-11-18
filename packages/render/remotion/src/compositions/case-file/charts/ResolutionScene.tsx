@@ -15,9 +15,12 @@ export type ResolutionVisual = {
 
 // Closing frame: the hook's number and the mechanism's timeline held together
 // statically, not a blank end card — the two facts the viewer should leave with.
-export const ResolutionScene: React.FC<{ visual: ResolutionVisual }> = ({ visual }) => {
+export const ResolutionScene: React.FC<{ visual: ResolutionVisual; opening?: boolean }> = ({
+  visual,
+  opening = false,
+}) => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const opacity = opening ? 1 : interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
 
   return (
     <AbsoluteFill

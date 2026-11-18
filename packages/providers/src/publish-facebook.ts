@@ -30,9 +30,10 @@ const FB_RUPLOAD = 'https://rupload.facebook.com/video-upload/v22.0';
  * such field, so any other video posts there without it.
  *
  * Reels are never scheduled on Facebook (`video_state=SCHEDULED` with
- * `scheduled_publish_time`). A reel with a publish time is uploaded early
- * with `uploadReel()` and goes live later through `finishReel()`, called by
- * the worker once that time has passed.
+ * `scheduled_publish_time`), and never uploaded ahead of time: the worker
+ * holds a reel with a publish time at `awaiting_publish_time` and calls
+ * `post()` once it has passed. A reel counts as posted only once its status
+ * reads `publish_status: published`.
  */
 export function createFacebookPublishProvider(opts?: {
   pageIdEnvPrefix?: string;
@@ -69,10 +70,10 @@ export function createFacebookPublishProvider(opts?: {
       if (args.reel) {
         if (args.scheduleAt) {
           throw new Error(
-            'Facebook reels are not scheduled on Facebook: upload with uploadReel() and call finishReel() at the publish time',
+            'Facebook reels are not scheduled on Facebook: hold the job and post at the publish time',
           );
         }
-        return finishReel(pg, await startAndUpload(pg, args.video), args);
+        return publishReel(pg, args);
       }
 
       const params = new URLSearchParams({
@@ -97,14 +98,6 @@ export function createFacebookPublishProvider(opts?: {
       const data = (await res.json()) as { id: string };
       return { postId: data.id, url: `https://www.facebook.com/${data.id}` };
     },
-
-    async uploadReel(args) {
-      return { videoId: await startAndUpload(page(args.pageRef), args.video) };
-    },
-
-    async finishReel(args) {
-      return finishReel(page(args.pageRef), args.videoId, args);
-    },
   };
 }
 
@@ -118,14 +111,62 @@ type Page = {
   pollAttempts: number;
 };
 
+export class FacebookApiError extends Error {
+  readonly status: number;
+  readonly code?: number;
+  readonly subcode?: number;
+  constructor(message: string, status: number, code?: number, subcode?: number) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.subcode = subcode;
+  }
+}
+
 function reelCall(fetchFn: typeof fetch) {
   return async (step: string, url: string, init: RequestInit) => {
     const res = await fetchFn(url, init);
     if (!res.ok) {
-      throw new Error(`Facebook reel ${step} failed (${res.status}): ${await res.text()}`);
+      const body = await res.text();
+      let fbError: { code?: number; error_subcode?: number } = {};
+      try {
+        fbError = (JSON.parse(body) as { error?: typeof fbError }).error ?? {};
+      } catch {
+        // not JSON; the raw body is in the message
+      }
+      throw new FacebookApiError(
+        `Facebook reel ${step} failed (${res.status}): ${body}`,
+        res.status,
+        fbError.code,
+        fbError.error_subcode,
+      );
     }
     return (await res.json()) as Record<string, unknown>;
   };
+}
+
+// Finish refused because Facebook no longer has the uploaded file.
+const isUploadMissing = (err: unknown) =>
+  err instanceof FacebookApiError && err.code === 6000 && err.subcode === 1363130;
+
+async function publishReel(p: Page, args: PostArgs): Promise<PublishResultT> {
+  // A retry after finish already went through: only confirm it went live,
+  // never post a second copy.
+  if (args.finishedVideoId) return confirmPublished(p, args.finishedVideoId);
+
+  let videoId = await startAndUpload(p, args.video);
+  if (args.cover) await setCover(p, videoId, args.cover);
+  try {
+    await finishReel(p, videoId, args);
+  } catch (err) {
+    if (!isUploadMissing(err)) throw err;
+    console.error('Facebook reel upload missing at finish, uploading once more', { videoId });
+    videoId = await startAndUpload(p, args.video);
+    if (args.cover) await setCover(p, videoId, args.cover);
+    await finishReel(p, videoId, args);
+  }
+  await args.onFinished?.(videoId);
+  return confirmPublished(p, videoId);
 }
 
 async function startAndUpload(p: Page, video: string): Promise<string> {
@@ -148,11 +189,30 @@ async function startAndUpload(p: Page, video: string): Promise<string> {
   return videoId;
 }
 
-async function finishReel(
-  p: Page,
-  videoId: string,
-  args: Omit<PostArgs, 'video'>,
-): Promise<PublishResultT> {
+// The hook frame as the reel's cover. Not in Meta's Reels guide (the
+// `/thumbnails` edge is the general Video one), so a refusal is logged and
+// the reel posts with Facebook's own pick.
+async function setCover(p: Page, videoId: string, cover: string): Promise<void> {
+  try {
+    const image = await p.fetchFn(cover);
+    if (!image.ok) throw new Error(`cover download failed (${image.status})`);
+    const form = new FormData();
+    form.set('access_token', p.token);
+    form.set('is_preferred', 'true');
+    form.set('source', new Blob([await image.arrayBuffer()], { type: 'image/jpeg' }), 'cover.jpg');
+    await reelCall(p.fetchFn)('cover', `${FB_API}/${videoId}/thumbnails`, {
+      method: 'POST',
+      body: form,
+    });
+  } catch (err) {
+    console.error('Facebook reel cover not set, posting without it', {
+      videoId,
+      error: String(err),
+    });
+  }
+}
+
+async function finishReel(p: Page, videoId: string, args: PostArgs): Promise<void> {
   const { pageId, token } = p;
   const call = reelCall(p.fetchFn);
 
@@ -170,8 +230,8 @@ async function finishReel(
   try {
     done = await call('finish', finishUrl, { method: 'POST', body: finish });
   } catch (err) {
-    // Not yet proven on a live post: if this API version refuses the label
-    // field, post without it (the owner labels by hand) rather than fail.
+    // If this API version refuses the label field, post without it (the
+    // owner labels by hand) rather than fail.
     if (!finish.has('is_ai_generated') || !/is_ai_generated/.test(String(err))) throw err;
     finish.delete('is_ai_generated');
     done = await call('finish', finishUrl, { method: 'POST', body: finish });
@@ -179,34 +239,39 @@ async function finishReel(
   if (done.success === false) {
     throw new Error(`Facebook reel finish was refused: ${JSON.stringify(done)}`);
   }
-
-  // Processing runs after finish; surface a rejected video (bad format,
-  // too long) as a failure instead of reporting a post that never appears.
-  // Still processing when the wait runs out is fine: Facebook carries on.
-  for (let i = 0; i < p.pollAttempts; i++) {
-    const status = (
-      await call(
-        'status',
-        `${FB_API}/${videoId}?fields=status&access_token=${encodeURIComponent(token)}`,
-        { method: 'GET' },
-      )
-    ).status as ReelStatus | undefined;
-    const error = reelError(status);
-    if (error) throw new Error(`Facebook reel ${videoId} failed: ${error}`);
-    if (
-      DONE.has(status?.processing_phase?.status ?? '') ||
-      status?.publishing_phase?.publish_status === 'published'
-    ) {
-      break;
-    }
-    await p.sleep(10_000);
-  }
-
-  return { postId: videoId, url: `https://www.facebook.com/reel/${videoId}` };
 }
 
-// The docs spell it both ways (`complete` in examples, `completed` in the table).
-const DONE = new Set(['complete', 'completed']);
+// Processing and publishing run after finish. The reel only counts as
+// posted once Facebook reports `publish_status: published`; a rejected
+// video fails at once, and one still pending when the wait runs out fails
+// too (a retry re-checks it, it doesn't post again). Rate limits and server
+// errors on this read are waited out.
+async function confirmPublished(p: Page, videoId: string): Promise<PublishResultT> {
+  const call = reelCall(p.fetchFn);
+  const url = `${FB_API}/${videoId}?fields=status,published&access_token=${encodeURIComponent(p.token)}`;
+  let last: { status?: ReelStatus; published?: boolean } = {};
+  for (let i = 0; i < p.pollAttempts; i++) {
+    if (i > 0) await p.sleep(10_000);
+    try {
+      last = (await call('status', url, { method: 'GET' })) as typeof last;
+    } catch (err) {
+      if (err instanceof FacebookApiError && (err.status === 429 || err.status >= 500)) continue;
+      throw err;
+    }
+    const error = reelError(last.status);
+    if (error) throw new Error(`Facebook reel ${videoId} failed: ${error}`);
+    if (last.status?.publishing_phase?.publish_status === 'published') {
+      return {
+        postId: videoId,
+        url: `https://www.facebook.com/reel/${videoId}`,
+        status: { published: last.published, ...last.status },
+      };
+    }
+  }
+  throw new Error(
+    `Facebook reel ${videoId} was finished but isn't published yet: ${JSON.stringify(last)}`,
+  );
+}
 
 type Phase = { status?: string; error?: { message?: string } };
 type ReelStatus = {

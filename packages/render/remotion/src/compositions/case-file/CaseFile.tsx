@@ -53,10 +53,11 @@ export type CaseFileProps = {
   scenes: CaseFileScene[];
 };
 
-function renderVisual(visual: SceneVisual) {
+// `opening`: the video's first scene, drawn in full from frame 0 (no fade-in).
+function renderVisual(visual: SceneVisual, opening: boolean) {
   switch (visual.kind) {
     case 'counter':
-      return <AnimatedCounter visual={visual} />;
+      return <AnimatedCounter visual={visual} opening={opening} />;
     case 'barChart':
       return (
         <AbsoluteFill
@@ -70,13 +71,13 @@ function renderVisual(visual: SceneVisual) {
         </AbsoluteFill>
       );
     case 'mechanism':
-      return <MechanismScene visual={visual} />;
+      return <MechanismScene visual={visual} opening={opening} />;
     case 'resolution':
-      return <ResolutionScene visual={visual} />;
+      return <ResolutionScene visual={visual} opening={opening} />;
     case 'speechBubbles':
-      return <SpeechBubbles visual={visual} />;
+      return <SpeechBubbles visual={visual} opening={opening} />;
     case 'pointerCard':
-      return <PointerCard visual={visual} />;
+      return <PointerCard visual={visual} opening={opening} />;
   }
 }
 
@@ -130,12 +131,13 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
   });
   const outroFrom = cursor;
 
+  // Brand navy under everything, so nothing can show the default black.
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={{ backgroundColor: PALETTE.background }}>
       {placedScenes.map(({ scene, imageUrl, zoomFrom, zoomTo, from, durationInFrames }) => (
         <Sequence key={scene.id} from={from} durationInFrames={durationInFrames}>
           {scene.visual ? (
-            renderVisual(scene.visual)
+            renderVisual(scene.visual, from === 0)
           ) : isVideoAsset(imageUrl) ? (
             <StockVideo videoUrl={imageUrl}>
               {scene.waveformOverlay && <WaveformOverlay />}

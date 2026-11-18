@@ -32,8 +32,9 @@ import type { AppDeps } from './app.ts';
  * publishes. It's stored on that gate's `gate-approval` artifact. The
  * worker's publish-only run hands it to the platform's own scheduling where
  * that's used (YouTube, plain Facebook videos, carousels); a Facebook reel is
- * uploaded at once and held at `awaiting_publish_time`, and the worker
- * finishes it with `video_state=PUBLISHED` once the time has passed.
+ * held at `awaiting_publish_time` with nothing sent to Facebook, and the
+ * worker posts it (start → upload → finish `video_state=PUBLISHED`) once the
+ * time has passed.
  */
 export async function approveGate(
   deps: Pick<AppDeps, 'jobsRepo' | 'projectsRepo' | 'dispatcher' | 'createArtifactsRepo'>,

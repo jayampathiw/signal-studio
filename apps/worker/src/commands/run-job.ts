@@ -217,6 +217,11 @@ export type RunJobDeps = {
   createPublishProviderFor: (platform: string, credentialRef: string) => PublishProvider;
   measureVideo: (localPath: string) => Promise<QaMeasurement>;
   detectBlackFrames: (localPath: string) => Promise<QaBlackSegment[]>;
+  // Mean luma (YAVG, 0–255) of the first frame, and one frame saved as a
+  // JPEG. Both only used for `case-file` outputs; omitted in tests that
+  // don't cover them.
+  firstFrameLuma?: (localPath: string) => Promise<number>;
+  extractFrame?: (localPath: string, atSec: number, outPath: string) => Promise<void>;
   // Only ever called when `project.qa.visionCheck` is true — omitted from
   // most jobs' path entirely, not just short-circuited, so a missing
   // ANTHROPIC_KEY never breaks a job that doesn't use it.
@@ -1128,44 +1133,24 @@ async function runPublishOnly(
         }
       }
 
-      const providerFor = (platform: string) =>
-        deps.createPublishProviderFor(platform, publishTargets[platform]);
-      const uploads = latestBy(
-        artifacts.filter((a) => a.kind === REEL_UPLOAD_KIND),
-        (a) => a.metadata.platform as string | undefined,
-      );
-
-      // Reels are never scheduled on Facebook: with a publish time still
-      // ahead, upload them now and wait at `awaiting_publish_time`; the
-      // worker re-queues the job once it has passed, and the run below
-      // finishes the stored upload.
-      const deferred = scheduleAt
-        ? platforms.filter((p) => reelVideos[p] && providerFor(p).uploadReel)
-        : [];
-      for (const platform of deferred) {
-        if (uploads.has(platform)) continue;
-        const { videoId } = await providerFor(platform).uploadReel!({
-          pageRef: publishTargets[platform],
-          video: renderedVideoUrls[platform],
-        });
-        await artifactsRepo.record(job.id, 'publish-upload', REEL_UPLOAD_KIND, '', {
-          platform,
-          videoId,
-          publishAt: scheduleAt,
-        });
-        logger.info(`uploaded ${platform} reel, going live at ${scheduleAt}`, { videoId });
-      }
+      // Reels are never scheduled on Facebook, or uploaded ahead of time:
+      // with a publish time still ahead, the job waits at
+      // `awaiting_publish_time` and the worker re-queues it once that time
+      // has passed (`scheduledPublishTime` then returns nothing), so this
+      // same run posts it start to finish.
+      const deferred = scheduleAt ? platforms.filter((p) => reelVideos[p] && p === 'facebook') : [];
 
       const postNow = platforms.filter((p) => !deferred.includes(p));
       if (postNow.length > 0) {
-        const publish: PublishFn = async (args) => {
-          const provider = providerFor(args.platform);
-          const videoId = uploads.get(args.platform)?.metadata.videoId;
-          if (args.reel && typeof videoId === 'string' && provider.finishReel) {
-            return provider.finishReel({ ...args, videoId });
-          }
-          return provider.post(args);
-        };
+        const publish = reelAwarePublish(
+          (platform) => deps.createPublishProviderFor(platform, publishTargets[platform]),
+          artifacts,
+          (platform, videoId) =>
+            artifactsRepo.record(job.id, 'publish-finish', REEL_FINISHED_KIND, '', {
+              platform,
+              videoId,
+            }),
+        );
         const runner = new StageRunner(deps.createStageStore(job.org_id));
         runner.register(
           createPublishStage({
@@ -1210,8 +1195,59 @@ async function runPublishOnly(
   }
 }
 
-// A Facebook reel uploaded ahead of its publish time, finished once it passes.
-export const REEL_UPLOAD_KIND = 'reel-upload';
+// A Facebook reel whose finish went through, recorded before its publish is
+// confirmed: a retry only confirms it, never posts it again.
+export const REEL_FINISHED_KIND = 'reel-finished';
+// The hook frame of a rendered output, set as a reel's cover.
+export const COVER_KIND = 'cover';
+
+// The hook moment for the cover: 2 s in (a counter has finished counting),
+// or the middle of a shorter first scene.
+export function coverTimeSec(firstSceneSecs: number): number {
+  return Math.min(2, firstSceneSecs / 2);
+}
+
+/**
+ * The publish call for both runs: a reel gets its rendered cover, and the
+ * `reel-finished` checkpoint (written through `recordFinished`, read back
+ * from `artifacts` on a retry).
+ */
+function reelAwarePublish(
+  providerFor: (platform: string) => PublishProvider,
+  artifacts: ArtifactRow[],
+  recordFinished: (platform: string, videoId: string) => Promise<unknown>,
+  covers: Record<string, string> = coverUrls(artifacts),
+): PublishFn {
+  const finished = latestBy(
+    artifacts.filter((a) => a.kind === REEL_FINISHED_KIND),
+    (a) => a.metadata.platform as string | undefined,
+  );
+  return (args) => {
+    if (!args.reel) return providerFor(args.platform).post(args);
+    const finishedVideoId = finished.get(args.platform)?.metadata.videoId;
+    return providerFor(args.platform).post({
+      ...args,
+      cover: covers[args.platform],
+      finishedVideoId: typeof finishedVideoId === 'string' ? finishedVideoId : undefined,
+      onFinished: async (videoId) => {
+        await recordFinished(args.platform, videoId);
+      },
+    });
+  };
+}
+
+function coverUrls(artifacts: ArtifactRow[]): Record<string, string> {
+  const covers: Record<string, string> = {};
+  const byOutput = latestBy(
+    artifacts.filter((a) => a.kind === COVER_KIND),
+    (a) => a.metadata.outputId as string | undefined,
+  );
+  for (const [outputId, row] of byOutput) {
+    const platform = OUTPUT_TO_PLATFORM[outputId];
+    if (platform) covers[platform] = row.url;
+  }
+  return covers;
+}
 
 /** The publish time from the approval that published (P.8), if any. */
 export function approvedPublishAt(
@@ -1393,6 +1429,7 @@ async function runLoadedJob(
     const renderOutDir = path.join(tmpDir, 'out');
     const renderedVideoUrls: Record<string, string> = {};
     const reelVideos: Record<string, boolean> = {};
+    const covers: Record<string, string> = {};
     const outputLocalPaths: Record<string, string> = {};
     const outputExpected: Record<
       string,
@@ -1401,6 +1438,7 @@ async function runLoadedJob(
         aspectRatio: string;
         highlights: Array<{ x: number; y: number; width: number; height: number }>;
         ignoreBlackAfterSec?: number;
+        checkFirstFrame?: boolean;
       }
     > = {};
     for (const [outputId, timeline] of Object.entries(timelines)) {
@@ -1452,6 +1490,9 @@ async function runLoadedJob(
         // still fail, so `ctaDurationSec` alone gates this, not the wider
         // `extraDurationSec`.
         ignoreBlackAfterSec: ctaDurationSec > 0 ? scenesDurationSec : undefined,
+        // A case-file reel's first frame is its fallback cover: it must be
+        // drawn, not the start of a fade from black.
+        checkFirstFrame: timeline.template === 'case-file',
       };
       const key = `jobs/${job.id}/rendered/${outputId}.mp4`;
       const { url } = await storage.put({ localPath, key });
@@ -1468,6 +1509,18 @@ async function runLoadedJob(
         renderedVideoUrls[platform] = url;
         reelVideos[platform] = fitsReel(videoMeta);
       }
+
+      if (timeline.template === 'case-file' && deps.extractFrame) {
+        const atSec = coverTimeSec(timeline.scenes[0]?.durationSecs ?? 0);
+        const coverPath = path.join(renderOutDir, `${outputId}-cover.jpg`);
+        await withStage('render', () => deps.extractFrame!(localPath, atSec, coverPath));
+        const cover = await storage.put({
+          localPath: coverPath,
+          key: `jobs/${job.id}/rendered/${outputId}-cover.jpg`,
+        });
+        await artifactsRepo.record(job.id, 'render', COVER_KIND, cover.url, { outputId, atSec });
+        if (platform) covers[platform] = cover.url;
+      }
     }
 
     // QA runs for every output before gates/publish — a failure here marks
@@ -1477,6 +1530,9 @@ async function runLoadedJob(
       createQaStage({
         measure: (outputId) => deps.measureVideo(outputLocalPaths[outputId]),
         detectBlackFrames: (outputId) => deps.detectBlackFrames(outputLocalPaths[outputId]),
+        firstFrameLuma: deps.firstFrameLuma
+          ? (outputId) => deps.firstFrameLuma!(outputLocalPaths[outputId])
+          : undefined,
         expected: (outputId) => {
           const canonical =
             CANONICAL_RESOLUTION[outputExpected[outputId].aspectRatio] ??
@@ -1490,6 +1546,7 @@ async function runLoadedJob(
             maxTruePeakDb: project.qa.maxTruePeakDb,
             highlights: outputExpected[outputId].highlights,
             ignoreBlackAfterSec: outputExpected[outputId].ignoreBlackAfterSec,
+            checkFirstFrame: outputExpected[outputId].checkFirstFrame,
           };
         },
         visionCheck:
@@ -1508,13 +1565,19 @@ async function runLoadedJob(
         publishTargets[target.platform] = target.credentialRef;
       }
 
-      const publish: PublishFn = async (args) => {
-        const credentialRef = publishTargets[args.platform];
-        // createPublishStage itself already throws a clearer error when a
-        // platform has no configured publishTarget at all — this can only
-        // be reached once that check has already passed.
-        return deps.createPublishProviderFor(args.platform, credentialRef).post(args);
-      };
+      // createPublishStage itself already throws a clearer error when a
+      // platform has no configured publishTarget at all — the provider
+      // lookup can only be reached once that check has already passed.
+      const publish = reelAwarePublish(
+        (platform) => deps.createPublishProviderFor(platform, publishTargets[platform]),
+        await artifactsRepo.listForJob(job.id),
+        (platform, videoId) =>
+          artifactsRepo.record(job.id, 'publish-finish', REEL_FINISHED_KIND, '', {
+            platform,
+            videoId,
+          }),
+        covers,
+      );
 
       runner.register(
         createPublishStage({ publish, publishTargets, renderedVideoUrls, reelVideos }),

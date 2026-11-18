@@ -29,7 +29,7 @@ import type { RunLocalDeps } from './commands/run-local.ts';
 import type { UploadDeps } from './commands/upload.ts';
 import type { BossQueue, WorkerDeps } from './commands/worker.ts';
 import { createCarouselPublishProviderFor, createPublishProviderFor } from './publish.ts';
-import { detectBlackFrames, measureVideo } from './qa-measure.ts';
+import { detectBlackFrames, extractFrame, firstFrameLuma, measureVideo } from './qa-measure.ts';
 import { createVisionCheck } from './qa-vision.ts';
 import { createErrorReporter } from './sentry.ts';
 import { createStorageProviderFor } from './storage.ts';
@@ -143,6 +143,8 @@ export function realRunJobDeps(): RunJobDeps {
     createPublishProviderFor,
     measureVideo,
     detectBlackFrames,
+    firstFrameLuma,
+    extractFrame,
     // `createAnthropicProvider()` validates `ANTHROPIC_KEY` at construction
     // time — deferred inside this closure so it's only ever called (and
     // only ever needs that env var) for a job whose project actually has

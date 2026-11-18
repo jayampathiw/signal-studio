@@ -202,3 +202,23 @@ test('qa stage: visionCheck is skipped entirely when not supplied, and warns (no
   assert.equal(visionCalledWith, 'fb');
   assert.deepEqual(visionResult?.warnings, ['visionCheck: frame 3 looks corrupted']);
 });
+
+test('qa stage: a near-black first frame fails when checkFirstFrame is set', async () => {
+  const stage = (luma: number, checkFirstFrame = true) =>
+    createQaStage({
+      measure: async () => goodMeasurement,
+      detectBlackFrames: async () => [],
+      firstFrameLuma: async () => luma,
+      expected: () => ({ ...goodExpected, checkFirstFrame }),
+    });
+  await assert.rejects(
+    () => stage(16.2).run({ job, outputId: 'fb', cancelled: () => false }),
+    /firstFrame — frame 0 is near-black \(mean luma 16\.2 < 24\)/,
+  );
+  const ok = await stage(58).run({ job, outputId: 'fb', cancelled: () => false });
+  const checks = (ok?.outputs as { checks: Array<{ name: string; status: string }> }).checks;
+  assert.equal(checks.find((c) => c.name === 'firstFrame')?.status, 'pass');
+  const off = await stage(16, false).run({ job, outputId: 'fb', cancelled: () => false });
+  const offChecks = (off?.outputs as { checks: Array<{ name: string }> }).checks;
+  assert.ok(!offChecks.some((c) => c.name === 'firstFrame'));
+});
