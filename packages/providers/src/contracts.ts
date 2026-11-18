@@ -110,6 +110,8 @@ export interface StorageProvider {
 export const PublishResult = z.object({
   postId: z.string(),
   url: z.string().optional(),
+  // The platform's own status read back after posting, for the job log.
+  status: z.record(z.string(), z.unknown()).optional(),
 });
 export type PublishResultT = z.infer<typeof PublishResult>;
 
@@ -132,14 +134,14 @@ export interface PublishProvider {
     // The video fits Facebook Reels (9:16, 3–90 s): published through the
     // Reels API, which carries the AI label. Otherwise a plain Page video.
     reel?: boolean;
+    // Reels only: a public JPEG to set as the cover (best effort).
+    cover?: string;
+    // Reels only: called once finish has gone through, before the publish
+    // is confirmed, so a retry can pass `finishedVideoId` and only confirm
+    // it instead of posting a second copy.
+    onFinished?: (videoId: string) => Promise<void>;
+    finishedVideoId?: string;
   }): Promise<PublishResultT>;
-  // Facebook Reels only. A reel can't be scheduled on Facebook, so one with
-  // a publish time is uploaded now (start + upload, nothing goes live) and
-  // finished with `video_state=PUBLISHED` once that time has passed.
-  uploadReel?(args: { pageRef: string; video: string }): Promise<{ videoId: string }>;
-  finishReel?(
-    args: Omit<Parameters<PublishProvider['post']>[0], 'video'> & { videoId: string },
-  ): Promise<PublishResultT>;
 }
 
 /**

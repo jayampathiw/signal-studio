@@ -145,6 +145,9 @@ function fakeDeps(clipPath: string, manifestOverrides: Record<string, unknown> =
         async record(_jobId: string, _stage: string, kind: string, url: string) {
           artifacts.push({ kind, url });
         },
+        async listForJob() {
+          return [];
+        },
       }) as never,
     createStageStore: () =>
       ({
@@ -407,6 +410,7 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     const storedKeys = new Set<string>();
     let sourceFetches = 0;
     const transcribed: string[] = [];
+    const coverFrames: Array<{ atSec: number; file: string }> = [];
     const stageStore = new Map<
       string,
       { hash: string; status: 'done' | 'failed'; outputs?: unknown }
@@ -460,7 +464,13 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
           };
         },
       } as never,
-      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createArtifactsRepo: () =>
+        ({
+          async record() {},
+          async listForJob() {
+            return [];
+          },
+        }) as never,
       createStageStore: () =>
         ({
           async getLastRun(_jobId: string, stageName: string, outputId?: string) {
@@ -557,6 +567,10 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
         return m;
       },
       detectBlackFrames: async () => [],
+      firstFrameLuma: async () => 58,
+      extractFrame: async (_localPath, atSec, outPath) => {
+        coverFrames.push({ atSec, file: path.basename(outPath) });
+      },
       fetchFn: (async (url: string) => {
         const bytes = await readFile(imagePath);
         if (url === 'https://example.com/docs/ruling-page.png') {
@@ -580,6 +594,12 @@ test('runJob: case-file handler compiles, renders, and delivers using the real c
     await runJob({ jobId: 'job-1' }, deps, createLogger({ level: 'error' }));
 
     assert.deepEqual(statusUpdates, ['queued', 'dispatched', 'running', 'delivered']);
+    // The cover: the hook frame 2s in (or mid first scene), stored beside the video.
+    const firstSceneSecs = renderedTimelines[0]!.scenes[0]!.durationSecs as number;
+    assert.deepEqual(coverFrames, [
+      { atSec: Math.min(2, firstSceneSecs / 2), file: 'fb-cover.jpg' },
+    ]);
+    assert.ok(storedKeys.has('jobs/job-1/rendered/fb-cover.jpg'));
     // Track P (P.2): the `source.url` shot was fetched once, stored under the
     // job's uploads, and rendered from that local copy like an upload.
     assert.equal(sourceFetches, 1);
@@ -857,7 +877,13 @@ test('runJob: stills-kenburns handler compiles, renders (real render-ffmpeg), an
           };
         },
       } as never,
-      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createArtifactsRepo: () =>
+        ({
+          async record() {},
+          async listForJob() {
+            return [];
+          },
+        }) as never,
       createStageStore: () =>
         ({
           async getLastRun(_jobId: string, stageName: string, outputId?: string) {
@@ -1080,7 +1106,13 @@ test('runJob: shorts-916 handler compiles, renders (real render-ffmpeg), and del
           };
         },
       } as never,
-      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createArtifactsRepo: () =>
+        ({
+          async record() {},
+          async listForJob() {
+            return [];
+          },
+        }) as never,
       createStageStore: () =>
         ({
           async getLastRun(_jobId: string, stageName: string, outputId?: string) {
@@ -1321,7 +1353,13 @@ test('runJob: compilation handler compiles, renders, and delivers using the real
           };
         },
       } as never,
-      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createArtifactsRepo: () =>
+        ({
+          async record() {},
+          async listForJob() {
+            return [];
+          },
+        }) as never,
       createStageStore: () =>
         ({
           async getLastRun(_jobId: string, stageName: string, outputId?: string) {
@@ -1674,7 +1712,13 @@ test('runJob: carousel handler stops at awaiting_review when the job has gates, 
           };
         },
       } as never,
-      createArtifactsRepo: () => ({ async record() {} }) as never,
+      createArtifactsRepo: () =>
+        ({
+          async record() {},
+          async listForJob() {
+            return [];
+          },
+        }) as never,
       createStageStore: () => ({}) as never,
       createStorage: () =>
         ({
@@ -1880,69 +1924,80 @@ function reelRows(publishAt: string) {
   ];
 }
 
-function reelProvider(deps: ReturnType<typeof publishOnlyDeps>['deps']) {
-  const calls: Array<{ method: string; args: Record<string, unknown> }> = [];
+function reelProvider(
+  deps: ReturnType<typeof publishOnlyDeps>['deps'],
+  onPost?: (args: Record<string, unknown>) => Promise<void>,
+) {
+  const calls: Array<Record<string, unknown>> = [];
   deps.createPublishProviderFor = () =>
     ({
       async post(args: Record<string, unknown>) {
-        calls.push({ method: 'post', args });
-        return { postId: 'p1', url: 'https://facebook.com/p1' };
-      },
-      async uploadReel(args: Record<string, unknown>) {
-        calls.push({ method: 'uploadReel', args });
-        return { videoId: 'v77' };
-      },
-      async finishReel(args: Record<string, unknown>) {
-        calls.push({ method: 'finishReel', args });
+        calls.push(args);
+        await onPost?.(args);
         return { postId: 'v77', url: 'https://www.facebook.com/reel/v77' };
       },
     }) as never;
   return calls;
 }
 
-test('runJob publish mode: a reel with a future publishAt is uploaded and held, not scheduled', async () => {
+test('runJob publish mode: a reel with a future publishAt is held, with nothing sent to Facebook', async () => {
   const { deps, recorded } = publishOnlyDeps(reelRows('2026-10-30T23:00:00.000Z'));
   deps.now = () => Date.parse('2026-10-30T08:01:00Z');
   const calls = reelProvider(deps);
 
   await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
 
-  assert.deepEqual(
-    calls.map((c) => c.method),
-    ['uploadReel'],
-  );
-  assert.deepEqual(calls[0].args, { pageRef: 'TEST', video: 'https://r2.test/fb.mp4' });
-  assert.deepEqual(recorded, [{ stage: 'publish-upload', kind: 'reel-upload', url: '' }]);
+  assert.equal(calls.length, 0);
+  assert.deepEqual(recorded, []);
   assert.equal(deps.statusUpdates.at(-1), 'awaiting_publish_time');
 });
 
-test('runJob publish mode: once publishAt has passed, a held reel is finished, not re-uploaded', async () => {
-  const rows = [
+const coverRow = {
+  stage_name: 'render',
+  kind: 'cover',
+  url: 'https://r2.test/fb-cover.jpg',
+  metadata: { outputId: 'fb', atSec: 2 },
+  created_at: '2026-10-30T07:00:01Z',
+};
+
+test('runJob publish mode: once publishAt has passed, a held reel is posted with its cover', async () => {
+  const { deps, recorded } = publishOnlyDeps([...reelRows('2026-10-30T23:00:00.000Z'), coverRow]);
+  deps.now = () => Date.parse('2026-10-30T23:00:30Z');
+  const calls = reelProvider(deps, async (args) => {
+    await (args.onFinished as (id: string) => Promise<void>)('v77');
+  });
+
+  await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].scheduleAt, undefined);
+  assert.equal(calls[0].reel, true);
+  assert.equal(calls[0].cover, 'https://r2.test/fb-cover.jpg');
+  assert.equal(calls[0].finishedVideoId, undefined);
+  assert.deepEqual(recorded, [
+    { stage: 'publish-finish', kind: 'reel-finished', url: '' },
+    { stage: 'publish', kind: 'post', url: 'https://www.facebook.com/reel/v77' },
+  ]);
+  assert.equal(deps.statusUpdates.at(-1), 'delivered');
+});
+
+test('runJob publish mode: a retry after finish went through only confirms the reel', async () => {
+  const { deps } = publishOnlyDeps([
     ...reelRows('2026-10-30T23:00:00.000Z'),
     {
-      stage_name: 'publish-upload',
-      kind: 'reel-upload',
+      stage_name: 'publish-finish',
+      kind: 'reel-finished',
       url: '',
-      metadata: { platform: 'facebook', videoId: 'v77', publishAt: '2026-10-30T23:00:00.000Z' },
-      created_at: '2026-10-30T08:02:00Z',
+      metadata: { platform: 'facebook', videoId: 'v77' },
+      created_at: '2026-10-30T23:00:40Z',
     },
-  ];
-  const { deps, recorded } = publishOnlyDeps(rows);
-  deps.now = () => Date.parse('2026-10-30T23:00:30Z');
+  ]);
+  deps.now = () => Date.parse('2026-10-30T23:02:30Z');
   const calls = reelProvider(deps);
 
   await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
 
-  assert.deepEqual(
-    calls.map((c) => c.method),
-    ['finishReel'],
-  );
-  assert.equal(calls[0].args.videoId, 'v77');
-  assert.equal(calls[0].args.scheduleAt, undefined);
-  assert.equal(calls[0].args.reel, true);
-  assert.deepEqual(recorded, [
-    { stage: 'publish', kind: 'post', url: 'https://www.facebook.com/reel/v77' },
-  ]);
+  assert.equal(calls[0].finishedVideoId, 'v77');
   assert.equal(deps.statusUpdates.at(-1), 'delivered');
 });
 

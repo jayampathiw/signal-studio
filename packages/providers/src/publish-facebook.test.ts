@@ -82,18 +82,32 @@ test('publish-facebook: a non-OK Graph API response throws with the real status/
   );
 });
 
-function reelWorld(statuses: unknown[]) {
+const PUBLISHED = {
+  processing_phase: { status: 'complete' },
+  publishing_phase: { status: 'complete', publish_status: 'published' },
+};
+
+// `finishes`: what each finish call returns, in order (default success).
+// `statuses`: what each status read returns, a Response for an HTTP error.
+function reelWorld(opts: { statuses?: unknown[]; finishes?: Response[] } = {}) {
+  const statuses = opts.statuses ?? [PUBLISHED];
+  const finishes = [...(opts.finishes ?? [])];
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   let polls = 0;
+  let starts = 0;
   const fetchFn = (async (url: string, init?: RequestInit) => {
     calls.push({ url, init });
     if (url.endsWith('/999/video_reels')) {
       const phase = (init?.body as URLSearchParams).get('upload_phase');
-      return fakeResponse(phase === 'start' ? { video_id: 'v77' } : { success: true });
+      if (phase === 'start') return fakeResponse({ video_id: `v${77 + starts++}` });
+      return finishes.shift() ?? fakeResponse({ success: true });
     }
     if (url.startsWith('https://rupload.facebook.com/')) return fakeResponse({ success: true });
-    if (url.startsWith('https://graph.facebook.com/v22.0/v77?fields=status')) {
-      return fakeResponse({ status: statuses[Math.min(polls++, statuses.length - 1)] });
+    if (url === 'https://r2.test/cover.jpg') return new Response(new Uint8Array([1, 2, 3]));
+    if (url.endsWith('/thumbnails')) return fakeResponse({ success: true });
+    if (url.includes('?fields=status,published')) {
+      const s = statuses[Math.min(polls++, statuses.length - 1)];
+      return s instanceof Response ? s.clone() : fakeResponse({ status: s, published: true });
     }
     throw new Error(`unexpected ${url}`);
   }) as typeof fetch;
@@ -106,110 +120,178 @@ function reelWorld(statuses: unknown[]) {
   return { calls, provider };
 }
 
-test('publish-facebook: a reel goes start → upload by URL → finish with is_ai_generated', async () => {
-  const { calls, provider } = reelWorld([
-    { processing_phase: { status: 'in_progress' } },
-    { processing_phase: { status: 'complete' }, publishing_phase: { publish_status: 'published' } },
-  ]);
-  const result = await provider.post({
-    platform: 'facebook',
-    pageRef: 'EN',
-    video: 'https://r2.test/fb.mp4',
-    caption: 'A caption',
-    reel: true,
-    aiDisclosure: true,
+const reel = {
+  platform: 'facebook',
+  pageRef: 'EN',
+  video: 'https://r2.test/fb.mp4',
+  caption: 'A caption',
+  reel: true,
+};
+
+const steps = (calls: Array<{ url: string; init?: RequestInit }>) =>
+  calls.map((c) => {
+    const body = c.init?.body;
+    if (body instanceof URLSearchParams && body.has('upload_phase')) {
+      return `${body.get('upload_phase')}${body.get('video_id') ? `:${body.get('video_id')}` : ''}`;
+    }
+    if (c.url.startsWith('https://rupload')) return `upload:${c.url.split('/').at(-1)}`;
+    if (c.url.includes('fields=status')) return 'status';
+    return c.url;
   });
 
-  assert.equal(calls[0]!.url, 'https://graph.facebook.com/v22.0/999/video_reels');
-  assert.equal((calls[0]!.init!.body as URLSearchParams).get('upload_phase'), 'start');
-  assert.equal(calls[1]!.url, 'https://rupload.facebook.com/video-upload/v22.0/v77');
+test('publish-facebook: a reel goes start → upload by URL → finish(PUBLISHED) → status', async () => {
+  const { calls, provider } = reelWorld({
+    statuses: [{ processing_phase: { status: 'in_progress' } }, PUBLISHED],
+  });
+  const result = await provider.post({ ...reel, aiDisclosure: true });
+
+  assert.deepEqual(steps(calls), ['start', 'upload:v77', 'finish:v77', 'status', 'status']);
   const headers = calls[1]!.init!.headers as Record<string, string>;
   assert.equal(headers.Authorization, 'OAuth tok');
   assert.equal(headers.file_url, 'https://r2.test/fb.mp4');
   const finish = calls[2]!.init!.body as URLSearchParams;
-  assert.equal(finish.get('upload_phase'), 'finish');
-  assert.equal(finish.get('video_id'), 'v77');
   assert.equal(finish.get('video_state'), 'PUBLISHED');
+  assert.equal(finish.get('scheduled_publish_time'), null);
   assert.equal(finish.get('description'), 'A caption');
   assert.equal(finish.get('is_ai_generated'), 'true');
-  assert.equal(calls.filter((c) => c.url.includes('fields=status')).length, 2);
   assert.ok(!calls.some((c) => c.url.endsWith('/videos')));
-  assert.deepEqual(result, { postId: 'v77', url: 'https://www.facebook.com/reel/v77' });
+  assert.equal(result.postId, 'v77');
+  assert.equal(result.url, 'https://www.facebook.com/reel/v77');
+  assert.equal(result.status?.published, true);
 });
 
 test('publish-facebook: a reel is never scheduled on Facebook', async () => {
-  const { calls, provider } = reelWorld([]);
+  const { calls, provider } = reelWorld();
   await assert.rejects(
-    () =>
-      provider.post({
-        platform: 'facebook',
-        pageRef: 'EN',
-        video: 'https://r2.test/fb.mp4',
-        caption: 'x',
-        reel: true,
-        scheduleAt: '2026-11-06T00:00:00Z',
-      }),
+    () => provider.post({ ...reel, scheduleAt: '2026-11-06T00:00:00Z' }),
     /not scheduled on Facebook/,
   );
   assert.equal(calls.length, 0);
 });
 
-test('publish-facebook: uploadReel stops before finish; finishReel publishes it later', async () => {
-  const { calls, provider } = reelWorld([{ processing_phase: { status: 'complete' } }]);
-  const { videoId } = await provider.uploadReel!({
-    pageRef: 'EN',
-    video: 'https://r2.test/fb.mp4',
-  });
-  assert.equal(videoId, 'v77');
-  assert.deepEqual(
-    calls.map((c) => (c.init?.body as URLSearchParams | undefined)?.get('upload_phase') ?? c.url),
-    ['start', 'https://rupload.facebook.com/video-upload/v22.0/v77'],
+const uploadMissing = () =>
+  new Response(
+    '{"error":{"message":"There was a problem uploading your video file.","code":6000,"error_subcode":1363130}}',
+    { status: 400 },
   );
 
-  const result = await provider.finishReel!({
-    platform: 'facebook',
-    pageRef: 'EN',
-    caption: 'x',
-    videoId,
+test('publish-facebook: "Video Upload Is Missing" at finish re-runs start + upload once', async () => {
+  const { calls, provider } = reelWorld({ finishes: [uploadMissing()] });
+  const result = await provider.post(reel);
+  assert.deepEqual(steps(calls), [
+    'start',
+    'upload:v77',
+    'finish:v77',
+    'start',
+    'upload:v78',
+    'finish:v78',
+    'status',
+  ]);
+  assert.equal(result.postId, 'v78');
+});
+
+test('publish-facebook: a second "Video Upload Is Missing" fails the post', async () => {
+  const { calls, provider } = reelWorld({ finishes: [uploadMissing(), uploadMissing()] });
+  await assert.rejects(() => provider.post(reel), /reel finish failed \(400\).*1363130/);
+  assert.equal(steps(calls).filter((s) => s === 'start').length, 2);
+});
+
+test('publish-facebook: other finish errors are not retried', async () => {
+  const { calls, provider } = reelWorld({
+    finishes: [new Response('{"error":{"code":100}}', { status: 400 })],
   });
-  const finish = calls[2]!.init!.body as URLSearchParams;
-  assert.equal(finish.get('upload_phase'), 'finish');
-  assert.equal(finish.get('video_id'), 'v77');
-  assert.equal(finish.get('video_state'), 'PUBLISHED');
-  assert.equal(finish.get('scheduled_publish_time'), null);
-  assert.equal(finish.get('is_ai_generated'), null);
-  assert.deepEqual(result, { postId: 'v77', url: 'https://www.facebook.com/reel/v77' });
+  await assert.rejects(() => provider.post(reel), /reel finish failed/);
+  assert.equal(steps(calls).filter((s) => s === 'start').length, 1);
+});
+
+test('publish-facebook: onFinished runs after finish, and finishedVideoId only confirms', async () => {
+  const { calls, provider } = reelWorld();
+  const finished: string[] = [];
+  await provider.post({ ...reel, onFinished: async (id) => void finished.push(id) });
+  assert.deepEqual(finished, ['v77']);
+
+  calls.length = 0;
+  const result = await provider.post({ ...reel, finishedVideoId: 'v77' });
+  assert.deepEqual(steps(calls), ['status']);
+  assert.equal(result.postId, 'v77');
+});
+
+test('publish-facebook: a 429 on the status read is waited out', async () => {
+  const { calls, provider } = reelWorld({
+    statuses: [
+      new Response('{"error":{"type":"TooManyRequestsException"}}', { status: 429 }),
+      PUBLISHED,
+    ],
+  });
+  const result = await provider.post(reel);
+  assert.equal(steps(calls).filter((s) => s === 'status').length, 2);
+  assert.equal(result.postId, 'v77');
+});
+
+test('publish-facebook: a reel not published when the wait ends fails', async () => {
+  const { provider } = reelWorld({
+    statuses: [
+      { processing_phase: { status: 'complete' }, publishing_phase: { status: 'not_started' } },
+    ],
+  });
+  await assert.rejects(() => provider.post(reel), /reel v77 was finished but isn't published yet/);
 });
 
 test('publish-facebook: a reel Facebook rejects in processing fails with its message', async () => {
-  const { provider } = reelWorld([
-    { processing_phase: { status: 'error', error: { message: 'Resolution too low.' } } },
-  ]);
-  await assert.rejects(
-    () =>
-      provider.post({ platform: 'facebook', pageRef: 'EN', video: 'x', caption: 'x', reel: true }),
-    /reel v77 failed: Resolution too low/,
-  );
+  const { provider } = reelWorld({
+    statuses: [
+      { processing_phase: { status: 'error', error: { message: 'Resolution too low.' } } },
+    ],
+  });
+  await assert.rejects(() => provider.post(reel), /reel v77 failed: Resolution too low/);
 });
 
-test('publish-facebook: still processing when the wait ends still returns the reel', async () => {
-  const { calls, provider } = reelWorld([{ processing_phase: { status: 'in_progress' } }]);
-  const result = await provider.post({
-    platform: 'facebook',
-    pageRef: 'EN',
-    video: 'x',
-    caption: 'x',
-    reel: true,
-  });
-  assert.equal(calls.filter((c) => c.url.includes('fields=status')).length, 3);
-  assert.equal(result.postId, 'v77');
+test('publish-facebook: a cover is uploaded to /thumbnails before finish', async () => {
+  const { calls, provider } = reelWorld();
+  await provider.post({ ...reel, cover: 'https://r2.test/cover.jpg' });
+  const thumbIdx = calls.findIndex(
+    (c) => c.url === 'https://graph.facebook.com/v22.0/v77/thumbnails',
+  );
+  assert.ok(thumbIdx > 0 && thumbIdx < steps(calls).indexOf('finish:v77'));
+  const form = calls[thumbIdx]!.init!.body as FormData;
+  assert.equal(form.get('is_preferred'), 'true');
+  assert.ok(form.get('source') instanceof Blob);
+});
+
+test('publish-facebook: a refused cover still posts the reel', async () => {
+  const errors: unknown[] = [];
+  const original = console.error;
+  console.error = (...a: unknown[]) => void errors.push(a);
+  try {
+    const calls: string[] = [];
+    const fetchFn = (async (url: string, init?: RequestInit) => {
+      calls.push(url);
+      if (url.endsWith('/thumbnails'))
+        return new Response('{"error":{"code":100}}', { status: 400 });
+      if (url === 'https://r2.test/cover.jpg') return new Response(new Uint8Array([1]));
+      if (url.endsWith('/999/video_reels')) {
+        const start = (init?.body as URLSearchParams).get('upload_phase') === 'start';
+        return fakeResponse(start ? { video_id: 'v77' } : { success: true });
+      }
+      if (url.startsWith('https://rupload')) return fakeResponse({ success: true });
+      return fakeResponse({ status: PUBLISHED });
+    }) as typeof fetch;
+    const p = createFacebookPublishProvider({
+      env: { FB_PAGE_ID_EN: '999', FB_ACCESS_TOKEN_EN: 'tok' },
+      fetchFn,
+      sleep: async () => {},
+    });
+    const result = await p.post({ ...reel, cover: 'https://r2.test/cover.jpg' });
+    assert.equal(result.postId, 'v77');
+    assert.equal(errors.length, 1);
+  } finally {
+    console.error = original;
+  }
 });
 
 test('publish-facebook: if Facebook refuses is_ai_generated, the reel still posts without it', async () => {
   const finishes: URLSearchParams[] = [];
-  const calls: Array<{ url: string; init?: RequestInit }> = [];
   const fetchFn = (async (url: string, init?: RequestInit) => {
-    calls.push({ url, init });
     if (url.endsWith('/999/video_reels')) {
       const body = init?.body as URLSearchParams;
       if (body.get('upload_phase') === 'start') return fakeResponse({ video_id: 'v77' });
@@ -221,21 +303,14 @@ test('publish-facebook: if Facebook refuses is_ai_generated, the reel still post
         : fakeResponse({ success: true });
     }
     if (url.startsWith('https://rupload.facebook.com/')) return fakeResponse({ success: true });
-    return fakeResponse({ status: { processing_phase: { status: 'complete' } } });
+    return fakeResponse({ status: PUBLISHED });
   }) as typeof fetch;
   const p = createFacebookPublishProvider({
     env: { FB_PAGE_ID_EN: '999', FB_ACCESS_TOKEN_EN: 'tok' },
     fetchFn,
     sleep: async () => {},
   });
-  const result = await p.post({
-    platform: 'facebook',
-    pageRef: 'EN',
-    video: 'x',
-    caption: 'x',
-    reel: true,
-    aiDisclosure: true,
-  });
+  const result = await p.post({ ...reel, aiDisclosure: true });
   assert.equal(finishes.length, 2);
   assert.equal(finishes[0]!.get('is_ai_generated'), 'true');
   assert.equal(finishes[1]!.get('is_ai_generated'), null);

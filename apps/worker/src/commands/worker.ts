@@ -63,9 +63,9 @@ import type { Logger } from '../logger.ts';
  * `deps` hands it, so a worker with no Healthchecks account configured
  * behaves exactly as before, not with a silently-failing ping loop.
  *
- * **Held Facebook reels**: a job approved with `publishAt` whose reel was
- * uploaded but not finished waits at `awaiting_publish_time` (Facebook's own
- * reel scheduling is never used). Every `releaseIntervalMs` (default 60s,
+ * **Held Facebook reels**: a job approved with `publishAt` for a Facebook
+ * reel waits at `awaiting_publish_time`, with nothing sent to Facebook yet
+ * (Facebook's own reel scheduling is never used). Every `releaseIntervalMs` (default 60s,
  * and once at startup) `deps.releaseDuePublishes` moves the jobs whose time
  * has passed to `dispatched`, and this loop sends each one in publish mode.
  */

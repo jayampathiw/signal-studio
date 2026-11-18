@@ -20,9 +20,12 @@ export type SpeechBubblesVisual = {
 // scene (matched=false, right bubble highlighted as "the actionable element") and the
 // resolution scene (matched=true, checkmark), so the graphic itself carries the "this
 // gets resolved" arc rather than introducing a disconnected new visual for the close.
-export const SpeechBubbles: React.FC<{ visual: SpeechBubblesVisual }> = ({ visual }) => {
+export const SpeechBubbles: React.FC<{ visual: SpeechBubblesVisual; opening?: boolean }> = ({
+  visual,
+  opening = false,
+}) => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const opacity = opening ? 1 : interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
   const indicatorScale = interpolate(frame, [20, 35], [0.4, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',

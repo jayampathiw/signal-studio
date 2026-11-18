@@ -83,6 +83,40 @@ export async function detectBlackFrames(mp4Path: string): Promise<QaBlackSegment
   return segments;
 }
 
+/** Mean luma (`signalstats` YAVG, 0–255) of the first frame. */
+export async function firstFrameLuma(mp4Path: string): Promise<number> {
+  const { stderr } = await execFileAsync('ffmpeg', [
+    '-i',
+    mp4Path,
+    '-frames:v',
+    '1',
+    '-vf',
+    'signalstats,metadata=print:key=lavfi.signalstats.YAVG',
+    '-f',
+    'null',
+    '-',
+  ]);
+  const m = stderr.match(/lavfi\.signalstats\.YAVG=([\d.]+)/);
+  if (!m) throw new Error(`firstFrameLuma: no YAVG in ffmpeg output for ${mp4Path}`);
+  return Number(m[1]);
+}
+
+/** Saves the frame at `atSec` as a JPEG. */
+export async function extractFrame(mp4Path: string, atSec: number, outPath: string): Promise<void> {
+  await execFileAsync('ffmpeg', [
+    '-y',
+    '-ss',
+    String(atSec),
+    '-i',
+    mp4Path,
+    '-frames:v',
+    '1',
+    '-q:v',
+    '2',
+    outPath,
+  ]);
+}
+
 /** Extracts `count` evenly spaced frames as base64-encoded PNGs. */
 export async function extractSampleFrames(mp4Path: string, count: number): Promise<string[]> {
   const { durationSec } = await measureVideo(mp4Path);

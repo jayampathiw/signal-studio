@@ -16,9 +16,14 @@ export type PointerCardVisual = {
 // deliberately unadorned so it doesn't compete with the outro card's own
 // brand-identity moment (brand doc §3 reserves that visual for the outro).
 // `text` supports explicit `\n` line breaks (whiteSpace: 'pre-line' below).
-export const PointerCard: React.FC<{ visual: PointerCardVisual }> = ({ visual }) => {
+export const PointerCard: React.FC<{ visual: PointerCardVisual; opening?: boolean }> = ({
+  visual,
+  opening = false,
+}) => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 12, 999999], [0, 1, 1], { extrapolateRight: 'clamp' });
+  const opacity = opening
+    ? 1
+    : interpolate(frame, [0, 12, 999999], [0, 1, 1], { extrapolateRight: 'clamp' });
 
   return (
     <AbsoluteFill

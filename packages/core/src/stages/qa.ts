@@ -65,6 +65,9 @@ export type QaExpected = {
   // boundaries, so a dark end card can begin a fraction of a frame earlier
   // (real case: 12.0333s black start vs a 12.034s clip).
   ignoreBlackAfterSec?: number;
+  // The first frame must be drawn (it's what a feed shows before playback,
+  // and the cover when none is set): fail when its mean luma is near-black.
+  checkFirstFrame?: boolean;
 };
 
 const IGNORE_BLACK_TOLERANCE_SEC = 0.1;
@@ -74,6 +77,9 @@ export type QaCheck = { name: string; status: 'pass' | 'warn' | 'fail'; detail: 
 export type QaStageOptions = {
   measure: (outputId: string) => Promise<QaMeasurement>;
   detectBlackFrames: (outputId: string) => Promise<QaBlackSegment[]>;
+  // Mean luma (YAVG, 0–255) of frame 0; needed when `checkFirstFrame` is set.
+  firstFrameLuma?: (outputId: string) => Promise<number>;
+  firstFrameMinLuma?: number;
   expected: (outputId: string) => QaExpected;
   // Omitted entirely (not just a project flag) when the caller's project
   // doesn't have `qa.visionCheck` set — a real Anthropic call otherwise
@@ -96,6 +102,9 @@ export function createQaStage(opts: QaStageOptions): StageDefinition {
   const lufsTol = opts.lufsWarnTolerance ?? 8;
   const blackFailSec = opts.blackFrameFailSec ?? 0.5;
   const margin = opts.safeZoneMargin ?? 0.06;
+  // Limited-range video black is 16; the darkest real case-file opener (the
+  // navy #1E3A5F background) reads ~58.
+  const minLuma = opts.firstFrameMinLuma ?? 24;
 
   return {
     name: 'qa',
@@ -194,6 +203,19 @@ export function createQaStage(opts: QaStageOptions): StageDefinition {
         });
       } else {
         checks.push({ name: 'blackFrames', status: 'pass', detail: 'none detected' });
+      }
+
+      if (expected.checkFirstFrame && opts.firstFrameLuma) {
+        const luma = await opts.firstFrameLuma(outputId);
+        checks.push(
+          luma < minLuma
+            ? {
+                name: 'firstFrame',
+                status: 'fail',
+                detail: `frame 0 is near-black (mean luma ${luma.toFixed(1)} < ${minLuma}) — the opening shot must be fully drawn, not fade in from black`,
+              }
+            : { name: 'firstFrame', status: 'pass', detail: `mean luma ${luma.toFixed(1)}` },
+        );
       }
 
       const unsafe = expected.highlights.filter(
