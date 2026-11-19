@@ -1271,7 +1271,7 @@ function scheduledPublishTime(
   const publishAt = approvedPublishAt(artifacts);
   if (!publishAt) return undefined;
   if (Date.parse(publishAt) - now < 10 * 60 * 1000) {
-    logger.error('scheduled time already passed or too close, publishing now', { publishAt });
+    logger.info('scheduled time already passed or too close, publishing now', { publishAt });
     return undefined;
   }
   return publishAt;
