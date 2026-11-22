@@ -1,10 +1,9 @@
 # Signal Studio — Project Status & Roadmap
 
-> **The single source of truth for "what's built, what's pending."**
-> Supersedes the old `completion-plan.md`. Update this file at the end of any session that changes scope.
+> **What's built, what's pending — at a glance.** The live, item-level tracker is `docs/refactor/refactor-plan.md` §10; this page summarises it.
 >
-> **Last updated:** 2026-09-18 (§1 only — refreshed as part of the engine refactor's P0.6 doc prune; other sections carry their original dates unless noted, and haven't been re-verified this pass)
-> **Branch:** `refactor` (engine refactor work); `main` for everything not yet merged from it — see `docs/refactor/refactor-plan.md` for the live tracker
+> **Last updated:** 2026-11-22 (header and §1 rewritten against the engine as it stands at `v0.1.14`). §2–§10 describe the pre-refactor system (Wild Eye, news, edge functions) — all retired by 2026-09-29 — and are kept only as history.
+> **Branch:** `refactor` (active, protected — changes land via PR); `main` only at real merge points
 
 ---
 
@@ -18,38 +17,41 @@
 | 🐞   | Known bug — implemented but broken          |
 | ⏸️   | Deferred by decision (out of scope for now) |
 
-Status is tracked per **area**. Each area links to where the work lives. Deep detail lives in the companion docs (see `docs/README.md`).
-
 ---
 
 ## 1. At-a-glance
 
-Per `docs/refactor/refactor-plan.md` §1, this product is **six pipelines, three orchestrators, one DB** — that framing is repeated here since it's the clearest inventory of what actually runs.
+**Overall: ~84% by checkbox count** (523.5 / 592 tracker items, partials at half credit — recount 2026-11-22). Weighted by effort it is lower for the end goal (a sellable engine + hand-over kit, M5): P6 and Track C haven't started.
 
-| Pipeline                                     | State | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| -------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| News                                         | ✅    | Live (cron every 30 min) from `apps/news/` in this repo; FR/IT FB tokens pending. **Not yet cut over to `signal-studio-workspace`** — P0.5 copied the code there but didn't wire secrets or a scheduled run; still running from here, unchanged                                                                                                                                                                                                                                                                                                        |
-| Stock-footage reels                          | ⏸️    | Dormant, as of the original 2026-06-26 status — not touched by the refactor work to date                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| Wild Eye (Higgsfield agent-driven reels)     | ✅/🐞 | Generation validated end-to-end 2026-06-26 (reel #26); cloud automation wired + validated same date. Status not re-verified since — see §5 below for the original detail. **Known bug**: SEO→publish caption mismatch still open (§6.1)                                                                                                                                                                                                                                                                                                                |
-| Long-form stills documentary (Underdog)      | 🔄    | 26 scripts written, 6 videos shipped. **P0.1 (2026-09-18) rendered a real golden reference from the shipped `son-also-saves` project (scenes 1–8) and it passes** all tolerances (duration, loudness, scene cuts, frame hashes). Also surfaced a real gap: this project's `stills/` are gitignored and were never copied into `signal-studio-workspace` by P0.4 — they only survive on one machine's stray git worktree; needs a dedicated fix. Design-history docs for this pipeline were archived to `signal-studio-workspace/docs/archive/` in P0.6 |
-| 9:16 Shorts                                  | 🔄/🐞 | **P0.1 (2026-09-18) rendered a real golden reference from the shipped `silenced-s1-tah-miss-EN-v2` config** — renders correctly, but **fails its own loudness check**: true peak measures −0.96 dBTP against the −1.0 dBTP ceiling, a real pre-existing mastering issue in this shipped Short's audio mix, not yet fixed                                                                                                                                                                                                                               |
-| Policy File (Remotion, `case-file` template) | ✅    | **P0.1 (2026-09-18) rendered real golden references for both 16:9 and 9:16** (`mamboleo-pacific-life-settlement` case and its `-reel` variant) — both pass every tolerance                                                                                                                                                                                                                                                                                                                                                                             |
+| Phase / track                      | %   | State | Summary                                                                                                 |
+| ---------------------------------- | --- | ----- | ------------------------------------------------------------------------------------------------------- |
+| P0.8 — Pilot bridge                | 94% | ✅    | Closed in practice — the engine replaced the bridge (retired 2026-09-29)                                |
+| P0 — Safety net & hygiene          | 92% | ✅    | Leftovers are flagged deliberate deviations, not open work                                              |
+| P1 — Core domain / IR              | 98% | ✅    | Only the `n/a` production gate left                                                                     |
+| P2 — `clips-overlay` + M1 runtime  | 87% | 🔄    | Live for AssembleX; dead-air fix awaits a real-post check; QA warning for voiceless stretches not built |
+| P3 — Remaining templates/providers | 94% | ✅    | All 6 templates run; Underdog can't publish (no credentials)                                            |
+| P4 — Worker hardening/deploy       | 91% | 🔄    | Production worker + API on the VPS, `:prod` releases; full AssembleX week and monitoring still open     |
+| P5 — Dashboard rebuild             | 80% | 🔄    | Operates real jobs end to end; no unit tests, not in CI, phone layout unchecked                         |
+| P6 — Split & hand-over kit         | 0%  | ⬜    | Workspace split, examples/docs, licence + third-party notices, customer onboarding, SaaS ADR            |
+| Track C — Claude Code layer        | 0%  | ⬜    | Per-package `CLAUDE.md`, rules, skills, agents, hooks                                                   |
+| Track A — Background music         | 38% | 🔄    | Layer 1 (local library) live; layer 2 (Freesound import) not started; layer 3 (AI) ⏸️ deferred          |
+| Track P — Policy File / asset refs | 87% | 🔄    | Policy File live end to end (captions, auto-zoom, stock links, held reels posted at `publishAt`)        |
 
-| Supporting area                                                                         | State | Summary                                                                                                                                                                                                                                      |
-| --------------------------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform foundation (monorepo, packages, config)                                        | ✅    | Complete and stable                                                                                                                                                                                                                          |
-| Database & migrations (live product)                                                    | ✅    | Schema applied to `nnxtvbolhuvihlpwppbj` (the product's own DB, separate from the engine refactor's own dev DB below)                                                                                                                        |
-| Engine refactor — core domain + DB (P1)                                                 | ✅    | `packages/core`, `packages/db`, `packages/providers` built and tested; migration applied to a **new**, separate dev Supabase project (`signal-studio-engine-dev`) — see `docs/refactor/refactor-plan.md` P1.5. Product DB above is untouched |
-| Dashboard (Angular/Vercel)                                                              | ✅    | Articles + reels, 5-tab reel editor                                                                                                                                                                                                          |
-| Supabase edge functions                                                                 | ✅    | All 8 implemented & deployed                                                                                                                                                                                                                 |
-| Publishing (Facebook)                                                                   | 🐞    | Works for news; **blank caption bug** for Wild Eye reels                                                                                                                                                                                     |
-| Publishing (IG / YT / TikTok)                                                           | ⬜    | Stubs that throw                                                                                                                                                                                                                             |
-| Future channels (Sports, Cartoon)                                                       | ⬜    | Stubbed in config + cron comments                                                                                                                                                                                                            |
-| Engine refactor overall (`signal-studio` → sellable engine + `signal-studio-workspace`) | 🔄    | Phase 0 hygiene mostly done (P0.1–P0.3, P0.7 complete; P0.4/P0.5 partial — content moved, news not cut over; P0.6 in progress); Phase 1 (core domain/IR) complete. Live tracker: `docs/refactor/refactor-plan.md`                            |
+**Milestones:** M0.5, M1, M4 done · M2, M3 partial · M5 not started · M0 superseded.
 
-**The one critical blocker before the first publishable Wild Eye reel:** the SEO→publish caption bug (§6.1). **For the refactor itself:** the git-history rewrite needed to actually shrink the engine repo below the plan's 20MB target is still pending explicit sign-off (a force-push affecting published history).
+### What's pending
+
+**Owner-gated checks (on the next real posts):** P.19 — scheduled Policy File reel goes live at `publishAt` with the hook-frame cover · P.16 — captions match the script, acronyms as one word · P2.1 — next AssembleX post has no voiceless stretch · M3 — a full AssembleX week on the VPS · Underdog publish credentials · A.0 — listen to the 9 beds and tag moods.
+
+**Engineering backlog:** Instagram publisher (blocked: no page has an IG business account linked) · Whisper captions for `stills-kenburns`/`shorts-916`/`run-local` · voiceless-stretch QA warning · P.8 sources (`stock`, `generate`, `inbox`, trigger-only) · dashboard tests, CI build, phone layout, drag-and-drop, music track on job detail · music layer 2 · worker image 4.81 GB vs 3 GB target · Kokoro JS/Py parity test.
+
+**Ops / risk:** VPS disk (29 GB, ~7.5 GB per image — check free space before the next release) · golden CI step stalls on `r2.dev` downloads · Healthchecks/Sentry/Telegram skipped · secrets inventory not reconciled.
+
+**Cleanup:** `packages/ai` and `@signal-studio/database` have no real importers; `packages/config/schema.js` still lists dead Wild Eye entries.
 
 ---
+
+> **Historical below this line.** §2–§10 are the pre-refactor status (last verified 2026-06/09). The pipelines, edge functions and publishers they describe have since been deleted — see `CLAUDE.md` and `docs/refactor/refactor-plan.md` P0.5 / P3.7.
 
 ## 2. Platform foundation — ✅ complete
 
