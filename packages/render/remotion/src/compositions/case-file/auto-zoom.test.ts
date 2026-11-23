@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { FULL_PAGE, planAutoZoom, regionAt, type TimedBox } from './auto-zoom.ts';
+import { boxInFrame, FULL_PAGE, planAutoZoom, regionAt, type TimedBox } from './auto-zoom.ts';
+import { CAPTION_TOP_DOCUMENT } from './layout.ts';
 
 // A US-letter page in a 9:16 frame.
 const OPTS = { pageAspect: 8.5 / 11, frameAspect: 9 / 16, durationSec: 8 };
@@ -38,11 +39,46 @@ test('a quote over two lines is one beat; a later beat pans to it', () => {
   assert.notDeepEqual(first, second);
 });
 
-test('regions stay inside the page near its edges', () => {
-  const keys = planAutoZoom([box(0.9, 0.97, 0.08, 0.02, 0.5)], OPTS);
-  const r = regionAt(keys, 8);
-  assert.ok(r.x >= 0 && r.y >= 0);
-  assert.ok(r.x + r.width <= 1 + 1e-9 && r.y + r.height <= 1 + 1e-9);
+test('regions stay inside the page sideways and at the top; past the bottom only into the navy', () => {
+  const low = regionAt(planAutoZoom([box(0.9, 0.97, 0.08, 0.02, 0.5)], OPTS), 8);
+  assert.ok(low.x >= 0 && low.x + low.width <= 1 + 1e-9);
+  const high = regionAt(planAutoZoom([box(0.02, 0.01, 0.08, 0.02, 0.5)], OPTS), 8);
+  assert.ok(high.x >= 0 && high.y >= 0);
+});
+
+test('9:16: every highlight lands above the caption band, wherever it sits on the page', () => {
+  for (const y of [0.01, 0.2, 0.45, 0.6, 0.75, 0.9, 0.97]) {
+    for (const [x, w, h] of [
+      [0.4, 0.3, 0.02],
+      [0.08, 0.84, 0.02],
+      [0.08, 0.84, 0.05],
+    ] as const) {
+      const b = box(x, Math.min(y, 1 - h), w, h, 1);
+      const r = regionAt(planAutoZoom([b], OPTS), 8);
+      const f = boxInFrame(b, r);
+      assert.ok(f.y >= 0, `y=${y} w=${w}: top in frame (${f.y})`);
+      assert.ok(f.y + f.height < CAPTION_TOP_DOCUMENT, `y=${y} w=${w}: bottom ${f.y + f.height}`);
+    }
+  }
+});
+
+test('opening scene: frame 0 is already on the first highlight, then pans to the next', () => {
+  const boxes = [box(0.1, 0.62, 0.5, 0.02, 0.6), box(0.2, 0.3, 0.4, 0.02, 3)];
+  const keys = planAutoZoom(boxes, { ...OPTS, opening: true });
+  const atZero = regionAt(keys, 0);
+  assert.notDeepEqual(atZero, FULL_PAGE);
+  assert.deepEqual(atZero, regionAt(planAutoZoom(boxes, OPTS), 2), 'same framing as the push-in');
+  const f = boxInFrame(boxes[0]!, atZero);
+  assert.ok(f.y >= 0 && f.y + f.height < CAPTION_TOP_DOCUMENT);
+  const later = regionAt(keys, 8);
+  assert.ok(later.y < atZero.y, 'moved up to the second quote');
+});
+
+test('16:9 keeps highlights centred (captions are bottom-anchored there)', () => {
+  const landscape = { pageAspect: 8.5 / 11, frameAspect: 16 / 9, durationSec: 8 };
+  const b = box(0.3, 0.5, 0.2, 0.02, 1);
+  const f = boxInFrame(b, regionAt(planAutoZoom([b], landscape), 8));
+  assert.ok(Math.abs(f.y + f.height / 2 - 0.5) < 1e-9);
 });
 
 test('a beat wider than the closest view never zooms out past the whole page', () => {

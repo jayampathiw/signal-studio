@@ -19,13 +19,16 @@ type Props = {
 export const IntroOutroCard: React.FC<Props> = ({ wordmark = 'THE POLICY FILE' }) => {
   const frame = useCurrentFrame();
 
-  const foldEnter = interpolate(frame, [0, 20], [40, 0], { extrapolateRight: 'clamp' });
-  const docOpacity = interpolate(frame, [10, 30], [0, 1], { extrapolateRight: 'clamp' });
-  const highlightOpacity = interpolate(frame, [35, 55], [0, 1], {
+  // The outro is 75 frames (CaseFile.tsx's OUTRO_FRAMES): the wordmark and
+  // tagline must be fully in by frame 24 so they read for ~1.7 s — at 45–65
+  // they were on screen for a third of a second (Lokken legibility review).
+  const foldEnter = interpolate(frame, [0, 12], [40, 0], { extrapolateRight: 'clamp' });
+  const docOpacity = interpolate(frame, [4, 16], [0, 1], { extrapolateRight: 'clamp' });
+  const highlightOpacity = interpolate(frame, [16, 28], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  const textOpacity = interpolate(frame, [45, 65], [0, 1], {
+  const textOpacity = interpolate(frame, [12, 24], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -116,7 +119,7 @@ export const IntroOutroCard: React.FC<Props> = ({ wordmark = 'THE POLICY FILE' }
         style={{
           fontFamily: serifFont,
           fontWeight: 700,
-          fontSize: 52,
+          fontSize: 64,
           color: PALETTE.paper,
           margin: '32px 0 8px',
           opacity: textOpacity,
@@ -127,7 +130,7 @@ export const IntroOutroCard: React.FC<Props> = ({ wordmark = 'THE POLICY FILE' }
       <p
         style={{
           fontFamily: monoFont,
-          fontSize: 22,
+          fontSize: 32,
           color: PALETTE.taglineGold,
           letterSpacing: 2,
           opacity: textOpacity,

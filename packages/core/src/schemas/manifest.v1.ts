@@ -102,6 +102,10 @@ export const Shot = z.object({
   source: ShotSource.optional(),
   trim_in_s: z.number().min(0).default(0),
   speed: z.number().min(0.25).max(4).default(1.0),
+  // clips-overlay: the shot's on-screen fact (with overlay_in_s/out_s).
+  // case-file: the first shot's title — a navy band in the top third for the
+  // first 3 s; 7 words max, refused on any later shot (overlay_in_s/out_s
+  // are ignored there).
   overlay_text: z.string().min(1).max(120).optional(),
   overlay_in_s: z.number().min(0).default(0.4),
   overlay_out_s: z.number().min(0).optional(),

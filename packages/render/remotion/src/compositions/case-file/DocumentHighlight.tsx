@@ -21,9 +21,13 @@ type Props = {
   zoomTo?: ZoomRegion | null;
   // Camera follows the highlight boxes instead of zoomFrom/zoomTo (auto-zoom.ts).
   autoZoom?: boolean;
+  // The video's first scene: the camera starts on the first highlight and
+  // that highlight is drawn from frame 0 (the feed preview / cover).
+  opening?: boolean;
 };
 
 const FULL_PAGE: ZoomRegion = { x: 0, y: 0, width: 1, height: 1 };
+const HIGHLIGHT_FADE_SEC = 0.4;
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 // Real documents are almost always portrait (letter/A4), not 16:9 — objectFit:'cover'
@@ -67,6 +71,7 @@ export const DocumentHighlight: React.FC<Props> = ({
   zoomFrom,
   zoomTo,
   autoZoom,
+  opening = false,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames, fps, width: frameWidth, height: frameHeight } = useVideoConfig();
@@ -82,6 +87,7 @@ export const DocumentHighlight: React.FC<Props> = ({
           pageAspect: naturalSize.width / naturalSize.height,
           frameAspect: frameWidth / frameHeight,
           durationSec: durationInFrames / fps,
+          opening,
         })
       : [];
   const region: ZoomRegion =
@@ -101,11 +107,18 @@ export const DocumentHighlight: React.FC<Props> = ({
   // A scene can carry several sequential highlight beats (each with its own
   // fromSec/toSec) so the evidence box can move — e.g. rate first, then payout — as
   // the narration calls out each figure, instead of being stuck on one spot per scene.
+  // A box fades in over at most HIGHLIGHT_FADE_SEC from fromSec: ramping over the
+  // whole fromSec→toSec window (often the whole scene) left it faint at the moment
+  // the narration reads it.
+  const firstFromSec = Math.min(...(highlights ?? []).map((h) => h.fromSec));
   const highlightsWithOpacity = (highlights ?? []).map((h) => {
+    if (opening && autoKeys.length > 0 && h.fromSec === firstFromSec) {
+      return { h, opacity: h.opacity ?? 0.8 };
+    }
     const fromFrame = h.fromSec * fps;
-    const toFrame = h.toSec * fps;
+    const fadeEnd = Math.min(h.toSec, h.fromSec + HIGHLIGHT_FADE_SEC) * fps;
     const opacity =
-      interpolate(frame, [fromFrame, Math.max(toFrame, fromFrame + 1)], [0, 1], {
+      interpolate(frame, [fromFrame, Math.max(fadeEnd, fromFrame + 1)], [0, 1], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       }) * (h.opacity ?? 0.8);

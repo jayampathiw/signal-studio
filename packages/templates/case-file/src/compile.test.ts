@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { compile, CaseFileCompileError } from './compile.ts';
+import { compile, CaseFileCompileError, pointerCardLines } from './compile.ts';
 
 function baseParams(overrides = {}) {
   return {
@@ -167,4 +167,104 @@ test('visual/waveformOverlay/zoomFrom/zoomTo pass through unchanged', () => {
   assert.equal(scene.waveformOverlay, true);
   assert.deepEqual(scene.zoomFrom, { x: 0, y: 0, width: 1, height: 1 });
   assert.deepEqual(scene.zoomTo, { x: 0.2, y: 0.2, width: 0.6, height: 0.6 });
+});
+
+test('overlay_text on the first shot becomes a 3 s title, clipped to a shorter scene', () => {
+  const t = compile(
+    baseParams({
+      scenes: [
+        { id: 's1', durationSecs: 5, overlayText: ' Denied care, then a lawsuit ' },
+        { id: 's2', durationSecs: 2 },
+      ],
+    }),
+  );
+  assert.deepEqual(t.scenes[0].overlay, {
+    text: 'Denied care, then a lawsuit',
+    inSec: 0,
+    outSec: 3,
+  });
+  assert.equal(t.scenes[1].overlay, undefined);
+  const short = compile(
+    baseParams({ scenes: [{ id: 's1', durationSecs: 2, overlayText: 'Short opener' }] }),
+  );
+  assert.equal(short.scenes[0].overlay?.outSec, 2);
+});
+
+test('overlay_text over 7 words, or on a later shot, is refused', () => {
+  assert.throws(
+    () =>
+      compile(
+        baseParams({
+          scenes: [{ id: 's1', overlayText: 'one two three four five six seven eight' }],
+        }),
+      ),
+    (e: unknown) => e instanceof CaseFileCompileError && /8 words/.test((e as Error).message),
+  );
+  assert.throws(
+    () => compile(baseParams({ scenes: [{ id: 's1' }, { id: 's2', overlayText: 'A title' }] })),
+    (e: unknown) =>
+      e instanceof CaseFileCompileError && /only the first shot/.test((e as Error).message),
+  );
+});
+
+test('pointer cards: the guide example fits; one that wraps past 4 lines is refused', () => {
+  assert.equal(
+    pointerCardLines('Denied?\nAsk for the reason in writing.\nThen appeal.', '9:16'),
+    3,
+  );
+  const long =
+    'If your plan denies care, ask for the reason in writing.\nThen file an appeal within sixty days of the notice.\nKeep copies.';
+  assert.ok(pointerCardLines(long, '9:16') > 4);
+  assert.throws(
+    () =>
+      compile(
+        baseParams({
+          aspectRatio: '9:16',
+          scenes: [{ id: 's3', visual: { kind: 'pointerCard', text: long } }],
+        }),
+      ),
+    (e: unknown) => e instanceof CaseFileCompileError && /pointerCard/.test((e as Error).message),
+  );
+  assert.equal(pointerCardLines(long, '16:9'), 3);
+});
+
+test('opening highlight: one short line passes; wrapped, wide or long quotes are refused', () => {
+  const opening = (highlights: object[], openingQuote: string) =>
+    compile(
+      baseParams({
+        scenes: [
+          { id: 's1', imagePath: '/img/p15.png', durationSecs: 5, highlights, openingQuote },
+        ],
+      }),
+    );
+  const line = { x: 0.3, y: 0.8, width: 0.25, height: 0.02, fromFraction: 0.1, toFraction: 1 };
+  assert.doesNotThrow(() => opening([line], 'two and a half weeks'));
+  // A later beat may wrap or run wide — only the first one is the cover.
+  assert.doesNotThrow(() =>
+    opening(
+      [
+        line,
+        { ...line, x: 0.1, width: 0.8, fromFraction: 0.6 },
+        { ...line, y: 0.82, fromFraction: 0.6 },
+      ],
+      'two and a half weeks',
+    ),
+  );
+  const refused = (e: unknown) =>
+    e instanceof CaseFileCompileError &&
+    (e as Error).message ===
+      'case-001-denied-claim: shot "s1" opening highlight must be one short line (≤8 words) so the cover can zoom in — pick a shorter phrase.';
+  assert.throws(() => opening([line, { ...line, y: 0.82 }], 'two and a half weeks'), refused);
+  assert.throws(() => opening([{ ...line, width: 0.7 }], 'two and a half weeks'), refused);
+  assert.throws(
+    () => opening([line], 'had only been receiving physical therapy for two and a half weeks'),
+    refused,
+  );
+});
+
+test('opening rule skips a card or a document with no highlight as shot 1', () => {
+  assert.doesNotThrow(() =>
+    compile(baseParams({ scenes: [{ id: 's1', visual: { kind: 'counter', value: 1 } }] })),
+  );
+  assert.doesNotThrow(() => compile(baseParams()));
 });

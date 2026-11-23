@@ -2,6 +2,7 @@ import { loadFont } from '@remotion/google-fonts/PTSerif';
 import type { CaptionWord } from '@signal-studio/types/timeline';
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 
+import { CAPTION_TOP_CARD, CAPTION_TOP_DOCUMENT } from './layout';
 import { PALETTE } from './palette';
 
 const { fontFamily } = loadFont();
@@ -59,21 +60,11 @@ function wrapLines(words: Word[], charsPerLine: number): number[][] {
   return lines;
 }
 
-// Captions anchor to a fixed band starting at 74% down the frame, not to the
-// bottom edge — but ONLY on portrait (9:16) renders. Video #2 review found
-// bottom-anchored captions land in the same zone platform chrome overlays on a
-// native 9:16 post (username/caption text, "See more") — see temp/The Policy
-// File — Video #2 Production Script/Untitled.png. 74% clears that chrome while
-// staying below the mostly-empty lower third those portrait scenes (counter,
-// chart) leave below their content.
-//
-// On landscape (16:9) documentary renders this same fixed band lands mid-page —
-// a zoomed document fills nearly the whole frame there, so 74% down sits on top
-// of the highlighted evidence text itself (confirmed via Video #2 render:
-// mamboleo-pacific-life-settlement, scenes s1/s3/s5b). There's no platform-chrome
-// overlap risk on a 16:9 landscape post either, so landscape keeps the original
-// bottom-anchored layout instead of the fixed band.
-const CAPTION_TOP_FRACTION = 0.74;
+// Portrait captions anchor to a fixed band (layout.ts), not the bottom edge.
+// Landscape (16:9) keeps the original bottom-anchored layout: a zoomed document
+// fills nearly the whole frame there, so a fixed band would sit on the
+// highlighted evidence (Video #2: mamboleo-pacific-life-settlement, s1/s3/s5b),
+// and a landscape post has no platform chrome to clear.
 
 export const CaptionLayer: React.FC<Props> = ({ text, words, plate = false }) => {
   const frame = useCurrentFrame();
@@ -137,7 +128,7 @@ export const CaptionLayer: React.FC<Props> = ({ text, words, plate = false }) =>
           isPortrait
             ? {
                 position: 'absolute',
-                top: height * CAPTION_TOP_FRACTION,
+                top: height * (plate ? CAPTION_TOP_DOCUMENT : CAPTION_TOP_CARD),
                 left: 0,
                 right: 0,
                 padding: '0 48px',
