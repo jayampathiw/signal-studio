@@ -1252,6 +1252,16 @@ Design and reasoning: `docs/decisions/ADR-003-asset-references.md`. Finishes wha
   - [x] Released `v0.1.14` at `e2935a2` (PR #82): no jobs in flight (none at `awaiting_publish_time`), 13 GB free; promote passed first time. Watchtower restarted worker + api at 03:54 UTC; the new code (`reel-finished`, `firstFrameLuma`) is in the worker, `releaseIntervalMs: 60000`, no errors, `/health` 200, Policy File token set.
   - [ ] **T-P** — the next scheduled Policy File reel goes live at its `publishAt` with the AI label and the hook frame as its cover (check the `published facebook` log line for `publish_status`, and whether a `cover not set` error was logged).
 
+- [~] **P.20 Case-file legibility for a 55+ audience on phones** (2026-11-23, owner's request: Lokken reel insights — 82% of viewers 55+, biggest drop at 0:01, 29% past 3 s)
+  - [x] Opening zoom: the first scene's camera starts on its first highlight (no whole-page key), and that highlight is drawn from frame 0 (`planAutoZoom({ opening })`).
+  - [x] 9:16 captions on document/footage scenes at 55% of the height (was 74%); auto-zoom frames each highlight around 34% with its bottom above the band (`layout.ts`). Data cards keep 74%.
+  - [x] `overlay_text` renders on shot 1 as a title: navy band in the top third, PT Serif bold 68 px, balanced wrap, 0–3 s. The cover frame (`min(2 s, first scene / 2)`) always falls inside it.
+  - [x] Cards: pointer card PT Serif 56 px, one block per line (balanced); counter thousands separator and 52 px balanced label; outro wordmark 64 px / tagline 32 px, fully in by frame 24 of 75. Highlights fade in over 0.4 s, not the whole fromSec→toSec window.
+  - [x] `compile()` refusals: title over 7 words, a title on any shot but the first, a pointer card over 4 lines at 56 px, and a shot-1 first highlight that wraps, spans over 60% of the page width or runs over 8 words.
+  - [x] Branch test renders 58c210bb / 9b9804fc / 5015ccac (`"publish": []`): frame 0 and cover zoomed ~1.7× on a one-line quote; owner approved the stills.
+  - [ ] Released (after the held Barrows reel posted, 2026-11-24 05:30 IST).
+  - [ ] Backlog: a database-free branch render mode — `ss run-local --manifest` fetching `source.url` PDFs, placing highlights and writing proofs + video to a local folder — so branch renders never write to the production database (2026-11-23 test runs needed a direct approval write; `approve_gate` hands jobs to the prod worker).
+
 ---
 
 ### Milestones

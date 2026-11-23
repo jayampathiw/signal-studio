@@ -211,6 +211,7 @@ async function runCaseFileLocal(
     zoomTo: shot.zoomTo,
     visual: shot.visual,
     waveformOverlay: shot.waveformOverlay,
+    overlayText: shot.overlay_text,
   }));
 
   const renderFn = deps.render;

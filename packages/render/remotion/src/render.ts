@@ -159,6 +159,7 @@ function timelineToProps(
         waveformOverlay: scene.waveformOverlay ?? false,
         words: scene.words ?? null,
         narrationUrl: toAssetRef(scene.narrationPath, assetRefs),
+        overlay: scene.overlay ?? null,
       })),
     };
   }

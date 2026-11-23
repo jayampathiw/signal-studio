@@ -15,7 +15,7 @@ import { compile as compileShorts916 } from '@signal-studio/template-shorts-916/
 import { compile as compileStillsKenburns } from '@signal-studio/template-stills-kenburns/compile';
 import { parseShotlistText as parseShotlistV2 } from '@signal-studio/template-stills-kenburns/parsers/parse-shotlist-v2';
 
-import { fitsReel, runJob, type RunJobDeps } from './run-job.ts';
+import { coverTimeSec, fitsReel, runJob, type RunJobDeps } from './run-job.ts';
 import { createLogger } from '../logger.ts';
 
 const execFileAsync = promisify(execFile);
@@ -2342,4 +2342,27 @@ test('runJob publish mode: a 9:16 render under 90 s publishes as a reel with the
   await runJob({ jobId: 'job-1', mode: 'publish' }, deps, createLogger({ level: 'error' }));
   assert.equal(deps.publishCalls[0]!.reel, true);
   assert.equal(deps.publishCalls[0]!.aiDisclosure, true);
+});
+
+test('the reel cover frame always shows the case-file title, before it fades', () => {
+  for (const firstSceneSecs of [1, 2.5, 4, 6, 12]) {
+    const timeline = compileCaseFile({
+      contentId: 'c',
+      caseId: 'cover-title',
+      aspectRatio: '9:16',
+      scenes: [
+        { id: 's1', durationSecs: firstSceneSecs, overlayText: 'His therapy stopped early' },
+      ],
+      findNarrationPath: () => null,
+      narrationDurationSec: () => 0,
+      transcribedWords: () => null,
+    });
+    const overlay = timeline.scenes[0]!.overlay!;
+    const at = coverTimeSec(firstSceneSecs);
+    // TitleOverlay.tsx fades over the last 0.25 s before outSec.
+    assert.ok(
+      at >= overlay.inSec && at < overlay.outSec - 0.25,
+      `${firstSceneSecs}s scene: cover at ${at}`,
+    );
+  }
 });

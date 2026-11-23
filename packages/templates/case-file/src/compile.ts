@@ -34,6 +34,23 @@ import type {
 // ported unchanged from assemble-case.mjs.
 const TAIL_PADDING_SECS = 0.5;
 
+// Shot 1's title (`overlay_text`) — large type for a 55+ audience on phones,
+// so it's short and only on screen for the opening seconds.
+const TITLE_MAX_WORDS = 7;
+const TITLE_SECS = 3;
+
+// Shot 1's first highlight is the cover's subject: auto-zoom can only push in
+// on a phrase that sits on one line and leaves room on the page's width.
+const OPENING_MAX_WORDS = 8;
+const OPENING_MAX_WIDTH = 0.6;
+
+// PointerCard.tsx sets 56 px PT Serif inside 80 px side padding; ~0.5 em per
+// character is a slight overestimate for mixed-case PT Serif bold, so a card
+// this check passes doesn't wrap further in the browser.
+const POINTER_CARD_MAX_LINES = 4;
+const POINTER_CARD_FONT_PX = 56;
+const POINTER_CARD_PADDING_PX = 80;
+
 export type CaseFileHighlightInput = {
   x: number;
   y: number;
@@ -62,6 +79,10 @@ export type CaseFileSceneInput = {
   zoomTo?: { x: number; y: number; width: number; height: number };
   visual?: Record<string, unknown>;
   waveformOverlay?: boolean;
+  overlayText?: string;
+  // The text of the scene's first `source.highlight` quote, when known — only
+  // read for the opening scene's one-short-line rule.
+  openingQuote?: string;
 };
 
 export type CaseFileCompileParams = {
@@ -90,6 +111,75 @@ export type CaseFileCompileParams = {
 
 export class CaseFileCompileError extends Error {}
 
+export function pointerCardLines(text: string, aspectRatio: '16:9' | '9:16'): number {
+  const frameWidth = aspectRatio === '9:16' ? 1080 : 1920;
+  const charsPerLine = Math.floor(
+    (frameWidth - 2 * POINTER_CARD_PADDING_PX) / (POINTER_CARD_FONT_PX * 0.5),
+  );
+  return text.split('\n').reduce((sum, line) => sum + wrappedLines(line, charsPerLine), 0);
+}
+
+function wrappedLines(line: string, charsPerLine: number): number {
+  let lines = 1;
+  let len = 0;
+  for (const word of line.trim().split(/\s+/).filter(Boolean)) {
+    if (len > 0 && len + 1 + word.length > charsPerLine) {
+      lines++;
+      len = word.length;
+    } else {
+      len += (len > 0 ? 1 : 0) + word.length;
+    }
+  }
+  return lines;
+}
+
+function validateOpening(params: CaseFileCompileParams): void {
+  const scene = params.scenes[0]!;
+  const boxes = scene.highlights ?? (scene.highlight ? [scene.highlight] : []);
+  if (scene.visual || boxes.length === 0) return;
+  const start = (h: CaseFileHighlightInput) => h.fromFraction ?? h.fromSec ?? 0;
+  const first = Math.min(...boxes.map(start));
+  const beat = boxes.filter((h) => start(h) === first);
+  const words = scene.openingQuote?.trim().split(/\s+/).length ?? 0;
+  if (
+    beat.length > 1 ||
+    beat.some((h) => h.width > OPENING_MAX_WIDTH) ||
+    words > OPENING_MAX_WORDS
+  ) {
+    throw new CaseFileCompileError(
+      `${params.caseId}: shot "${scene.id}" opening highlight must be one short line (≤${OPENING_MAX_WORDS} words) so the cover can zoom in — pick a shorter phrase.`,
+    );
+  }
+}
+
+function validateScenes(params: CaseFileCompileParams): void {
+  validateOpening(params);
+  params.scenes.forEach((scene, i) => {
+    if (scene.overlayText) {
+      if (i > 0) {
+        throw new CaseFileCompileError(
+          `${params.caseId}: shot "${scene.id}" has overlay_text — only the first shot shows a title`,
+        );
+      }
+      const words = scene.overlayText.trim().split(/\s+/).length;
+      if (words > TITLE_MAX_WORDS) {
+        throw new CaseFileCompileError(
+          `${params.caseId}: shot "${scene.id}" overlay_text has ${words} words — keep the title to ${TITLE_MAX_WORDS} or fewer`,
+        );
+      }
+    }
+    const visual = scene.visual as { kind?: unknown; text?: unknown } | undefined;
+    if (visual?.kind === 'pointerCard' && typeof visual.text === 'string') {
+      const lines = pointerCardLines(visual.text, params.aspectRatio ?? '16:9');
+      if (lines > POINTER_CARD_MAX_LINES) {
+        throw new CaseFileCompileError(
+          `${params.caseId}: shot "${scene.id}" pointerCard text wraps to about ${lines} lines — keep it to ${POINTER_CARD_MAX_LINES} (shorter lines or fewer words)`,
+        );
+      }
+    }
+  });
+}
+
 function resolveHighlight(
   h: CaseFileHighlightInput | undefined,
   durationSecs: number,
@@ -113,6 +203,7 @@ export function compile(params: CaseFileCompileParams): TimelineT {
   if (!params.scenes.length) {
     throw new CaseFileCompileError(`${params.caseId}: case has no scenes`);
   }
+  validateScenes(params);
 
   const scenes: TimelineSceneT[] = params.scenes.map((scene) => {
     const narrationPath = params.findNarrationPath(scene.id);
@@ -152,6 +243,9 @@ export function compile(params: CaseFileCompileParams): TimelineT {
       visual: scene.visual,
       waveformOverlay: scene.waveformOverlay,
       words: words ?? undefined,
+      overlay: scene.overlayText
+        ? { text: scene.overlayText.trim(), inSec: 0, outSec: Math.min(TITLE_SECS, durationSecs) }
+        : undefined,
       playbackRate: 1,
       trimInSec: 0,
       sourceMuted: false,

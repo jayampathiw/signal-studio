@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 
 import { resolveJob, type ResolvedJob } from '@signal-studio/core/resolve';
 import { StageRunner, type Job, type JobStageStore } from '@signal-studio/core/runner';
-import type { CarouselOutputT, TimelineT, ProjectT } from '@signal-studio/core/schemas';
+import type { CarouselOutputT, ManifestT, TimelineT, ProjectT } from '@signal-studio/core/schemas';
 import { createAssetsStage } from '@signal-studio/core/stages/assets';
 import { createPublishStage, type PublishFn } from '@signal-studio/core/stages/publish';
 import {
@@ -454,6 +454,13 @@ async function downloadBrandWatermark(ctx: TemplateHandlerCtx): Promise<string |
   });
 }
 
+// The first `source.highlight` quote's text (array order = the order the
+// narration reads them), for case-file's opening-highlight rule.
+function firstQuote(shot: ManifestT['shots'][number]): string | undefined {
+  const h = shot.source?.highlight?.[0];
+  return typeof h === 'string' ? h : h?.text;
+}
+
 const caseFileHandler: TemplateHandler = {
   async compileOutputs(ctx) {
     const { job, resolvedJob, tmpDir, storage, fetchFn, runner, deps } = ctx;
@@ -495,6 +502,8 @@ const caseFileHandler: TemplateHandler = {
       zoomTo: shot.zoomTo,
       visual: shot.visual,
       waveformOverlay: shot.waveformOverlay,
+      overlayText: shot.overlay_text,
+      openingQuote: firstQuote(shot),
     }));
 
     const watermarkPath = await downloadBrandWatermark(ctx);

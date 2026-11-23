@@ -3,6 +3,7 @@ import { loadFont as loadPTSerif } from '@remotion/google-fonts/PTSerif';
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 
 import { PALETTE } from '../palette';
+import { formatCount } from './format-number';
 
 const { fontFamily: serifFont } = loadPTSerif();
 const { fontFamily: monoFont } = loadCourierPrime();
@@ -42,7 +43,8 @@ export const AnimatedCounter: React.FC<{
   // Auto-shrink for longer strings ("$893M" vs "95%") so nothing overflows a
   // 1080px-wide vertical frame — authored per-case scale tuning shouldn't be needed
   // for the common case of a longer number/prefix/suffix combination.
-  const charLen = `${visual.prefix ?? ''}${displayed}${visual.suffix ?? ''}`.length;
+  const shown = formatCount(displayed);
+  const charLen = `${visual.prefix ?? ''}${shown}${visual.suffix ?? ''}`.length;
   const autoScale = Math.min(1, 3.2 / charLen);
   const finalScale = scale * autoScale;
 
@@ -66,7 +68,7 @@ export const AnimatedCounter: React.FC<{
         }}
       >
         {visual.prefix ?? ''}
-        {displayed}
+        {shown}
         {visual.suffix ?? ''}
       </p>
       {visual.label && (
@@ -74,11 +76,12 @@ export const AnimatedCounter: React.FC<{
           style={{
             fontFamily: monoFont,
             fontWeight: 700,
-            fontSize: 44,
-            lineHeight: 1.4,
+            fontSize: 52,
+            lineHeight: 1.3,
             color: PALETTE.paper,
             marginTop: 28,
             textAlign: 'center',
+            textWrap: 'balance',
             maxWidth: 840,
           }}
         >

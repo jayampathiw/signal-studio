@@ -3,6 +3,7 @@ import { AbsoluteFill, Audio, Img, Sequence, useVideoConfig } from 'remotion';
 
 import { CaptionLayer } from './CaptionLayer';
 import { StockVideo } from './StockVideo';
+import { TitleOverlay } from './TitleOverlay';
 import { resolveAsset } from '../resolve-asset';
 import { AnimatedCounter, type CounterVisual } from './charts/AnimatedCounter';
 import { BarChart, type BarChartVisual } from './charts/BarChart';
@@ -39,6 +40,8 @@ export type CaseFileScene = {
   waveformOverlay?: boolean; // overlay an animated waveform graphic on a stock-video scene
   words?: CaptionWord[] | null; // per-word timing for the Highlighter Sweep caption style
   narrationUrl?: string;
+  // Shot 1's title (`overlay_text`), scene-relative seconds.
+  overlay?: { text: string; inSec: number; outSec: number } | null;
 };
 
 export type CaseFileProps = {
@@ -149,9 +152,11 @@ export const CaseFile: React.FC<CaseFileProps> = ({ scenes, watermarkUrl, caseMe
               zoomFrom={zoomFrom}
               zoomTo={zoomTo}
               autoZoom={caseMeta?.autoZoom === true && !scene.zoomFrom && !scene.zoomTo}
+              opening={from === 0}
             />
           )}
           <CaptionLayer text={scene.captionText} words={scene.words} plate={!scene.visual} />
+          {scene.overlay && <TitleOverlay {...scene.overlay} />}
           {scene.narrationUrl && <Audio src={resolveAsset(scene.narrationUrl)} />}
         </Sequence>
       ))}

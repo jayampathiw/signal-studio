@@ -12,6 +12,8 @@
  * `DocumentHighlight` uses for `zoomFrom`/`zoomTo`.
  */
 
+import { CAPTION_TOP_DOCUMENT } from './layout.ts';
+
 export type Region = { x: number; y: number; width: number; height: number };
 export type TimedBox = Region & { fromSec: number; toSec: number };
 export type CameraKey = { atSec: number; region: Region };
@@ -28,21 +30,31 @@ const OPENING_SEC = 0.4;
 // The camera starts moving this long before a beat's box appears.
 const LEAD_SEC = 0.3;
 const MOVE_SEC = 0.9;
+// Portrait only: captions sit in a band from CAPTION_TOP_DOCUMENT down, so a
+// beat is framed above it — centred at FOCUS_Y of the frame height and its
+// bottom no lower than SAFE_BOTTOM. A beat too tall for that is centred
+// instead.
+const FOCUS_Y = 0.34;
+const SAFE_BOTTOM = CAPTION_TOP_DOCUMENT - 0.03;
 
 /**
  * `pageAspect` / `frameAspect` are width ÷ height of the page image and of
- * the video frame. Returns [] when there's nothing to zoom to.
+ * the video frame. Returns [] when there's nothing to zoom to. `opening`
+ * (the video's first scene) starts on the first beat instead of the whole
+ * page: frame 0 is the feed preview, and a whole page is unreadable there.
  */
 export function planAutoZoom(
   boxes: TimedBox[],
-  opts: { pageAspect: number; frameAspect: number; durationSec: number },
+  opts: { pageAspect: number; frameAspect: number; durationSec: number; opening?: boolean },
 ): CameraKey[] {
   const beats = groupBeats(boxes);
   if (beats.length === 0) return [];
 
-  const keys: CameraKey[] = [{ atSec: 0, region: FULL_PAGE }];
-  let current = FULL_PAGE;
-  let ready = OPENING_SEC;
+  let current = opts.opening
+    ? regionFor(beats.shift()!.union, opts.pageAspect, opts.frameAspect)
+    : FULL_PAGE;
+  const keys: CameraKey[] = [{ atSec: 0, region: current }];
+  let ready = opts.opening ? 0 : OPENING_SEC;
   for (const beat of beats) {
     const target = regionFor(beat.union, opts.pageAspect, opts.frameAspect);
     const start = Math.min(Math.max(ready, beat.fromSec - LEAD_SEC), opts.durationSec);
@@ -120,9 +132,35 @@ function regionFor(union: Region, pageAspect: number, frameAspect: number): Regi
   const height = width * heightPerWidth;
   return {
     x: place(union.x + union.width / 2, width),
-    y: place(union.y + union.height / 2, height),
+    y:
+      frameAspect < 1
+        ? placeAboveCaptions(union, height)
+        : place(union.y + union.height / 2, height),
     width,
     height,
+  };
+}
+
+// Never above the page top (or, for a region taller than the page, above the
+// whole-page view's top); may reach past the page bottom into the navy.
+function placeAboveCaptions(union: Region, height: number): number {
+  if (union.height + 2 * MARGIN_Y > SAFE_BOTTOM * height) {
+    return place(union.y + union.height / 2, height);
+  }
+  const y = Math.max(
+    union.y + union.height / 2 - FOCUS_Y * height,
+    union.y + union.height + MARGIN_Y / 2 - SAFE_BOTTOM * height,
+  );
+  return Math.max(y, Math.min(0, (1 - height) / 2));
+}
+
+/** Where a page-fraction box lands in the frame (0–1 of frame width/height) for a camera region. */
+export function boxInFrame(box: Region, region: Region): Region {
+  return {
+    x: (box.x - region.x) / region.width,
+    y: (box.y - region.y) / region.height,
+    width: box.width / region.width,
+    height: box.height / region.height,
   };
 }
 
